@@ -6,10 +6,10 @@ export default function Examinus() {
   const caseId = searchParams.get("caseId") || undefined;
 
   return (
-    <div className="h-full p-3 md:p-6">
+    <div className="h-full p-6">
       <AgentChat
         agentName="Examinus"
-        agentIcon={<FlaskConical className="h-6 w-6 md:h-8 md:w-8" />}
+        agentIcon={<FlaskConical className="h-8 w-8" />}
         agentColor="text-secondary"
         agentType="examinus"
         caseId={caseId}

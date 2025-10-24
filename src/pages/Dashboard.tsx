@@ -80,27 +80,18 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome section */}
-      <Card className="border-primary/20 bg-card shadow-elevated">
-        <CardContent className="p-8">
-          <div className="flex items-start justify-between">
-            <div className="space-y-3">
-              <h1 className="text-3xl font-bold text-foreground">Bem-vindo ao MedStation AI</h1>
-              <p className="text-muted-foreground text-lg max-w-2xl">
-                Assistente clínico inteligente para otimizar seu fluxo de trabalho médico
-              </p>
-              <Button variant="default" size="lg" asChild className="mt-4">
-                <Link to="/patients">
-                  <Users className="mr-2 h-5 w-5" />
-                  Ver Pacientes
-                </Link>
-              </Button>
-            </div>
-            <div className="hidden md:flex items-center justify-center w-20 h-20 rounded-full bg-primary/10">
-              <Activity className="h-10 w-10 text-primary" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="rounded-lg bg-gradient-hero p-8 text-white shadow-elevated">
+        <h1 className="text-3xl font-bold mb-2">Bem-vindo ao MedStation AI</h1>
+        <p className="text-white/90 mb-4">
+          Assistente clínico inteligente para otimizar seu fluxo de trabalho médico
+        </p>
+        <Button variant="secondary" size="lg" asChild>
+          <Link to="/patients">
+            <Users className="mr-2 h-4 w-4" />
+            Ver Pacientes
+          </Link>
+        </Button>
+      </div>
 
       {/* AI Agents - Main Section */}
       <div>
