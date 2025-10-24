@@ -22,6 +22,7 @@ export type Database = {
           notes: string | null
           patient_id: string
           status: string | null
+          tags: string[] | null
           title: string
           updated_at: string
           user_id: string
@@ -33,6 +34,7 @@ export type Database = {
           notes?: string | null
           patient_id: string
           status?: string | null
+          tags?: string[] | null
           title: string
           updated_at?: string
           user_id: string
@@ -44,6 +46,7 @@ export type Database = {
           notes?: string | null
           patient_id?: string
           status?: string | null
+          tags?: string[] | null
           title?: string
           updated_at?: string
           user_id?: string
@@ -203,7 +206,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      search_cases: {
+        Args: { search_query: string; user_uuid: string }
+        Returns: {
+          chief_complaint: string
+          created_at: string
+          id: string
+          notes: string
+          patient_name: string
+          rank: number
+          status: string
+          tags: string[]
+          title: string
+          updated_at: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
