@@ -8,7 +8,7 @@ export default function Clinicus() {
 
   return (
     <PremiumAgentGuard agentName="Clínicus">
-      <div className="h-full p-6">
+      <div className="h-full p-3 md:p-6">
         <AgentChat
           agentName="Clínicus"
           agentIcon={<FileText className="h-8 w-8" />}

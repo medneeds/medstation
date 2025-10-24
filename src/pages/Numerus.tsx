@@ -8,7 +8,7 @@ export default function Numerus() {
 
   return (
     <PremiumAgentGuard agentName="Numerus">
-      <div className="h-full p-6">
+      <div className="h-full p-3 md:p-6">
         <AgentChat
         agentName="Numerus"
         agentIcon={<Calculator className="h-8 w-8" />}

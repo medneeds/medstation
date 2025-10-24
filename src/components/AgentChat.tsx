@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Loader2 } from "lucide-react";
 import { exportAgentConversationToPDF } from "@/utils/pdfExport";
 import { 
@@ -97,6 +98,7 @@ export function AgentChat({
   actionButtons = []
 }: AgentChatProps) {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [message, setMessage] = useState("");
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -501,65 +503,65 @@ export function AgentChat({
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)]">
+    <div className="flex flex-col h-[calc(100vh-8rem)] md:h-[calc(100vh-8rem)]">
       {/* Header with agent info and actions */}
-      <div className="flex items-center justify-between pb-4 border-b">
-        <div className="flex items-center gap-3 flex-1">
-          <div className={`rounded-xl p-3 bg-gradient-to-br from-primary/10 to-primary/5 ${agentColor}`}>
+      <div className="flex flex-col gap-3 pb-4 border-b md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+          <div className={`rounded-xl p-2 md:p-3 bg-gradient-to-br from-primary/10 to-primary/5 ${agentColor} shrink-0`}>
             {agentIcon}
           </div>
-          <div className="flex-1">
-            <h2 className="text-2xl font-bold">{agentName}</h2>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-lg md:text-2xl font-bold truncate">{agentName}</h2>
             {currentConversation && (
-              <p className="text-sm text-muted-foreground">{currentConversation.name}</p>
+              <p className="text-xs md:text-sm text-muted-foreground truncate">{currentConversation.name}</p>
             )}
           </div>
-
-          {/* Case selector */}
-          {cases.length > 0 && (
-            <div className="w-64">
-              <Select
-                value={selectedCaseId || "none"}
-                onValueChange={(value) => setSelectedCaseId(value === "none" ? undefined : value)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecionar caso" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Sem caso específico</SelectItem>
-                  {cases.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{c.title}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {c.patient_name}
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
         </div>
+
+        {/* Case selector - full width on mobile */}
+        {cases.length > 0 && (
+          <div className="w-full md:w-64">
+            <Select
+              value={selectedCaseId || "none"}
+              onValueChange={(value) => setSelectedCaseId(value === "none" ? undefined : value)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Selecionar caso" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Sem caso específico</SelectItem>
+                {cases.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{c.title}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {c.patient_name}
+                      </span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         <div className="flex gap-2">
           {currentConversation && currentConversation.messages.length > 0 && (
-            <Button variant="outline" size="sm" onClick={exportConversation}>
-              <FileDown className="h-4 w-4 mr-2" />
-              Exportar PDF
+            <Button variant="outline" size={isMobile ? "icon" : "sm"} onClick={exportConversation} title="Exportar PDF">
+              <FileDown className="h-4 w-4" />
+              {!isMobile && <span className="ml-2">Exportar PDF</span>}
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={createNewConversation}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nova Conversa
+          <Button variant="outline" size={isMobile ? "icon" : "sm"} onClick={createNewConversation} title="Nova Conversa">
+            <Plus className="h-4 w-4" />
+            {!isMobile && <span className="ml-2">Nova Conversa</span>}
           </Button>
 
           <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" size="sm">
-                <History className="h-4 w-4 mr-2" />
-                Histórico
+              <Button variant="outline" size={isMobile ? "icon" : "sm"} title="Histórico">
+                <History className="h-4 w-4" />
+                {!isMobile && <span className="ml-2">Histórico</span>}
               </Button>
             </SheetTrigger>
             <SheetContent className="w-full sm:max-w-md">
@@ -664,14 +666,14 @@ export function AgentChat({
 
       {/* Action buttons if provided */}
       {actionButtons.length > 0 && (
-        <div className="flex gap-2 py-3 border-b overflow-x-auto">
+        <div className="flex gap-2 py-3 border-b overflow-x-auto pb-safe">
           {actionButtons.map((btn, idx) => (
             <Button
               key={idx}
               variant="outline"
               size="sm"
               onClick={btn.onClick}
-              className="whitespace-nowrap"
+              className="whitespace-nowrap shrink-0"
             >
               {btn.icon}
               {btn.label}
@@ -683,22 +685,22 @@ export function AgentChat({
       {/* Chat messages */}
       <ScrollArea className="flex-1 py-4">
         {!currentConversation || currentConversation.messages.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
-            <div className={`rounded-full p-6 bg-gradient-to-br from-primary/10 to-primary/5 inline-block ${agentColor} mb-4`}>
+          <div className="text-center py-8 md:py-12 text-muted-foreground px-4">
+            <div className={`rounded-full p-4 md:p-6 bg-gradient-to-br from-primary/10 to-primary/5 inline-block ${agentColor} mb-4`}>
               {agentIcon}
             </div>
-            <p className="text-lg font-medium">Olá! Como posso ajudar?</p>
-            <p className="text-sm mt-2">Envie uma mensagem para começar</p>
+            <p className="text-base md:text-lg font-medium">Olá! Como posso ajudar?</p>
+            <p className="text-xs md:text-sm mt-2">Envie uma mensagem para começar</p>
           </div>
         ) : (
-          <div className="space-y-4 px-2">
+          <div className="space-y-4 px-2 md:px-4">
             {currentConversation.messages.map((msg) => (
               <div
                 key={msg.id}
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-3 relative group ${
+                  className={`max-w-[85%] md:max-w-[80%] rounded-2xl px-3 md:px-4 py-2 md:py-3 relative group ${
                     msg.role === "user"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted"
@@ -752,11 +754,13 @@ export function AgentChat({
       </ScrollArea>
 
       {/* Input area */}
-      <div className="border-t pt-4">
-        <div className="flex gap-2">
-          <Button variant="outline" size="icon" className="shrink-0">
-            <Paperclip className="h-4 w-4" />
-          </Button>
+      <div className="border-t pt-3 md:pt-4 pb-safe">
+        <div className="flex gap-1.5 md:gap-2">
+          {!isMobile && (
+            <Button variant="outline" size="icon" className="shrink-0">
+              <Paperclip className="h-4 w-4" />
+            </Button>
+          )}
           <Input
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -766,19 +770,20 @@ export function AgentChat({
                 sendMessage();
               }
             }}
-            placeholder={placeholder}
-            className="flex-1"
+            placeholder={isMobile ? "Mensagem..." : placeholder}
+            className="flex-1 text-sm md:text-base"
             disabled={isRecording || isLoading}
           />
           {isRecording ? (
             <Button 
               onClick={stopRecording}
               variant="destructive"
+              size={isMobile ? "sm" : "default"}
               className="shrink-0"
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 md:gap-2">
                 <div className="h-2 w-2 bg-white rounded-full animate-pulse" />
-                Parar
+                <span className="text-sm">Parar</span>
               </div>
             </Button>
           ) : (
@@ -795,6 +800,7 @@ export function AgentChat({
               <Button 
                 onClick={sendMessage}
                 disabled={!message.trim() || isLoading}
+                size="icon"
                 className="shrink-0"
                 title="Enviar mensagem"
               >
@@ -807,11 +813,13 @@ export function AgentChat({
             </>
           )}
         </div>
-        <p className="text-xs text-muted-foreground mt-2">
-          {isRecording 
-            ? "Gravando áudio... Clique em 'Parar' quando terminar"
-            : "Pressione Enter para enviar, Shift+Enter para quebrar linha"}
-        </p>
+        {!isMobile && (
+          <p className="text-xs text-muted-foreground mt-2">
+            {isRecording 
+              ? "Gravando áudio... Clique em 'Parar' quando terminar"
+              : "Pressione Enter para enviar, Shift+Enter para quebrar linha"}
+          </p>
+        )}
       </div>
     </div>
   );
