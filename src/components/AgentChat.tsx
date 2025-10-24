@@ -108,6 +108,7 @@ export function AgentChat({
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [cases, setCases] = useState<CaseOption[]>([]);
   const [selectedCaseId, setSelectedCaseId] = useState<string | undefined>(caseId);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   useEffect(() => {
     fetchCases();
@@ -383,6 +384,7 @@ export function AgentChat({
   const loadConversation = async (conversation: Conversation) => {
     const messages = await loadConversationMessages(conversation.id);
     setCurrentConversation({ ...conversation, messages });
+    setHistoryOpen(false); // Close the history sidebar after loading
   };
 
   const startRecording = async () => {
@@ -527,7 +529,7 @@ export function AgentChat({
             Nova Conversa
           </Button>
 
-          <Sheet>
+          <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
             <SheetTrigger asChild>
               <Button variant="outline" size="sm">
                 <History className="h-4 w-4 mr-2" />
