@@ -78,28 +78,26 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-gradient-to-br from-primary/25 via-sidebar/85 to-primary/20 backdrop-blur-md shadow-2xl">
       <SidebarContent className="gap-0 bg-gradient-to-b from-transparent via-sidebar/50 to-primary/5">
         {/* User Profile */}
-        <div className={`flex items-center gap-3 border-b border-primary/20 bg-gradient-to-r from-primary/30 via-primary/15 to-transparent shadow-lg backdrop-blur-sm ${collapsed ? 'px-2 py-4 justify-center' : 'px-4 py-6'}`}>
+        <div className={`flex items-center gap-3 border-b border-primary/20 bg-gradient-to-r from-primary/30 via-primary/15 to-transparent shadow-lg backdrop-blur-sm transition-all ${collapsed ? 'px-2 py-4 justify-center flex-col' : 'px-4 py-6'}`}>
           <Avatar className="h-12 w-12 flex-shrink-0 ring-2 ring-primary/30 shadow-xl transition-all hover:ring-primary/50 hover:scale-110 hover:shadow-2xl">
             <AvatarImage src={profile?.avatar_url || ""} alt={profile?.full_name || ""} className="object-cover" />
             <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground font-semibold">
               {getInitials()}
             </AvatarFallback>
           </Avatar>
-          {!collapsed && (
-            <div className="flex-1 min-w-0 animate-fade-in">
-              <p className="text-sm font-semibold text-sidebar-foreground truncate">
-                {getTitle()} {profile?.full_name || "Carregando..."}
+          <div className={`flex-1 min-w-0 ${collapsed ? 'hidden' : 'animate-fade-in'}`}>
+            <p className="text-sm font-semibold text-sidebar-foreground truncate">
+              {getTitle()} {profile?.full_name || "Carregando..."}
+            </p>
+            <p className="text-xs text-sidebar-foreground/70 truncate mt-0.5">
+              {profile?.specialty || "Médico"}
+            </p>
+            {profile?.crm && profile?.crm_state && (
+              <p className="text-xs text-sidebar-foreground/60 truncate mt-0.5 font-mono">
+                CRM-{profile.crm_state} {profile.crm}
               </p>
-              <p className="text-xs text-sidebar-foreground/70 truncate mt-0.5">
-                {profile?.specialty || "Médico"}
-              </p>
-              {profile?.crm && profile?.crm_state && (
-                <p className="text-xs text-sidebar-foreground/60 truncate mt-0.5 font-mono">
-                  CRM-{profile.crm_state} {profile.crm}
-                </p>
-              )}
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Home */}
@@ -117,7 +115,7 @@ export function AppSidebar() {
                     }
                   >
                     <homeModule.icon className="h-4 w-4" />
-                    {!collapsed && <span className="animate-fade-in">{homeModule.title}</span>}
+                    <span className={collapsed ? 'hidden' : 'animate-fade-in'}>{homeModule.title}</span>
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -144,7 +142,7 @@ export function AppSidebar() {
                       }
                     >
                       <item.icon className="h-4 w-4" />
-                      {!collapsed && <span className="animate-fade-in">{item.title}</span>}
+                      <span className={collapsed ? 'hidden' : 'animate-fade-in'}>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -172,7 +170,7 @@ export function AppSidebar() {
                       }
                     >
                       <item.icon className="h-4 w-4" />
-                      {!collapsed && <span className="animate-fade-in">{item.title}</span>}
+                      <span className={collapsed ? 'hidden' : 'animate-fade-in'}>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -197,7 +195,7 @@ export function AppSidebar() {
                       }
                     >
                       <item.icon className="h-4 w-4" />
-                      {!collapsed && <span className="animate-fade-in">{item.title}</span>}
+                      <span className={collapsed ? 'hidden' : 'animate-fade-in'}>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -209,7 +207,7 @@ export function AppSidebar() {
                   className="hover:bg-destructive/10 hover:text-destructive hover:translate-x-1 transition-all duration-200"
                 >
                   <LogOut className="h-4 w-4" />
-                  {!collapsed && <span className="animate-fade-in">Sair</span>}
+                  <span className={collapsed ? 'hidden' : 'animate-fade-in'}>Sair</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
