@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -28,6 +28,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -72,6 +79,12 @@ interface AgentChatProps {
   }>;
 }
 
+interface CaseOption {
+  id: string;
+  title: string;
+  patient_name: string;
+}
+
 export function AgentChat({ 
   agentName, 
   agentIcon, 
@@ -91,6 +104,8 @@ export function AgentChat({
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [cases, setCases] = useState<CaseOption[]>([]);
+  const [selectedCaseId, setSelectedCaseId] = useState<string | undefined>(caseId);
 
   const createNewProject = () => {
     const newProject: Project = {
@@ -102,6 +117,37 @@ export function AgentChat({
     };
     setProjects([newProject, ...projects]);
     setCurrentProject(newProject);
+  };
+
+  useEffect(() => {
+    fetchCases();
+  }, []);
+
+  const fetchCases = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from("cases")
+      .select(`
+        id,
+        title,
+        patients (name)
+      `)
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .order("updated_at", { ascending: false })
+      .limit(20);
+
+    if (!error && data) {
+      setCases(
+        data.map((c: any) => ({
+          id: c.id,
+          title: c.title,
+          patient_name: c.patients?.name || "Sem paciente",
+        }))
+      );
+    }
   };
 
   const sendMessage = async () => {
@@ -148,7 +194,7 @@ export function AgentChat({
             content: m.content,
           })),
           agentType,
-          caseId,
+          caseId: selectedCaseId,
         },
       });
 
@@ -289,16 +335,43 @@ export function AgentChat({
     <div className="flex flex-col h-[calc(100vh-8rem)]">
       {/* Header with agent info and actions */}
       <div className="flex items-center justify-between pb-4 border-b">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-1">
           <div className={`rounded-xl p-3 bg-gradient-to-br from-primary/10 to-primary/5 ${agentColor}`}>
             {agentIcon}
           </div>
-          <div>
+          <div className="flex-1">
             <h2 className="text-2xl font-bold">{agentName}</h2>
             {currentProject && (
               <p className="text-sm text-muted-foreground">{currentProject.name}</p>
             )}
           </div>
+
+          {/* Case selector */}
+          {cases.length > 0 && (
+            <div className="w-64">
+              <Select
+                value={selectedCaseId || "none"}
+                onValueChange={(value) => setSelectedCaseId(value === "none" ? undefined : value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selecionar caso" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Sem caso específico</SelectItem>
+                  {cases.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{c.title}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {c.patient_name}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
 
         <div className="flex gap-2">

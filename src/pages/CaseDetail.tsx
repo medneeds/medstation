@@ -19,6 +19,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { EvidenceDrawer } from "@/components/EvidenceDrawer";
 import { exportCaseToPDF } from "@/utils/pdfExport";
+import { AgentButtons } from "@/components/AgentButtons";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -291,6 +292,7 @@ export default function CaseDetail() {
           </div>
         </div>
         <div className="flex gap-2">
+          <AgentButtons caseId={caseData.id} />
           <Button variant="outline" onClick={handleExportPDF}>
             <FileDown className="h-4 w-4 mr-2" />
             Exportar PDF

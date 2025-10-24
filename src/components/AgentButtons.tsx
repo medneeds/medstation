@@ -1,0 +1,63 @@
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import {
+  Stethoscope,
+  FlaskConical,
+  Activity,
+  Calculator,
+  Pill,
+  FileText,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+interface AgentButtonsProps {
+  caseId: string;
+}
+
+const agents = [
+  { name: "Clínicus", path: "/clinicus", icon: Stethoscope, color: "text-blue-600" },
+  { name: "Examinus", path: "/examinus", icon: FlaskConical, color: "text-purple-600" },
+  { name: "Scorius", path: "/scorius", icon: Activity, color: "text-red-600" },
+  { name: "Numerus", path: "/numerus", icon: Calculator, color: "text-green-600" },
+  { name: "Prescriptus", path: "/prescriptus", icon: Pill, color: "text-orange-600" },
+  { name: "CODexus", path: "/codexus", icon: FileText, color: "text-indigo-600" },
+];
+
+export function AgentButtons({ caseId }: AgentButtonsProps) {
+  const navigate = useNavigate();
+
+  const handleAgentClick = (path: string) => {
+    navigate(`${path}?caseId=${caseId}`);
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline">
+          <Stethoscope className="h-4 w-4 mr-2" />
+          Consultar Agente IA
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        {agents.map((agent) => {
+          const Icon = agent.icon;
+          return (
+            <DropdownMenuItem
+              key={agent.name}
+              onClick={() => handleAgentClick(agent.path)}
+              className="cursor-pointer"
+            >
+              <Icon className={`h-4 w-4 mr-2 ${agent.color}`} />
+              {agent.name}
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
