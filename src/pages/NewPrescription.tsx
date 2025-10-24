@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useProfile } from "@/contexts/ProfileContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Select,
   SelectContent,
@@ -14,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Plus, Trash2, Save, FileSignature } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Save, FileSignature, AlertCircle, User, Stethoscope } from "lucide-react";
 import { z } from "zod";
 
 const medicationSchema = z.object({
@@ -43,9 +45,11 @@ interface Medication {
 export default function NewPrescription() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { profile } = useProfile();
   const [loading, setLoading] = useState(false);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [selectedPatient, setSelectedPatient] = useState("");
+  const [selectedPatientData, setSelectedPatientData] = useState<Patient | null>(null);
   const [diagnosis, setDiagnosis] = useState("");
   const [cidCode, setCidCode] = useState("");
   const [validityDays, setValidityDays] = useState("30");
@@ -53,6 +57,19 @@ export default function NewPrescription() {
   const [medications, setMedications] = useState<Medication[]>([
     { name: "", dosage: "", frequency: "", duration: "", instructions: "" },
   ]);
+
+  useEffect(() => {
+    fetchPatients();
+  }, []);
+
+  useEffect(() => {
+    if (selectedPatient) {
+      const patient = patients.find(p => p.id === selectedPatient);
+      setSelectedPatientData(patient || null);
+    } else {
+      setSelectedPatientData(null);
+    }
+  }, [selectedPatient, patients]);
 
   useEffect(() => {
     fetchPatients();
@@ -101,6 +118,25 @@ export default function NewPrescription() {
   };
 
   const validateForm = () => {
+    // Validate profile data for digital signature
+    if (!profile?.crm || !profile?.crm_state) {
+      toast({
+        title: "Dados do médico incompletos",
+        description: "É necessário ter CRM e Estado cadastrados para assinar prescrições. Complete seu perfil.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!profile?.full_name) {
+      toast({
+        title: "Dados do médico incompletos",
+        description: "É necessário ter nome completo cadastrado. Complete seu perfil.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     if (!selectedPatient) {
       toast({
         title: "Erro de validação",
@@ -197,17 +233,76 @@ export default function NewPrescription() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Nova Prescrição</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Nova Prescrição Médica</h1>
           <p className="text-muted-foreground">
-            Preencha os dados da receita médica
+            Prescrição válida com assinatura digital
           </p>
         </div>
       </div>
 
+      {/* Doctor Info Validation Alert */}
+      {(!profile?.crm || !profile?.crm_state || !profile?.full_name) && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Atenção:</strong> Para criar prescrições válidas, complete seus dados profissionais (CRM, Estado, Nome Completo) em{" "}
+            <Button
+              variant="link"
+              className="h-auto p-0 text-destructive underline"
+              onClick={() => navigate("/settings")}
+            >
+              Configurações
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Doctor Info Card */}
+      <Card className="border-primary/20 bg-primary/5">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Stethoscope className="h-5 w-5 text-primary" />
+            <CardTitle>Dados do Prescritor</CardTitle>
+          </div>
+          <CardDescription>Informações que constarão na prescrição</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label className="text-muted-foreground text-sm">Nome Completo</Label>
+              <p className="font-medium">{profile?.full_name || "Não cadastrado"}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground text-sm">CRM</Label>
+              <p className="font-medium">
+                {profile?.crm && profile?.crm_state
+                  ? `${profile.crm} - ${profile.crm_state}`
+                  : "Não cadastrado"}
+              </p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground text-sm">Especialidade</Label>
+              <p className="font-medium">{profile?.specialty || "Não informada"}</p>
+            </div>
+            <div>
+              <Label className="text-muted-foreground text-sm">Localização</Label>
+              <p className="font-medium text-sm">
+                {profile?.city && profile?.state
+                  ? `${profile.city} - ${profile.state}`
+                  : "Não cadastrado"}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Patient Selection */}
       <Card>
         <CardHeader>
-          <CardTitle>Dados do Paciente</CardTitle>
+          <div className="flex items-center gap-2">
+            <User className="h-5 w-5 text-primary" />
+            <CardTitle>Dados do Paciente</CardTitle>
+          </div>
           <CardDescription>Selecione o paciente para esta prescrição</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -233,6 +328,22 @@ export default function NewPrescription() {
               </SelectContent>
             </Select>
           </div>
+          {selectedPatientData && (
+            <div className="grid md:grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
+              <div>
+                <Label className="text-muted-foreground text-sm">CPF</Label>
+                <p className="font-medium">{selectedPatientData.cpf || "Não informado"}</p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground text-sm">Data de Nascimento</Label>
+                <p className="font-medium">
+                  {selectedPatientData.date_of_birth
+                    ? new Date(selectedPatientData.date_of_birth).toLocaleDateString('pt-BR')
+                    : "Não informada"}
+                </p>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

@@ -8,6 +8,9 @@ interface ProfileData {
   crm: string | null;
   crm_state: string | null;
   specialty: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
 }
 
 interface ProfileContextType {
@@ -33,7 +36,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("full_name, gender, avatar_url, crm, crm_state, specialty")
+        .select("full_name, gender, avatar_url, crm, crm_state, specialty, address, city, state")
         .eq("id", user.id)
         .single();
 
@@ -46,6 +49,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         crm: data.crm,
         crm_state: data.crm_state,
         specialty: data.specialty,
+        address: data.address,
+        city: data.city,
+        state: data.state,
       });
     } catch (error) {
       console.error("Error fetching profile:", error);

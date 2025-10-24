@@ -1,10 +1,13 @@
 import { AgentChat } from "@/components/AgentChat";
 import { PremiumAgentGuard } from "@/components/PremiumAgentGuard";
-import { Pill, Plus, AlertTriangle, FileDown } from "lucide-react";
+import { Pill, Plus, AlertTriangle, FileDown, FileSignature } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 export default function Prescriptus() {
   const searchParams = new URLSearchParams(window.location.search);
   const caseId = searchParams.get("caseId") || undefined;
+  const navigate = useNavigate();
 
   return (
     <PremiumAgentGuard agentName="Prescriptus">
@@ -18,9 +21,9 @@ export default function Prescriptus() {
         placeholder="Digite medicações, doses ou solicite prescrições estruturadas..."
         actionButtons={[
           {
-            label: "Nova Prescrição",
-            icon: <Plus className="mr-2 h-4 w-4" />,
-            onClick: () => console.log("Nova prescrição"),
+            label: "Nova Prescrição Real",
+            icon: <FileSignature className="mr-2 h-4 w-4" />,
+            onClick: () => navigate("/prescricoes/nova"),
           },
           {
             label: "Verificar Interações",
@@ -28,9 +31,9 @@ export default function Prescriptus() {
             onClick: () => console.log("Verificar interações"),
           },
           {
-            label: "Gerar PDF",
+            label: "Ver Prescrições",
             icon: <FileDown className="mr-2 h-4 w-4" />,
-            onClick: () => console.log("Gerar PDF"),
+            onClick: () => navigate("/prescricoes"),
           },
         ]}
         />
