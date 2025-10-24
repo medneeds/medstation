@@ -124,6 +124,7 @@ export const profileSchema = z.object({
     .trim()
     .min(1, "Nome completo é obrigatório")
     .max(100, "Nome completo deve ter no máximo 100 caracteres"),
+  gender: z.enum(["M", "F", "Outro"]).optional(),
   date_of_birth: z.string()
     .optional()
     .or(z.literal("")),

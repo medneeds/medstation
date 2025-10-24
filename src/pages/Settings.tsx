@@ -4,8 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Building2, MapPin, Calendar, Stethoscope, Award } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { User, MapPin, Stethoscope, Upload, X } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { profileSchema } from "@/lib/validations";
@@ -26,10 +27,15 @@ const MEDICAL_SPECIALTIES = [
 
 export default function Settings() {
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [userId, setUserId] = useState<string>("");
+  const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [profile, setProfile] = useState({
     full_name: "",
+    gender: "" as "M" | "F" | "Outro" | "",
     date_of_birth: "",
     crm: "",
     crm_state: "",
@@ -55,6 +61,8 @@ export default function Settings() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
+      setUserId(user.id);
+
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -66,6 +74,7 @@ export default function Settings() {
       if (data) {
         setProfile({
           full_name: data.full_name || "",
+          gender: (data.gender as "M" | "F" | "Outro") || "",
           date_of_birth: data.date_of_birth || "",
           crm: data.crm || "",
           crm_state: data.crm_state || "",
@@ -80,6 +89,10 @@ export default function Settings() {
           state: data.state || "",
           postal_code: data.postal_code || "",
         });
+
+        if (data.avatar_url) {
+          setAvatarUrl(data.avatar_url);
+        }
       }
     } catch (error) {
       console.error("Erro ao carregar perfil:", error);
@@ -93,6 +106,101 @@ export default function Settings() {
     }
   };
 
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      // Validação do tamanho (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Erro",
+          description: "A imagem deve ter no máximo 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validação do tipo
+      if (!["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(file.type)) {
+        toast({
+          title: "Erro",
+          description: "Formato de imagem inválido. Use JPG, PNG ou WEBP.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setUploading(true);
+
+      // Upload para o bucket
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${userId}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Obter URL pública
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(fileName);
+
+      // Atualizar perfil com a nova URL
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrl })
+        .eq("id", userId);
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(publicUrl);
+      toast({
+        title: "Sucesso",
+        description: "Foto de perfil atualizada!",
+      });
+    } catch (error) {
+      console.error("Erro ao fazer upload:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar a foto de perfil.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    try {
+      setUploading(true);
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({ avatar_url: null })
+        .eq("id", userId);
+
+      if (error) throw error;
+
+      setAvatarUrl("");
+      toast({
+        title: "Sucesso",
+        description: "Foto de perfil removida!",
+      });
+    } catch (error) {
+      console.error("Erro ao remover foto:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível remover a foto de perfil.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSave = async () => {
     try {
       setSaving(true);
@@ -101,13 +209,10 @@ export default function Settings() {
       // Validação com Zod
       const validatedData = profileSchema.parse(profile);
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
       const { error } = await supabase
         .from("profiles")
         .update(validatedData)
-        .eq("id", user.id);
+        .eq("id", userId);
 
       if (error) throw error;
 
@@ -171,6 +276,18 @@ export default function Settings() {
     return value;
   };
 
+  const getInitials = () => {
+    if (!profile.full_name) return "?";
+    const names = profile.full_name.split(" ");
+    if (names.length === 1) return names[0][0].toUpperCase();
+    return (names[0][0] + names[names.length - 1][0]).toUpperCase();
+  };
+
+  const getTitle = () => {
+    if (!profile.gender) return "Dr(a)";
+    return profile.gender === "M" ? "Dr." : profile.gender === "F" ? "Dra." : "Dr(a)";
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -185,6 +302,60 @@ export default function Settings() {
         <h1 className="text-3xl font-bold">Meu Perfil</h1>
         <p className="text-muted-foreground">Gerencie suas informações profissionais</p>
       </div>
+
+      {/* Foto de Perfil */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Foto de Perfil
+          </CardTitle>
+          <CardDescription>Sua imagem profissional</CardDescription>
+        </CardHeader>
+        <CardContent className="flex items-center gap-6">
+          <Avatar className="h-24 w-24">
+            <AvatarImage src={avatarUrl} alt={profile.full_name} />
+            <AvatarFallback className="text-2xl">{getInitials()}</AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">
+              {getTitle()} {profile.full_name || "Seu Nome"}
+            </p>
+            <div className="flex gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                onChange={handleAvatarUpload}
+                className="hidden"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                {uploading ? "Enviando..." : "Alterar Foto"}
+              </Button>
+              {avatarUrl && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRemoveAvatar}
+                  disabled={uploading}
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  Remover
+                </Button>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              JPG, PNG ou WEBP. Máximo 5MB.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Informações Pessoais */}
       <Card>
@@ -207,6 +378,25 @@ export default function Settings() {
               />
               {errors.full_name && (
                 <p className="text-sm text-destructive">{errors.full_name}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="gender">Sexo</Label>
+              <Select
+                value={profile.gender}
+                onValueChange={(value: "M" | "F" | "Outro") => setProfile({ ...profile, gender: value })}
+              >
+                <SelectTrigger className={errors.gender ? "border-destructive" : ""}>
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="M">Masculino (Dr.)</SelectItem>
+                  <SelectItem value="F">Feminino (Dra.)</SelectItem>
+                  <SelectItem value="Outro">Outro</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.gender && (
+                <p className="text-sm text-destructive">{errors.gender}</p>
               )}
             </div>
             <div className="space-y-2">

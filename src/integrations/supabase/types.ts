@@ -177,6 +177,7 @@ export type Database = {
       profiles: {
         Row: {
           address: string | null
+          avatar_url: string | null
           bio: string | null
           city: string | null
           cpf: string | null
@@ -185,6 +186,7 @@ export type Database = {
           crm_state: string | null
           date_of_birth: string | null
           full_name: string | null
+          gender: string | null
           graduation_year: number | null
           id: string
           phone: string | null
@@ -196,6 +198,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          avatar_url?: string | null
           bio?: string | null
           city?: string | null
           cpf?: string | null
@@ -204,6 +207,7 @@ export type Database = {
           crm_state?: string | null
           date_of_birth?: string | null
           full_name?: string | null
+          gender?: string | null
           graduation_year?: number | null
           id: string
           phone?: string | null
@@ -215,6 +219,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          avatar_url?: string | null
           bio?: string | null
           city?: string | null
           cpf?: string | null
@@ -223,6 +228,7 @@ export type Database = {
           crm_state?: string | null
           date_of_birth?: string | null
           full_name?: string | null
+          gender?: string | null
           graduation_year?: number | null
           id?: string
           phone?: string | null
