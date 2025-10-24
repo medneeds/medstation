@@ -75,24 +75,26 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-      <SidebarContent>
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-gradient-to-b from-sidebar to-sidebar/95">
+      <SidebarContent className="gap-0">
         {/* User Profile */}
-        <div className="flex items-center gap-3 px-4 py-6 border-b border-sidebar-border">
-          <Avatar className="h-10 w-10">
+        <div className="flex items-center gap-3 px-4 py-6 border-b border-sidebar-border/50 bg-sidebar-accent/30">
+          <Avatar className="h-12 w-12 ring-2 ring-primary/10 shadow-md transition-all hover:ring-primary/30 hover:scale-105">
             <AvatarImage src={profile?.avatar_url || ""} alt={profile?.full_name || ""} />
-            <AvatarFallback>{getInitials()}</AvatarFallback>
+            <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground font-semibold">
+              {getInitials()}
+            </AvatarFallback>
           </Avatar>
           {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sidebar-foreground truncate">
+            <div className="flex-1 min-w-0 animate-fade-in">
+              <p className="text-sm font-semibold text-sidebar-foreground truncate">
                 {getTitle()} {profile?.full_name || "Carregando..."}
               </p>
-              <p className="text-xs text-sidebar-foreground/60 truncate">
+              <p className="text-xs text-sidebar-foreground/70 truncate mt-0.5">
                 {profile?.specialty || "Médico"}
               </p>
               {profile?.crm && profile?.crm_state && (
-                <p className="text-xs text-sidebar-foreground/60 truncate">
+                <p className="text-xs text-sidebar-foreground/60 truncate mt-0.5 font-mono">
                   CRM-{profile.crm_state} {profile.crm}
                 </p>
               )}
@@ -101,7 +103,7 @@ export function AppSidebar() {
         </div>
 
         {/* Home */}
-        <SidebarGroup>
+        <SidebarGroup className="py-3">
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
@@ -110,12 +112,12 @@ export function AppSidebar() {
                     to={homeModule.url}
                     className={({ isActive }) =>
                       isActive
-                        ? "bg-sidebar-accent text-sidebar-primary font-medium"
-                        : "hover:bg-sidebar-accent/50"
+                        ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary font-semibold border-l-2 border-primary shadow-sm"
+                        : "hover:bg-sidebar-accent/50 hover:translate-x-1 transition-all duration-200"
                     }
                   >
                     <homeModule.icon className="h-4 w-4" />
-                    {!collapsed && <span>{homeModule.title}</span>}
+                    {!collapsed && <span className="animate-fade-in">{homeModule.title}</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -124,10 +126,12 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Management modules */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Gestão</SidebarGroupLabel>
+        <SidebarGroup className="py-3 border-t border-sidebar-border/50">
+          <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70 uppercase tracking-wider px-3 mb-1">
+            Gestão
+          </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {managementModules.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title}>
@@ -135,12 +139,12 @@ export function AppSidebar() {
                       to={item.url}
                       className={({ isActive }) =>
                         isActive
-                          ? "bg-sidebar-accent text-sidebar-primary font-medium"
-                          : "hover:bg-sidebar-accent/50"
+                          ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary font-semibold border-l-2 border-primary shadow-sm"
+                          : "hover:bg-sidebar-accent/50 hover:translate-x-1 transition-all duration-200"
                       }
                     >
                       <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!collapsed && <span className="animate-fade-in">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -150,10 +154,12 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Agent modules */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Agentes IA</SidebarGroupLabel>
+        <SidebarGroup className="py-3 border-t border-sidebar-border/50">
+          <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70 uppercase tracking-wider px-3 mb-1">
+            Agentes IA
+          </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {agentModules.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title}>
@@ -161,12 +167,12 @@ export function AppSidebar() {
                       to={item.url}
                       className={({ isActive }) =>
                         isActive
-                          ? "bg-sidebar-accent text-sidebar-primary font-medium"
-                          : "hover:bg-sidebar-accent/50"
+                          ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary font-semibold border-l-2 border-primary shadow-sm"
+                          : "hover:bg-sidebar-accent/50 hover:translate-x-1 transition-all duration-200"
                       }
                     >
                       <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!collapsed && <span className="animate-fade-in">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -176,9 +182,9 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Settings */}
-        <SidebarGroup className="mt-auto">
+        <SidebarGroup className="mt-auto py-3 border-t border-sidebar-border/50">
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {settings.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title}>
@@ -186,20 +192,24 @@ export function AppSidebar() {
                       to={item.url}
                       className={({ isActive }) =>
                         isActive
-                          ? "bg-sidebar-accent text-sidebar-primary font-medium"
-                          : "hover:bg-sidebar-accent/50"
+                          ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary font-semibold border-l-2 border-primary shadow-sm"
+                          : "hover:bg-sidebar-accent/50 hover:translate-x-1 transition-all duration-200"
                       }
                     >
                       <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!collapsed && <span className="animate-fade-in">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
               <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Sair" onClick={handleLogout}>
+                <SidebarMenuButton 
+                  tooltip="Sair" 
+                  onClick={handleLogout}
+                  className="hover:bg-destructive/10 hover:text-destructive hover:translate-x-1 transition-all duration-200"
+                >
                   <LogOut className="h-4 w-4" />
-                  {!collapsed && <span>Sair</span>}
+                  {!collapsed && <span className="animate-fade-in">Sair</span>}
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
