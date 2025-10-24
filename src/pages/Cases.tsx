@@ -155,9 +155,16 @@ export default function Cases() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Convert empty string to null for patient_id
+      const caseData = {
+        ...validated,
+        patient_id: validated.patient_id || null,
+        user_id: user.id
+      };
+
       const { error } = await supabase
         .from("cases")
-        .insert([{ ...validated, user_id: user.id }]);
+        .insert([caseData]);
 
       if (error) {
         toast({
@@ -272,18 +279,23 @@ export default function Cases() {
               
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="patient">Paciente *</Label>
+                  <Label htmlFor="patient">Paciente</Label>
                   <Select
-                    value={formData.patient_id}
+                    value={formData.patient_id || "unidentified"}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, patient_id: value })
+                      setFormData({ ...formData, patient_id: value === "unidentified" ? "" : value })
                     }
-                    required
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione um paciente" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="unidentified">
+                        <div className="flex items-center gap-2">
+                          <span>🕶️</span>
+                          <span className="font-medium">Não identificar paciente</span>
+                        </div>
+                      </SelectItem>
                       {patients.map((patient) => (
                         <SelectItem key={patient.id} value={patient.id}>
                           {patient.name}
@@ -291,6 +303,9 @@ export default function Cases() {
                       ))}
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Opcional: Selecione "Não identificar" para casos sem identificação de paciente
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -427,11 +442,9 @@ export default function Cases() {
                                   {getStatusLabel(caseItem.status)}
                                 </Badge>
                               </div>
-                              {patient && (
-                                <p className="text-xs md:text-sm text-muted-foreground truncate">
-                                  Paciente: {patient.name}
-                                </p>
-                              )}
+                              <p className="text-xs md:text-sm text-muted-foreground truncate">
+                                {patient ? `Paciente: ${patient.name}` : "🕶️ Paciente não identificado"}
+                              </p>
                             </div>
                           </div>
                            {caseItem.chief_complaint && (

@@ -100,15 +100,17 @@ export default function CaseDetail() {
 
     setCaseData(caseData);
 
-    // Fetch patient data
-    const { data: patientData } = await supabase
-      .from("patients")
-      .select("id, name")
-      .eq("id", caseData.patient_id)
-      .single();
+    // Fetch patient data if patient_id exists
+    if (caseData.patient_id) {
+      const { data: patientData } = await supabase
+        .from("patients")
+        .select("id, name")
+        .eq("id", caseData.patient_id)
+        .maybeSingle();
 
-    if (patientData) {
-      setPatient(patientData);
+      if (patientData) {
+        setPatient(patientData);
+      }
     }
 
     setLoading(false);
@@ -179,11 +181,11 @@ export default function CaseDetail() {
   };
 
   const handleExportPDF = () => {
-    if (!caseData || !patient) return;
+    if (!caseData) return;
 
     const caseForExport = {
       title: caseData.title,
-      patient_name: patient.name,
+      patient_name: patient?.name || "Não identificado",
       chief_complaint: caseData.chief_complaint || undefined,
       notes: caseData.notes || undefined,
       status: caseData.status,
@@ -277,18 +279,16 @@ export default function CaseDetail() {
                 {getStatusLabel(caseData.status)}
               </Badge>
             </div>
-            {patient && (
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  {patient.name}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Criado em {new Date(caseData.created_at).toLocaleDateString("pt-BR")}
-                </div>
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4" />
+                {patient ? patient.name : "🕶️ Não identificado"}
               </div>
-            )}
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Criado em {new Date(caseData.created_at).toLocaleDateString("pt-BR")}
+              </div>
+            </div>
           </div>
         </div>
         <div className="flex gap-2">

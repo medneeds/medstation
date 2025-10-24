@@ -20,7 +20,7 @@ export type Database = {
           created_at: string
           id: string
           notes: string | null
-          patient_id: string
+          patient_id: string | null
           status: string | null
           tags: string[] | null
           title: string
@@ -32,7 +32,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
-          patient_id: string
+          patient_id?: string | null
           status?: string | null
           tags?: string[] | null
           title: string
@@ -44,7 +44,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
-          patient_id?: string
+          patient_id?: string | null
           status?: string | null
           tags?: string[] | null
           title?: string

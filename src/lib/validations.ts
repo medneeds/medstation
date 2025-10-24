@@ -32,7 +32,7 @@ export const caseSchema = z.object({
     .trim()
     .min(1, "Título é obrigatório")
     .max(200, "Título deve ter no máximo 200 caracteres"),
-  patient_id: z.string().uuid("ID de paciente inválido"),
+  patient_id: z.string().uuid("ID de paciente inválido").optional().nullable().or(z.literal("")),
   chief_complaint: z.string()
     .max(500, "Queixa principal deve ter no máximo 500 caracteres")
     .optional()
