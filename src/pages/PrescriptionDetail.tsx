@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { exportPrescriptionToPDF } from "@/utils/pdfExport";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -177,10 +178,37 @@ export default function PrescriptionDetail() {
   };
 
   const handleDownloadPDF = () => {
-    toast({
-      title: "Em desenvolvimento",
-      description: "A funcionalidade de download em PDF será implementada em breve",
-    });
+    if (!prescription) return;
+
+    try {
+      exportPrescriptionToPDF({
+        prescription_number: prescription.prescription_number,
+        patient_name: prescription.patients?.name || "N/A",
+        patient_cpf: prescription.patients?.cpf || "N/A",
+        patient_dob: prescription.patients?.date_of_birth,
+        doctor_name: prescription.profiles?.full_name || "N/A",
+        doctor_crm: prescription.profiles?.crm || "N/A",
+        doctor_crm_state: prescription.profiles?.crm_state || "N/A",
+        doctor_specialty: prescription.profiles?.specialty,
+        diagnosis: prescription.diagnosis,
+        cid_code: prescription.cid_code || undefined,
+        medications: prescription.medications,
+        validity_days: prescription.validity_days,
+        observations: prescription.observations || undefined,
+        created_at: prescription.created_at,
+      });
+
+      toast({
+        title: "PDF gerado com sucesso",
+        description: "O arquivo foi baixado para seu computador",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao gerar PDF",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   if (loading) {

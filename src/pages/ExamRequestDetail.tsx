@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { exportExamRequestToPDF } from "@/utils/pdfExport";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -173,10 +174,37 @@ export default function ExamRequestDetail() {
   };
 
   const handleDownloadPDF = () => {
-    toast({
-      title: "Em desenvolvimento",
-      description: "A funcionalidade de download em PDF será implementada em breve",
-    });
+    if (!examRequest) return;
+
+    try {
+      exportExamRequestToPDF({
+        request_number: examRequest.request_number,
+        patient_name: examRequest.patients?.name || "N/A",
+        patient_cpf: examRequest.patients?.cpf || "N/A",
+        patient_dob: examRequest.patients?.date_of_birth,
+        doctor_name: examRequest.profiles?.full_name || "N/A",
+        doctor_crm: examRequest.profiles?.crm || "N/A",
+        doctor_crm_state: examRequest.profiles?.crm_state || "N/A",
+        doctor_specialty: examRequest.profiles?.specialty,
+        clinical_indication: examRequest.clinical_indication,
+        cid_code: examRequest.cid_code || undefined,
+        priority: examRequest.priority,
+        exams: examRequest.exams || [],
+        observations: examRequest.observations || undefined,
+        requested_date: examRequest.requested_date,
+      });
+
+      toast({
+        title: "PDF gerado com sucesso",
+        description: "O arquivo foi baixado para seu computador",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao gerar PDF",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   if (loading) {
