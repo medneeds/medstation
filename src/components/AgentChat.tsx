@@ -7,6 +7,7 @@ import { AudioPlayer } from "@/components/AudioPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { exportAgentConversationToPDF } from "@/utils/pdfExport";
 import { 
   Send, 
   Paperclip, 
@@ -17,7 +18,8 @@ import {
   Trash2,
   Mic,
   Copy,
-  Check
+  Check,
+  FileDown
 } from "lucide-react";
 import {
   Sheet,
@@ -265,6 +267,24 @@ export function AgentChat({
     }
   };
 
+  const exportConversation = () => {
+    if (!currentProject || currentProject.messages.length === 0) {
+      toast({
+        title: "Nenhuma conversa",
+        description: "Não há mensagens para exportar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    exportAgentConversationToPDF(agentName, currentProject.messages);
+    
+    toast({
+      title: "PDF gerado!",
+      description: "A conversa foi exportada com sucesso.",
+    });
+  };
+
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]">
       {/* Header with agent info and actions */}
@@ -282,6 +302,12 @@ export function AgentChat({
         </div>
 
         <div className="flex gap-2">
+          {currentProject && currentProject.messages.length > 0 && (
+            <Button variant="outline" size="sm" onClick={exportConversation}>
+              <FileDown className="h-4 w-4 mr-2" />
+              Exportar PDF
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={createNewProject}>
             <Plus className="h-4 w-4 mr-2" />
             Novo Projeto
@@ -529,6 +555,7 @@ export function AgentChat({
                 onClick={sendMessage}
                 disabled={!message.trim() || isLoading}
                 className="shrink-0"
+                title="Enviar mensagem"
               >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

@@ -13,10 +13,12 @@ import {
   FileIcon,
   Download,
   Trash2,
-  ExternalLink
+  ExternalLink,
+  FileDown
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { EvidenceDrawer } from "@/components/EvidenceDrawer";
+import { exportCaseToPDF } from "@/utils/pdfExport";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,6 +37,7 @@ interface CaseData {
   status: string;
   chief_complaint: string | null;
   notes: string | null;
+  tags: string[] | null;
   created_at: string;
   updated_at: string;
   patient_id: string;
@@ -174,6 +177,36 @@ export default function CaseDetail() {
     a.click();
   };
 
+  const handleExportPDF = () => {
+    if (!caseData || !patient) return;
+
+    const caseForExport = {
+      title: caseData.title,
+      patient_name: patient.name,
+      chief_complaint: caseData.chief_complaint || undefined,
+      notes: caseData.notes || undefined,
+      status: caseData.status,
+      tags: caseData.tags || undefined,
+      created_at: caseData.created_at,
+      updated_at: caseData.updated_at,
+    };
+
+    const evidencesForExport = evidences.map((e) => ({
+      title: e.title,
+      type: e.type,
+      content: e.content || undefined,
+      origin: e.origin || undefined,
+      created_at: e.created_at,
+    }));
+
+    exportCaseToPDF(caseForExport, evidencesForExport);
+
+    toast({
+      title: "PDF gerado!",
+      description: "O relatório foi baixado com sucesso.",
+    });
+  };
+
   const getEvidenceIcon = (type: string) => {
     switch (type) {
       case "pdf":
@@ -257,7 +290,13 @@ export default function CaseDetail() {
             )}
           </div>
         </div>
-        <EvidenceDrawer caseId={caseData.id} onEvidenceAdded={fetchEvidences} />
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleExportPDF}>
+            <FileDown className="h-4 w-4 mr-2" />
+            Exportar PDF
+          </Button>
+          <EvidenceDrawer caseId={caseData.id} onEvidenceAdded={fetchEvidences} />
+        </div>
       </div>
 
       {/* Case Info */}
@@ -278,6 +317,18 @@ export default function CaseDetail() {
               <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                 {caseData.notes}
               </p>
+            </div>
+          )}
+          {caseData.tags && caseData.tags.length > 0 && (
+            <div>
+              <p className="text-sm font-medium mb-2">Tags</p>
+              <div className="flex gap-2 flex-wrap">
+                {caseData.tags.map((tag, idx) => (
+                  <Badge key={idx} variant="secondary">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
             </div>
           )}
         </CardContent>

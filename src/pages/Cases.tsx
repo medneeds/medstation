@@ -3,8 +3,10 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, FolderOpen, ChevronRight } from "lucide-react";
+import { Plus, FolderOpen, ChevronRight, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { SearchDialog } from "@/components/SearchDialog";
+import { TagInput } from "@/components/TagInput";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +33,7 @@ interface Case {
   status: string;
   chief_complaint: string | null;
   notes: string | null;
+  tags: string[] | null;
   created_at: string;
   updated_at: string;
   patient_id: string;
@@ -51,6 +54,7 @@ export default function Cases() {
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [searchDialogOpen, setSearchDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -58,6 +62,7 @@ export default function Cases() {
     patient_id: patientId || "",
     chief_complaint: "",
     notes: "",
+    tags: [] as string[],
   });
 
   useEffect(() => {
@@ -171,6 +176,7 @@ export default function Cases() {
       patient_id: patientId || "",
       chief_complaint: "",
       notes: "",
+      tags: [],
     });
     setDialogOpen(false);
   };
@@ -213,6 +219,10 @@ export default function Cases() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setSearchDialogOpen(true)}>
+            <Search className="h-4 w-4 mr-2" />
+            Buscar
+          </Button>
           {selectedPatient && (
             <Button variant="outline" onClick={() => navigate("/patients")}>
               Voltar para Pacientes
@@ -288,6 +298,14 @@ export default function Cases() {
                     rows={4}
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label>Tags</Label>
+                  <TagInput
+                    tags={formData.tags}
+                    onChange={(tags) => setFormData({ ...formData, tags })}
+                    placeholder="Adicionar tag (pressione Enter)..."
+                  />
+                </div>
                 <div className="flex justify-end gap-2">
                   <Button type="button" variant="outline" onClick={resetForm}>
                     Cancelar
@@ -299,6 +317,8 @@ export default function Cases() {
           </Dialog>
         </div>
       </div>
+
+      <SearchDialog open={searchDialogOpen} onOpenChange={setSearchDialogOpen} />
 
       <Card>
         <CardContent className="pt-6">
@@ -341,10 +361,19 @@ export default function Cases() {
                               )}
                             </div>
                           </div>
-                          {caseItem.chief_complaint && (
+                           {caseItem.chief_complaint && (
                             <p className="ml-12 text-sm text-muted-foreground">
                               <strong>QP:</strong> {caseItem.chief_complaint}
                             </p>
+                          )}
+                          {caseItem.tags && caseItem.tags.length > 0 && (
+                            <div className="ml-12 flex gap-1 flex-wrap mt-2">
+                              {caseItem.tags.map((tag, idx) => (
+                                <Badge key={idx} variant="outline" className="text-xs">
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
                           )}
                           <p className="ml-12 text-xs text-muted-foreground mt-2">
                             Atualizado em {new Date(caseItem.updated_at).toLocaleString('pt-BR')}
