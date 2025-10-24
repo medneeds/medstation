@@ -219,35 +219,37 @@ export default function Cases() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">
+          <h1 className="text-2xl md:text-3xl font-bold">
             {selectedPatient ? `Casos de ${selectedPatient.name}` : "Casos Clínicos"}
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm md:text-base text-muted-foreground">
             {selectedPatient 
               ? "Gerencie os casos deste paciente"
               : "Todos os seus casos clínicos"}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setSearchDialogOpen(true)}>
-            <Search className="h-4 w-4 mr-2" />
-            Buscar
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={() => setSearchDialogOpen(true)} className="md:size-default">
+            <Search className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">Buscar</span>
           </Button>
           {selectedPatient && (
-            <Button variant="outline" onClick={() => navigate("/patients")}>
-              Voltar para Pacientes
+            <Button variant="outline" size="sm" onClick={() => navigate("/patients")} className="md:size-default">
+              <span className="hidden sm:inline">Voltar para Pacientes</span>
+              <span className="sm:hidden">Voltar</span>
             </Button>
           )}
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={resetForm}>
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Caso
+              <Button onClick={resetForm} size="sm" className="md:size-default">
+                <Plus className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">Novo Caso</span>
+                <span className="md:hidden">Novo</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Novo Caso Clínico</DialogTitle>
                 <DialogDescription>
@@ -355,31 +357,31 @@ export default function Cases() {
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="rounded-full p-2 bg-primary/10">
-                              <FolderOpen className="h-5 w-5 text-primary" />
+                           <div className="flex items-center gap-2 md:gap-3 mb-2">
+                            <div className="rounded-full p-2 bg-primary/10 shrink-0">
+                              <FolderOpen className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                             </div>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <h3 className="font-semibold text-lg">{caseItem.title}</h3>
-                                <Badge className={getStatusColor(caseItem.status)}>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                                <h3 className="font-semibold text-base md:text-lg truncate">{caseItem.title}</h3>
+                                <Badge className={`${getStatusColor(caseItem.status)} shrink-0 text-xs`}>
                                   {getStatusLabel(caseItem.status)}
                                 </Badge>
                               </div>
                               {patient && (
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-xs md:text-sm text-muted-foreground truncate">
                                   Paciente: {patient.name}
                                 </p>
                               )}
                             </div>
                           </div>
                            {caseItem.chief_complaint && (
-                            <p className="ml-12 text-sm text-muted-foreground">
+                            <p className="ml-8 md:ml-12 text-xs md:text-sm text-muted-foreground">
                               <strong>QP:</strong> {caseItem.chief_complaint}
                             </p>
                           )}
                           {caseItem.tags && caseItem.tags.length > 0 && (
-                            <div className="ml-12 flex gap-1 flex-wrap mt-2">
+                            <div className="ml-8 md:ml-12 flex gap-1 flex-wrap mt-2">
                               {caseItem.tags.map((tag, idx) => (
                                 <Badge key={idx} variant="outline" className="text-xs">
                                   {tag}
@@ -387,7 +389,7 @@ export default function Cases() {
                               ))}
                             </div>
                           )}
-                          <p className="ml-12 text-xs text-muted-foreground mt-2">
+                          <p className="ml-8 md:ml-12 text-xs text-muted-foreground mt-2">
                             Atualizado em {new Date(caseItem.updated_at).toLocaleString('pt-BR')}
                           </p>
                         </div>

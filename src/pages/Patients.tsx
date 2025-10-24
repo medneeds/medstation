@@ -208,27 +208,27 @@ export default function Patients() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Pacientes</h1>
-          <p className="text-muted-foreground">Gerencie seus pacientes e históricos clínicos</p>
+          <h1 className="text-2xl md:text-3xl font-bold">Pacientes</h1>
+          <p className="text-sm md:text-base text-muted-foreground">Gerencie seus pacientes e históricos clínicos</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm}>
+            <Button onClick={resetForm} size="sm" className="md:size-default w-full md:w-auto">
               <Plus className="h-4 w-4 mr-2" />
               Novo Paciente
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingPatient ? "Editar Paciente" : "Novo Paciente"}</DialogTitle>
               <DialogDescription>
                 Preencha os dados do paciente
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="col-span-2 space-y-2">
                   <Label htmlFor="name">Nome Completo *</Label>
                   <Input
@@ -324,23 +324,23 @@ export default function Patients() {
                 const age = calculateAge(patient.date_of_birth);
                 return (
                   <Card key={patient.id} className="hover:bg-accent/50 transition-colors cursor-pointer">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="rounded-full p-2 bg-primary/10">
-                              <User className="h-5 w-5 text-primary" />
+                    <CardContent className="p-3 md:p-4">
+                      <div className="flex flex-col md:flex-row md:items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 md:gap-3 mb-2">
+                            <div className="rounded-full p-2 bg-primary/10 shrink-0">
+                              <User className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                             </div>
-                            <div>
-                              <h3 className="font-semibold text-lg">{patient.name}</h3>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-base md:text-lg truncate">{patient.name}</h3>
                               {age && (
-                                <Badge variant="secondary" className="text-xs">
+                                <Badge variant="secondary" className="text-xs mt-1">
                                   {age} anos
                                 </Badge>
                               )}
                             </div>
                           </div>
-                          <div className="grid grid-cols-2 gap-2 ml-12 text-sm text-muted-foreground">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 ml-8 md:ml-12 text-xs md:text-sm text-muted-foreground">
                             {patient.phone && (
                               <div className="flex items-center gap-2">
                                 <Phone className="h-4 w-4" />
@@ -361,14 +361,16 @@ export default function Patients() {
                             )}
                           </div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 ml-8 md:ml-0">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => navigate(`/patients/${patient.id}`)}
+                            className="flex-1 md:flex-none"
                           >
-                            <Folder className="h-4 w-4 mr-2" />
-                            Ver Histórico
+                            <Folder className="h-4 w-4 md:mr-2" />
+                            <span className="hidden sm:inline">Ver Histórico</span>
+                            <span className="sm:hidden">Histórico</span>
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>

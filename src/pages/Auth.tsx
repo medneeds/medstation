@@ -392,7 +392,7 @@ export default function Auth() {
                   />
                 </div>
                 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label htmlFor="signup-gender">Sexo</Label>
                     <Select value={gender} onValueChange={(value: "M" | "F" | "Outro") => setGender(value)}>
@@ -419,7 +419,7 @@ export default function Auth() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label htmlFor="signup-crm-state">UF do CRM</Label>
                     <Select value={crmState} onValueChange={setCrmState}>

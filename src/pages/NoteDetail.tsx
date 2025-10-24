@@ -245,29 +245,30 @@ export default function NoteDetail() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-4 md:space-y-6 max-w-4xl mx-auto px-3 md:px-0">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate("/notes")}
+            className="shrink-0"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
           </Button>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-lg md:text-2xl font-bold truncate">
                 {title || "Sem título"}
               </h1>
               {hasUnsavedChanges && (
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className="text-xs shrink-0">
                   Não salvo
                 </Badge>
               )}
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs md:text-sm text-muted-foreground truncate">
               Atualizado em {formatDate(note.updated_at)}
             </p>
           </div>
@@ -275,31 +276,36 @@ export default function NoteDetail() {
         <div className="flex gap-2">
           <Button
             variant="outline"
+            size="sm"
             onClick={handleOpenHistory}
             disabled={versions.length === 0 && !historyDialogOpen}
+            className="flex-1 sm:flex-none"
           >
-            <History className="h-4 w-4 mr-2" />
-            Histórico
+            <History className="h-4 w-4 md:mr-2" />
+            <span className="hidden sm:inline">Histórico</span>
           </Button>
           <Button
             onClick={saveNote}
             disabled={saving || !hasUnsavedChanges}
+            size="sm"
+            className="flex-1 sm:flex-none"
           >
-            <Save className="h-4 w-4 mr-2" />
-            {saving ? "Salvando..." : "Salvar"}
+            <Save className="h-4 w-4 md:mr-2" />
+            <span className="hidden sm:inline">{saving ? "Salvando..." : "Salvar"}</span>
+            <span className="sm:hidden">Salvar</span>
           </Button>
         </div>
       </div>
 
       {/* Editor */}
       <Card>
-        <CardContent className="pt-6 space-y-4">
+        <CardContent className="pt-4 md:pt-6 space-y-3 md:space-y-4">
           <div className="space-y-2">
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Título da nota"
-              className="text-xl font-semibold border-none shadow-none px-0 focus-visible:ring-0"
+              className="text-base md:text-xl font-semibold border-none shadow-none px-0 focus-visible:ring-0"
               maxLength={200}
             />
           </div>
@@ -309,11 +315,11 @@ export default function NoteDetail() {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Comece a escrever sua nota..."
-              className="min-h-[500px] border-none shadow-none px-0 focus-visible:ring-0 resize-none"
+              className="min-h-[300px] md:min-h-[500px] border-none shadow-none px-0 focus-visible:ring-0 resize-none text-sm md:text-base"
               maxLength={50000}
             />
           </div>
-          <div className="flex justify-between text-xs text-muted-foreground">
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-2 text-xs text-muted-foreground">
             <span>
               {content.length.toLocaleString()} / 50.000 caracteres
             </span>
@@ -326,30 +332,30 @@ export default function NoteDetail() {
 
       {/* History Dialog */}
       <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh]">
+        <DialogContent className="max-w-2xl max-h-[90vh] sm:max-h-[80vh]">
           <DialogHeader>
             <DialogTitle>Histórico de Versões</DialogTitle>
             <DialogDescription>
               Visualize e restaure versões anteriores desta nota
             </DialogDescription>
           </DialogHeader>
-          <ScrollArea className="h-[500px] pr-4">
+          <ScrollArea className="h-[400px] md:h-[500px] pr-2 md:pr-4">
             {versions.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <History className="h-12 w-12 mx-auto mb-2 opacity-20" />
                 <p>Nenhuma versão anterior</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 md:space-y-4">
                 {versions.map((version) => (
                   <Card key={version.id} className="overflow-hidden">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <CardTitle className="text-base">
+                    <CardHeader className="pb-2 md:pb-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-sm md:text-base truncate">
                             {version.title || "Sem título"}
                           </CardTitle>
-                          <div className="flex items-center gap-2 mt-1">
+                          <div className="flex flex-wrap items-center gap-2 mt-1">
                             <Badge variant="outline" className="text-xs">
                               Versão {version.version_number}
                             </Badge>
@@ -363,6 +369,7 @@ export default function NoteDetail() {
                           variant="outline"
                           size="sm"
                           onClick={() => restoreVersion(version)}
+                          className="shrink-0 w-full sm:w-auto"
                         >
                           <RotateCcw className="h-4 w-4 mr-2" />
                           Restaurar
@@ -370,7 +377,7 @@ export default function NoteDetail() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-muted-foreground line-clamp-3">
+                      <p className="text-xs md:text-sm text-muted-foreground line-clamp-3">
                         {version.content || "Nota vazia"}
                       </p>
                     </CardContent>

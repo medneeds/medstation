@@ -193,14 +193,14 @@ export default function Notes() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Notas</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Notas</h1>
+          <p className="text-sm md:text-base text-muted-foreground">
             Suas anotações e lembretes médicos
           </p>
         </div>
-        <Button onClick={createNewNote} size="lg">
+        <Button onClick={createNewNote} size="sm" className="md:size-lg w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
           Nova Nota
         </Button>
@@ -252,32 +252,32 @@ export default function Notes() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {filteredNotes.map((note) => (
             <Card
               key={note.id}
               className="hover:shadow-lg transition-all cursor-pointer group relative"
               onClick={() => navigate(`/notes/${note.id}`)}
             >
-              <CardContent className="p-4">
+              <CardContent className="p-3 md:p-4">
                 <div className="space-y-3">
                   {/* Header with actions */}
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-semibold text-lg line-clamp-1 flex-1">
+                    <h3 className="font-semibold text-base md:text-lg line-clamp-1 flex-1">
                       {note.title || "Sem título"}
                     </h3>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0"
+                        className="h-7 w-7 md:h-8 md:w-8 p-0"
                         onClick={(e) => {
                           e.stopPropagation();
                           togglePin(note.id, note.pinned);
                         }}
                       >
                         <Pin
-                          className={`h-4 w-4 ${
+                          className={`h-3 w-3 md:h-4 md:w-4 ${
                             note.pinned ? "fill-primary text-primary" : ""
                           }`}
                         />
@@ -285,19 +285,19 @@ export default function Notes() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                        className="h-7 w-7 md:h-8 md:w-8 p-0 text-destructive hover:text-destructive"
                         onClick={(e) => {
                           e.stopPropagation();
                           openDeleteDialog(note.id);
                         }}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
                       </Button>
                     </div>
                   </div>
 
                   {/* Preview */}
-                  <p className="text-sm text-muted-foreground line-clamp-3 min-h-[60px]">
+                  <p className="text-xs md:text-sm text-muted-foreground line-clamp-3 min-h-[60px]">
                     {getPreviewText(note.content) || "Nota vazia"}
                   </p>
 

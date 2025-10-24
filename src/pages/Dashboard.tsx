@@ -198,12 +198,12 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome section */}
-      <div className="rounded-lg bg-gradient-hero p-8 text-white shadow-elevated">
-        <h1 className="text-3xl font-bold mb-2">Bem-vindo ao MedStation AI</h1>
-        <p className="text-white/90 mb-4">
+      <div className="rounded-lg bg-gradient-hero p-4 md:p-8 text-white shadow-elevated">
+        <h1 className="text-2xl md:text-3xl font-bold mb-2">Bem-vindo ao MedStation AI</h1>
+        <p className="text-sm md:text-base text-white/90 mb-4">
           Assistente clínico inteligente para otimizar seu fluxo de trabalho médico
         </p>
-        <Button variant="secondary" size="lg" asChild>
+        <Button variant="secondary" size="sm" className="md:size-lg" asChild>
           <Link to="/patients">
             <Users className="mr-2 h-4 w-4" />
             Ver Pacientes
@@ -214,10 +214,10 @@ export default function Dashboard() {
       {/* Prática Médica Section */}
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <Stethoscope className="h-6 w-6 text-primary" />
-          <h2 className="text-2xl font-bold">Prática Médica</h2>
+          <Stethoscope className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+          <h2 className="text-xl md:text-2xl font-bold">Prática Médica</h2>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {practiceModules.map((module) => (
             <Link key={module.title} to={module.url}>
               <Card className="h-full hover:shadow-elevated hover:border-primary/50 transition-all cursor-pointer group relative">
@@ -250,10 +250,10 @@ export default function Dashboard() {
       {/* AI Agents - Main Section */}
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <Activity className="h-6 w-6 text-primary" />
-          <h2 className="text-2xl font-bold">Agentes Médicos de IA</h2>
+          <Activity className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+          <h2 className="text-xl md:text-2xl font-bold">Agentes Médicos de IA</h2>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {agentModules.map((module) => (
             <Link key={module.title} to={module.url}>
               <Card className="h-full hover:shadow-elevated hover:border-primary/50 transition-all cursor-pointer group relative">

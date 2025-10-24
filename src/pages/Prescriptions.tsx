@@ -309,7 +309,7 @@ export default function Prescriptions() {
                     </p>
                   )}
                 </div>
-                <div className="flex gap-2 mt-4">
+                <div className="flex flex-wrap gap-2 mt-4">
                   <Button
                     variant="outline"
                     size="sm"
@@ -318,8 +318,9 @@ export default function Prescriptions() {
                       navigate(`/prescricoes/${prescription.id}`);
                     }}
                   >
-                    <Eye className="h-4 w-4 mr-2" />
-                    Ver Detalhes
+                    <Eye className="h-4 w-4 md:mr-2" />
+                    <span className="hidden sm:inline">Ver Detalhes</span>
+                    <span className="sm:hidden">Ver</span>
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
