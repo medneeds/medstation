@@ -75,6 +75,43 @@ export default function Dashboard() {
         </Button>
       </div>
 
+      {/* AI Agents - Main Section */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <Activity className="h-6 w-6 text-primary" />
+          <h2 className="text-2xl font-bold">Agentes Médicos de IA</h2>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {modules.map((module) => (
+            <Link key={module.title} to={module.url}>
+              <Card className="h-full hover:shadow-elevated hover:border-primary/50 transition-all cursor-pointer group">
+                <CardHeader className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className={`rounded-xl p-4 bg-gradient-to-br from-primary/10 to-primary/5 ${module.color}`}>
+                      <module.icon className="h-8 w-8" />
+                    </div>
+                    <TrendingUp className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl mb-2 group-hover:text-primary transition-colors">
+                      {module.title}
+                    </CardTitle>
+                    <CardDescription className="text-sm leading-relaxed">
+                      {module.description}
+                    </CardDescription>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                    Acessar Agente
+                  </Button>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </div>
+
       {/* Quick stats */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {quickStats.map((stat) => (
@@ -91,33 +128,6 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         ))}
-      </div>
-
-      {/* Modules grid */}
-      <div>
-        <h2 className="text-2xl font-bold mb-4">Módulos Clínicos</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {modules.map((module) => (
-            <Card
-              key={module.title}
-              className="hover:shadow-elevated transition-shadow cursor-pointer group"
-            >
-              <Link to={module.url}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className={`rounded-lg p-3 bg-accent ${module.color}`}>
-                      <module.icon className="h-6 w-6" />
-                    </div>
-                  </div>
-                  <CardTitle className="group-hover:text-primary transition-colors">
-                    {module.title}
-                  </CardTitle>
-                  <CardDescription>{module.description}</CardDescription>
-                </CardHeader>
-              </Link>
-            </Card>
-          ))}
-        </div>
       </div>
 
       {/* Recent alerts */}
