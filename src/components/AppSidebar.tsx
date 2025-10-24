@@ -14,6 +14,7 @@ import {
   CreditCard,
   User,
   Home,
+  Database,
 } from "lucide-react";
 import {
   Sidebar,
@@ -35,6 +36,7 @@ const homeModule = { title: "Início", url: "/dashboard", icon: Home };
 const managementModules = [
   { title: "Pacientes", url: "/patients", icon: Users },
   { title: "Casos", url: "/cases", icon: Folder },
+  { title: "Prescrições", url: "/prescricoes", icon: FileText },
 ];
 
 const agentModules = [
@@ -43,7 +45,7 @@ const agentModules = [
   { title: "Scorius", url: "/scorius", icon: Activity },
   { title: "Numerus", url: "/numerus", icon: Calculator },
   { title: "Prescriptus", url: "/prescriptus", icon: Pill },
-  { title: "CODexus", url: "/codexus", icon: FileText },
+  { title: "CODexus", url: "/codexus", icon: Database },
 ];
 
 const settings = [

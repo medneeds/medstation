@@ -20,6 +20,8 @@ import Scorius from "./pages/Scorius";
 import Numerus from "./pages/Numerus";
 import Prescriptus from "./pages/Prescriptus";
 import Codexus from "./pages/Codexus";
+import Prescriptions from "./pages/Prescriptions";
+import NewPrescription from "./pages/NewPrescription";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -133,6 +135,26 @@ const App = () => (
                 <ProtectedRoute>
                   <DashboardLayout>
                     <Codexus />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/prescricoes"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <Prescriptions />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/prescricoes/nova"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <NewPrescription />
                   </DashboardLayout>
                 </ProtectedRoute>
               }

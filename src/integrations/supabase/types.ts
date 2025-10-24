@@ -253,6 +253,81 @@ export type Database = {
         }
         Relationships: []
       }
+      prescriptions: {
+        Row: {
+          case_id: string | null
+          cid_code: string | null
+          created_at: string
+          diagnosis: string | null
+          id: string
+          medications: Json
+          observations: string | null
+          patient_id: string
+          pdf_url: string | null
+          prescription_number: string
+          signature_id: string | null
+          signature_metadata: Json | null
+          signed_pdf_url: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          validity_days: number
+        }
+        Insert: {
+          case_id?: string | null
+          cid_code?: string | null
+          created_at?: string
+          diagnosis?: string | null
+          id?: string
+          medications?: Json
+          observations?: string | null
+          patient_id: string
+          pdf_url?: string | null
+          prescription_number: string
+          signature_id?: string | null
+          signature_metadata?: Json | null
+          signed_pdf_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          validity_days?: number
+        }
+        Update: {
+          case_id?: string | null
+          cid_code?: string | null
+          created_at?: string
+          diagnosis?: string | null
+          id?: string
+          medications?: Json
+          observations?: string | null
+          patient_id?: string
+          pdf_url?: string | null
+          prescription_number?: string
+          signature_id?: string | null
+          signature_metadata?: Json | null
+          signed_pdf_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          validity_days?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prescriptions_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prescriptions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           address: string | null
@@ -376,6 +451,7 @@ export type Database = {
     }
     Functions: {
       cleanup_old_rate_limits: { Args: never; Returns: undefined }
+      generate_prescription_number: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
