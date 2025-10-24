@@ -13,6 +13,7 @@ import {
   Folder,
   CreditCard,
   User,
+  Home,
 } from "lucide-react";
 import {
   Sidebar,
@@ -28,6 +29,8 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProfile } from "@/contexts/ProfileContext";
+
+const homeModule = { title: "Início", url: "/dashboard", icon: Home };
 
 const managementModules = [
   { title: "Pacientes", url: "/patients", icon: Users },
@@ -91,6 +94,29 @@ export function AppSidebar() {
             </div>
           )}
         </div>
+
+        {/* Home */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip={homeModule.title}>
+                  <NavLink
+                    to={homeModule.url}
+                    className={({ isActive }) =>
+                      isActive
+                        ? "bg-sidebar-accent text-sidebar-primary font-medium"
+                        : "hover:bg-sidebar-accent/50"
+                    }
+                  >
+                    <homeModule.icon className="h-4 w-4" />
+                    {!collapsed && <span>{homeModule.title}</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
         {/* Management modules */}
         <SidebarGroup>
