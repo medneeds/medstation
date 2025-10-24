@@ -29,6 +29,8 @@ import PrescriptionDetail from "@/pages/PrescriptionDetail";
 import ExamRequests from "@/pages/ExamRequests";
 import NewExamRequest from "@/pages/NewExamRequest";
 import ExamRequestDetail from "@/pages/ExamRequestDetail";
+import MedicalDocuments from "@/pages/MedicalDocuments";
+import MedicalDocumentDetail from "@/pages/MedicalDocumentDetail";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -162,6 +164,8 @@ const App = () => (
               <Route path="/exames" element={<ProtectedRoute><DashboardLayout><ExamRequests /></DashboardLayout></ProtectedRoute>} />
               <Route path="/exames/novo" element={<ProtectedRoute><DashboardLayout><NewExamRequest /></DashboardLayout></ProtectedRoute>} />
               <Route path="/exames/:id" element={<ProtectedRoute><DashboardLayout><ExamRequestDetail /></DashboardLayout></ProtectedRoute>} />
+              <Route path="/documentos" element={<ProtectedRoute><DashboardLayout><MedicalDocuments /></DashboardLayout></ProtectedRoute>} />
+              <Route path="/documentos/:id" element={<ProtectedRoute><DashboardLayout><MedicalDocumentDetail /></DashboardLayout></ProtectedRoute>} />
               <Route path="/notes" element={<ProtectedRoute><DashboardLayout><Notes /></DashboardLayout></ProtectedRoute>} />
               <Route path="/notes/:id" element={<ProtectedRoute><DashboardLayout><NoteDetail /></DashboardLayout></ProtectedRoute>} />
             <Route

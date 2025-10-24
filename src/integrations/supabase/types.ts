@@ -248,6 +248,78 @@ export type Database = {
           },
         ]
       }
+      medical_documents: {
+        Row: {
+          case_id: string | null
+          cid_code: string | null
+          content: string
+          created_at: string
+          diagnosis: string | null
+          document_number: string
+          document_type: string
+          id: string
+          observations: string | null
+          patient_id: string
+          pdf_url: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+          validity_days: number | null
+        }
+        Insert: {
+          case_id?: string | null
+          cid_code?: string | null
+          content: string
+          created_at?: string
+          diagnosis?: string | null
+          document_number: string
+          document_type: string
+          id?: string
+          observations?: string | null
+          patient_id: string
+          pdf_url?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+          validity_days?: number | null
+        }
+        Update: {
+          case_id?: string | null
+          cid_code?: string | null
+          content?: string
+          created_at?: string
+          diagnosis?: string | null
+          document_number?: string
+          document_type?: string
+          id?: string
+          observations?: string | null
+          patient_id?: string
+          pdf_url?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          validity_days?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_documents_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_documents_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           audio_url: string | null
@@ -647,6 +719,7 @@ export type Database = {
         }
         Returns: string
       }
+      generate_document_number: { Args: { doc_type: string }; Returns: string }
       generate_exam_request_number: { Args: never; Returns: string }
       generate_prescription_number: { Args: never; Returns: string }
       has_role: {

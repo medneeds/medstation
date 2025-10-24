@@ -39,6 +39,7 @@ const managementModules = [
   { title: "Casos", url: "/cases", icon: Folder },
   { title: "Prescrições", url: "/prescricoes", icon: FileText },
   { title: "Exames", url: "/exames", icon: FlaskConical },
+  { title: "Emitir Documentos", url: "/documentos", icon: FileText },
   { title: "Notas", url: "/notes", icon: StickyNote },
 ];
 
