@@ -8,7 +8,7 @@ export default function Prescriptus() {
 
   return (
     <PremiumAgentGuard agentName="Prescriptus">
-      <div className="h-full p-3 md:p-6">
+      <div className="h-full">
         <AgentChat
         agentName="Prescriptus"
         agentIcon={<Pill className="h-8 w-8" />}

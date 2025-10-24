@@ -503,7 +503,7 @@ export function AgentChat({
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] md:h-[calc(100vh-8rem)]">
+    <div className="flex flex-col h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)]">
       {/* Header with agent info and actions */}
       <div className="flex flex-col gap-3 pb-4 border-b md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">

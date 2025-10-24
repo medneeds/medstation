@@ -16,8 +16,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <AppSidebar />
         <div className="flex flex-1 flex-col">
           {/* Top header */}
-          <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background px-6 shadow-medical">
-            <div className="flex items-center gap-4">
+          <header className="sticky top-0 z-10 flex h-14 md:h-16 items-center justify-between border-b bg-background px-3 md:px-6 shadow-medical">
+            <div className="flex items-center gap-2 md:gap-4">
               <SidebarTrigger />
               <div className="relative hidden md:block">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -35,7 +35,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </header>
 
           {/* Main content */}
-          <main className="flex-1 p-6 bg-muted/30">{children}</main>
+          <main className="flex-1 p-3 md:p-6 bg-muted/30">{children}</main>
         </div>
       </div>
     </SidebarProvider>
