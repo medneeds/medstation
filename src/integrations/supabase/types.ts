@@ -176,27 +176,60 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address: string | null
+          bio: string | null
+          city: string | null
+          cpf: string | null
           created_at: string
           crm: string | null
+          crm_state: string | null
+          date_of_birth: string | null
           full_name: string | null
+          graduation_year: number | null
           id: string
+          phone: string | null
+          postal_code: string | null
+          rqe: string | null
           specialty: string | null
+          state: string | null
           updated_at: string
         }
         Insert: {
+          address?: string | null
+          bio?: string | null
+          city?: string | null
+          cpf?: string | null
           created_at?: string
           crm?: string | null
+          crm_state?: string | null
+          date_of_birth?: string | null
           full_name?: string | null
+          graduation_year?: number | null
           id: string
+          phone?: string | null
+          postal_code?: string | null
+          rqe?: string | null
           specialty?: string | null
+          state?: string | null
           updated_at?: string
         }
         Update: {
+          address?: string | null
+          bio?: string | null
+          city?: string | null
+          cpf?: string | null
           created_at?: string
           crm?: string | null
+          crm_state?: string | null
+          date_of_birth?: string | null
           full_name?: string | null
+          graduation_year?: number | null
           id?: string
+          phone?: string | null
+          postal_code?: string | null
+          rqe?: string | null
           specialty?: string | null
+          state?: string | null
           updated_at?: string
         }
         Relationships: []

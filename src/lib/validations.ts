@@ -117,3 +117,67 @@ export const processDocumentRequestSchema = z.object({
 export const transcribeAudioRequestSchema = z.object({
   evidenceId: z.string().uuid("ID de evidência inválido"),
 });
+
+// Profile validation
+export const profileSchema = z.object({
+  full_name: z.string()
+    .trim()
+    .min(1, "Nome completo é obrigatório")
+    .max(100, "Nome completo deve ter no máximo 100 caracteres"),
+  date_of_birth: z.string()
+    .optional()
+    .or(z.literal("")),
+  crm: z.string()
+    .trim()
+    .max(20, "CRM deve ter no máximo 20 caracteres")
+    .optional()
+    .or(z.literal("")),
+  crm_state: z.string()
+    .max(2, "UF deve ter 2 caracteres")
+    .regex(/^(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)?$/, "UF inválida")
+    .optional()
+    .or(z.literal("")),
+  specialty: z.string()
+    .max(100, "Especialidade deve ter no máximo 100 caracteres")
+    .optional()
+    .or(z.literal("")),
+  graduation_year: z.number()
+    .int("Ano deve ser um número inteiro")
+    .min(1950, "Ano deve ser maior que 1950")
+    .max(new Date().getFullYear(), `Ano deve ser menor ou igual a ${new Date().getFullYear()}`)
+    .optional()
+    .nullable(),
+  phone: z.string()
+    .regex(/^(\(\d{2}\) \d{4,5}-\d{4})?$/, "Telefone inválido (formato: (00) 00000-0000)")
+    .optional()
+    .or(z.literal("")),
+  cpf: z.string()
+    .regex(/^(\d{3}\.\d{3}\.\d{3}-\d{2})?$/, "CPF inválido (formato: 000.000.000-00)")
+    .optional()
+    .or(z.literal("")),
+  rqe: z.string()
+    .max(20, "RQE deve ter no máximo 20 caracteres")
+    .optional()
+    .or(z.literal("")),
+  bio: z.string()
+    .max(500, "Biografia deve ter no máximo 500 caracteres")
+    .optional()
+    .or(z.literal("")),
+  address: z.string()
+    .max(200, "Endereço deve ter no máximo 200 caracteres")
+    .optional()
+    .or(z.literal("")),
+  city: z.string()
+    .max(100, "Cidade deve ter no máximo 100 caracteres")
+    .optional()
+    .or(z.literal("")),
+  state: z.string()
+    .max(2, "UF deve ter 2 caracteres")
+    .regex(/^(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)?$/, "UF inválida")
+    .optional()
+    .or(z.literal("")),
+  postal_code: z.string()
+    .regex(/^(\d{5}-\d{3})?$/, "CEP inválido (formato: 00000-000)")
+    .optional()
+    .or(z.literal("")),
+});

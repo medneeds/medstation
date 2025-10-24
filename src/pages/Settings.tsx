@@ -2,240 +2,465 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { Shield, User, Bell, Lock, Bot, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { User, Building2, MapPin, Calendar, Stethoscope, Award } from "lucide-react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { profileSchema } from "@/lib/validations";
+import { z } from "zod";
+
+const BRAZILIAN_STATES = [
+  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG",
+  "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"
+];
+
+const MEDICAL_SPECIALTIES = [
+  "Clínica Geral", "Cardiologia", "Dermatologia", "Endocrinologia", "Gastroenterologia",
+  "Geriatria", "Ginecologia", "Hematologia", "Infectologia", "Nefrologia",
+  "Neurologia", "Oftalmologia", "Oncologia", "Ortopedia", "Otorrinolaringologia",
+  "Pediatria", "Pneumologia", "Psiquiatria", "Reumatologia", "Urologia", "Cirurgia Geral",
+  "Medicina de Família", "Outra"
+];
 
 export default function Settings() {
-  const [agents, setAgents] = useState([
-    { id: "1", name: "VITA Clínicus", prompt: "Você é o VITA, assistente médico especializado em relatórios de transferência..." }
-  ]);
-  const [newAgent, setNewAgent] = useState({ name: "", prompt: "", apiKey: "" });
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [profile, setProfile] = useState({
+    full_name: "",
+    date_of_birth: "",
+    crm: "",
+    crm_state: "",
+    specialty: "",
+    graduation_year: null as number | null,
+    phone: "",
+    cpf: "",
+    rqe: "",
+    bio: "",
+    address: "",
+    city: "",
+    state: "",
+    postal_code: "",
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const addAgent = () => {
-    if (newAgent.name && newAgent.prompt) {
-      setAgents([...agents, { ...newAgent, id: Date.now().toString() }]);
-      setNewAgent({ name: "", prompt: "", apiKey: "" });
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setProfile({
+          full_name: data.full_name || "",
+          date_of_birth: data.date_of_birth || "",
+          crm: data.crm || "",
+          crm_state: data.crm_state || "",
+          specialty: data.specialty || "",
+          graduation_year: data.graduation_year || null,
+          phone: data.phone || "",
+          cpf: data.cpf || "",
+          rqe: data.rqe || "",
+          bio: data.bio || "",
+          address: data.address || "",
+          city: data.city || "",
+          state: data.state || "",
+          postal_code: data.postal_code || "",
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao carregar perfil:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar o perfil.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const removeAgent = (id: string) => {
-    setAgents(agents.filter(a => a.id !== id));
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      setErrors({});
+
+      // Validação com Zod
+      const validatedData = profileSchema.parse(profile);
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const { error } = await supabase
+        .from("profiles")
+        .update(validatedData)
+        .eq("id", user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Perfil atualizado com sucesso!",
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const fieldErrors: Record<string, string> = {};
+        error.issues.forEach((issue) => {
+          if (issue.path[0]) {
+            fieldErrors[issue.path[0] as string] = issue.message;
+          }
+        });
+        setErrors(fieldErrors);
+        toast({
+          title: "Erro de validação",
+          description: "Por favor, corrija os campos destacados.",
+          variant: "destructive",
+        });
+      } else {
+        console.error("Erro ao salvar perfil:", error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível salvar o perfil.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setSaving(false);
+    }
   };
 
+  const formatCPF = (value: string) => {
+    const numbers = value.replace(/\D/g, "");
+    if (numbers.length <= 11) {
+      return numbers
+        .replace(/(\d{3})(\d)/, "$1.$2")
+        .replace(/(\d{3})(\d)/, "$1.$2")
+        .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    }
+    return value;
+  };
+
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, "");
+    if (numbers.length <= 11) {
+      return numbers
+        .replace(/(\d{2})(\d)/, "($1) $2")
+        .replace(/(\d{5})(\d)/, "$1-$2");
+    }
+    return value;
+  };
+
+  const formatCEP = (value: string) => {
+    const numbers = value.replace(/\D/g, "");
+    if (numbers.length <= 8) {
+      return numbers.replace(/(\d{5})(\d)/, "$1-$2");
+    }
+    return value;
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-pulse text-muted-foreground">Carregando perfil...</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-5xl pb-8">
       <div>
-        <h1 className="text-3xl font-bold">Configurações</h1>
-        <p className="text-muted-foreground">Gerencie sua conta e preferências</p>
+        <h1 className="text-3xl font-bold">Meu Perfil</h1>
+        <p className="text-muted-foreground">Gerencie suas informações profissionais</p>
       </div>
 
-      {/* Profile */}
+      {/* Informações Pessoais */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            Perfil Profissional
+            Informações Pessoais
           </CardTitle>
-          <CardDescription>Informações do médico e credenciais</CardDescription>
+          <CardDescription>Dados básicos do profissional</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="name">Nome Completo</Label>
-              <Input id="name" defaultValue="Dr. Usuário Exemplo" />
+              <Label htmlFor="full_name">Nome Completo *</Label>
+              <Input
+                id="full_name"
+                value={profile.full_name}
+                onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
+                className={errors.full_name ? "border-destructive" : ""}
+              />
+              {errors.full_name && (
+                <p className="text-sm text-destructive">{errors.full_name}</p>
+              )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
-              <Input id="email" type="email" defaultValue="usuario@medstation.app" />
+              <Label htmlFor="date_of_birth">Data de Nascimento</Label>
+              <Input
+                id="date_of_birth"
+                type="date"
+                value={profile.date_of_birth}
+                onChange={(e) => setProfile({ ...profile, date_of_birth: e.target.value })}
+                className={errors.date_of_birth ? "border-destructive" : ""}
+              />
+              {errors.date_of_birth && (
+                <p className="text-sm text-destructive">{errors.date_of_birth}</p>
+              )}
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="cpf">CPF</Label>
+              <Input
+                id="cpf"
+                value={profile.cpf}
+                onChange={(e) => setProfile({ ...profile, cpf: formatCPF(e.target.value) })}
+                placeholder="000.000.000-00"
+                maxLength={14}
+                className={errors.cpf ? "border-destructive" : ""}
+              />
+              {errors.cpf && (
+                <p className="text-sm text-destructive">{errors.cpf}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Telefone</Label>
+              <Input
+                id="phone"
+                value={profile.phone}
+                onChange={(e) => setProfile({ ...profile, phone: formatPhone(e.target.value) })}
+                placeholder="(00) 00000-0000"
+                maxLength={15}
+                className={errors.phone ? "border-destructive" : ""}
+              />
+              {errors.phone && (
+                <p className="text-sm text-destructive">{errors.phone}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="bio">Biografia / Apresentação</Label>
+            <Textarea
+              id="bio"
+              value={profile.bio}
+              onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+              placeholder="Breve apresentação profissional..."
+              rows={3}
+              maxLength={500}
+              className={errors.bio ? "border-destructive" : ""}
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              {errors.bio ? (
+                <p className="text-destructive">{errors.bio}</p>
+              ) : (
+                <span></span>
+              )}
+              <span>{profile.bio.length}/500</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Credenciais Profissionais */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Stethoscope className="h-5 w-5" />
+            Credenciais Profissionais
+          </CardTitle>
+          <CardDescription>Registros e qualificações médicas</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="crm">CRM</Label>
-              <Input id="crm" defaultValue="CRM-MA 12345" disabled className="bg-muted" />
+              <Input
+                id="crm"
+                value={profile.crm}
+                onChange={(e) => setProfile({ ...profile, crm: e.target.value })}
+                placeholder="123456"
+                className={errors.crm ? "border-destructive" : ""}
+              />
+              {errors.crm && (
+                <p className="text-sm text-destructive">{errors.crm}</p>
+              )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="rqe">RQE (opcional)</Label>
-              <Input id="rqe" placeholder="RQE número" />
+              <Label htmlFor="crm_state">UF do CRM</Label>
+              <Select
+                value={profile.crm_state}
+                onValueChange={(value) => setProfile({ ...profile, crm_state: value })}
+              >
+                <SelectTrigger className={errors.crm_state ? "border-destructive" : ""}>
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  {BRAZILIAN_STATES.map((state) => (
+                    <SelectItem key={state} value={state}>
+                      {state}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.crm_state && (
+                <p className="text-sm text-destructive">{errors.crm_state}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="rqe">RQE (Opcional)</Label>
+              <Input
+                id="rqe"
+                value={profile.rqe}
+                onChange={(e) => setProfile({ ...profile, rqe: e.target.value })}
+                placeholder="RQE número"
+                className={errors.rqe ? "border-destructive" : ""}
+              />
+              {errors.rqe && (
+                <p className="text-sm text-destructive">{errors.rqe}</p>
+              )}
             </div>
           </div>
-          <Button>Salvar Alterações</Button>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="specialty">Especialidade</Label>
+              <Select
+                value={profile.specialty}
+                onValueChange={(value) => setProfile({ ...profile, specialty: value })}
+              >
+                <SelectTrigger className={errors.specialty ? "border-destructive" : ""}>
+                  <SelectValue placeholder="Selecione sua especialidade" />
+                </SelectTrigger>
+                <SelectContent>
+                  {MEDICAL_SPECIALTIES.map((spec) => (
+                    <SelectItem key={spec} value={spec}>
+                      {spec}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.specialty && (
+                <p className="text-sm text-destructive">{errors.specialty}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="graduation_year">Ano de Formatura</Label>
+              <Input
+                id="graduation_year"
+                type="number"
+                value={profile.graduation_year || ""}
+                onChange={(e) => setProfile({ ...profile, graduation_year: e.target.value ? parseInt(e.target.value) : null })}
+                placeholder="2015"
+                min={1950}
+                max={new Date().getFullYear()}
+                className={errors.graduation_year ? "border-destructive" : ""}
+              />
+              {errors.graduation_year && (
+                <p className="text-sm text-destructive">{errors.graduation_year}</p>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Security */}
+      {/* Endereço */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            Segurança e Autenticação
+            <MapPin className="h-5 w-5" />
+            Endereço
           </CardTitle>
-          <CardDescription>Configurações de acesso e 2FA</CardDescription>
+          <CardDescription>Localização do consultório ou residência</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Autenticação de Dois Fatores (2FA)</Label>
-              <p className="text-sm text-muted-foreground">
-                Adicione uma camada extra de segurança
-              </p>
+          <div className="grid gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="address">Endereço Completo</Label>
+              <Input
+                id="address"
+                value={profile.address}
+                onChange={(e) => setProfile({ ...profile, address: e.target.value })}
+                placeholder="Rua, número, complemento"
+                className={errors.address ? "border-destructive" : ""}
+              />
+              {errors.address && (
+                <p className="text-sm text-destructive">{errors.address}</p>
+              )}
             </div>
-            <Switch />
-          </div>
-          <Separator />
-          <div className="space-y-2">
-            <Label>Alterar Senha</Label>
-            <Button variant="outline" className="w-full md:w-auto">
-              <Lock className="mr-2 h-4 w-4" />
-              Redefinir Senha
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Notifications */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5" />
-            Notificações
-          </CardTitle>
-          <CardDescription>Configure alertas e lembretes</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Exames Críticos</Label>
-              <p className="text-sm text-muted-foreground">
-                Alerta quando receber exame com valores críticos
-              </p>
-            </div>
-            <Switch defaultChecked />
-          </div>
-          <Separator />
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Relatórios Pendentes</Label>
-              <p className="text-sm text-muted-foreground">
-                Lembrete diário de documentos não assinados
-              </p>
-            </div>
-            <Switch defaultChecked />
-          </div>
-          <Separator />
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Atualizações do Sistema</Label>
-              <p className="text-sm text-muted-foreground">
-                Novidades e melhorias da plataforma
-              </p>
-            </div>
-            <Switch />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* AI Agents */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bot className="h-5 w-5" />
-            Agentes de IA
-          </CardTitle>
-          <CardDescription>Configure prompts e APIs dos seus agentes do ChatGPT</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Lista de Agentes Salvos */}
-          <div className="space-y-3">
-            <Label>Agentes Configurados</Label>
-            {agents.map((agent) => (
-              <div key={agent.id} className="flex items-start justify-between p-4 border rounded-lg bg-card/50">
-                <div className="flex-1 space-y-1">
-                  <p className="font-medium">{agent.name}</p>
-                  <p className="text-sm text-muted-foreground line-clamp-2">{agent.prompt}</p>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  onClick={() => removeAgent(agent.id)}
-                  className="ml-2"
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+                <Label htmlFor="city">Cidade</Label>
+                <Input
+                  id="city"
+                  value={profile.city}
+                  onChange={(e) => setProfile({ ...profile, city: e.target.value })}
+                  placeholder="São Luís"
+                  className={errors.city ? "border-destructive" : ""}
+                />
+                {errors.city && (
+                  <p className="text-sm text-destructive">{errors.city}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="state">UF</Label>
+                <Select
+                  value={profile.state}
+                  onValueChange={(value) => setProfile({ ...profile, state: value })}
                 >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                  <SelectTrigger className={errors.state ? "border-destructive" : ""}>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BRAZILIAN_STATES.map((state) => (
+                      <SelectItem key={state} value={state}>
+                        {state}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.state && (
+                  <p className="text-sm text-destructive">{errors.state}</p>
+                )}
               </div>
-            ))}
-          </div>
-
-          <Separator />
-
-          {/* Adicionar Novo Agente */}
-          <div className="space-y-4">
-            <Label className="text-base">Adicionar Novo Agente</Label>
-            <div className="space-y-3">
               <div className="space-y-2">
-                <Label htmlFor="agent-name">Nome do Agente</Label>
-                <Input 
-                  id="agent-name" 
-                  placeholder="Ex: VITA Examinus, Assistente de Prescrição..."
-                  value={newAgent.name}
-                  onChange={(e) => setNewAgent({ ...newAgent, name: e.target.value })}
+                <Label htmlFor="postal_code">CEP</Label>
+                <Input
+                  id="postal_code"
+                  value={profile.postal_code}
+                  onChange={(e) => setProfile({ ...profile, postal_code: formatCEP(e.target.value) })}
+                  placeholder="00000-000"
+                  maxLength={9}
+                  className={errors.postal_code ? "border-destructive" : ""}
                 />
+                {errors.postal_code && (
+                  <p className="text-sm text-destructive">{errors.postal_code}</p>
+                )}
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="agent-prompt">Prompt do Sistema</Label>
-                <Textarea 
-                  id="agent-prompt" 
-                  placeholder="Cole aqui o prompt/instruções do seu agente do ChatGPT..."
-                  className="min-h-[120px] font-mono text-sm"
-                  value={newAgent.prompt}
-                  onChange={(e) => setNewAgent({ ...newAgent, prompt: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="agent-api">API Key (opcional)</Label>
-                <Input 
-                  id="agent-api" 
-                  type="password"
-                  placeholder="sk-..."
-                  value={newAgent.apiKey}
-                  onChange={(e) => setNewAgent({ ...newAgent, apiKey: e.target.value })}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Se você usa uma API key personalizada do OpenAI
-                </p>
-              </div>
-
-              <Button onClick={addAgent} className="w-full">
-                <Plus className="mr-2 h-4 w-4" />
-                Adicionar Agente
-              </Button>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* LGPD */}
-      <Card className="border-warning/20">
-        <CardHeader>
-          <CardTitle>Privacidade e LGPD</CardTitle>
-          <CardDescription>
-            Gestão de dados e consentimento
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            Todos os dados são criptografados e seguem as normas da LGPD e CFM para prontuários
-            eletrônicos. Você tem controle total sobre compartilhamento e exportação.
-          </p>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">Ver Política de Privacidade</Button>
-            <Button variant="outline" size="sm">Exportar Meus Dados</Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Botão Salvar */}
+      <div className="flex justify-end">
+        <Button onClick={handleSave} disabled={saving} size="lg">
+          {saving ? "Salvando..." : "Salvar Alterações"}
+        </Button>
+      </div>
     </div>
   );
 }

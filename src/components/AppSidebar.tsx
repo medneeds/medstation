@@ -12,6 +12,7 @@ import {
   Activity,
   Folder,
   CreditCard,
+  User,
 } from "lucide-react";
 import {
   Sidebar,
@@ -41,8 +42,8 @@ const agentModules = [
 ];
 
 const settings = [
+  { title: "Meu Perfil", url: "/settings", icon: User },
   { title: "Assinatura", url: "/pricing", icon: CreditCard },
-  { title: "Configurações", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
