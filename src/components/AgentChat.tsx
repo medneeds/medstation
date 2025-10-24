@@ -10,7 +10,8 @@ import {
   History,
   FolderOpen,
   Edit2,
-  Trash2
+  Trash2,
+  Mic
 } from "lucide-react";
 import {
   Sheet,
@@ -70,6 +71,8 @@ export function AgentChat({
   const [projects, setProjects] = useState<Project[]>([]);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 
   const createNewProject = () => {
     const newProject: Project = {
@@ -142,6 +145,56 @@ export function AgentChat({
       setCurrentProject({ ...currentProject, name: newName });
     }
     setEditingProjectId(null);
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      const chunks: Blob[] = [];
+
+      mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: "audio/webm" });
+        setAudioBlob(blob);
+        stream.getTracks().forEach((track) => track.stop());
+        
+        // Auto-send audio message
+        const newMessage: Message = {
+          id: Date.now().toString(),
+          role: "user",
+          content: "[Mensagem de áudio]",
+          timestamp: new Date(),
+        };
+
+        const updatedProject = {
+          ...currentProject!,
+          messages: [...(currentProject?.messages || []), newMessage],
+          lastMessage: "[Áudio]",
+          updatedAt: new Date(),
+        };
+
+        setCurrentProject(updatedProject);
+        setProjects(projects.map(p => p.id === updatedProject.id ? updatedProject : p));
+        setAudioBlob(null);
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+
+      // Store recorder to stop it later
+      (window as any).activeRecorder = mediaRecorder;
+    } catch (error) {
+      console.error("Erro ao gravar áudio:", error);
+    }
+  };
+
+  const stopRecording = () => {
+    const recorder = (window as any).activeRecorder;
+    if (recorder && recorder.state === "recording") {
+      recorder.stop();
+      setIsRecording(false);
+    }
   };
 
   return (
@@ -346,17 +399,44 @@ export function AgentChat({
             }}
             placeholder={placeholder}
             className="flex-1"
+            disabled={isRecording}
           />
-          <Button 
-            onClick={sendMessage}
-            disabled={!message.trim()}
-            className="shrink-0"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
+          {isRecording ? (
+            <Button 
+              onClick={stopRecording}
+              variant="destructive"
+              className="shrink-0"
+            >
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 bg-white rounded-full animate-pulse" />
+                Parar
+              </div>
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={startRecording}
+                className="shrink-0"
+                title="Gravar áudio"
+              >
+                <Mic className="h-4 w-4" />
+              </Button>
+              <Button 
+                onClick={sendMessage}
+                disabled={!message.trim()}
+                className="shrink-0"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </>
+          )}
         </div>
         <p className="text-xs text-muted-foreground mt-2">
-          Pressione Enter para enviar, Shift+Enter para quebrar linha
+          {isRecording 
+            ? "Gravando áudio... Clique em 'Parar' quando terminar"
+            : "Pressione Enter para enviar, Shift+Enter para quebrar linha"}
         </p>
       </div>
     </div>
