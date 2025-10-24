@@ -230,9 +230,28 @@ export default function Settings() {
       // Validação com Zod
       const validatedData = profileSchema.parse(profile);
 
+      // Converter strings vazias em null para campos opcionais
+      const cleanedData = {
+        ...validatedData,
+        date_of_birth: validatedData.date_of_birth || null,
+        crm: validatedData.crm || null,
+        crm_state: validatedData.crm_state || null,
+        specialty: validatedData.specialty || null,
+        graduation_year: validatedData.graduation_year || null,
+        phone: validatedData.phone || null,
+        cpf: validatedData.cpf || null,
+        rqe: validatedData.rqe || null,
+        bio: validatedData.bio || null,
+        address: validatedData.address || null,
+        city: validatedData.city || null,
+        state: validatedData.state || null,
+        postal_code: validatedData.postal_code || null,
+        gender: validatedData.gender || null,
+      };
+
       const { error } = await supabase
         .from("profiles")
-        .update(validatedData)
+        .update(cleanedData)
         .eq("id", userId);
 
       if (error) throw error;
