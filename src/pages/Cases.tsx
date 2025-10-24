@@ -361,7 +361,7 @@ export default function Cases() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="notes">Observações Iniciais</Label>
+                  <Label htmlFor="notes">Descrição do Caso</Label>
                   <Textarea
                     id="notes"
                     value={formData.notes}
@@ -369,6 +369,7 @@ export default function Cases() {
                       setFormData({ ...formData, notes: e.target.value })
                     }
                     rows={4}
+                    placeholder="Descreva os detalhes do caso clínico..."
                   />
                 </div>
                 <div className="space-y-2">
