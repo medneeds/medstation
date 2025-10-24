@@ -92,21 +92,27 @@ export default function VoiceRecorder({ onTranscriptionComplete }: VoiceRecorder
 
             toast({
               title: "Processando áudio",
-              description: "Transcrevendo e extraindo dados da prescrição...",
+              description: "Transcrevendo com IA (isso pode levar alguns segundos)...",
             });
 
             const { data, error } = await supabase.functions.invoke('transcribe-prescription', {
               body: { audio: base64Audio }
             });
 
-            if (error) throw error;
-
-            if (data.error) {
-              throw new Error(data.error);
+            if (error) {
+              console.error('Supabase function error:', error);
+              throw new Error(error.message || 'Erro ao chamar função de transcrição');
             }
 
+            if (!data.success) {
+              throw new Error(data.error || 'Erro ao processar transcrição');
+            }
+
+            console.log('Transcrição recebida:', data.transcription);
+            console.log('Dados extraídos:', data.data);
+
             toast({
-              title: "✓ Prescrição reconhecida",
+              title: "✓ Prescrição reconhecida com sucesso!",
               description: "Campos preenchidos automaticamente pela IA",
             });
 
@@ -116,13 +122,25 @@ export default function VoiceRecorder({ onTranscriptionComplete }: VoiceRecorder
             reject(error);
           }
         };
-        reader.onerror = reject;
+        reader.onerror = () => reject(new Error('Erro ao ler arquivo de áudio'));
       });
     } catch (error: any) {
       console.error('Error processing audio:', error);
+      
+      let errorMessage = error.message || "Erro desconhecido";
+      
+      // Mensagens mais amigáveis para erros comuns
+      if (errorMessage.includes('OPENAI_API_KEY')) {
+        errorMessage = 'Configuração necessária: Entre em contato com o suporte para ativar o reconhecimento de voz';
+      } else if (errorMessage.includes('rate limit') || errorMessage.includes('429')) {
+        errorMessage = 'Muitas requisições. Aguarde alguns segundos e tente novamente';
+      } else if (errorMessage.includes('402') || errorMessage.includes('créditos')) {
+        errorMessage = 'Créditos esgotados. Entre em contato com o suporte';
+      }
+      
       toast({
         title: "Erro ao processar áudio",
-        description: error.message || "Tente novamente",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -132,13 +150,20 @@ export default function VoiceRecorder({ onTranscriptionComplete }: VoiceRecorder
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <div className="text-center">
-        <p className="text-sm text-muted-foreground">
+      <div className="text-center space-y-2">
+        <p className="text-sm font-medium text-foreground">
           {isRecording 
-            ? "🔴 Gravando... Dite: paciente, diagnóstico, medicamentos e dosagens"
+            ? "🔴 Gravando prescrição..."
             : isProcessing
-            ? "⚙️ Processando e preenchendo campos..."
-            : "🎤 Clique para começar a ditar"}
+            ? "⚙️ Processando com IA..."
+            : "🎤 Reconhecimento de Voz"}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {isRecording 
+            ? "Dite: diagnóstico, medicamentos com dosagens e frequências"
+            : isProcessing
+            ? "Aguarde enquanto transcrevemos e processamos os dados"
+            : "Clique no microfone e dite a prescrição completa"}
         </p>
       </div>
 
