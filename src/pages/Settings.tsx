@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { profileSchema } from "@/lib/validations";
 import { z } from "zod";
+import { useProfile } from "@/contexts/ProfileContext";
 
 const BRAZILIAN_STATES = [
   "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG",
@@ -27,6 +28,7 @@ const MEDICAL_SPECIALTIES = [
 
 export default function Settings() {
   const { toast } = useToast();
+  const { refreshProfile } = useProfile();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -157,6 +159,7 @@ export default function Settings() {
       if (updateError) throw updateError;
 
       setAvatarUrl(publicUrl);
+      await refreshProfile();
       toast({
         title: "Sucesso",
         description: "Foto de perfil atualizada!",
@@ -185,6 +188,7 @@ export default function Settings() {
       if (error) throw error;
 
       setAvatarUrl("");
+      await refreshProfile();
       toast({
         title: "Sucesso",
         description: "Foto de perfil removida!",
@@ -216,6 +220,7 @@ export default function Settings() {
 
       if (error) throw error;
 
+      await refreshProfile();
       toast({
         title: "Sucesso",
         description: "Perfil atualizado com sucesso!",

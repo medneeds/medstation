@@ -26,6 +26,8 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useProfile } from "@/contexts/ProfileContext";
 
 const managementModules = [
   { title: "Pacientes", url: "/patients", icon: Users },
@@ -50,24 +52,42 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const navigate = useNavigate();
+  const { profile } = useProfile();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/auth");
   };
 
+  const getInitials = () => {
+    if (!profile?.full_name) return "?";
+    const names = profile.full_name.split(" ");
+    if (names.length === 1) return names[0][0].toUpperCase();
+    return (names[0][0] + names[names.length - 1][0]).toUpperCase();
+  };
+
+  const getTitle = () => {
+    if (!profile?.gender) return "Dr(a)";
+    return profile.gender === "M" ? "Dr." : profile.gender === "F" ? "Dra." : "Dr(a)";
+  };
+
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarContent>
-        {/* Logo */}
-        <div className="flex items-center gap-3 px-4 py-6">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-            <Stethoscope className="h-6 w-6 text-primary-foreground" />
-          </div>
+        {/* User Profile */}
+        <div className="flex items-center gap-3 px-4 py-6 border-b border-sidebar-border">
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={profile?.avatar_url || ""} alt={profile?.full_name || ""} />
+            <AvatarFallback>{getInitials()}</AvatarFallback>
+          </Avatar>
           {!collapsed && (
-            <div>
-              <h1 className="text-lg font-bold text-sidebar-foreground">MedStation AI</h1>
-              <p className="text-xs text-sidebar-foreground/60">AI Clinical Assistant</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-sidebar-foreground truncate">
+                {getTitle()} {profile?.full_name || "Carregando..."}
+              </p>
+              <p className="text-xs text-sidebar-foreground/60 truncate">
+                {profile?.specialty || "Médico"}
+              </p>
             </div>
           )}
         </div>

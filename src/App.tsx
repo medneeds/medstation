@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { DashboardLayout } from "./components/DashboardLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
+import { ProfileProvider } from "./contexts/ProfileContext";
 import Dashboard from "./pages/Dashboard";
 import Patients from "./pages/Patients";
 import Cases from "./pages/Cases";
@@ -28,9 +29,10 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <SubscriptionProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+        <ProfileProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<Auth />} />
@@ -149,6 +151,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
+        </ProfileProvider>
       </SubscriptionProvider>
     </TooltipProvider>
   </QueryClientProvider>
