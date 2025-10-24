@@ -51,17 +51,19 @@ interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
-  timestamp: Date;
+  created_at: string;
   audioBlob?: Blob;
   audioUrl?: string;
   transcription?: string;
 }
 
-interface Project {
+interface Conversation {
   id: string;
   name: string;
-  lastMessage: string;
-  updatedAt: Date;
+  last_message: string;
+  updated_at: string;
+  agent_type: string;
+  case_id: string | null;
   messages: Message[];
 }
 
@@ -96,9 +98,9 @@ export function AgentChat({
 }: AgentChatProps) {
   const { toast } = useToast();
   const [message, setMessage] = useState("");
-  const [currentProject, setCurrentProject] = useState<Project | null>(null);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
+  const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [editingConversationId, setEditingConversationId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -107,21 +109,29 @@ export function AgentChat({
   const [cases, setCases] = useState<CaseOption[]>([]);
   const [selectedCaseId, setSelectedCaseId] = useState<string | undefined>(caseId);
 
-  const createNewProject = () => {
-    const newProject: Project = {
-      id: Date.now().toString(),
-      name: `Projeto ${projects.length + 1}`,
-      lastMessage: "",
-      updatedAt: new Date(),
-      messages: [],
-    };
-    setProjects([newProject, ...projects]);
-    setCurrentProject(newProject);
-  };
-
   useEffect(() => {
     fetchCases();
-  }, []);
+    loadConversations();
+  }, [agentType]);
+
+  const loadConversations = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from("conversations")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("agent_type", agentType)
+      .order("updated_at", { ascending: false });
+
+    if (!error && data) {
+      setConversations(data.map(conv => ({
+        ...conv,
+        messages: []
+      })));
+    }
+  };
 
   const fetchCases = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -150,46 +160,112 @@ export function AgentChat({
     }
   };
 
+  const loadConversationMessages = async (conversationId: string) => {
+    const { data, error } = await supabase
+      .from("messages")
+      .select("*")
+      .eq("conversation_id", conversationId)
+      .order("created_at", { ascending: true });
+
+    if (!error && data) {
+      return data.map(msg => ({
+        ...msg,
+        role: msg.role as "user" | "assistant"
+      })) as Message[];
+    }
+    return [];
+  };
+
+  const createNewConversation = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from("conversations")
+      .insert({
+        user_id: user.id,
+        agent_type: agentType,
+        name: `Conversa ${conversations.length + 1}`,
+        case_id: selectedCaseId || null
+      })
+      .select()
+      .single();
+
+    if (!error && data) {
+      const newConv: Conversation = {
+        ...data,
+        messages: []
+      };
+      setConversations([newConv, ...conversations]);
+      setCurrentConversation(newConv);
+    }
+  };
+
   const sendMessage = async () => {
     if (!message.trim() || isLoading) return;
 
-    let project = currentProject;
-    if (!project) {
-      project = {
-        id: Date.now().toString(),
-        name: `Conversa ${projects.length + 1}`,
-        lastMessage: "",
-        updatedAt: new Date(),
-        messages: [],
-      };
-      setProjects([project, ...projects]);
-      setCurrentProject(project);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    let conversation = currentConversation;
+    
+    // Create new conversation if none exists
+    if (!conversation) {
+      const { data, error } = await supabase
+        .from("conversations")
+        .insert({
+          user_id: user.id,
+          agent_type: agentType,
+          name: `Conversa ${conversations.length + 1}`,
+          case_id: selectedCaseId || null
+        })
+        .select()
+        .single();
+
+      if (error) {
+        toast({
+          title: "Erro",
+          description: "Não foi possível criar a conversa.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      conversation = { ...data, messages: [] };
+      setConversations([conversation, ...conversations]);
+      setCurrentConversation(conversation);
     }
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: message,
-      timestamp: new Date(),
-    };
-
-    const updatedProject = {
-      ...project,
-      messages: [...project.messages, userMessage],
-      lastMessage: message,
-      updatedAt: new Date(),
-    };
-
-    setCurrentProject(updatedProject);
-    setProjects(projects.map(p => p.id === updatedProject.id ? updatedProject : p));
+    const messageContent = message;
     setMessage("");
     setIsLoading(true);
 
     try {
+      // Save user message
+      const { data: userMsgData, error: userError } = await supabase
+        .from("messages")
+        .insert({
+          conversation_id: conversation.id,
+          role: "user",
+          content: messageContent
+        })
+        .select()
+        .single();
+
+      if (userError) throw userError;
+
+      const userMessage: Message = {
+        ...userMsgData,
+        role: userMsgData.role as "user" | "assistant"
+      };
+
+      const updatedMessages = [...conversation.messages, userMessage];
+      setCurrentConversation({ ...conversation, messages: updatedMessages });
+
       // Call AI agent
-      const { data, error } = await supabase.functions.invoke("agent-chat", {
+      const { data: aiData, error: aiError } = await supabase.functions.invoke("agent-chat", {
         body: {
-          messages: updatedProject.messages.map(m => ({
+          messages: updatedMessages.map(m => ({
             role: m.role,
             content: m.content,
           })),
@@ -198,22 +274,44 @@ export function AgentChat({
         },
       });
 
-      if (error) throw error;
+      if (aiError) throw aiError;
+
+      // Save assistant message
+      const { data: assistantMsgData, error: assistantError } = await supabase
+        .from("messages")
+        .insert({
+          conversation_id: conversation.id,
+          role: "assistant",
+          content: aiData.message
+        })
+        .select()
+        .single();
+
+      if (assistantError) throw assistantError;
 
       const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: data.message,
-        timestamp: new Date(),
+        ...assistantMsgData,
+        role: assistantMsgData.role as "user" | "assistant"
       };
 
-      const finalProject = {
-        ...updatedProject,
-        messages: [...updatedProject.messages, assistantMessage],
-      };
+      const finalMessages = [...updatedMessages, assistantMessage];
+      
+      // Update conversation
+      await supabase
+        .from("conversations")
+        .update({
+          last_message: messageContent,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", conversation.id);
 
-      setCurrentProject(finalProject);
-      setProjects(projects.map(p => p.id === finalProject.id ? finalProject : p));
+      setCurrentConversation({ ...conversation, messages: finalMessages, last_message: messageContent });
+      setConversations(conversations.map(c => 
+        c.id === conversation.id 
+          ? { ...c, last_message: messageContent, updated_at: new Date().toISOString() } 
+          : c
+      ));
+
     } catch (error: any) {
       console.error("Error sending message:", error);
       toast({
@@ -226,21 +324,40 @@ export function AgentChat({
     }
   };
 
-  const deleteProject = (projectId: string) => {
-    setProjects(projects.filter(p => p.id !== projectId));
-    if (currentProject?.id === projectId) {
-      setCurrentProject(null);
+  const deleteConversation = async (conversationId: string) => {
+    const { error } = await supabase
+      .from("conversations")
+      .delete()
+      .eq("id", conversationId);
+
+    if (!error) {
+      setConversations(conversations.filter(c => c.id !== conversationId));
+      if (currentConversation?.id === conversationId) {
+        setCurrentConversation(null);
+      }
     }
   };
 
-  const renameProject = (projectId: string, newName: string) => {
-    setProjects(projects.map(p => 
-      p.id === projectId ? { ...p, name: newName } : p
-    ));
-    if (currentProject?.id === projectId) {
-      setCurrentProject({ ...currentProject, name: newName });
+  const renameConversation = async (conversationId: string, newName: string) => {
+    const { error } = await supabase
+      .from("conversations")
+      .update({ name: newName })
+      .eq("id", conversationId);
+
+    if (!error) {
+      setConversations(conversations.map(c => 
+        c.id === conversationId ? { ...c, name: newName } : c
+      ));
+      if (currentConversation?.id === conversationId) {
+        setCurrentConversation({ ...currentConversation, name: newName });
+      }
+      setEditingConversationId(null);
     }
-    setEditingProjectId(null);
+  };
+
+  const loadConversation = async (conversation: Conversation) => {
+    const messages = await loadConversationMessages(conversation.id);
+    setCurrentConversation({ ...conversation, messages });
   };
 
   const startRecording = async () => {
@@ -260,20 +377,15 @@ export function AgentChat({
           id: Date.now().toString(),
           role: "user",
           content: "[Mensagem de áudio]",
-          timestamp: new Date(),
+          created_at: new Date().toISOString(),
           audioBlob: blob,
           audioUrl: audioUrl,
         };
 
-        const updatedProject = {
-          ...currentProject!,
-          messages: [...(currentProject?.messages || []), newMessage],
-          lastMessage: "[Áudio]",
-          updatedAt: new Date(),
-        };
-
-        setCurrentProject(updatedProject);
-        setProjects(projects.map(p => p.id === updatedProject.id ? updatedProject : p));
+        if (currentConversation) {
+          const updatedMessages = [...currentConversation.messages, newMessage];
+          setCurrentConversation({ ...currentConversation, messages: updatedMessages });
+        }
         setAudioBlob(null);
       };
 
@@ -314,7 +426,7 @@ export function AgentChat({
   };
 
   const exportConversation = () => {
-    if (!currentProject || currentProject.messages.length === 0) {
+    if (!currentConversation || currentConversation.messages.length === 0) {
       toast({
         title: "Nenhuma conversa",
         description: "Não há mensagens para exportar.",
@@ -323,7 +435,11 @@ export function AgentChat({
       return;
     }
 
-    exportAgentConversationToPDF(agentName, currentProject.messages);
+    const messagesToExport = currentConversation.messages.map(m => ({
+      ...m,
+      timestamp: new Date(m.created_at)
+    }));
+    exportAgentConversationToPDF(agentName, messagesToExport);
     
     toast({
       title: "PDF gerado!",
@@ -341,8 +457,8 @@ export function AgentChat({
           </div>
           <div className="flex-1">
             <h2 className="text-2xl font-bold">{agentName}</h2>
-            {currentProject && (
-              <p className="text-sm text-muted-foreground">{currentProject.name}</p>
+            {currentConversation && (
+              <p className="text-sm text-muted-foreground">{currentConversation.name}</p>
             )}
           </div>
 
@@ -375,15 +491,15 @@ export function AgentChat({
         </div>
 
         <div className="flex gap-2">
-          {currentProject && currentProject.messages.length > 0 && (
+          {currentConversation && currentConversation.messages.length > 0 && (
             <Button variant="outline" size="sm" onClick={exportConversation}>
               <FileDown className="h-4 w-4 mr-2" />
               Exportar PDF
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={createNewProject}>
+          <Button variant="outline" size="sm" onClick={createNewConversation}>
             <Plus className="h-4 w-4 mr-2" />
-            Novo Projeto
+            Nova Conversa
           </Button>
 
           <Sheet>
@@ -395,48 +511,48 @@ export function AgentChat({
             </SheetTrigger>
             <SheetContent className="w-full sm:max-w-md">
               <SheetHeader>
-                <SheetTitle>Histórico de Projetos</SheetTitle>
+                <SheetTitle>Histórico de Conversas</SheetTitle>
               </SheetHeader>
               <ScrollArea className="h-[calc(100vh-8rem)] mt-4">
                 <div className="space-y-2">
-                  {projects.length === 0 ? (
+                  {conversations.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground">
                       <FolderOpen className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                      <p>Nenhum projeto ainda</p>
-                      <p className="text-sm mt-1">Crie um novo projeto para começar</p>
+                      <p>Nenhuma conversa ainda</p>
+                      <p className="text-sm mt-1">Crie uma nova conversa para começar</p>
                     </div>
                   ) : (
-                    projects.map((project) => (
+                    conversations.map((conv) => (
                       <Card
-                        key={project.id}
+                        key={conv.id}
                         className={`p-3 cursor-pointer hover:bg-accent transition-colors ${
-                          currentProject?.id === project.id ? "bg-accent" : ""
+                          currentConversation?.id === conv.id ? "bg-accent" : ""
                         }`}
-                        onClick={() => setCurrentProject(project)}
+                        onClick={() => loadConversation(conv)}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
-                            {editingProjectId === project.id ? (
+                            {editingConversationId === conv.id ? (
                               <Input
                                 value={editingName}
                                 onChange={(e) => setEditingName(e.target.value)}
-                                onBlur={() => renameProject(project.id, editingName)}
+                                onBlur={() => renameConversation(conv.id, editingName)}
                                 onKeyDown={(e) => {
                                   if (e.key === "Enter") {
-                                    renameProject(project.id, editingName);
+                                    renameConversation(conv.id, editingName);
                                   }
                                 }}
                                 className="h-7 mb-1"
                                 autoFocus
                               />
                             ) : (
-                              <p className="font-medium truncate">{project.name}</p>
+                              <p className="font-medium truncate">{conv.name}</p>
                             )}
                             <p className="text-xs text-muted-foreground truncate">
-                              {project.lastMessage || "Sem mensagens"}
+                              {conv.last_message || "Sem mensagens"}
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              {project.updatedAt.toLocaleDateString()}
+                              {new Date(conv.updated_at).toLocaleDateString()}
                             </p>
                           </div>
                           <div className="flex gap-1">
@@ -446,8 +562,8 @@ export function AgentChat({
                               className="h-7 w-7 p-0"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setEditingProjectId(project.id);
-                                setEditingName(project.name);
+                                setEditingConversationId(conv.id);
+                                setEditingName(conv.name);
                               }}
                             >
                               <Edit2 className="h-3 w-3" />
@@ -465,15 +581,15 @@ export function AgentChat({
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Excluir projeto?</AlertDialogTitle>
+                                  <AlertDialogTitle>Excluir conversa?</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Esta ação não pode ser desfeita. O projeto "{project.name}" será excluído permanentemente.
+                                    Esta ação não pode ser desfeita. A conversa "{conv.name}" será excluída permanentemente.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
                                   <AlertDialogAction
-                                    onClick={() => deleteProject(project.id)}
+                                    onClick={() => deleteConversation(conv.id)}
                                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                   >
                                     Excluir
@@ -513,7 +629,7 @@ export function AgentChat({
 
       {/* Chat messages */}
       <ScrollArea className="flex-1 py-4">
-        {!currentProject || currentProject.messages.length === 0 ? (
+        {!currentConversation || currentConversation.messages.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <div className={`rounded-full p-6 bg-gradient-to-br from-primary/10 to-primary/5 inline-block ${agentColor} mb-4`}>
               {agentIcon}
@@ -523,7 +639,7 @@ export function AgentChat({
           </div>
         ) : (
           <div className="space-y-4 px-2">
-            {currentProject.messages.map((msg) => (
+            {currentConversation.messages.map((msg) => (
               <div
                 key={msg.id}
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
@@ -542,12 +658,10 @@ export function AgentChat({
                       messageId={msg.id}
                       transcription={msg.transcription}
                       onTranscription={(text) => {
-                        const updatedMessages = currentProject.messages.map(m =>
+                        const updatedMessages = currentConversation!.messages.map(m =>
                           m.id === msg.id ? { ...m, transcription: text, content: text } : m
                         );
-                        const updatedProject = { ...currentProject, messages: updatedMessages };
-                        setCurrentProject(updatedProject);
-                        setProjects(projects.map(p => p.id === updatedProject.id ? updatedProject : p));
+                        setCurrentConversation({ ...currentConversation!, messages: updatedMessages });
                       }}
                     />
                   ) : (
@@ -555,7 +669,7 @@ export function AgentChat({
                   )}
                   <div className="flex items-center justify-between gap-2 mt-1">
                     <p className="text-xs opacity-70">
-                      {msg.timestamp.toLocaleTimeString([], { 
+                      {new Date(msg.created_at).toLocaleTimeString([], { 
                         hour: '2-digit', 
                         minute: '2-digit' 
                       })}
