@@ -41,6 +41,71 @@ serve(async (req) => {
 
     console.log(`Authenticated user: ${user.id}`);
 
+    // Rate limiting check (10 documents per hour)
+    const RATE_LIMIT = 10;
+    const WINDOW_MINUTES = 60;
+    const now = new Date();
+    const windowStart = new Date(now.getTime() - WINDOW_MINUTES * 60 * 1000);
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Check rate limit
+    const { data: rateLimitData, error: rateLimitError } = await supabase
+      .from("rate_limits")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("function_name", "process-document")
+      .gte("window_start", windowStart.toISOString())
+      .order("window_start", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (rateLimitError) {
+      console.error("Rate limit check error:", rateLimitError);
+    }
+
+    if (rateLimitData && rateLimitData.request_count >= RATE_LIMIT) {
+      const resetTime = new Date(new Date(rateLimitData.window_start).getTime() + WINDOW_MINUTES * 60 * 1000);
+      return new Response(
+        JSON.stringify({ 
+          error: "Limite de processamento de documentos excedido. Tente novamente mais tarde.",
+          resetAt: resetTime.toISOString()
+        }),
+        { 
+          status: 429, 
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json",
+            "X-RateLimit-Limit": RATE_LIMIT.toString(),
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": resetTime.toISOString()
+          } 
+        }
+      );
+    }
+
+    // Update or create rate limit record
+    if (rateLimitData) {
+      await supabase
+        .from("rate_limits")
+        .update({ 
+          request_count: rateLimitData.request_count + 1,
+          updated_at: now.toISOString()
+        })
+        .eq("id", rateLimitData.id);
+    } else {
+      await supabase
+        .from("rate_limits")
+        .insert({
+          user_id: user.id,
+          function_name: "process-document",
+          request_count: 1,
+          window_start: now.toISOString()
+        });
+    }
+
+    console.log(`Rate limit check passed for user ${user.id}`);
+
     const { evidenceId } = await req.json();
 
     // Validate input
@@ -53,8 +118,6 @@ serve(async (req) => {
     }
 
     console.log(`Processing document for evidence: ${evidenceId}`);
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Get evidence data and verify user owns it through case
     const { data: evidence, error: fetchError } = await supabase

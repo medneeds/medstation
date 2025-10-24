@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { evidenceSchema } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -75,6 +76,23 @@ export function EvidenceDrawer({ caseId, onEvidenceAdded }: EvidenceDrawerProps)
     if (!user) return;
 
     try {
+      // Determine file type
+      let evidenceType: "audio" | "image" | "pdf" | "text" = "pdf";
+      if (file.type.includes("pdf")) evidenceType = "pdf";
+      else if (file.type.includes("image")) evidenceType = "image";
+
+      // Validate evidence data before proceeding
+      const validatedData = evidenceSchema.parse({
+        title: title || file.name,
+        case_id: caseId,
+        type: evidenceType,
+        tags: tags,
+        origin: origin || "",
+        author: author || "",
+        notes: "",
+        content: "",
+      });
+
       // Upload file to storage
       const fileExt = file.name.split(".").pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
@@ -85,25 +103,20 @@ export function EvidenceDrawer({ caseId, onEvidenceAdded }: EvidenceDrawerProps)
 
       if (uploadError) throw uploadError;
 
-      // Determine file type
-      let evidenceType = "document";
-      if (file.type.includes("pdf")) evidenceType = "pdf";
-      else if (file.type.includes("image")) evidenceType = "image";
-
       // Create evidence record
       const { data: newEvidence, error: insertError } = await supabase
         .from("evidences")
         .insert({
           user_id: user.id,
-          case_id: caseId,
-          type: evidenceType,
+          case_id: validatedData.case_id,
+          type: validatedData.type,
           source_type: "upload",
-          title: title || file.name,
+          title: validatedData.title,
           file_path: fileName,
           file_size: file.size,
-          tags: tags.length > 0 ? tags : null,
-          origin,
-          author,
+          tags: validatedData.tags.length > 0 ? validatedData.tags : null,
+          origin: validatedData.origin,
+          author: validatedData.author,
           document_date: documentDate || null,
           metadata: {
             original_name: file.name,
@@ -147,10 +160,14 @@ export function EvidenceDrawer({ caseId, onEvidenceAdded }: EvidenceDrawerProps)
       setOpen(false);
       resetForm();
     } catch (error: any) {
+      const errorMessage = error.name === 'ZodError' 
+        ? error.errors[0]?.message || "Dados inválidos"
+        : error.message;
+      
       toast({
         variant: "destructive",
         title: "Erro ao enviar arquivo",
-        description: error.message,
+        description: errorMessage,
       });
     } finally {
       setLoading(false);
@@ -172,16 +189,28 @@ export function EvidenceDrawer({ caseId, onEvidenceAdded }: EvidenceDrawerProps)
     if (!user) return;
 
     try {
+      // Validate evidence data
+      const validatedData = evidenceSchema.parse({
+        title: title || "Texto colado",
+        case_id: caseId,
+        type: "text" as const,
+        tags: tags,
+        origin: origin || "",
+        author: author || "",
+        notes: "",
+        content: textContent,
+      });
+
       const { error } = await supabase.from("evidences").insert({
         user_id: user.id,
-        case_id: caseId,
-        type: "text",
+        case_id: validatedData.case_id,
+        type: validatedData.type,
         source_type: "paste",
-        title: title || "Texto colado",
-        content: textContent,
-        tags: tags.length > 0 ? tags : null,
-        origin,
-        author,
+        title: validatedData.title,
+        content: validatedData.content,
+        tags: validatedData.tags.length > 0 ? validatedData.tags : null,
+        origin: validatedData.origin,
+        author: validatedData.author,
         document_date: documentDate || null,
         metadata: {
           word_count: textContent.split(/\s+/).length,
@@ -200,10 +229,14 @@ export function EvidenceDrawer({ caseId, onEvidenceAdded }: EvidenceDrawerProps)
       setOpen(false);
       resetForm();
     } catch (error: any) {
+      const errorMessage = error.name === 'ZodError' 
+        ? error.errors[0]?.message || "Dados inválidos"
+        : error.message;
+      
       toast({
         variant: "destructive",
         title: "Erro ao salvar texto",
-        description: error.message,
+        description: errorMessage,
       });
     } finally {
       setLoading(false);
@@ -225,6 +258,18 @@ export function EvidenceDrawer({ caseId, onEvidenceAdded }: EvidenceDrawerProps)
     if (!user) return;
 
     try {
+      // Validate evidence data
+      const validatedData = evidenceSchema.parse({
+        title: title || "Gravação de áudio",
+        case_id: caseId,
+        type: "audio" as const,
+        tags: tags,
+        origin: origin || "",
+        author: author || "",
+        notes: "",
+        content: "",
+      });
+
       // Upload audio to storage
       const fileName = `${user.id}/${Date.now()}.webm`;
       
@@ -239,15 +284,15 @@ export function EvidenceDrawer({ caseId, onEvidenceAdded }: EvidenceDrawerProps)
         .from("evidences")
         .insert({
           user_id: user.id,
-          case_id: caseId,
-          type: "audio",
+          case_id: validatedData.case_id,
+          type: validatedData.type,
           source_type: "recording",
-          title: title || "Gravação de áudio",
+          title: validatedData.title,
           file_path: fileName,
           file_size: audioBlob.size,
-          tags: tags.length > 0 ? tags : null,
-          origin,
-          author,
+          tags: validatedData.tags.length > 0 ? validatedData.tags : null,
+          origin: validatedData.origin,
+          author: validatedData.author,
           document_date: documentDate || null,
           metadata: {
             duration: 0,
@@ -289,10 +334,14 @@ export function EvidenceDrawer({ caseId, onEvidenceAdded }: EvidenceDrawerProps)
       setOpen(false);
       resetForm();
     } catch (error: any) {
+      const errorMessage = error.name === 'ZodError' 
+        ? error.errors[0]?.message || "Dados inválidos"
+        : error.message;
+      
       toast({
         variant: "destructive",
         title: "Erro ao salvar áudio",
-        description: error.message,
+        description: errorMessage,
       });
     } finally {
       setLoading(false);

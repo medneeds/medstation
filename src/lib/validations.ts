@@ -58,6 +58,18 @@ export const evidenceSchema = z.object({
     .max(2000, "Notas devem ter no máximo 2000 caracteres")
     .optional()
     .or(z.literal("")),
+  origin: z.string()
+    .max(200, "Origem deve ter no máximo 200 caracteres")
+    .optional()
+    .or(z.literal("")),
+  author: z.string()
+    .max(200, "Profissional deve ter no máximo 200 caracteres")
+    .optional()
+    .or(z.literal("")),
+  content: z.string()
+    .max(50000, "Conteúdo deve ter no máximo 50000 caracteres")
+    .optional()
+    .or(z.literal("")),
 });
 
 // Auth validation
