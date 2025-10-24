@@ -64,13 +64,13 @@ export default function Pricing() {
             Oferta Especial de Lançamento
           </Badge>
           <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent">
-            VitaStation Pro
+            MedStation AI Pro
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
             A plataforma completa de assistência médica com IA que revoluciona seu atendimento
           </p>
           <div className="flex items-baseline justify-center gap-2 mb-8">
-            <span className="text-5xl font-bold">R$ 99</span>
+            <span className="text-5xl font-bold">R$ 49</span>
             <span className="text-2xl text-muted-foreground">/mês</span>
           </div>
         </div>

@@ -62,7 +62,7 @@ export default function Home() {
             <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
               <Stethoscope className="w-6 h-6 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold">VitaStation</span>
+            <span className="text-xl font-bold">MedStation AI</span>
           </div>
           <div className="flex gap-4">
             <Button variant="ghost" onClick={() => navigate("/auth")}>
@@ -124,7 +124,7 @@ export default function Home() {
       {/* Benefits */}
       <section className="container mx-auto px-4 py-20 bg-gradient-to-br from-primary/5 to-accent/5 rounded-3xl">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4">Por que escolher VitaStation?</h2>
+          <h2 className="text-4xl font-bold mb-4">Por que escolher MedStation AI?</h2>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {benefits.map((benefit, index) => (
@@ -155,7 +155,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t py-8 mt-20">
         <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>&copy; 2025 VitaStation. Todos os direitos reservados.</p>
+          <p>&copy; 2025 MedStation AI. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>
