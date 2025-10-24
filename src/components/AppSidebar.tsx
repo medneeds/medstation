@@ -60,7 +60,7 @@ export function AppSidebar() {
           </div>
           {!collapsed && (
             <div>
-              <h1 className="text-lg font-bold text-sidebar-foreground">MedStation</h1>
+              <h1 className="text-lg font-bold text-sidebar-foreground">MedStation AI</h1>
               <p className="text-xs text-sidebar-foreground/60">AI Clinical Assistant</p>
             </div>
           )}

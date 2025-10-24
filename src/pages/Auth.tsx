@@ -144,10 +144,13 @@ export default function Auth() {
               <Activity className="h-12 w-12 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-3xl">MediAI Platform</CardTitle>
+          <CardTitle className="text-3xl">MedStation AI</CardTitle>
           <CardDescription>
             Agentes médicos de IA para apoio clínico
           </CardDescription>
+          <p className="text-xs text-muted-foreground mt-2">
+            ⚠️ Configuração OAuth pendente - Google e Apple ID
+          </p>
         </CardHeader>
         <CardContent>
           {/* Social Login Buttons */}

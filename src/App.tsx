@@ -8,6 +8,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import Patients from "./pages/Patients";
 import Cases from "./pages/Cases";
+import CaseDetail from "./pages/CaseDetail";
 import Auth from "./pages/Auth";
 import Clinicus from "./pages/Clinicus";
 import Examinus from "./pages/Examinus";
@@ -55,6 +56,16 @@ const App = () => (
               <ProtectedRoute>
                 <DashboardLayout>
                   <Cases />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/case/:caseId"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <CaseDetail />
                 </DashboardLayout>
               </ProtectedRoute>
             }
