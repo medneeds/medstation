@@ -107,13 +107,13 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip={homeModule.title}>
+                  <SidebarMenuButton asChild tooltip={homeModule.title}>
                   <NavLink
                     to={homeModule.url}
                     className={({ isActive }) =>
                       isActive
-                        ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary font-semibold border-l-2 border-primary shadow-sm"
-                        : "hover:bg-sidebar-accent/50 hover:translate-x-1 transition-all duration-200"
+                        ? "bg-muted text-foreground font-semibold"
+                        : "hover:bg-muted/50 hover:translate-x-1 transition-all duration-200"
                     }
                   >
                     <homeModule.icon className="h-4 w-4" />
@@ -139,8 +139,8 @@ export function AppSidebar() {
                       to={item.url}
                       className={({ isActive }) =>
                         isActive
-                          ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary font-semibold border-l-2 border-primary shadow-sm"
-                          : "hover:bg-sidebar-accent/50 hover:translate-x-1 transition-all duration-200"
+                          ? "bg-muted text-foreground font-semibold"
+                          : "hover:bg-muted/50 hover:translate-x-1 transition-all duration-200"
                       }
                     >
                       <item.icon className="h-4 w-4" />
@@ -167,8 +167,8 @@ export function AppSidebar() {
                       to={item.url}
                       className={({ isActive }) =>
                         isActive
-                          ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary font-semibold border-l-2 border-primary shadow-sm"
-                          : "hover:bg-sidebar-accent/50 hover:translate-x-1 transition-all duration-200"
+                          ? "bg-muted text-foreground font-semibold"
+                          : "hover:bg-muted/50 hover:translate-x-1 transition-all duration-200"
                       }
                     >
                       <item.icon className="h-4 w-4" />
@@ -192,8 +192,8 @@ export function AppSidebar() {
                       to={item.url}
                       className={({ isActive }) =>
                         isActive
-                          ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary font-semibold border-l-2 border-primary shadow-sm"
-                          : "hover:bg-sidebar-accent/50 hover:translate-x-1 transition-all duration-200"
+                          ? "bg-muted text-foreground font-semibold"
+                          : "hover:bg-muted/50 hover:translate-x-1 transition-all duration-200"
                       }
                     >
                       <item.icon className="h-4 w-4" />
