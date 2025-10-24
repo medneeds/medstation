@@ -4,8 +4,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { DashboardLayout } from "./components/DashboardLayout";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import Patients from "./pages/Patients";
+import Cases from "./pages/Cases";
+import Auth from "./pages/Auth";
 import Clinicus from "./pages/Clinicus";
 import Examinus from "./pages/Examinus";
 import Scorius from "./pages/Scorius";
@@ -24,77 +27,106 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/auth" element={<Auth />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route
             path="/dashboard"
             element={
-              <DashboardLayout>
-                <Dashboard />
-              </DashboardLayout>
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <Dashboard />
+                </DashboardLayout>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/patients"
             element={
-              <DashboardLayout>
-                <Patients />
-              </DashboardLayout>
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <Patients />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/cases"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <Cases />
+                </DashboardLayout>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/clinicus"
             element={
-              <DashboardLayout>
-                <Clinicus />
-              </DashboardLayout>
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <Clinicus />
+                </DashboardLayout>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/examinus"
             element={
-              <DashboardLayout>
-                <Examinus />
-              </DashboardLayout>
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <Examinus />
+                </DashboardLayout>
+              </ProtectedRoute>
             }
           />
-            <Route
-              path="/scorius"
-              element={
+          <Route
+            path="/scorius"
+            element={
+              <ProtectedRoute>
                 <DashboardLayout>
                   <Scorius />
                 </DashboardLayout>
-              }
-            />
-            <Route
-              path="/numerus"
-              element={
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/numerus"
+            element={
+              <ProtectedRoute>
                 <DashboardLayout>
                   <Numerus />
                 </DashboardLayout>
-              }
-            />
-            <Route
-              path="/prescriptus"
-              element={
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/prescriptus"
+            element={
+              <ProtectedRoute>
                 <DashboardLayout>
                   <Prescriptus />
                 </DashboardLayout>
-              }
-            />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/codexus"
             element={
-              <DashboardLayout>
-                <Codexus />
-              </DashboardLayout>
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <Codexus />
+                </DashboardLayout>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/settings"
             element={
-              <DashboardLayout>
-                <Settings />
-              </DashboardLayout>
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <Settings />
+                </DashboardLayout>
+              </ProtectedRoute>
             }
           />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

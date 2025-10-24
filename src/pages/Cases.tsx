@@ -1,0 +1,365 @@
+import { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Plus, FolderOpen, ChevronRight } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+
+interface Case {
+  id: string;
+  title: string;
+  status: string;
+  chief_complaint: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  patient_id: string;
+}
+
+interface Patient {
+  id: string;
+  name: string;
+}
+
+export default function Cases() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const patientId = searchParams.get("patient");
+  
+  const [cases, setCases] = useState<Case[]>([]);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const { toast } = useToast();
+
+  const [formData, setFormData] = useState({
+    title: "",
+    patient_id: patientId || "",
+    chief_complaint: "",
+    notes: "",
+  });
+
+  useEffect(() => {
+    fetchPatients();
+    if (patientId) {
+      fetchCasesByPatient(patientId);
+    } else {
+      fetchAllCases();
+    }
+  }, [patientId]);
+
+  const fetchPatients = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from("patients")
+      .select("id, name")
+      .eq("user_id", user.id)
+      .eq("archived", false)
+      .order("name");
+
+    if (!error && data) {
+      setPatients(data);
+      if (patientId) {
+        const patient = data.find((p) => p.id === patientId);
+        setSelectedPatient(patient || null);
+      }
+    }
+  };
+
+  const fetchAllCases = async () => {
+    setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from("cases")
+      .select("*")
+      .eq("user_id", user.id)
+      .neq("status", "archived")
+      .order("updated_at", { ascending: false });
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao carregar casos",
+        description: error.message,
+      });
+    } else {
+      setCases(data || []);
+    }
+    setLoading(false);
+  };
+
+  const fetchCasesByPatient = async (patId: string) => {
+    setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from("cases")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("patient_id", patId)
+      .neq("status", "archived")
+      .order("updated_at", { ascending: false });
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao carregar casos",
+        description: error.message,
+      });
+    } else {
+      setCases(data || []);
+    }
+    setLoading(false);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+      .from("cases")
+      .insert([{ ...formData, user_id: user.id }]);
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao criar caso",
+        description: error.message,
+      });
+    } else {
+      toast({ title: "Caso criado!" });
+      if (patientId) {
+        fetchCasesByPatient(patientId);
+      } else {
+        fetchAllCases();
+      }
+      resetForm();
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      patient_id: patientId || "",
+      chief_complaint: "",
+      notes: "",
+    });
+    setDialogOpen(false);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active":
+        return "bg-green-500/10 text-green-700 dark:text-green-400";
+      case "closed":
+        return "bg-gray-500/10 text-gray-700 dark:text-gray-400";
+      default:
+        return "bg-blue-500/10 text-blue-700 dark:text-blue-400";
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "active":
+        return "Ativo";
+      case "closed":
+        return "Fechado";
+      case "archived":
+        return "Arquivado";
+      default:
+        return status;
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">
+            {selectedPatient ? `Casos de ${selectedPatient.name}` : "Casos Clínicos"}
+          </h1>
+          <p className="text-muted-foreground">
+            {selectedPatient 
+              ? "Gerencie os casos deste paciente"
+              : "Todos os seus casos clínicos"}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          {selectedPatient && (
+            <Button variant="outline" onClick={() => navigate("/patients")}>
+              Voltar para Pacientes
+            </Button>
+          )}
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={resetForm}>
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Caso
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Novo Caso Clínico</DialogTitle>
+                <DialogDescription>
+                  Crie um novo caso para um paciente
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="patient">Paciente *</Label>
+                  <Select
+                    value={formData.patient_id}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, patient_id: value })
+                    }
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um paciente" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {patients.map((patient) => (
+                        <SelectItem key={patient.id} value={patient.id}>
+                          {patient.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="title">Título do Caso *</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
+                    placeholder="Ex: Internação por pneumonia"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="complaint">Queixa Principal</Label>
+                  <Input
+                    id="complaint"
+                    value={formData.chief_complaint}
+                    onChange={(e) =>
+                      setFormData({ ...formData, chief_complaint: e.target.value })
+                    }
+                    placeholder="Ex: Dispneia e febre há 3 dias"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="notes">Observações Iniciais</Label>
+                  <Textarea
+                    id="notes"
+                    value={formData.notes}
+                    onChange={(e) =>
+                      setFormData({ ...formData, notes: e.target.value })
+                    }
+                    rows={4}
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="outline" onClick={resetForm}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit">Criar Caso</Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      <Card>
+        <CardContent className="pt-6">
+          {loading ? (
+            <div className="text-center py-12 text-muted-foreground">Carregando...</div>
+          ) : cases.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <FolderOpen className="h-12 w-12 mx-auto mb-4 opacity-30" />
+              <p>Nenhum caso encontrado</p>
+              <p className="text-sm mt-1">Crie um novo caso para começar</p>
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {cases.map((caseItem) => {
+                const patient = patients.find((p) => p.id === caseItem.patient_id);
+                return (
+                  <Card
+                    key={caseItem.id}
+                    className="hover:bg-accent/50 transition-colors cursor-pointer"
+                    onClick={() => navigate(`/case/${caseItem.id}`)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="rounded-full p-2 bg-primary/10">
+                              <FolderOpen className="h-5 w-5 text-primary" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <h3 className="font-semibold text-lg">{caseItem.title}</h3>
+                                <Badge className={getStatusColor(caseItem.status)}>
+                                  {getStatusLabel(caseItem.status)}
+                                </Badge>
+                              </div>
+                              {patient && (
+                                <p className="text-sm text-muted-foreground">
+                                  Paciente: {patient.name}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          {caseItem.chief_complaint && (
+                            <p className="ml-12 text-sm text-muted-foreground">
+                              <strong>QP:</strong> {caseItem.chief_complaint}
+                            </p>
+                          )}
+                          <p className="ml-12 text-xs text-muted-foreground mt-2">
+                            Atualizado em {new Date(caseItem.updated_at).toLocaleString('pt-BR')}
+                          </p>
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

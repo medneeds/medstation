@@ -1,4 +1,5 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Stethoscope,
   FlaskConical,
@@ -9,6 +10,7 @@ import {
   Settings,
   LogOut,
   Activity,
+  Folder,
 } from "lucide-react";
 import {
   Sidebar,
@@ -25,6 +27,7 @@ import {
 
 const modules = [
   { title: "Pacientes", url: "/patients", icon: Users },
+  { title: "Casos", url: "/cases", icon: Folder },
   { title: "Clínicus", url: "/clinicus", icon: Stethoscope },
   { title: "Examinus", url: "/examinus", icon: FlaskConical },
   { title: "Scorius", url: "/scorius", icon: Activity },
@@ -40,6 +43,12 @@ const settings = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
@@ -105,7 +114,7 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               ))}
               <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Sair">
+                <SidebarMenuButton tooltip="Sair" onClick={handleLogout}>
                   <LogOut className="h-4 w-4" />
                   {!collapsed && <span>Sair</span>}
                 </SidebarMenuButton>
