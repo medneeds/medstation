@@ -280,13 +280,30 @@ export default function Cases() {
               
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="patient">Paciente</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="patient">Paciente</Label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        if ((window as any).openPatientDialog) {
+                          (window as any).openPatientDialog();
+                        }
+                      }}
+                      className="text-xs h-7"
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Novo Paciente
+                    </Button>
+                  </div>
                   <PatientCombobox
                     value={formData.patient_id || "unidentified"}
                     onChange={(value) =>
                       setFormData({ ...formData, patient_id: value === "unidentified" ? "" : value })
                     }
                     onPatientCreated={fetchPatients}
+                    onCreateClick={() => {}}
                   />
                   <p className="text-xs text-muted-foreground">
                     Busque, crie um novo paciente ou selecione "Não identificar"

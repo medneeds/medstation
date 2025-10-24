@@ -39,9 +39,10 @@ interface PatientComboboxProps {
   value: string;
   onChange: (value: string) => void;
   onPatientCreated?: () => void;
+  onCreateClick?: () => void;
 }
 
-export function PatientCombobox({ value, onChange, onPatientCreated }: PatientComboboxProps) {
+export function PatientCombobox({ value, onChange, onPatientCreated, onCreateClick }: PatientComboboxProps) {
   const [open, setOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -57,6 +58,13 @@ export function PatientCombobox({ value, onChange, onPatientCreated }: PatientCo
     date_of_birth: "",
     notes: "",
   });
+
+  // Expose dialog control to parent via onCreateClick
+  useEffect(() => {
+    if (onCreateClick) {
+      (window as any).openPatientDialog = () => setDialogOpen(true);
+    }
+  }, [onCreateClick]);
 
   useEffect(() => {
     fetchPatients();
