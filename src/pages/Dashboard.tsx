@@ -16,6 +16,7 @@ import {
   AlertCircle,
   Crown,
   TestTube,
+  Folder,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSubscription } from "@/contexts/SubscriptionContext";
@@ -27,7 +28,42 @@ interface Stats {
   totalExamRequests: number;
 }
 
-const modules = [
+const practiceModules = [
+  {
+    title: "Pacientes",
+    description: "Gerencie seus pacientes e históricos clínicos",
+    icon: Users,
+    url: "/patients",
+    color: "text-primary",
+    isPremium: false,
+  },
+  {
+    title: "Casos Clínicos",
+    description: "Acompanhamento e evolução de casos",
+    icon: Folder,
+    url: "/cases",
+    color: "text-secondary",
+    isPremium: false,
+  },
+  {
+    title: "Prescrições",
+    description: "Prescrições médicas digitais e assinadas",
+    icon: Pill,
+    url: "/prescricoes",
+    color: "text-accent",
+    isPremium: false,
+  },
+  {
+    title: "Solicitação de Exames",
+    description: "Solicite e gerencie exames médicos",
+    icon: TestTube,
+    url: "/exames",
+    color: "text-warning",
+    isPremium: false,
+  },
+];
+
+const agentModules = [
   {
     title: "Clínicus",
     description: "Relatórios de transferência e evolução clínica",
@@ -175,6 +211,42 @@ export default function Dashboard() {
         </Button>
       </div>
 
+      {/* Prática Médica Section */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <Stethoscope className="h-6 w-6 text-primary" />
+          <h2 className="text-2xl font-bold">Prática Médica</h2>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {practiceModules.map((module) => (
+            <Link key={module.title} to={module.url}>
+              <Card className="h-full hover:shadow-elevated hover:border-primary/50 transition-all cursor-pointer group relative">
+                <CardHeader className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className={`rounded-xl p-4 bg-gradient-to-br from-primary/10 to-primary/5 ${module.color}`}>
+                      <module.icon className="h-8 w-8" />
+                    </div>
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl mb-2 group-hover:text-primary transition-colors">
+                      {module.title}
+                    </CardTitle>
+                    <CardDescription className="text-sm leading-relaxed">
+                      {module.description}
+                    </CardDescription>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                    Acessar
+                  </Button>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </div>
+
       {/* AI Agents - Main Section */}
       <div>
         <div className="flex items-center gap-2 mb-4">
@@ -182,7 +254,7 @@ export default function Dashboard() {
           <h2 className="text-2xl font-bold">Agentes Médicos de IA</h2>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {modules.map((module) => (
+          {agentModules.map((module) => (
             <Link key={module.title} to={module.url}>
               <Card className="h-full hover:shadow-elevated hover:border-primary/50 transition-all cursor-pointer group relative">
                 <CardHeader className="space-y-4">
