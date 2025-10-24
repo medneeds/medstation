@@ -12,14 +12,15 @@ interface Message {
   content: string;
 }
 
+const INITIAL_MESSAGE: Message = {
+  role: "assistant",
+  content: "Olá! Sou seu assistente de suporte do MedPocket. Como posso ajudar você hoje? Você pode me enviar mensagens de texto ou áudio.",
+};
+
 export function SupportChat() {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: "Olá! Sou seu assistente de suporte do MedPocket. Como posso ajudar você hoje? Você pode me enviar mensagens de texto ou áudio.",
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
+  const [lastConversation, setLastConversation] = useState<Message[] | null>(null);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -29,11 +30,45 @@ export function SupportChat() {
   const chunksRef = useRef<Blob[]>([]);
   const { toast } = useToast();
 
+  // Load last conversation from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("support-last-conversation");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.length > 1) { // Only save if there was actual conversation
+          setLastConversation(parsed);
+        }
+      } catch (e) {
+        console.error("Error loading last conversation:", e);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  const handleClose = () => {
+    // Save current conversation if it has more than just the initial message
+    if (messages.length > 1) {
+      localStorage.setItem("support-last-conversation", JSON.stringify(messages));
+      setLastConversation(messages);
+    }
+    // Reset to initial state
+    setMessages([INITIAL_MESSAGE]);
+    setInput("");
+    setIsOpen(false);
+  };
+
+  const restoreLastConversation = () => {
+    if (lastConversation) {
+      setMessages(lastConversation);
+      setLastConversation(null);
+    }
+  };
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || isLoading) return;
@@ -167,7 +202,7 @@ export function SupportChat() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setIsOpen(false)}
+              onClick={handleClose}
               className="hover:bg-primary-foreground/20"
             >
               <X className="h-5 w-5" />
@@ -177,6 +212,18 @@ export function SupportChat() {
           {/* Messages */}
           <ScrollArea className="flex-1 p-4" ref={scrollRef}>
             <div className="space-y-4">
+              {lastConversation && messages.length === 1 && (
+                <div className="flex justify-center mb-4">
+                  <Button
+                    onClick={restoreLastConversation}
+                    variant="outline"
+                    size="sm"
+                    className="text-xs"
+                  >
+                    Continuar última conversa
+                  </Button>
+                </div>
+              )}
               {messages.map((message, index) => (
                 <div
                   key={index}
