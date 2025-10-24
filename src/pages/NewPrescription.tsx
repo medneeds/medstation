@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/contexts/ProfileContext";
@@ -10,13 +10,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Plus, Trash2, Save, FileSignature, AlertCircle, User, Stethoscope } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Save, FileSignature, AlertCircle, User, Stethoscope, UserPlus } from "lucide-react";
 import { z } from "zod";
 
 const medicationSchema = z.object({
@@ -44,6 +52,7 @@ interface Medication {
 
 export default function NewPrescription() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { profile } = useProfile();
   const [loading, setLoading] = useState(false);
@@ -57,6 +66,17 @@ export default function NewPrescription() {
   const [medications, setMedications] = useState<Medication[]>([
     { name: "", dosage: "", frequency: "", duration: "", instructions: "" },
   ]);
+  
+  // New patient form state
+  const [newPatientDialogOpen, setNewPatientDialogOpen] = useState(false);
+  const [newPatient, setNewPatient] = useState({
+    name: "",
+    cpf: "",
+    date_of_birth: "",
+    phone: "",
+    email: "",
+    notes: "",
+  });
 
   useEffect(() => {
     fetchPatients();
@@ -71,9 +91,18 @@ export default function NewPrescription() {
     }
   }, [selectedPatient, patients]);
 
+  // Load data from copy/renew
   useEffect(() => {
-    fetchPatients();
-  }, []);
+    const state = location.state as any;
+    if (state?.copyFrom) {
+      const { patient_id, diagnosis, cid_code, medications, observations } = state.copyFrom;
+      setSelectedPatient(patient_id || "");
+      setDiagnosis(diagnosis || "");
+      setCidCode(cid_code || "");
+      setMedications(medications || [{ name: "", dosage: "", frequency: "", duration: "", instructions: "" }]);
+      setObservations(observations || "");
+    }
+  }, [location.state]);
 
   const fetchPatients = async () => {
     try {
@@ -92,6 +121,64 @@ export default function NewPrescription() {
     } catch (error: any) {
       toast({
         title: "Erro ao carregar pacientes",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const createNewPatient = async () => {
+    try {
+      if (!newPatient.name.trim() || !newPatient.cpf.trim()) {
+        toast({
+          title: "Campos obrigatórios",
+          description: "Nome e CPF são obrigatórios",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const { data, error } = await supabase
+        .from("patients")
+        .insert({
+          user_id: user.id,
+          name: newPatient.name.trim(),
+          cpf: newPatient.cpf.trim(),
+          date_of_birth: newPatient.date_of_birth || null,
+          phone: newPatient.phone.trim() || null,
+          email: newPatient.email.trim() || null,
+          notes: newPatient.notes.trim() || null,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Paciente criado",
+        description: "Paciente adicionado com sucesso",
+      });
+
+      // Reset form and close dialog
+      setNewPatient({
+        name: "",
+        cpf: "",
+        date_of_birth: "",
+        phone: "",
+        email: "",
+        notes: "",
+      });
+      setNewPatientDialogOpen(false);
+
+      // Refresh patients list and select the new patient
+      await fetchPatients();
+      setSelectedPatient(data.id);
+    } catch (error: any) {
+      toast({
+        title: "Erro ao criar paciente",
         description: error.message,
         variant: "destructive",
       });
@@ -307,7 +394,103 @@ export default function NewPrescription() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="patient">Paciente *</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="patient">Paciente *</Label>
+              <Dialog open={newPatientDialogOpen} onOpenChange={setNewPatientDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Novo Paciente
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Cadastrar Novo Paciente</DialogTitle>
+                    <DialogDescription>
+                      Preencha os dados do paciente para incluir na prescrição
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="new-name">Nome Completo *</Label>
+                        <Input
+                          id="new-name"
+                          value={newPatient.name}
+                          onChange={(e) => setNewPatient({ ...newPatient, name: e.target.value })}
+                          placeholder="Nome completo do paciente"
+                          maxLength={100}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="new-cpf">CPF *</Label>
+                        <Input
+                          id="new-cpf"
+                          value={newPatient.cpf}
+                          onChange={(e) => setNewPatient({ ...newPatient, cpf: e.target.value })}
+                          placeholder="000.000.000-00"
+                          maxLength={14}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="new-dob">Data de Nascimento</Label>
+                        <Input
+                          id="new-dob"
+                          type="date"
+                          value={newPatient.date_of_birth}
+                          onChange={(e) => setNewPatient({ ...newPatient, date_of_birth: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="new-phone">Telefone</Label>
+                        <Input
+                          id="new-phone"
+                          value={newPatient.phone}
+                          onChange={(e) => setNewPatient({ ...newPatient, phone: e.target.value })}
+                          placeholder="(00) 00000-0000"
+                          maxLength={15}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="new-email">E-mail</Label>
+                      <Input
+                        id="new-email"
+                        type="email"
+                        value={newPatient.email}
+                        onChange={(e) => setNewPatient({ ...newPatient, email: e.target.value })}
+                        placeholder="email@exemplo.com"
+                        maxLength={100}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="new-notes">Observações</Label>
+                      <Textarea
+                        id="new-notes"
+                        value={newPatient.notes}
+                        onChange={(e) => setNewPatient({ ...newPatient, notes: e.target.value })}
+                        placeholder="Alergias, condições especiais, etc..."
+                        rows={3}
+                        maxLength={500}
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setNewPatientDialogOpen(false)}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button onClick={createNewPatient}>
+                        Cadastrar Paciente
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
             <Select value={selectedPatient} onValueChange={setSelectedPatient}>
               <SelectTrigger id="patient">
                 <SelectValue placeholder="Selecione o paciente" />

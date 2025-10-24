@@ -17,7 +17,10 @@ import {
   XCircle,
   Edit,
   Download,
-  Eye
+  Eye,
+  Copy,
+  RefreshCw,
+  MoreVertical
 } from "lucide-react";
 import {
   Select,
@@ -26,6 +29,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface Prescription {
   id: string;
@@ -33,6 +42,9 @@ interface Prescription {
   patient_id: string;
   medications: any;
   diagnosis: string;
+  cid_code?: string;
+  validity_days: number;
+  observations?: string;
   status: string;
   created_at: string;
   patients: {
@@ -65,6 +77,9 @@ export default function Prescriptions() {
           patient_id,
           medications,
           diagnosis,
+          cid_code,
+          validity_days,
+          observations,
           status,
           created_at,
           patients (name)
@@ -109,6 +124,63 @@ export default function Prescriptions() {
         {config.label}
       </Badge>
     );
+  };
+
+  const copyPrescription = (prescription: Prescription) => {
+    navigate("/prescricoes/nova", {
+      state: {
+        copyFrom: {
+          patient_id: prescription.patient_id,
+          diagnosis: prescription.diagnosis,
+          cid_code: prescription.cid_code,
+          medications: prescription.medications,
+          observations: prescription.observations,
+        },
+      },
+    });
+  };
+
+  const renewPrescription = async (prescription: Prescription) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const { data: numberData, error: numberError } = await supabase
+        .rpc("generate_prescription_number");
+
+      if (numberError) throw numberError;
+
+      const { data, error } = await supabase
+        .from("prescriptions")
+        .insert({
+          user_id: user.id,
+          patient_id: prescription.patient_id,
+          prescription_number: numberData,
+          diagnosis: prescription.diagnosis,
+          cid_code: prescription.cid_code,
+          validity_days: prescription.validity_days,
+          observations: prescription.observations,
+          medications: prescription.medications,
+          status: "draft",
+        } as any)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Prescrição renovada",
+        description: "Nova prescrição criada com sucesso",
+      });
+
+      navigate(`/prescricoes/${data.id}`);
+    } catch (error: any) {
+      toast({
+        title: "Erro ao renovar prescrição",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const filteredPrescriptions = prescriptions.filter(
@@ -249,6 +321,29 @@ export default function Prescriptions() {
                     <Eye className="h-4 w-4 mr-2" />
                     Ver Detalhes
                   </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                      <Button variant="outline" size="sm">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={(e) => {
+                        e.stopPropagation();
+                        copyPrescription(prescription);
+                      }}>
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copiar Prescrição
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={(e) => {
+                        e.stopPropagation();
+                        renewPrescription(prescription);
+                      }}>
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Renovar Prescrição
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   {prescription.status === "signed" && (
                     <Button
                       variant="outline"
