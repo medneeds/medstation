@@ -111,7 +111,10 @@ export function AgentChat({
   const [cases, setCases] = useState<CaseOption[]>([]);
   const [selectedCaseId, setSelectedCaseId] = useState<string | undefined>(caseId);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -502,8 +505,133 @@ export function AgentChat({
     });
   };
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      await processFiles(files);
+    }
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      await processFiles(files);
+    }
+  };
+
+  const processFiles = async (files: File[]) => {
+    setUploadingFile(true);
+    
+    try {
+      for (const file of files) {
+        const fileExtension = file.name.split('.').pop()?.toLowerCase();
+        const supportedDocFormats = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'];
+        
+        let fileContent = '';
+        
+        if (supportedDocFormats.includes(fileExtension || '')) {
+          // Parse document using Lovable's document parser
+          toast({
+            title: "Processando documento",
+            description: `Extraindo conteúdo de ${file.name}...`,
+          });
+          
+          // Convert to base64
+          const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+          
+          // Call document processing edge function
+          const { data, error } = await supabase.functions.invoke('process-document', {
+            body: {
+              file: base64,
+              fileName: file.name,
+              mimeType: file.type
+            }
+          });
+          
+          if (error || !data?.text) {
+            throw new Error('Erro ao processar documento');
+          }
+          
+          fileContent = data.text;
+          
+        } else if (fileExtension === 'txt' || fileExtension === 'md') {
+          // Read text files directly
+          fileContent = await file.text();
+        } else {
+          toast({
+            title: "Formato não suportado",
+            description: `O formato .${fileExtension} não é suportado. Use PDF, DOCX, PPTX, XLSX, TXT ou MD.`,
+            variant: "destructive",
+          });
+          continue;
+        }
+        
+        // Add file content as a message
+        const fileMessage = `📎 Arquivo anexado: ${file.name}\n\n${fileContent.slice(0, 5000)}${fileContent.length > 5000 ? '...\n\n[Conteúdo truncado para brevidade]' : ''}`;
+        
+        setMessage(fileMessage);
+        
+        toast({
+          title: "✓ Arquivo processado",
+          description: `${file.name} foi extraído com sucesso. Clique em enviar.`,
+        });
+      }
+    } catch (error: any) {
+      console.error('Error processing file:', error);
+      toast({
+        title: "Erro ao processar arquivo",
+        description: error.message || "Não foi possível processar o arquivo.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full p-4 md:p-6">
+    <div 
+      className="flex flex-col h-full p-4 md:p-6"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {isDragging && (
+        <div className="absolute inset-0 bg-primary/10 border-4 border-dashed border-primary rounded-lg flex items-center justify-center z-50 backdrop-blur-sm">
+          <div className="text-center">
+            <Paperclip className="h-16 w-16 mx-auto mb-4 text-primary" />
+            <p className="text-xl font-bold">Solte o arquivo aqui</p>
+            <p className="text-sm text-muted-foreground mt-2">PDF, DOCX, PPTX, XLSX, TXT, MD</p>
+          </div>
+        </div>
+      )}
+      
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.md"
+        multiple
+        onChange={handleFileSelect}
+        className="hidden"
+      />
+      
       {/* Header with agent info and actions */}
       <div className="flex flex-col gap-3 pb-4 border-b md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
@@ -757,8 +885,19 @@ export function AgentChat({
       <div className="border-t pt-3 md:pt-4">
         <div className="flex gap-1.5 md:gap-2">
           {!isMobile && (
-            <Button variant="outline" size="icon" className="shrink-0">
-              <Paperclip className="h-4 w-4" />
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="shrink-0"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingFile}
+              title="Anexar arquivo (PDF, DOCX, PPTX, XLSX, TXT, MD)"
+            >
+              {uploadingFile ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Paperclip className="h-4 w-4" />
+              )}
             </Button>
           )}
           <Input

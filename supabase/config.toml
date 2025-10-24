@@ -23,3 +23,6 @@ verify_jwt = true
 
 [functions.transcribe-case]
 verify_jwt = true
+
+[functions.generate-case-title]
+verify_jwt = true

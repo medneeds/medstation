@@ -293,7 +293,52 @@ export default function Cases() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="title">Título do Caso *</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="title">Título do Caso *</Label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={async () => {
+                        if (!formData.chief_complaint && !formData.notes) {
+                          toast({
+                            title: "Campos vazios",
+                            description: "Preencha a queixa principal ou observações primeiro",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+                        
+                        try {
+                          const { data, error } = await supabase.functions.invoke('generate-case-title', {
+                            body: {
+                              chief_complaint: formData.chief_complaint,
+                              notes: formData.notes
+                            }
+                          });
+                          
+                          if (error) throw error;
+                          
+                          if (data?.title) {
+                            setFormData({ ...formData, title: data.title });
+                            toast({
+                              title: "✓ Título gerado!",
+                              description: "Título criado automaticamente pela IA",
+                            });
+                          }
+                        } catch (error: any) {
+                          toast({
+                            title: "Erro ao gerar título",
+                            description: error.message,
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                      className="text-xs"
+                    >
+                      🪄 Gerar com IA
+                    </Button>
+                  </div>
                   <Input
                     id="title"
                     value={formData.title}
