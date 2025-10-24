@@ -9,6 +9,7 @@ import { SearchDialog } from "@/components/SearchDialog";
 import { TagInput } from "@/components/TagInput";
 import { caseSchema } from "@/lib/validations";
 import CaseVoiceRecorder from "@/components/CaseVoiceRecorder";
+import { PatientCombobox } from "@/components/PatientCombobox";
 import {
   Dialog,
   DialogContent,
@@ -280,31 +281,15 @@ export default function Cases() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="patient">Paciente</Label>
-                  <Select
+                  <PatientCombobox
                     value={formData.patient_id || "unidentified"}
-                    onValueChange={(value) =>
+                    onChange={(value) =>
                       setFormData({ ...formData, patient_id: value === "unidentified" ? "" : value })
                     }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione um paciente" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="unidentified">
-                        <div className="flex items-center gap-2">
-                          <span>🕶️</span>
-                          <span className="font-medium">Não identificar paciente</span>
-                        </div>
-                      </SelectItem>
-                      {patients.map((patient) => (
-                        <SelectItem key={patient.id} value={patient.id}>
-                          {patient.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onPatientCreated={fetchPatients}
+                  />
                   <p className="text-xs text-muted-foreground">
-                    Opcional: Selecione "Não identificar" para casos sem identificação de paciente
+                    Busque, crie um novo paciente ou selecione "Não identificar"
                   </p>
                 </div>
                 <div className="space-y-2">
