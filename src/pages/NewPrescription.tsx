@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Plus, Trash2, Save, FileSignature, AlertCircle, User, Stethoscope, UserPlus } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Save, FileSignature, AlertCircle, User, Stethoscope, UserPlus, Mic } from "lucide-react";
 import { z } from "zod";
 import VoiceRecorder from "@/components/VoiceRecorder";
 
@@ -70,6 +70,7 @@ export default function NewPrescription() {
   
   // New patient form state
   const [newPatientDialogOpen, setNewPatientDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const [newPatient, setNewPatient] = useState({
     name: "",
     cpf: "",
@@ -77,6 +78,15 @@ export default function NewPrescription() {
     phone: "",
     email: "",
     notes: "",
+  });
+
+  // Filter patients based on search term
+  const filteredPatients = patients.filter((patient) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      patient.name.toLowerCase().includes(searchLower) ||
+      (patient.cpf && patient.cpf.includes(searchLower))
+    );
   });
 
   useEffect(() => {
@@ -377,7 +387,20 @@ export default function NewPrescription() {
       </div>
 
       {/* Voice Recorder */}
-      <VoiceRecorder onTranscriptionComplete={handleVoiceTranscription} />
+      <Card className="border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Mic className="h-5 w-5 text-primary" />
+            Reconhecimento de Voz por IA
+          </CardTitle>
+          <CardDescription>
+            Dite a prescrição completa e a IA preencherá os campos automaticamente
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <VoiceRecorder onTranscriptionComplete={handleVoiceTranscription} />
+        </CardContent>
+      </Card>
 
       {/* Doctor Info Validation Alert */}
       {(!profile?.crm || !profile?.crm_state || !profile?.full_name) && (
@@ -436,13 +459,13 @@ export default function NewPrescription() {
       </Card>
 
       {/* Patient Selection */}
-      <Card>
+      <Card className="border-primary/20 bg-primary/5">
         <CardHeader>
           <div className="flex items-center gap-2">
             <User className="h-5 w-5 text-primary" />
             <CardTitle>Dados do Paciente</CardTitle>
           </div>
-          <CardDescription>Selecione o paciente para esta prescrição</CardDescription>
+          <CardDescription>Selecione ou pesquise o paciente para esta prescrição</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -545,21 +568,35 @@ export default function NewPrescription() {
             </div>
             <Select value={selectedPatient} onValueChange={setSelectedPatient}>
               <SelectTrigger id="patient">
-                <SelectValue placeholder="Selecione o paciente" />
+                <SelectValue placeholder="Pesquise por nome ou CPF..." />
               </SelectTrigger>
               <SelectContent>
-                {patients.map((patient) => (
-                  <SelectItem key={patient.id} value={patient.id}>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{patient.name}</span>
-                      {patient.cpf && (
-                        <span className="text-xs text-muted-foreground">
-                          CPF: {patient.cpf}
-                        </span>
-                      )}
-                    </div>
-                  </SelectItem>
-                ))}
+                <div className="p-2">
+                  <Input
+                    placeholder="Buscar paciente..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="mb-2"
+                  />
+                </div>
+                {filteredPatients.length === 0 ? (
+                  <div className="p-2 text-sm text-muted-foreground text-center">
+                    Nenhum paciente encontrado
+                  </div>
+                ) : (
+                  filteredPatients.map((patient) => (
+                    <SelectItem key={patient.id} value={patient.id}>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{patient.name}</span>
+                        {patient.cpf && (
+                          <span className="text-xs text-muted-foreground">
+                            CPF: {patient.cpf}
+                          </span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>

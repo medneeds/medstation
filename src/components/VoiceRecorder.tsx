@@ -1,6 +1,5 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Mic, Square, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,7 +55,7 @@ export default function VoiceRecorder({ onTranscriptionComplete }: VoiceRecorder
 
       toast({
         title: "Gravação iniciada",
-        description: "Dite a prescrição médica...",
+        description: "Dite a prescrição médica completa...",
       });
     } catch (error) {
       console.error('Error starting recording:', error);
@@ -72,6 +71,10 @@ export default function VoiceRecorder({ onTranscriptionComplete }: VoiceRecorder
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      toast({
+        title: "Gravação finalizada",
+        description: "Processando áudio...",
+      });
     }
   };
 
@@ -89,7 +92,7 @@ export default function VoiceRecorder({ onTranscriptionComplete }: VoiceRecorder
 
             toast({
               title: "Processando áudio",
-              description: "Transcrevendo e extraindo dados...",
+              description: "Transcrevendo e extraindo dados da prescrição...",
             });
 
             const { data, error } = await supabase.functions.invoke('transcribe-prescription', {
@@ -103,8 +106,8 @@ export default function VoiceRecorder({ onTranscriptionComplete }: VoiceRecorder
             }
 
             toast({
-              title: "Transcrição completa",
-              description: "Prescrição preenchida automaticamente",
+              title: "✓ Prescrição reconhecida",
+              description: "Campos preenchidos automaticamente pela IA",
             });
 
             onTranscriptionComplete(data.data);
@@ -128,44 +131,39 @@ export default function VoiceRecorder({ onTranscriptionComplete }: VoiceRecorder
   };
 
   return (
-    <Card className="border-primary/20 bg-primary/5">
-      <CardContent className="pt-6">
-        <div className="flex flex-col items-center gap-4">
-          <div className="text-center">
-            <h3 className="font-semibold mb-2">Ditado por Voz</h3>
-            <p className="text-sm text-muted-foreground">
-              {isRecording 
-                ? "Gravando... Dite a prescrição completa"
-                : isProcessing
-                ? "Processando áudio e extraindo dados..."
-                : "Clique para começar a ditar a prescrição"}
-            </p>
-          </div>
+    <div className="flex flex-col items-center gap-4">
+      <div className="text-center">
+        <p className="text-sm text-muted-foreground">
+          {isRecording 
+            ? "🔴 Gravando... Dite: paciente, diagnóstico, medicamentos e dosagens"
+            : isProcessing
+            ? "⚙️ Processando e preenchendo campos..."
+            : "🎤 Clique para começar a ditar"}
+        </p>
+      </div>
 
-          <Button
-            size="lg"
-            variant={isRecording ? "destructive" : "default"}
-            onClick={isRecording ? stopRecording : startRecording}
-            disabled={isProcessing}
-            className="rounded-full h-16 w-16"
-          >
-            {isProcessing ? (
-              <Loader2 className="h-6 w-6 animate-spin" />
-            ) : isRecording ? (
-              <Square className="h-6 w-6" />
-            ) : (
-              <Mic className="h-6 w-6" />
-            )}
-          </Button>
+      <Button
+        size="lg"
+        variant={isRecording ? "destructive" : "default"}
+        onClick={isRecording ? stopRecording : startRecording}
+        disabled={isProcessing}
+        className="rounded-full h-16 w-16"
+      >
+        {isProcessing ? (
+          <Loader2 className="h-6 w-6 animate-spin" />
+        ) : isRecording ? (
+          <Square className="h-6 w-6" />
+        ) : (
+          <Mic className="h-6 w-6" />
+        )}
+      </Button>
 
-          {isRecording && (
-            <div className="flex items-center gap-2 text-destructive animate-pulse">
-              <div className="h-3 w-3 rounded-full bg-destructive" />
-              <span className="text-sm font-medium">Gravando</span>
-            </div>
-          )}
+      {isRecording && (
+        <div className="flex items-center gap-2 text-destructive animate-pulse">
+          <div className="h-3 w-3 rounded-full bg-destructive" />
+          <span className="text-sm font-medium">Gravando</span>
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 }

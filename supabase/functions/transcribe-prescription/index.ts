@@ -59,15 +59,16 @@ serve(async (req) => {
     formData.append('file', blob, 'prescription.webm');
     formData.append('model', 'whisper-1');
     formData.append('language', 'pt');
+    formData.append('response_format', 'json');
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY não configurada');
     }
 
-    // Transcribe audio using Whisper
+    // Transcribe audio using Whisper via OpenAI-compatible endpoint
     console.log('Transcrevendo áudio...');
-    const transcriptionResponse = await fetch('https://ai.gateway.lovable.dev/v1/audio/transcriptions', {
+    const transcriptionResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${LOVABLE_API_KEY}`,
