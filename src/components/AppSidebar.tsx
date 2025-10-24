@@ -1,0 +1,117 @@
+import { NavLink } from "react-router-dom";
+import {
+  Stethoscope,
+  FlaskConical,
+  Calculator,
+  Pill,
+  FileText,
+  Users,
+  Settings,
+  LogOut,
+} from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar";
+
+const modules = [
+  { title: "Pacientes", url: "/patients", icon: Users },
+  { title: "Clínicus", url: "/clinicus", icon: Stethoscope },
+  { title: "Examinus", url: "/examinus", icon: FlaskConical },
+  { title: "Scorius/Numerus", url: "/scorius", icon: Calculator },
+  { title: "Prescriptus", url: "/prescriptus", icon: Pill },
+  { title: "CODexus", url: "/codexus", icon: FileText },
+];
+
+const settings = [
+  { title: "Configurações", url: "/settings", icon: Settings },
+];
+
+export function AppSidebar() {
+  const { state } = useSidebar();
+  const collapsed = state === "collapsed";
+
+  return (
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border">
+      <SidebarContent>
+        {/* Logo */}
+        <div className="flex items-center gap-3 px-4 py-6">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
+            <Stethoscope className="h-6 w-6 text-primary-foreground" />
+          </div>
+          {!collapsed && (
+            <div>
+              <h1 className="text-lg font-bold text-sidebar-foreground">MedStation</h1>
+              <p className="text-xs text-sidebar-foreground/60">AI Clinical Assistant</p>
+            </div>
+          )}
+        </div>
+
+        {/* Main modules */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Módulos Clínicos</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {modules.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild tooltip={item.title}>
+                    <NavLink
+                      to={item.url}
+                      className={({ isActive }) =>
+                        isActive
+                          ? "bg-sidebar-accent text-sidebar-primary font-medium"
+                          : "hover:bg-sidebar-accent/50"
+                      }
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {!collapsed && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Settings */}
+        <SidebarGroup className="mt-auto">
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {settings.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild tooltip={item.title}>
+                    <NavLink
+                      to={item.url}
+                      className={({ isActive }) =>
+                        isActive
+                          ? "bg-sidebar-accent text-sidebar-primary font-medium"
+                          : "hover:bg-sidebar-accent/50"
+                      }
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {!collapsed && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton tooltip="Sair">
+                  <LogOut className="h-4 w-4" />
+                  {!collapsed && <span>Sair</span>}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
+  );
+}
