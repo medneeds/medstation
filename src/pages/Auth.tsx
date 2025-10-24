@@ -23,6 +23,7 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [resetEmail, setResetEmail] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [gender, setGender] = useState<"M" | "F" | "Outro" | "">("");
   const [crm, setCrm] = useState("");
   const [crmState, setCrmState] = useState("");
@@ -50,6 +51,17 @@ export default function Auth() {
     setLoading(true);
 
     try {
+      // Verificar se as senhas coincidem
+      if (password !== confirmPassword) {
+        toast({
+          variant: "destructive",
+          title: "Senhas não coincidem",
+          description: "Por favor, verifique se as senhas digitadas são iguais.",
+        });
+        setLoading(false);
+        return;
+      }
+
       // Validate input
       const validated = signUpSchema.parse({ email, password, fullName });
 
@@ -96,6 +108,16 @@ export default function Auth() {
         title: "Cadastro realizado!",
         description: "Você já pode fazer login.",
       });
+      
+      // Limpar formulário
+      setFullName("");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+      setGender("");
+      setCrm("");
+      setCrmState("");
+      setSpecialty("");
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -458,6 +480,23 @@ export default function Auth() {
                   <p className="text-xs text-muted-foreground">
                     Mínimo 8 caracteres, com maiúscula, minúscula e número
                   </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-confirm-password">Confirmar Senha *</Label>
+                  <Input
+                    id="signup-confirm-password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    minLength={8}
+                  />
+                  {confirmPassword && password !== confirmPassword && (
+                    <p className="text-xs text-destructive">
+                      As senhas não coincidem
+                    </p>
+                  )}
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Cadastrando..." : "Cadastrar"}
