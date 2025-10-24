@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { SearchDialog } from "@/components/SearchDialog";
 import { TagInput } from "@/components/TagInput";
 import { caseSchema } from "@/lib/validations";
+import CaseVoiceRecorder from "@/components/CaseVoiceRecorder";
 import {
   Dialog,
   DialogContent,
@@ -256,6 +257,19 @@ export default function Cases() {
                   Crie um novo caso para um paciente
                 </DialogDescription>
               </DialogHeader>
+              
+              <CaseVoiceRecorder
+                onTranscriptionComplete={(data) => {
+                  setFormData({
+                    ...formData,
+                    title: data.title || formData.title,
+                    chief_complaint: data.chief_complaint || formData.chief_complaint,
+                    notes: data.notes || formData.notes,
+                    tags: data.tags || formData.tags,
+                  });
+                }}
+              />
+              
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="patient">Paciente *</Label>
