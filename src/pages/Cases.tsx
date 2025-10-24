@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -60,6 +60,7 @@ export default function Cases() {
   const [searchDialogOpen, setSearchDialogOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [processingFile, setProcessingFile] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -558,7 +559,25 @@ export default function Cases() {
       <SearchDialog open={searchDialogOpen} onOpenChange={setSearchDialogOpen} />
 
       {/* Drag & Drop Zone Card */}
-      <Card className="border-dashed border-2 border-primary/30 bg-primary/5 hover:bg-primary/10 transition-all duration-300 hover:border-primary/50 cursor-pointer group">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf,.doc,.docx,.txt,.md"
+        className="hidden"
+        onChange={async (e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            await processDocumentFile(file);
+            if (fileInputRef.current) {
+              fileInputRef.current.value = '';
+            }
+          }
+        }}
+      />
+      <Card 
+        className="border-dashed border-2 border-primary/30 bg-primary/5 hover:bg-primary/10 transition-all duration-300 hover:border-primary/50 cursor-pointer group"
+        onClick={() => fileInputRef.current?.click()}
+      >
         <CardContent className="pt-6">
           <div className="text-center py-8">
             <div className="flex justify-center items-center gap-3 mb-4">
@@ -569,7 +588,7 @@ export default function Cases() {
             </div>
             <h3 className="text-lg font-semibold mb-2 flex items-center justify-center gap-2">
               <FileText className="h-5 w-5" />
-              Arraste um documento médico aqui
+              Insira ou arraste um documento médico
             </h3>
             <p className="text-sm text-muted-foreground mb-2">
               A IA extrairá automaticamente as informações do caso clínico
