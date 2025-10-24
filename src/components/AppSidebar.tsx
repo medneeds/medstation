@@ -59,7 +59,7 @@ export function AppSidebar() {
 
         {/* Main modules */}
         <SidebarGroup>
-          <SidebarGroupLabel>Módulos Clínicos</SidebarGroupLabel>
+          <SidebarGroupLabel>Agentes</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {modules.map((item) => (
