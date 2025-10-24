@@ -10,13 +10,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Plus, Trash2, Save, FileText, AlertCircle, User, Stethoscope } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Save, FileText, AlertCircle, User, Stethoscope, UserPlus } from "lucide-react";
 import { z } from "zod";
 
 const examSchema = z.object({
@@ -62,6 +70,27 @@ export default function NewExamRequest() {
     { name: "", type: "", instructions: "" },
   ]);
 
+  // New patient form state
+  const [newPatientDialogOpen, setNewPatientDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [newPatient, setNewPatient] = useState({
+    name: "",
+    cpf: "",
+    date_of_birth: "",
+    phone: "",
+    email: "",
+    notes: "",
+  });
+
+  // Filter patients based on search term
+  const filteredPatients = patients.filter((patient) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      patient.name.toLowerCase().includes(searchLower) ||
+      (patient.cpf && patient.cpf.includes(searchLower))
+    );
+  });
+
   useEffect(() => {
     fetchPatients();
   }, []);
@@ -92,6 +121,64 @@ export default function NewExamRequest() {
     } catch (error: any) {
       toast({
         title: "Erro ao carregar pacientes",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const createNewPatient = async () => {
+    try {
+      if (!newPatient.name.trim() || !newPatient.cpf.trim()) {
+        toast({
+          title: "Campos obrigatórios",
+          description: "Nome e CPF são obrigatórios",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const { data, error } = await supabase
+        .from("patients")
+        .insert({
+          user_id: user.id,
+          name: newPatient.name.trim(),
+          cpf: newPatient.cpf.trim(),
+          date_of_birth: newPatient.date_of_birth || null,
+          phone: newPatient.phone.trim() || null,
+          email: newPatient.email.trim() || null,
+          notes: newPatient.notes.trim() || null,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Paciente criado",
+        description: "Paciente adicionado com sucesso",
+      });
+
+      // Reset form and close dialog
+      setNewPatient({
+        name: "",
+        cpf: "",
+        date_of_birth: "",
+        phone: "",
+        email: "",
+        notes: "",
+      });
+      setNewPatientDialogOpen(false);
+
+      // Refresh patients list and select the new patient
+      await fetchPatients();
+      setSelectedPatient(data.id);
+    } catch (error: any) {
+      toast({
+        title: "Erro ao criar paciente",
         description: error.message,
         variant: "destructive",
       });
@@ -271,34 +358,144 @@ export default function NewExamRequest() {
       </Card>
 
       {/* Patient Selection */}
-      <Card>
+      <Card className="border-primary/20 bg-primary/5">
         <CardHeader>
           <div className="flex items-center gap-2">
             <User className="h-5 w-5 text-primary" />
             <CardTitle>Dados do Paciente</CardTitle>
           </div>
-          <CardDescription>Selecione o paciente para esta solicitação</CardDescription>
+          <CardDescription>Selecione ou pesquise o paciente para esta solicitação</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="patient">Paciente *</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="patient">Paciente *</Label>
+              <Dialog open={newPatientDialogOpen} onOpenChange={setNewPatientDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Novo Paciente
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Cadastrar Novo Paciente</DialogTitle>
+                    <DialogDescription>
+                      Preencha os dados do paciente para incluir na solicitação
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="new-name">Nome Completo *</Label>
+                        <Input
+                          id="new-name"
+                          value={newPatient.name}
+                          onChange={(e) => setNewPatient({ ...newPatient, name: e.target.value })}
+                          placeholder="Nome completo do paciente"
+                          maxLength={100}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="new-cpf">CPF *</Label>
+                        <Input
+                          id="new-cpf"
+                          value={newPatient.cpf}
+                          onChange={(e) => setNewPatient({ ...newPatient, cpf: e.target.value })}
+                          placeholder="000.000.000-00"
+                          maxLength={14}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="new-dob">Data de Nascimento</Label>
+                        <Input
+                          id="new-dob"
+                          type="date"
+                          value={newPatient.date_of_birth}
+                          onChange={(e) => setNewPatient({ ...newPatient, date_of_birth: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="new-phone">Telefone</Label>
+                        <Input
+                          id="new-phone"
+                          value={newPatient.phone}
+                          onChange={(e) => setNewPatient({ ...newPatient, phone: e.target.value })}
+                          placeholder="(00) 00000-0000"
+                          maxLength={15}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="new-email">E-mail</Label>
+                      <Input
+                        id="new-email"
+                        type="email"
+                        value={newPatient.email}
+                        onChange={(e) => setNewPatient({ ...newPatient, email: e.target.value })}
+                        placeholder="email@exemplo.com"
+                        maxLength={100}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="new-notes">Observações</Label>
+                      <Textarea
+                        id="new-notes"
+                        value={newPatient.notes}
+                        onChange={(e) => setNewPatient({ ...newPatient, notes: e.target.value })}
+                        placeholder="Alergias, condições especiais, etc..."
+                        rows={3}
+                        maxLength={500}
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setNewPatientDialogOpen(false)}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button onClick={createNewPatient}>
+                        Cadastrar Paciente
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
             <Select value={selectedPatient} onValueChange={setSelectedPatient}>
               <SelectTrigger id="patient">
-                <SelectValue placeholder="Selecione o paciente" />
+                <SelectValue placeholder="Pesquise por nome ou CPF..." />
               </SelectTrigger>
               <SelectContent>
-                {patients.map((patient) => (
-                  <SelectItem key={patient.id} value={patient.id}>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{patient.name}</span>
-                      {patient.cpf && (
-                        <span className="text-xs text-muted-foreground">
-                          CPF: {patient.cpf}
-                        </span>
-                      )}
-                    </div>
-                  </SelectItem>
-                ))}
+                <div className="p-2">
+                  <Input
+                    placeholder="Buscar paciente..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="mb-2"
+                  />
+                </div>
+                {filteredPatients.length === 0 ? (
+                  <div className="p-2 text-sm text-muted-foreground text-center">
+                    Nenhum paciente encontrado
+                  </div>
+                ) : (
+                  filteredPatients.map((patient) => (
+                    <SelectItem key={patient.id} value={patient.id}>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{patient.name}</span>
+                        {patient.cpf && (
+                          <span className="text-xs text-muted-foreground">
+                            CPF: {patient.cpf}
+                          </span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
