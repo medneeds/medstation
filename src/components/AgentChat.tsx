@@ -101,6 +101,7 @@ export function AgentChat({
   const isMobile = useIsMobile();
   const [message, setMessage] = useState("");
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
+  const [lastConversation, setLastConversation] = useState<Conversation | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [editingConversationId, setEditingConversationId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
@@ -128,29 +129,32 @@ export function AgentChat({
   useEffect(() => {
     fetchCases();
     loadConversations();
-    loadLastActiveConversation();
+    loadLastConversation();
   }, [agentType]);
 
-  // Save current conversation ID to localStorage when it changes
+  // Save current conversation to localStorage when it changes
   useEffect(() => {
-    if (currentConversation) {
-      localStorage.setItem(`${agentType}_last_conversation`, currentConversation.id);
+    if (currentConversation && currentConversation.messages.length > 0) {
+      const convToSave = {
+        ...currentConversation,
+        messages: currentConversation.messages.slice(-20) // Save only last 20 messages
+      };
+      localStorage.setItem(`${agentType}_last_conversation`, JSON.stringify(convToSave));
+      setLastConversation(convToSave);
     }
   }, [currentConversation, agentType]);
 
-  // Load last active conversation on mount
-  const loadLastActiveConversation = async () => {
-    const lastConvId = localStorage.getItem(`${agentType}_last_conversation`);
-    if (lastConvId) {
-      const { data, error } = await supabase
-        .from("conversations")
-        .select("*")
-        .eq("id", lastConvId)
-        .single();
-
-      if (!error && data) {
-        const messages = await loadConversationMessages(data.id);
-        setCurrentConversation({ ...data, messages });
+  // Load last conversation from localStorage on mount
+  const loadLastConversation = () => {
+    const saved = localStorage.getItem(`${agentType}_last_conversation`);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.messages && parsed.messages.length > 0) {
+          setLastConversation(parsed);
+        }
+      } catch (e) {
+        console.error("Error loading last conversation:", e);
       }
     }
   };
@@ -221,6 +225,16 @@ export function AgentChat({
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // Save current conversation as last conversation before creating new one
+    if (currentConversation && currentConversation.messages.length > 0) {
+      const convToSave = {
+        ...currentConversation,
+        messages: currentConversation.messages.slice(-20)
+      };
+      localStorage.setItem(`${agentType}_last_conversation`, JSON.stringify(convToSave));
+      setLastConversation(convToSave);
+    }
+
     const { data, error } = await supabase
       .from("conversations")
       .insert({
@@ -239,6 +253,13 @@ export function AgentChat({
       };
       setConversations([newConv, ...conversations]);
       setCurrentConversation(newConv);
+    }
+  };
+
+  const restoreLastConversation = () => {
+    if (lastConversation) {
+      setCurrentConversation(lastConversation);
+      setLastConversation(null);
     }
   };
 
@@ -819,6 +840,16 @@ export function AgentChat({
             </div>
             <p className="text-base md:text-lg font-medium">Olá! Como posso ajudar?</p>
             <p className="text-xs md:text-sm mt-2">Envie uma mensagem para começar</p>
+            {lastConversation && (
+              <Button
+                onClick={restoreLastConversation}
+                variant="outline"
+                size="sm"
+                className="mt-4"
+              >
+                Continuar última conversa
+              </Button>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
