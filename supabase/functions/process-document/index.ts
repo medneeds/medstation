@@ -12,6 +12,35 @@ serve(async (req) => {
   }
 
   try {
+    // Authentication check
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Não autorizado" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
+
+    // Verify user authentication
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey);
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
+    
+    if (authError || !user) {
+      console.error("Authentication failed:", authError);
+      return new Response(
+        JSON.stringify({ error: "Não autorizado" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`Authenticated user: ${user.id}`);
+
     const { evidenceId } = await req.json();
 
     if (!evidenceId) {
@@ -20,20 +49,31 @@ serve(async (req) => {
 
     console.log(`Processing document for evidence: ${evidenceId}`);
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Get evidence data
+    // Get evidence data and verify user owns it through case
     const { data: evidence, error: fetchError } = await supabase
       .from("evidences")
-      .select("*")
+      .select(`
+        *,
+        cases!inner(user_id)
+      `)
       .eq("id", evidenceId)
       .single();
 
-    if (fetchError) throw fetchError;
+    if (fetchError) {
+      console.error("Error fetching evidence:", fetchError);
+      throw fetchError;
+    }
+
+    // Verify user owns the case
+    if (evidence.cases?.user_id !== user.id) {
+      console.error("Access denied: user does not own this evidence");
+      return new Response(
+        JSON.stringify({ error: "Acesso negado" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     if (!evidence.file_path) {
       throw new Error("No file path found for this evidence");

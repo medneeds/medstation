@@ -12,6 +12,35 @@ serve(async (req) => {
   }
 
   try {
+    // Authentication check
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Não autorizado" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
+
+    // Verify user authentication
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey);
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
+    
+    if (authError || !user) {
+      console.error("Authentication failed:", authError);
+      return new Response(
+        JSON.stringify({ error: "Não autorizado" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`Authenticated user: ${user.id}`);
+
     const { messages, agentType, caseId } = await req.json();
 
     if (!messages || messages.length === 0) {
@@ -20,23 +49,29 @@ serve(async (req) => {
 
     console.log(`Agent chat request - Type: ${agentType}, Case: ${caseId}`);
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Get case data and evidences if caseId is provided
     let contextData = "";
     if (caseId) {
-      const { data: caseData } = await supabase
+      // Verify user owns the case
+      const { data: caseData, error: caseError } = await supabase
         .from("cases")
         .select(`
           *,
           patients (name, date_of_birth, cpf)
         `)
         .eq("id", caseId)
+        .eq("user_id", user.id)
         .single();
+
+      if (caseError || !caseData) {
+        console.error("Case access denied or not found:", caseError);
+        return new Response(
+          JSON.stringify({ error: "Caso não encontrado ou acesso negado" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
 
       const { data: evidences } = await supabase
         .from("evidences")
@@ -44,8 +79,7 @@ serve(async (req) => {
         .eq("case_id", caseId)
         .eq("is_active", true);
 
-      if (caseData) {
-        contextData = `
+      contextData = `
 DADOS DO CASO:
 - Título: ${caseData.title}
 - Paciente: ${caseData.patients?.name}
@@ -58,7 +92,6 @@ ${i + 1}. ${e.title} (${e.type})
 ${e.content ? `Conteúdo: ${e.content.substring(0, 500)}...` : ""}
 `).join("\n") || "Nenhuma evidência disponível"}
 `;
-      }
     }
 
     // Define agent personalities and system prompts
