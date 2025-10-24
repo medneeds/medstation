@@ -285,13 +285,21 @@ export function AgentChat({
         role: userMsgData.role as "user" | "assistant"
       };
 
-      const updatedMessages = [...conversation.messages, userMessage];
+      // Add user message and temporary "thinking" message
+      const thinkingMessage: Message = {
+        id: "thinking-temp",
+        role: "assistant",
+        content: "Pensando...",
+        created_at: new Date().toISOString()
+      };
+
+      const updatedMessages = [...conversation.messages, userMessage, thinkingMessage];
       setCurrentConversation({ ...conversation, messages: updatedMessages });
 
       // Call AI agent
       const { data: aiData, error: aiError } = await supabase.functions.invoke("agent-chat", {
         body: {
-          messages: updatedMessages.map(m => ({
+          messages: [...conversation.messages, userMessage].map(m => ({
             role: m.role,
             content: m.content,
           })),
@@ -320,7 +328,8 @@ export function AgentChat({
         role: assistantMsgData.role as "user" | "assistant"
       };
 
-      const finalMessages = [...updatedMessages, assistantMessage];
+      // Replace thinking message with actual response
+      const finalMessages = [...conversation.messages, userMessage, assistantMessage];
       
       // Update conversation
       await supabase
@@ -340,6 +349,13 @@ export function AgentChat({
 
     } catch (error: any) {
       console.error("Error sending message:", error);
+      
+      // Remove thinking message on error
+      if (conversation) {
+        const messagesWithoutThinking = conversation.messages.filter(m => m.id !== "thinking-temp");
+        setCurrentConversation({ ...conversation, messages: messagesWithoutThinking });
+      }
+      
       toast({
         title: "Erro ao enviar mensagem",
         description: error.message || "Não foi possível processar sua mensagem.",
