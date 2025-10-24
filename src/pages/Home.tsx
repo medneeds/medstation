@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Stethoscope, Brain, Zap, Shield, BarChart3, Users, CheckCircle } from "lucide-react";
+import { ArrowRight, Stethoscope, Brain, Zap, Shield, BarChart3, Users, CheckCircle, FileText, Mic, Upload, ClipboardList, Pill, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function Home() {
@@ -52,11 +52,44 @@ export default function Home() {
     },
   ];
 
+  const features = [
+    { 
+      icon: Upload, 
+      title: "Extração Automática de Documentos", 
+      text: "Arraste documentos médicos e a IA extrai automaticamente diagnósticos, sintomas e informações clínicas"
+    },
+    { 
+      icon: Mic, 
+      title: "Transcrição de Áudio Inteligente", 
+      text: "Grave sua consulta falando e transforme em casos clínicos, prescrições e notas estruturadas"
+    },
+    { 
+      icon: Users, 
+      title: "Gestão Completa de Pacientes", 
+      text: "Prontuário digital com histórico completo, casos clínicos, prescrições e exames em um só lugar"
+    },
+    { 
+      icon: Brain, 
+      title: "6 Agentes de IA Especializados", 
+      text: "Diagnóstico diferencial, interpretação de exames, scores, prescrições, estatísticas e codificação CID-10"
+    },
+    { 
+      icon: FileText, 
+      title: "Documentação Profissional", 
+      text: "Gere prescrições, atestados e laudos em PDF prontos para impressão ou envio"
+    },
+    { 
+      icon: Zap, 
+      title: "Busca Instantânea", 
+      text: "Encontre qualquer paciente, caso ou documento em segundos com busca inteligente"
+    },
+  ];
+
   const benefits = [
-    { icon: Zap, title: "Velocidade", text: "Respostas instantâneas dos agentes de IA" },
-    { icon: Shield, title: "Segurança", text: "Dados criptografados e conformidade com LGPD" },
-    { icon: Users, title: "Colaboração", text: "Gestão integrada de pacientes e casos" },
-    { icon: Brain, title: "Inteligência", text: "6 agentes especializados para diferentes tarefas" },
+    { icon: Zap, title: "Economize 60% do tempo", text: "Menos digitação, mais atendimento ao paciente" },
+    { icon: Shield, title: "100% Seguro e Privado", text: "Dados criptografados e conformidade com LGPD" },
+    { icon: Sparkles, title: "Decisões Mais Precisas", text: "IA baseada em evidências científicas atualizadas" },
+    { icon: CheckCircle, title: "Comece em 2 minutos", text: "Não precisa configurar nada, já está pronto para usar" },
   ];
 
   return (
@@ -85,23 +118,26 @@ export default function Home() {
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-12 md:py-20 text-center">
         <Badge className="mb-4 text-xs md:text-sm bg-primary/10 text-primary hover:bg-primary/20">
-          Revolucione seu atendimento médico
+          🎉 Grátis para sempre · Agente Examinus incluído
         </Badge>
         <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-4 md:mb-6 bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent leading-tight">
-          A IA Médica que trabalha com você
+          Atenda mais pacientes.<br />Documente menos.
         </h1>
         <p className="text-base md:text-xl text-muted-foreground max-w-3xl mx-auto mb-6 md:mb-8 px-2">
-          6 agentes especializados de inteligência artificial para auxiliar em cada etapa do atendimento clínico.
-          Diagnósticos mais precisos, decisões mais rápidas.
+          Arraste documentos, grave áudios ou converse com 6 agentes de IA especializados.<br className="hidden md:block" />
+          A plataforma médica que economiza <strong>horas do seu dia</strong> com automação inteligente.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center px-4">
           <Button size="lg" onClick={() => navigate("/pricing")} className="w-full sm:w-auto h-12 md:h-14 px-6 md:px-8 text-base md:text-lg">
-            Começar Teste Grátis <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5" />
+            Começar Gratuitamente <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5" />
           </Button>
           <Button size="lg" variant="outline" onClick={() => navigate("/auth")} className="w-full sm:w-auto h-12 md:h-14 px-6 md:px-8 text-base md:text-lg">
-            Fazer Login
+            Já tenho conta
           </Button>
         </div>
+        <p className="text-xs md:text-sm text-muted-foreground mt-4">
+          ✓ Sem cartão de crédito · ✓ Comece em 2 minutos · ✓ Cancele quando quiser
+        </p>
       </section>
 
       {/* Agents Grid */}
@@ -138,11 +174,33 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Features Section */}
+      <section className="container mx-auto px-4 py-12 md:py-20">
+        <div className="text-center mb-8 md:mb-12">
+          <Badge className="mb-4 bg-accent/10 text-accent border-accent/20">Tudo que você precisa</Badge>
+          <h2 className="text-2xl md:text-4xl font-bold mb-3 md:mb-4">Funcionalidades que economizam seu tempo</h2>
+          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
+            Automatize tarefas repetitivas e foque no que importa: o cuidado com seus pacientes
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {features.map((feature, index) => (
+            <Card key={index} className="p-6 hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/30">
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                <feature.icon className="w-6 h-6 md:w-7 md:h-7 text-primary" />
+              </div>
+              <h3 className="text-lg md:text-xl font-bold mb-2">{feature.title}</h3>
+              <p className="text-sm md:text-base text-muted-foreground leading-relaxed">{feature.text}</p>
+            </Card>
+          ))}
+        </div>
+      </section>
+
       {/* Benefits */}
       <section className="container mx-auto px-4 py-12 md:py-20">
         <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl md:rounded-3xl p-6 md:p-12">
           <div className="text-center mb-8 md:mb-12">
-            <h2 className="text-2xl md:text-4xl font-bold mb-3 md:mb-4">Por que escolher MedStation AI?</h2>
+            <h2 className="text-2xl md:text-4xl font-bold mb-3 md:mb-4">Por que médicos escolhem MedStation AI?</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             {benefits.map((benefit, index) => (
@@ -161,13 +219,33 @@ export default function Home() {
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-12 md:py-20 text-center">
         <Card className="p-6 md:p-12 border-2 border-primary/20 shadow-2xl bg-gradient-to-br from-background to-primary/5">
-          <h2 className="text-2xl md:text-4xl font-bold mb-3 md:mb-4">Pronto para começar?</h2>
+          <Badge className="mb-4 bg-green-500/10 text-green-600 border-green-500/20">🎁 Examinus grátis para sempre</Badge>
+          <h2 className="text-2xl md:text-4xl font-bold mb-3 md:mb-4">Teste grátis. Sem compromisso.</h2>
           <p className="text-base md:text-xl text-muted-foreground mb-6 md:mb-8 max-w-2xl mx-auto px-2">
-            Junte-se aos profissionais de saúde que já estão revolucionando seu atendimento com IA
+            Comece agora mesmo com o agente Examinus totalmente gratuito e descubra como a IA pode transformar sua prática médica
           </p>
-          <Button size="lg" onClick={() => navigate("/pricing")} className="w-full sm:w-auto h-12 md:h-14 px-8 md:px-12 text-base md:text-lg">
-            Ver Planos e Preços <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5" />
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+            <Button size="lg" onClick={() => navigate("/pricing")} className="w-full sm:w-auto h-12 md:h-14 px-8 md:px-12 text-base md:text-lg">
+              Criar Conta Gratuita <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5" />
+            </Button>
+            <Button size="lg" variant="outline" onClick={() => navigate("/auth")} className="w-full sm:w-auto h-12 md:h-14 px-8 md:px-12 text-base md:text-lg">
+              Ver Demonstração
+            </Button>
+          </div>
+          <div className="flex flex-wrap justify-center gap-4 md:gap-8 mt-8 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-600" />
+              <span>Sem cartão necessário</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-600" />
+              <span>Configuração em 2 minutos</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-600" />
+              <span>Cancele quando quiser</span>
+            </div>
+          </div>
         </Card>
       </section>
 
