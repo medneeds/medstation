@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { profileSchema } from "@/lib/validations";
 import { z } from "zod";
 import { useProfile } from "@/contexts/ProfileContext";
+import { ImageCropDialog } from "@/components/ImageCropDialog";
 
 const BRAZILIAN_STATES = [
   "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG",
@@ -35,6 +36,8 @@ export default function Settings() {
   const [uploading, setUploading] = useState(false);
   const [userId, setUserId] = useState<string>("");
   const [avatarUrl, setAvatarUrl] = useState<string>("");
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [selectedImageSrc, setSelectedImageSrc] = useState<string>("");
   const [profile, setProfile] = useState({
     full_name: "",
     gender: "" as "M" | "F" | "Outro" | "",
@@ -108,40 +111,54 @@ export default function Settings() {
     }
   };
 
-  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validação do tamanho (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Erro",
+        description: "A imagem deve ter no máximo 5MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validação do tipo
+    if (!["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(file.type)) {
+      toast({
+        title: "Erro",
+        description: "Formato de imagem inválido. Use JPG, PNG ou WEBP.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Criar URL temporária para preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target?.result) {
+        setSelectedImageSrc(e.target.result as string);
+        setCropDialogOpen(true);
+      }
+    };
+    reader.readAsDataURL(file);
+
+    // Limpar input para permitir selecionar o mesmo arquivo novamente
+    event.target.value = "";
+  };
+
+  const handleCropComplete = async (croppedImage: Blob) => {
     try {
-      const file = event.target.files?.[0];
-      if (!file) return;
-
-      // Validação do tamanho (5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "Erro",
-          description: "A imagem deve ter no máximo 5MB.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Validação do tipo
-      if (!["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(file.type)) {
-        toast({
-          title: "Erro",
-          description: "Formato de imagem inválido. Use JPG, PNG ou WEBP.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       setUploading(true);
 
       // Upload para o bucket
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${userId}/${Date.now()}.${fileExt}`;
+      const fileName = `${userId}/${Date.now()}.jpg`;
 
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(fileName, file, { upsert: true });
+        .upload(fileName, croppedImage, { upsert: true });
 
       if (uploadError) throw uploadError;
 
@@ -331,7 +348,7 @@ export default function Settings() {
                 ref={fileInputRef}
                 type="file"
                 accept="image/jpeg,image/jpg,image/png,image/webp"
-                onChange={handleAvatarUpload}
+                onChange={handleAvatarSelect}
                 className="hidden"
               />
               <Button
@@ -656,6 +673,13 @@ export default function Settings() {
           {saving ? "Salvando..." : "Salvar Alterações"}
         </Button>
       </div>
+
+      <ImageCropDialog
+        open={cropDialogOpen}
+        onClose={() => setCropDialogOpen(false)}
+        imageSrc={selectedImageSrc}
+        onCropComplete={handleCropComplete}
+      />
     </div>
   );
 }
