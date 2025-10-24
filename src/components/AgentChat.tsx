@@ -112,7 +112,32 @@ export function AgentChat({
   useEffect(() => {
     fetchCases();
     loadConversations();
+    loadLastActiveConversation();
   }, [agentType]);
+
+  // Save current conversation ID to localStorage when it changes
+  useEffect(() => {
+    if (currentConversation) {
+      localStorage.setItem(`${agentType}_last_conversation`, currentConversation.id);
+    }
+  }, [currentConversation, agentType]);
+
+  // Load last active conversation on mount
+  const loadLastActiveConversation = async () => {
+    const lastConvId = localStorage.getItem(`${agentType}_last_conversation`);
+    if (lastConvId) {
+      const { data, error } = await supabase
+        .from("conversations")
+        .select("*")
+        .eq("id", lastConvId)
+        .single();
+
+      if (!error && data) {
+        const messages = await loadConversationMessages(data.id);
+        setCurrentConversation({ ...data, messages });
+      }
+    }
+  };
 
   const loadConversations = async () => {
     const { data: { user } } = await supabase.auth.getUser();
