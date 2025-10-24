@@ -11,6 +11,7 @@ import {
   LogOut,
   Activity,
   Folder,
+  CreditCard,
 } from "lucide-react";
 import {
   Sidebar,
@@ -40,6 +41,7 @@ const agentModules = [
 ];
 
 const settings = [
+  { title: "Assinatura", url: "/pricing", icon: CreditCard },
   { title: "Configurações", url: "/settings", icon: Settings },
 ];
 

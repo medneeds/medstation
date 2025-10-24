@@ -5,11 +5,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { DashboardLayout } from "./components/DashboardLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 import Dashboard from "./pages/Dashboard";
 import Patients from "./pages/Patients";
 import Cases from "./pages/Cases";
 import CaseDetail from "./pages/CaseDetail";
 import Auth from "./pages/Auth";
+import Home from "./pages/Home";
+import Pricing from "./pages/Pricing";
 import Clinicus from "./pages/Clinicus";
 import Examinus from "./pages/Examinus";
 import Scorius from "./pages/Scorius";
@@ -24,126 +27,129 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout>
-                  <Dashboard />
-                </DashboardLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/patients"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout>
-                  <Patients />
-                </DashboardLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/cases"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout>
-                  <Cases />
-                </DashboardLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/case/:caseId"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout>
-                  <CaseDetail />
-                </DashboardLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/clinicus"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout>
-                  <Clinicus />
-                </DashboardLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/examinus"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout>
-                  <Examinus />
-                </DashboardLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/scorius"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout>
-                  <Scorius />
-                </DashboardLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/numerus"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout>
-                  <Numerus />
-                </DashboardLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/prescriptus"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout>
-                  <Prescriptus />
-                </DashboardLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/codexus"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout>
-                  <Codexus />
-                </DashboardLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout>
-                  <Settings />
-                </DashboardLayout>
-              </ProtectedRoute>
-            }
-          />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <SubscriptionProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <Dashboard />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/patients"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <Patients />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/cases"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <Cases />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/case/:caseId"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <CaseDetail />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/clinicus"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <Clinicus />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/examinus"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <Examinus />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/scorius"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <Scorius />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/numerus"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <Numerus />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/prescriptus"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <Prescriptus />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/codexus"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <Codexus />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <Settings />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </SubscriptionProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
