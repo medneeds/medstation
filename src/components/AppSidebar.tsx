@@ -25,9 +25,12 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-const modules = [
+const managementModules = [
   { title: "Pacientes", url: "/patients", icon: Users },
   { title: "Casos", url: "/cases", icon: Folder },
+];
+
+const agentModules = [
   { title: "Clínicus", url: "/clinicus", icon: Stethoscope },
   { title: "Examinus", url: "/examinus", icon: FlaskConical },
   { title: "Scorius", url: "/scorius", icon: Activity },
@@ -66,12 +69,38 @@ export function AppSidebar() {
           )}
         </div>
 
-        {/* Main modules */}
+        {/* Management modules */}
         <SidebarGroup>
-          <SidebarGroupLabel>Agentes</SidebarGroupLabel>
+          <SidebarGroupLabel>Gestão</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {modules.map((item) => (
+              {managementModules.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild tooltip={item.title}>
+                    <NavLink
+                      to={item.url}
+                      className={({ isActive }) =>
+                        isActive
+                          ? "bg-sidebar-accent text-sidebar-primary font-medium"
+                          : "hover:bg-sidebar-accent/50"
+                      }
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {!collapsed && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Agent modules */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Agentes IA</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {agentModules.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title}>
                     <NavLink
