@@ -193,7 +193,7 @@ export default function Auth() {
           description: error.message,
         });
       } else {
-        navigate("/");
+        navigate("/dashboard");
       }
     } catch (error: any) {
       toast({
