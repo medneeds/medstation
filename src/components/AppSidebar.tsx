@@ -206,7 +206,7 @@ export function AppSidebar() {
                 <SidebarMenuButton 
                   tooltip="Sair" 
                   onClick={handleLogout}
-                  className="hover:bg-destructive/10 hover:text-destructive hover:translate-x-1 transition-all duration-200"
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive hover:translate-x-1 transition-all duration-200"
                 >
                   <LogOut className="h-4 w-4" />
                   {!collapsed && <span className="animate-fade-in">Sair</span>}
