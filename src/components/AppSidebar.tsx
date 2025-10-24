@@ -75,11 +75,11 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-gradient-to-br from-primary/25 via-sidebar/85 to-primary/20 backdrop-blur-md shadow-2xl">
-      <SidebarContent className="gap-0 bg-gradient-to-b from-transparent via-sidebar/50 to-primary/5">
+    <Sidebar collapsible="icon" className="border-r border-border bg-background shadow-sm">
+      <SidebarContent className="gap-0 bg-background">
         {/* User Profile */}
-        <div className="flex items-center gap-3 px-4 py-6 border-b border-primary/20 bg-gradient-to-r from-primary/30 via-primary/15 to-transparent shadow-lg backdrop-blur-sm">
-          <Avatar className="h-12 w-12 ring-2 ring-primary/30 shadow-xl transition-all hover:ring-primary/50 hover:scale-110 hover:shadow-2xl">
+        <div className="flex items-center gap-3 px-4 py-6 border-b border-border bg-card">
+          <Avatar className="h-12 w-12 ring-2 ring-primary/20 shadow-sm transition-all hover:ring-primary/40 hover:scale-105">
             <AvatarImage src={profile?.avatar_url || ""} alt={profile?.full_name || ""} />
             <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground font-semibold">
               {getInitials()}
@@ -87,14 +87,14 @@ export function AppSidebar() {
           </Avatar>
           {!collapsed && (
             <div className="flex-1 min-w-0 animate-fade-in">
-              <p className="text-sm font-semibold text-sidebar-foreground truncate">
+              <p className="text-sm font-semibold text-foreground truncate">
                 {getTitle()} {profile?.full_name || "Carregando..."}
               </p>
-              <p className="text-xs text-sidebar-foreground/70 truncate mt-0.5">
+              <p className="text-xs text-muted-foreground truncate mt-0.5">
                 {profile?.specialty || "Médico"}
               </p>
               {profile?.crm && profile?.crm_state && (
-                <p className="text-xs text-sidebar-foreground/60 truncate mt-0.5 font-mono">
+                <p className="text-xs text-muted-foreground truncate mt-0.5">
                   CRM-{profile.crm_state} {profile.crm}
                 </p>
               )}
@@ -103,7 +103,7 @@ export function AppSidebar() {
         </div>
 
         {/* Home */}
-        <SidebarGroup className="py-3 bg-gradient-to-r from-primary/5 to-transparent">
+        <SidebarGroup className="py-3">
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
@@ -126,8 +126,8 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Management modules */}
-        <SidebarGroup className="py-3 border-t border-primary/10 bg-gradient-to-r from-primary/8 to-transparent">
-          <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70 uppercase tracking-wider px-3 mb-1">
+        <SidebarGroup className="py-3 border-t border-border">
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-1">
             Gestão
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -154,8 +154,8 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Agent modules */}
-        <SidebarGroup className="py-3 border-t border-primary/10 bg-gradient-to-r from-primary/10 to-transparent">
-          <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70 uppercase tracking-wider px-3 mb-1">
+        <SidebarGroup className="py-3 border-t border-border">
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-1">
             Agentes IA
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -182,7 +182,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Settings */}
-        <SidebarGroup className="mt-auto py-3 border-t border-primary/15 bg-gradient-to-r from-primary/12 to-transparent">
+        <SidebarGroup className="mt-auto py-3 border-t border-border">
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
               {settings.map((item) => (
