@@ -102,7 +102,7 @@ export default function NewPrescription() {
     }
   }, [selectedPatient, patients]);
 
-  // Load data from copy/renew
+  // Load data from copy/renew or preselected patient
   useEffect(() => {
     const state = location.state as any;
     if (state?.copyFrom) {
@@ -112,6 +112,8 @@ export default function NewPrescription() {
       setCidCode(cid_code || "");
       setMedications(medications || [{ name: "", dosage: "", frequency: "", duration: "", instructions: "" }]);
       setObservations(observations || "");
+    } else if (state?.preselectedPatient) {
+      setSelectedPatient(state.preselectedPatient);
     }
   }, [location.state]);
 

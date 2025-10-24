@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/contexts/ProfileContext";
@@ -56,6 +56,7 @@ const examTypes = [
 
 export default function NewExamRequest() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { profile } = useProfile();
   const [loading, setLoading] = useState(false);
@@ -94,6 +95,14 @@ export default function NewExamRequest() {
   useEffect(() => {
     fetchPatients();
   }, []);
+
+  // Load preselected patient from navigation state
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.preselectedPatient) {
+      setSelectedPatient(state.preselectedPatient);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     if (selectedPatient) {
