@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, FolderOpen, ChevronRight, Search } from "lucide-react";
+import { Plus, FolderOpen, ChevronRight, Search, Upload, FileText, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SearchDialog } from "@/components/SearchDialog";
 import { TagInput } from "@/components/TagInput";
@@ -557,6 +557,33 @@ export default function Cases() {
 
       <SearchDialog open={searchDialogOpen} onOpenChange={setSearchDialogOpen} />
 
+      {/* Drag & Drop Zone Card */}
+      <Card className="border-dashed border-2 border-primary/30 bg-primary/5 hover:bg-primary/10 transition-all duration-300 hover:border-primary/50 cursor-pointer group">
+        <CardContent className="pt-6">
+          <div className="text-center py-8">
+            <div className="flex justify-center items-center gap-3 mb-4">
+              <div className="rounded-full p-3 bg-primary/20 group-hover:bg-primary/30 transition-colors">
+                <Upload className="h-8 w-8 text-primary" />
+              </div>
+              <Sparkles className="h-6 w-6 text-primary animate-pulse" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2 flex items-center justify-center gap-2">
+              <FileText className="h-5 w-5" />
+              Arraste um documento médico aqui
+            </h3>
+            <p className="text-sm text-muted-foreground mb-2">
+              A IA extrairá automaticamente as informações do caso clínico
+            </p>
+            <div className="flex flex-wrap justify-center gap-2 mt-4">
+              <Badge variant="outline" className="text-xs">PDF</Badge>
+              <Badge variant="outline" className="text-xs">DOCX</Badge>
+              <Badge variant="outline" className="text-xs">TXT</Badge>
+              <Badge variant="outline" className="text-xs">MD</Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardContent className="pt-6">
           {loading ? (
@@ -565,7 +592,7 @@ export default function Cases() {
             <div className="text-center py-12 text-muted-foreground">
               <FolderOpen className="h-12 w-12 mx-auto mb-4 opacity-30" />
               <p>Nenhum caso encontrado</p>
-              <p className="text-sm mt-1">Crie um novo caso para começar</p>
+              <p className="text-sm mt-1">Crie um novo caso ou arraste um documento acima</p>
             </div>
           ) : (
             <div className="grid gap-4">
