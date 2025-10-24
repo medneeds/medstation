@@ -75,10 +75,10 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-gradient-to-b from-sidebar to-sidebar/95">
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-gradient-to-b from-sidebar via-sidebar/98 to-sidebar/95 backdrop-blur-sm">
       <SidebarContent className="gap-0">
         {/* User Profile */}
-        <div className="flex items-center gap-3 px-4 py-6 border-b border-sidebar-border/50 bg-sidebar-accent/30">
+        <div className="flex items-center gap-3 px-4 py-6 border-b border-sidebar-border/50 bg-gradient-to-r from-sidebar-accent/20 to-transparent">
           <Avatar className="h-12 w-12 ring-2 ring-primary/10 shadow-md transition-all hover:ring-primary/30 hover:scale-105">
             <AvatarImage src={profile?.avatar_url || ""} alt={profile?.full_name || ""} />
             <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground font-semibold">
