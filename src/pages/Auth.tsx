@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Activity } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { signUpSchema, signInSchema } from "@/lib/validations";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -40,32 +41,43 @@ export default function Auth() {
     e.preventDefault();
     setLoading(true);
 
-    const redirectUrl = `${window.location.origin}/dashboard`;
+    try {
+      // Validate input
+      const validated = signUpSchema.parse({ email, password, fullName });
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
+      const redirectUrl = `${window.location.origin}/dashboard`;
+
+      const { error } = await supabase.auth.signUp({
+        email: validated.email,
+        password: validated.password,
+        options: {
+          data: {
+            full_name: validated.fullName,
+          },
+          emailRedirectTo: redirectUrl,
         },
-        emailRedirectTo: redirectUrl,
-      },
-    });
+      });
 
-    setLoading(false);
-
-    if (error) {
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Erro no cadastro",
+          description: error.message,
+        });
+      } else {
+        toast({
+          title: "Cadastro realizado!",
+          description: "Você já pode fazer login.",
+        });
+      }
+    } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Erro no cadastro",
-        description: error.message,
+        title: "Dados inválidos",
+        description: error.errors?.[0]?.message || "Por favor, verifique os dados informados",
       });
-    } else {
-      toast({
-        title: "Cadastro realizado!",
-        description: "Você já pode fazer login.",
-      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -117,21 +129,32 @@ export default function Auth() {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      // Validate input
+      const validated = signInSchema.parse({ email, password });
 
-    setLoading(false);
+      const { error } = await supabase.auth.signInWithPassword({
+        email: validated.email,
+        password: validated.password,
+      });
 
-    if (error) {
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Erro no login",
+          description: error.message,
+        });
+      } else {
+        navigate("/");
+      }
+    } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Erro no login",
-        description: error.message,
+        title: "Dados inválidos",
+        description: error.errors?.[0]?.message || "Por favor, verifique os dados informados",
       });
-    } else {
-      navigate("/");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -273,8 +296,11 @@ export default function Auth() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    minLength={6}
+                    minLength={8}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Mínimo 8 caracteres, com maiúscula, minúscula e número
+                  </p>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Cadastrando..." : "Cadastrar"}

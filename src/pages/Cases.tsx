@@ -7,6 +7,7 @@ import { Plus, FolderOpen, ChevronRight, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SearchDialog } from "@/components/SearchDialog";
 import { TagInput } from "@/components/TagInput";
+import { caseSchema } from "@/lib/validations";
 import {
   Dialog,
   DialogContent,
@@ -146,27 +147,38 @@ export default function Cases() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    try {
+      // Validate input
+      const validated = caseSchema.parse(formData);
 
-    const { error } = await supabase
-      .from("cases")
-      .insert([{ ...formData, user_id: user.id }]);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-    if (error) {
+      const { error } = await supabase
+        .from("cases")
+        .insert([{ ...validated, user_id: user.id }]);
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Erro ao criar caso",
+          description: error.message,
+        });
+      } else {
+        toast({ title: "Caso criado!" });
+        if (patientId) {
+          fetchCasesByPatient(patientId);
+        } else {
+          fetchAllCases();
+        }
+        resetForm();
+      }
+    } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Erro ao criar caso",
-        description: error.message,
+        title: "Dados inválidos",
+        description: error.errors?.[0]?.message || "Por favor, verifique os dados informados",
       });
-    } else {
-      toast({ title: "Caso criado!" });
-      if (patientId) {
-        fetchCasesByPatient(patientId);
-      } else {
-        fetchAllCases();
-      }
-      resetForm();
     }
   };
 

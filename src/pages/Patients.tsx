@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Search, User, Calendar, Phone, Mail, MoreVertical, Folder } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { patientSchema } from "@/lib/validations";
 import {
   Dialog,
   DialogContent,
@@ -93,42 +94,53 @@ export default function Patients() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    try {
+      // Validate input
+      const validated = patientSchema.parse(formData);
 
-    if (editingPatient) {
-      const { error } = await supabase
-        .from("patients")
-        .update(formData)
-        .eq("id", editingPatient.id);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Erro ao atualizar",
-          description: error.message,
-        });
+      if (editingPatient) {
+        const { error } = await supabase
+          .from("patients")
+          .update(validated)
+          .eq("id", editingPatient.id);
+
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Erro ao atualizar",
+            description: error.message,
+          });
+        } else {
+          toast({ title: "Paciente atualizado!" });
+          fetchPatients();
+          resetForm();
+        }
       } else {
-        toast({ title: "Paciente atualizado!" });
-        fetchPatients();
-        resetForm();
-      }
-    } else {
-      const { error } = await supabase
-        .from("patients")
-        .insert([{ ...formData, user_id: user.id }]);
+        const { error } = await supabase
+          .from("patients")
+          .insert([{ ...validated, user_id: user.id }]);
 
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Erro ao criar paciente",
-          description: error.message,
-        });
-      } else {
-        toast({ title: "Paciente criado!" });
-        fetchPatients();
-        resetForm();
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Erro ao criar paciente",
+            description: error.message,
+          });
+        } else {
+          toast({ title: "Paciente criado!" });
+          fetchPatients();
+          resetForm();
+        }
       }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Dados inválidos",
+        description: error.errors?.[0]?.message || "Por favor, verifique os dados informados",
+      });
     }
   };
 

@@ -43,8 +43,13 @@ serve(async (req) => {
 
     const { evidenceId } = await req.json();
 
-    if (!evidenceId) {
-      throw new Error("Evidence ID is required");
+    // Validate input
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!evidenceId || !uuidRegex.test(evidenceId)) {
+      return new Response(
+        JSON.stringify({ error: "ID de evidência inválido" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     console.log(`Transcribing audio for evidence: ${evidenceId}`);
@@ -137,9 +142,11 @@ Formate a transcrição de forma clara e organizada, separando por parágrafos q
     });
 
     if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error("AI transcription error:", errorText);
-      throw new Error(`Transcription failed: ${errorText}`);
+      console.error("AI transcription failed with status:", aiResponse.status);
+      return new Response(
+        JSON.stringify({ error: "Falha ao transcrever áudio. Tente novamente." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const aiResult = await aiResponse.json();
@@ -181,9 +188,9 @@ Formate a transcrição de forma clara e organizada, separando por parágrafos q
       }
     );
   } catch (error: any) {
-    console.error("Error transcribing audio:", error);
+    console.error("Error transcribing audio:", error.message);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Erro ao transcrever áudio" }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

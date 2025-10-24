@@ -43,8 +43,36 @@ serve(async (req) => {
 
     const { messages, agentType, caseId } = await req.json();
 
-    if (!messages || messages.length === 0) {
-      throw new Error("Messages are required");
+    // Validate input
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "Mensagens inválidas" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (messages.length > 50) {
+      return new Response(
+        JSON.stringify({ error: "Número máximo de mensagens excedido" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const validAgentTypes = ["clinicus", "examinus", "scorius", "numerus", "prescriptus", "codexus"];
+    if (agentType && !validAgentTypes.includes(agentType)) {
+      return new Response(
+        JSON.stringify({ error: "Tipo de agente inválido" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validate UUID format for caseId if provided
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (caseId && !uuidRegex.test(caseId)) {
+      return new Response(
+        JSON.stringify({ error: "ID de caso inválido" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     console.log(`Agent chat request - Type: ${agentType}, Case: ${caseId}`);
@@ -311,9 +339,11 @@ ${contextData}`,
     });
 
     if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error("AI response error:", errorText);
-      throw new Error(`AI request failed: ${errorText}`);
+      console.error("AI response failed with status:", aiResponse.status);
+      return new Response(
+        JSON.stringify({ error: "Falha ao processar requisição. Tente novamente." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const aiResult = await aiResponse.json();
@@ -331,9 +361,9 @@ ${contextData}`,
       }
     );
   } catch (error: any) {
-    console.error("Error in agent-chat:", error);
+    console.error("Error in agent-chat:", error.message);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Erro ao processar solicitação" }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

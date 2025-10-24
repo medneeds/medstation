@@ -43,8 +43,13 @@ serve(async (req) => {
 
     const { evidenceId } = await req.json();
 
-    if (!evidenceId) {
-      throw new Error("Evidence ID is required");
+    // Validate input
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!evidenceId || !uuidRegex.test(evidenceId)) {
+      return new Response(
+        JSON.stringify({ error: "ID de evidência inválido" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     console.log(`Processing document for evidence: ${evidenceId}`);
@@ -142,9 +147,11 @@ Retorne o texto limpo e organizado em português, sem adicionar comentários ou 
       });
 
       if (!aiResponse.ok) {
-        const errorText = await aiResponse.text();
-        console.error("AI API error:", errorText);
-        throw new Error(`AI processing failed: ${errorText}`);
+        console.error("AI processing failed with status:", aiResponse.status);
+        return new Response(
+          JSON.stringify({ error: "Falha ao processar documento. Tente novamente." }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       const aiResult = await aiResponse.json();
@@ -189,9 +196,9 @@ Retorne o texto limpo e organizado em português, sem adicionar comentários ou 
       }
     );
   } catch (error: any) {
-    console.error("Error processing document:", error);
+    console.error("Error processing document:", error.message);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Erro ao processar documento" }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
