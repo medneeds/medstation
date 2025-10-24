@@ -1,4 +1,5 @@
 import { AgentChat } from "@/components/AgentChat";
+import { PremiumAgentGuard } from "@/components/PremiumAgentGuard";
 import { Pill, Plus, AlertTriangle, FileDown } from "lucide-react";
 
 export default function Prescriptus() {
@@ -6,8 +7,9 @@ export default function Prescriptus() {
   const caseId = searchParams.get("caseId") || undefined;
 
   return (
-    <div className="h-full p-6">
-      <AgentChat
+    <PremiumAgentGuard agentName="Prescriptus">
+      <div className="h-full p-6">
+        <AgentChat
         agentName="Prescriptus"
         agentIcon={<Pill className="h-8 w-8" />}
         agentColor="text-destructive"
@@ -31,7 +33,8 @@ export default function Prescriptus() {
             onClick: () => console.log("Gerar PDF"),
           },
         ]}
-      />
-    </div>
+        />
+      </div>
+    </PremiumAgentGuard>
   );
 }

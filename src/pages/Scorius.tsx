@@ -1,4 +1,5 @@
 import { AgentChat } from "@/components/AgentChat";
+import { PremiumAgentGuard } from "@/components/PremiumAgentGuard";
 import { Activity, Heart, Brain } from "lucide-react";
 
 export default function Scorius() {
@@ -6,8 +7,9 @@ export default function Scorius() {
   const caseId = searchParams.get("caseId") || undefined;
 
   return (
-    <div className="h-full p-6">
-      <AgentChat
+    <PremiumAgentGuard agentName="Scorius">
+      <div className="h-full p-6">
+        <AgentChat
         agentName="Scorius"
         agentIcon={<Activity className="h-8 w-8" />}
         agentColor="text-warning"
@@ -31,7 +33,8 @@ export default function Scorius() {
             onClick: () => console.log("Calcular Glasgow"),
           },
         ]}
-      />
-    </div>
+        />
+      </div>
+    </PremiumAgentGuard>
   );
 }

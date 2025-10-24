@@ -1,4 +1,5 @@
 import { AgentChat } from "@/components/AgentChat";
+import { PremiumAgentGuard } from "@/components/PremiumAgentGuard";
 import { FileText, Search, Database, Copy } from "lucide-react";
 
 export default function Codexus() {
@@ -6,8 +7,9 @@ export default function Codexus() {
   const caseId = searchParams.get("caseId") || undefined;
 
   return (
-    <div className="h-full p-6">
-      <AgentChat
+    <PremiumAgentGuard agentName="CODexus">
+      <div className="h-full p-6">
+        <AgentChat
         agentName="CODexus"
         agentIcon={<FileText className="h-8 w-8" />}
         agentColor="text-primary"
@@ -31,7 +33,8 @@ export default function Codexus() {
             onClick: () => console.log("Copiar códigos"),
           },
         ]}
-      />
-    </div>
+        />
+      </div>
+    </PremiumAgentGuard>
   );
 }

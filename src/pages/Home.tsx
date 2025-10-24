@@ -13,36 +13,42 @@ export default function Home() {
       icon: Stethoscope,
       description: "Assistente para diagnóstico diferencial e análise de sintomas",
       color: "from-blue-500 to-blue-600",
+      isPremium: true,
     },
     {
       name: "Examinus",
       icon: BarChart3,
       description: "Interpretação de exames laboratoriais e radiológicos",
       color: "from-purple-500 to-purple-600",
+      isPremium: false,
     },
     {
       name: "Scorius",
       icon: Brain,
       description: "Cálculo de scores e classificações de risco",
       color: "from-green-500 to-green-600",
+      isPremium: true,
     },
     {
       name: "Numerus",
       icon: BarChart3,
       description: "Análise estatística e predições epidemiológicas",
       color: "from-orange-500 to-orange-600",
+      isPremium: true,
     },
     {
       name: "Prescriptus",
       icon: Stethoscope,
       description: "Sugestões de prescrições baseadas em evidências",
       color: "from-red-500 to-red-600",
+      isPremium: true,
     },
     {
       name: "CODexus",
       icon: Shield,
       description: "Codificação CID-10 e TISS automatizada",
       color: "from-indigo-500 to-indigo-600",
+      isPremium: true,
     },
   ];
 
@@ -101,17 +107,27 @@ export default function Home() {
       {/* Agents Grid */}
       <section className="container mx-auto px-4 py-12 md:py-20">
         <div className="text-center mb-8 md:mb-12">
-          <h2 className="text-2xl md:text-4xl font-bold mb-3 md:mb-4">Conheça nossos agentes</h2>
-          <p className="text-muted-foreground text-base md:text-lg px-4">
-            Cada agente é especializado em uma área específica da prática médica
+          <h2 className="text-4xl font-bold mb-4">Conheça nossos agentes</h2>
+          <p className="text-muted-foreground text-lg">
+            Cada agente é especializado em uma área específica da prática médica<br />
+            <Badge className="mt-2 bg-green-500/10 text-green-600 border-green-500/20">Examinus grátis para sempre</Badge>
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {agents.map((agent, index) => (
             <Card
               key={index}
-              className="p-5 md:p-6 hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer border-2 hover:border-primary/50"
+              className="p-5 md:p-6 hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer border-2 hover:border-primary/50 relative"
             >
+              {agent.isPremium ? (
+                <Badge className="absolute top-3 right-3 bg-primary/10 text-primary border-primary/20 text-xs">
+                  Pro
+                </Badge>
+              ) : (
+                <Badge className="absolute top-3 right-3 bg-green-500/10 text-green-600 border-green-500/20 text-xs">
+                  Grátis
+                </Badge>
+              )}
               <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br ${agent.color} flex items-center justify-center mb-3 md:mb-4`}>
                 <agent.icon className="w-6 h-6 md:w-8 md:h-8 text-white" />
               </div>

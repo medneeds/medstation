@@ -47,7 +47,7 @@ export default function Pricing() {
   };
 
   const features = [
-    { icon: Sparkles, text: "6 Agentes de IA Especializados", description: "Clínicus, Examinus, Scorius, Numerus, Prescriptus e CODexus" },
+    { icon: Sparkles, text: "5 Agentes Premium de IA", description: "Clínicus, Scorius, Numerus, Prescriptus e CODexus" },
     { icon: Users, text: "Pacientes Ilimitados", description: "Gerencie quantos pacientes precisar" },
     { icon: FileText, text: "Casos Ilimitados", description: "Sem limite de casos clínicos" },
     { icon: BarChart3, text: "Análise Avançada", description: "Dashboards e métricas detalhadas" },
@@ -55,28 +55,74 @@ export default function Pricing() {
     { icon: Zap, text: "Performance Rápida", description: "Respostas instantâneas dos agentes" },
   ];
 
+  const freeFeatures = [
+    { text: "Agente Examinus (Análise de Exames)" },
+    { text: "Gestão básica de pacientes" },
+    { text: "Até 10 casos clínicos" },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       {/* Hero Section */}
-      <div className="container mx-auto px-4 py-20">
-        <div className="text-center mb-16">
-          <Badge className="mb-4 bg-primary/10 text-primary hover:bg-primary/20">
+      <div className="container mx-auto px-4 py-12 md:py-20">
+        <div className="text-center mb-12 md:mb-16">
+          <Badge className="mb-4 text-xs md:text-sm bg-primary/10 text-primary hover:bg-primary/20">
             Oferta Especial de Lançamento
           </Badge>
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent">
-            MedStation AI Pro
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent">
+            Escolha seu Plano
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-            A plataforma completa de assistência médica com IA que revoluciona seu atendimento
+          <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 md:mb-8 px-4">
+            Comece grátis com Examinus ou desbloqueie todos os agentes com o plano Pro
           </p>
-          <div className="flex items-baseline justify-center gap-2 mb-8">
-            <span className="text-5xl font-bold">R$ 49</span>
-            <span className="text-2xl text-muted-foreground">/mês</span>
-          </div>
         </div>
 
-        {/* Main Card */}
-        <Card className="max-w-4xl mx-auto p-8 md:p-12 border-2 border-primary/20 shadow-2xl">
+        {/* Free Plan Card */}
+        <div className="max-w-4xl mx-auto mb-8">
+          <Card className="p-6 md:p-8 border-2">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+              <div>
+                <Badge className="mb-2 bg-green-500/10 text-green-600 border-green-500/20">
+                  Plano Gratuito
+                </Badge>
+                <h2 className="text-2xl md:text-3xl font-bold mb-2">Comece Grátis</h2>
+                <p className="text-muted-foreground mb-4">
+                  Experimente o poder da IA médica com acesso ao Examinus
+                </p>
+                <div className="space-y-2">
+                  {freeFeatures.map((feature, index) => (
+                    <div key={index} className="flex items-center gap-2 text-sm">
+                      <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                      <span>{feature.text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex flex-col items-center md:items-end gap-2">
+                <div className="text-3xl md:text-4xl font-bold">R$ 0</div>
+                <Button variant="outline" size="lg" onClick={() => navigate("/auth")} className="w-full md:w-auto">
+                  Criar Conta Grátis
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Pro Plan Card */}
+        <Card className="max-w-4xl mx-auto p-6 md:p-12 border-2 border-primary/20 shadow-2xl">
+          <div className="text-center mb-6 md:mb-8">
+            <Badge className="mb-3 bg-primary/10 text-primary">
+              Plano Pro
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold mb-2">MedStation AI Pro</h2>
+            <div className="flex items-baseline justify-center gap-2 my-4">
+              <span className="text-4xl md:text-5xl font-bold">R$ 49</span>
+              <span className="text-xl md:text-2xl text-muted-foreground">/mês</span>
+            </div>
+            <p className="text-muted-foreground">
+              Acesso completo a todos os agentes e recursos premium
+            </p>
+          </div>
           <div className="grid md:grid-cols-2 gap-8">
             {features.map((feature, index) => (
               <div key={index} className="flex gap-4">

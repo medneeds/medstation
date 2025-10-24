@@ -1,4 +1,5 @@
 import { AgentChat } from "@/components/AgentChat";
+import { PremiumAgentGuard } from "@/components/PremiumAgentGuard";
 import { Calculator, Ruler, Droplet } from "lucide-react";
 
 export default function Numerus() {
@@ -6,8 +7,9 @@ export default function Numerus() {
   const caseId = searchParams.get("caseId") || undefined;
 
   return (
-    <div className="h-full p-6">
-      <AgentChat
+    <PremiumAgentGuard agentName="Numerus">
+      <div className="h-full p-6">
+        <AgentChat
         agentName="Numerus"
         agentIcon={<Calculator className="h-8 w-8" />}
         agentColor="text-accent"
@@ -26,7 +28,8 @@ export default function Numerus() {
             onClick: () => console.log("Calcular doses"),
           },
         ]}
-      />
-    </div>
+        />
+      </div>
+    </PremiumAgentGuard>
   );
 }

@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Stethoscope,
   FlaskConical,
@@ -10,8 +11,10 @@ import {
   Activity,
   TrendingUp,
   AlertCircle,
+  Crown,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 
 const quickStats = [
   { label: "Pacientes Ativos", value: "42", icon: Users, trend: "+3 esta semana" },
@@ -27,6 +30,7 @@ const modules = [
     icon: Stethoscope,
     url: "/clinicus",
     color: "text-primary",
+    isPremium: true,
   },
   {
     title: "Examinus",
@@ -34,6 +38,7 @@ const modules = [
     icon: FlaskConical,
     url: "/examinus",
     color: "text-secondary",
+    isPremium: false,
   },
   {
     title: "Scorius",
@@ -41,6 +46,7 @@ const modules = [
     icon: Activity,
     url: "/scorius",
     color: "text-warning",
+    isPremium: true,
   },
   {
     title: "Numerus",
@@ -48,6 +54,7 @@ const modules = [
     icon: Calculator,
     url: "/numerus",
     color: "text-accent",
+    isPremium: true,
   },
   {
     title: "Prescriptus",
@@ -55,6 +62,7 @@ const modules = [
     icon: Pill,
     url: "/prescriptus",
     color: "text-destructive",
+    isPremium: true,
   },
   {
     title: "CODexus",
@@ -62,10 +70,13 @@ const modules = [
     icon: FileText,
     url: "/codexus",
     color: "text-primary",
+    isPremium: true,
   },
 ];
 
 export default function Dashboard() {
+  const { subscribed } = useSubscription();
+
   return (
     <div className="space-y-6">
       {/* Welcome section */}
@@ -91,13 +102,23 @@ export default function Dashboard() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {modules.map((module) => (
             <Link key={module.title} to={module.url}>
-              <Card className="h-full hover:shadow-elevated hover:border-primary/50 transition-all cursor-pointer group">
+              <Card className="h-full hover:shadow-elevated hover:border-primary/50 transition-all cursor-pointer group relative">
                 <CardHeader className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className={`rounded-xl p-4 bg-gradient-to-br from-primary/10 to-primary/5 ${module.color}`}>
                       <module.icon className="h-8 w-8" />
                     </div>
-                    <TrendingUp className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                    {module.isPremium && !subscribed && (
+                      <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                        <Crown className="w-3 h-3 mr-1" />
+                        Pro
+                      </Badge>
+                    )}
+                    {!module.isPremium && (
+                      <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-500/20">
+                        Grátis
+                      </Badge>
+                    )}
                   </div>
                   <div>
                     <CardTitle className="text-xl mb-2 group-hover:text-primary transition-colors">
@@ -110,7 +131,14 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all">
-                    Acessar Agente
+                    {module.isPremium && !subscribed ? (
+                      <>
+                        <Crown className="mr-2 h-4 w-4" />
+                        Ver Planos
+                      </>
+                    ) : (
+                      "Acessar Agente"
+                    )}
                   </Button>
                 </CardContent>
               </Card>
