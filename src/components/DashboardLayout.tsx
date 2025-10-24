@@ -31,15 +31,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <Button variant="ghost" size="icon">
                 <Bell className="h-5 w-5" />
               </Button>
-              <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2">
-                <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium">
-                  DR
-                </div>
-                <div className="hidden md:block">
-                  <p className="text-sm font-medium">Dr. Usuário</p>
-                  <p className="text-xs text-muted-foreground">CRM-MA 12345</p>
-                </div>
-              </div>
             </div>
           </header>
 

@@ -91,6 +91,11 @@ export function AppSidebar() {
               <p className="text-xs text-sidebar-foreground/60 truncate">
                 {profile?.specialty || "Médico"}
               </p>
+              {profile?.crm && profile?.crm_state && (
+                <p className="text-xs text-sidebar-foreground/60 truncate">
+                  CRM-{profile.crm_state} {profile.crm}
+                </p>
+              )}
             </div>
           )}
         </div>
