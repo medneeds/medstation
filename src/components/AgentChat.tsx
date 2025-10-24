@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { AudioPlayer } from "@/components/AudioPlayer";
 import { 
   Send, 
   Paperclip, 
@@ -37,6 +38,9 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  audioBlob?: Blob;
+  audioUrl?: string;
+  transcription?: string;
 }
 
 interface Project {
@@ -156,15 +160,17 @@ export function AgentChat({
       mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
       mediaRecorder.onstop = () => {
         const blob = new Blob(chunks, { type: "audio/webm" });
-        setAudioBlob(blob);
+        const audioUrl = URL.createObjectURL(blob);
         stream.getTracks().forEach((track) => track.stop());
         
-        // Auto-send audio message
+        // Auto-send audio message with blob
         const newMessage: Message = {
           id: Date.now().toString(),
           role: "user",
           content: "[Mensagem de áudio]",
           timestamp: new Date(),
+          audioBlob: blob,
+          audioUrl: audioUrl,
         };
 
         const updatedProject = {
@@ -368,7 +374,24 @@ export function AgentChat({
                       : "bg-muted"
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  {msg.audioBlob && msg.audioUrl ? (
+                    <AudioPlayer 
+                      audioBlob={msg.audioBlob}
+                      audioUrl={msg.audioUrl}
+                      messageId={msg.id}
+                      transcription={msg.transcription}
+                      onTranscription={(text) => {
+                        const updatedMessages = currentProject.messages.map(m =>
+                          m.id === msg.id ? { ...m, transcription: text, content: text } : m
+                        );
+                        const updatedProject = { ...currentProject, messages: updatedMessages };
+                        setCurrentProject(updatedProject);
+                        setProjects(projects.map(p => p.id === updatedProject.id ? updatedProject : p));
+                      }}
+                    />
+                  ) : (
+                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  )}
                   <p className="text-xs opacity-70 mt-1">
                     {msg.timestamp.toLocaleTimeString([], { 
                       hour: '2-digit', 
