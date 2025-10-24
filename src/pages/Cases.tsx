@@ -58,6 +58,8 @@ export default function Cases() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchDialogOpen, setSearchDialogOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [processingFile, setProcessingFile] = useState(false);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -202,6 +204,114 @@ export default function Cases() {
     setDialogOpen(false);
   };
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      await processDocumentFile(files[0]);
+    }
+  };
+
+  const processDocumentFile = async (file: File) => {
+    setProcessingFile(true);
+    
+    try {
+      const fileExtension = file.name.split('.').pop()?.toLowerCase();
+      const supportedFormats = ['pdf', 'doc', 'docx', 'txt', 'md'];
+      
+      if (!supportedFormats.includes(fileExtension || '')) {
+        toast({
+          title: "Formato não suportado",
+          description: `Use arquivos PDF, DOC, DOCX, TXT ou MD`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Processando documento",
+        description: `Extraindo informações de ${file.name} com IA...`,
+      });
+
+      // Convert to base64
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      let documentText = '';
+
+      if (fileExtension === 'txt' || fileExtension === 'md') {
+        documentText = await file.text();
+      } else {
+        // Process document
+        const { data: processData, error: processError } = await supabase.functions.invoke('process-document', {
+          body: {
+            file: base64,
+            fileName: file.name,
+            mimeType: file.type
+          }
+        });
+
+        if (processError || !processData?.text) {
+          throw new Error('Erro ao processar documento');
+        }
+
+        documentText = processData.text;
+      }
+
+      // Extract case data from document text
+      const { data: extractData, error: extractError } = await supabase.functions.invoke('extract-case-from-document', {
+        body: { text: documentText }
+      });
+
+      if (extractError || !extractData?.success) {
+        throw new Error(extractData?.error || 'Erro ao extrair dados do documento');
+      }
+
+      // Fill form with extracted data
+      setFormData({
+        ...formData,
+        title: extractData.data.title || '',
+        chief_complaint: extractData.data.chief_complaint || '',
+        notes: extractData.data.notes || '',
+        tags: extractData.data.tags || [],
+      });
+
+      // Open dialog
+      setDialogOpen(true);
+
+      toast({
+        title: "✓ Documento processado!",
+        description: "Informações extraídas com sucesso. Revise e complete os dados.",
+      });
+
+    } catch (error: any) {
+      console.error('Error processing document:', error);
+      toast({
+        title: "Erro ao processar documento",
+        description: error.message || "Não foi possível processar o arquivo.",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingFile(false);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
@@ -227,7 +337,43 @@ export default function Cases() {
   };
 
   return (
-    <div className="space-y-6">
+    <div 
+      className="space-y-6"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {isDragging && (
+        <div className="fixed inset-0 bg-primary/10 border-4 border-dashed border-primary rounded-lg flex items-center justify-center z-50 backdrop-blur-sm">
+          <div className="text-center bg-background p-8 rounded-lg shadow-lg">
+            <FolderOpen className="h-16 w-16 mx-auto mb-4 text-primary" />
+            <p className="text-xl font-bold">Solte o documento aqui</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              PDF, DOCX, TXT ou MD
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              A IA extrairá automaticamente as informações
+            </p>
+          </div>
+        </div>
+      )}
+      
+      {processingFile && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <Card className="p-6">
+            <div className="flex flex-col items-center gap-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+              <div className="text-center">
+                <p className="font-medium">Processando documento com IA...</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Extraindo informações do caso clínico
+                </p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+      
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">
