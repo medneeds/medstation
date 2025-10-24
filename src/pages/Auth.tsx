@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Activity } from "lucide-react";
@@ -22,6 +23,10 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [resetEmail, setResetEmail] = useState("");
+  const [gender, setGender] = useState<"M" | "F" | "Outro" | "">("");
+  const [crm, setCrm] = useState("");
+  const [crmState, setCrmState] = useState("");
+  const [specialty, setSpecialty] = useState("");
 
   // Check if already authenticated
   useEffect(() => {
@@ -50,7 +55,7 @@ export default function Auth() {
 
       const redirectUrl = `${window.location.origin}/dashboard`;
 
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: validated.email,
         password: validated.password,
         options: {
@@ -67,12 +72,30 @@ export default function Auth() {
           title: "Erro no cadastro",
           description: error.message,
         });
-      } else {
-        toast({
-          title: "Cadastro realizado!",
-          description: "Você já pode fazer login.",
-        });
+        return;
       }
+
+      // Update profile with additional fields
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({
+            gender: gender || null,
+            crm: crm || null,
+            crm_state: crmState || null,
+            specialty: specialty || null,
+          })
+          .eq("id", data.user.id);
+
+        if (profileError) {
+          console.error("Error updating profile:", profileError);
+        }
+      }
+
+      toast({
+        title: "Cadastro realizado!",
+        description: "Você já pode fazer login.",
+      });
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -336,7 +359,7 @@ export default function Auth() {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-name">Nome Completo</Label>
+                  <Label htmlFor="signup-name">Nome Completo *</Label>
                   <Input
                     id="signup-name"
                     type="text"
@@ -346,8 +369,72 @@ export default function Auth() {
                     required
                   />
                 </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-gender">Sexo</Label>
+                    <Select value={gender} onValueChange={(value: "M" | "F" | "Outro") => setGender(value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="M">Masculino (Dr.)</SelectItem>
+                        <SelectItem value="F">Feminino (Dra.)</SelectItem>
+                        <SelectItem value="Outro">Outro</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-crm">CRM</Label>
+                    <Input
+                      id="signup-crm"
+                      type="text"
+                      placeholder="123456"
+                      value={crm}
+                      onChange={(e) => setCrm(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-crm-state">UF do CRM</Label>
+                    <Select value={crmState} onValueChange={setCrmState}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Estado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG",
+                          "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"].map((state) => (
+                          <SelectItem key={state} value={state}>
+                            {state}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-specialty">Especialidade</Label>
+                    <Select value={specialty} onValueChange={setSpecialty}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {["Clínica Geral", "Cardiologia", "Dermatologia", "Endocrinologia", "Gastroenterologia",
+                          "Geriatria", "Ginecologia", "Neurologia", "Pediatria", "Psiquiatria", "Outra"].map((spec) => (
+                          <SelectItem key={spec} value={spec}>
+                            {spec}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="signup-email">Email *</Label>
                   <Input
                     id="signup-email"
                     type="email"
@@ -358,7 +445,7 @@ export default function Auth() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Senha</Label>
+                  <Label htmlFor="signup-password">Senha *</Label>
                   <Input
                     id="signup-password"
                     type="password"
@@ -375,6 +462,9 @@ export default function Auth() {
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Cadastrando..." : "Cadastrar"}
                 </Button>
+                <p className="text-xs text-muted-foreground text-center">
+                  * Campos obrigatórios. Dados adicionais podem ser preenchidos posteriormente.
+                </p>
               </form>
             </TabsContent>
           </Tabs>
