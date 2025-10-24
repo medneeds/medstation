@@ -91,30 +91,57 @@ export function EvidenceDrawer({ caseId, onEvidenceAdded }: EvidenceDrawerProps)
       else if (file.type.includes("image")) evidenceType = "image";
 
       // Create evidence record
-      const { error: insertError } = await supabase.from("evidences").insert({
-        user_id: user.id,
-        case_id: caseId,
-        type: evidenceType,
-        source_type: "upload",
-        title: title || file.name,
-        file_path: fileName,
-        file_size: file.size,
-        tags: tags.length > 0 ? tags : null,
-        origin,
-        author,
-        document_date: documentDate || null,
-        metadata: {
-          original_name: file.name,
-          mime_type: file.type,
-        },
-      });
+      const { data: newEvidence, error: insertError } = await supabase
+        .from("evidences")
+        .insert({
+          user_id: user.id,
+          case_id: caseId,
+          type: evidenceType,
+          source_type: "upload",
+          title: title || file.name,
+          file_path: fileName,
+          file_size: file.size,
+          tags: tags.length > 0 ? tags : null,
+          origin,
+          author,
+          document_date: documentDate || null,
+          metadata: {
+            original_name: file.name,
+            mime_type: file.type,
+          },
+        })
+        .select()
+        .single();
 
       if (insertError) throw insertError;
 
       toast({
         title: "Evidência adicionada!",
-        description: "Arquivo enviado com sucesso",
+        description: "Processando documento...",
       });
+
+      // Trigger processing in background
+      if (evidenceType === "pdf" || evidenceType === "image") {
+        supabase.functions
+          .invoke("process-document", {
+            body: { evidenceId: newEvidence.id },
+          })
+          .then(({ error }) => {
+            if (error) {
+              console.error("Processing error:", error);
+              toast({
+                variant: "destructive",
+                title: "Erro no processamento",
+                description: "OCR falhou, mas arquivo foi salvo",
+              });
+            } else {
+              toast({
+                title: "Documento processado!",
+                description: "Texto extraído com sucesso",
+              });
+            }
+          });
+      }
 
       onEvidenceAdded();
       setOpen(false);
@@ -208,30 +235,55 @@ export function EvidenceDrawer({ caseId, onEvidenceAdded }: EvidenceDrawerProps)
       if (uploadError) throw uploadError;
 
       // Create evidence record
-      const { error: insertError } = await supabase.from("evidences").insert({
-        user_id: user.id,
-        case_id: caseId,
-        type: "audio",
-        source_type: "recording",
-        title: title || "Gravação de áudio",
-        file_path: fileName,
-        file_size: audioBlob.size,
-        tags: tags.length > 0 ? tags : null,
-        origin,
-        author,
-        document_date: documentDate || null,
-        metadata: {
-          duration: 0, // TODO: Calculate actual duration
-          format: "webm",
-        },
-      });
+      const { data: newEvidence, error: insertError } = await supabase
+        .from("evidences")
+        .insert({
+          user_id: user.id,
+          case_id: caseId,
+          type: "audio",
+          source_type: "recording",
+          title: title || "Gravação de áudio",
+          file_path: fileName,
+          file_size: audioBlob.size,
+          tags: tags.length > 0 ? tags : null,
+          origin,
+          author,
+          document_date: documentDate || null,
+          metadata: {
+            duration: 0,
+            format: "webm",
+          },
+        })
+        .select()
+        .single();
 
       if (insertError) throw insertError;
 
       toast({
         title: "Evidência adicionada!",
-        description: "Áudio salvo com sucesso",
+        description: "Transcrevendo áudio...",
       });
+
+      // Trigger transcription in background
+      supabase.functions
+        .invoke("transcribe-audio", {
+          body: { evidenceId: newEvidence.id },
+        })
+        .then(({ error }) => {
+          if (error) {
+            console.error("Transcription error:", error);
+            toast({
+              variant: "destructive",
+              title: "Erro na transcrição",
+              description: "Áudio salvo, mas transcrição falhou",
+            });
+          } else {
+            toast({
+              title: "Áudio transcrito!",
+              description: "Transcrição concluída com sucesso",
+            });
+          }
+        });
 
       onEvidenceAdded();
       setOpen(false);

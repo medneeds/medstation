@@ -58,6 +58,7 @@ interface Evidence {
   author: string | null;
   document_date: string | null;
   created_at: string;
+  metadata?: any;
 }
 
 export default function CaseDetail() {
@@ -341,8 +342,16 @@ export default function CaseDetail() {
                             </p>
                           )}
                           {evidence.content && (
-                            <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                            <p className="text-sm text-muted-foreground mt-2 line-clamp-3 bg-muted/50 p-2 rounded">
                               {evidence.content}
+                            </p>
+                          )}
+                          {evidence.metadata?.processing_method && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              ✓ Processado por{" "}
+                              {evidence.metadata.processing_method === "ocr_gemini_pro"
+                                ? "OCR"
+                                : "Transcrição"}
                             </p>
                           )}
                           {evidence.tags && evidence.tags.length > 0 && (
