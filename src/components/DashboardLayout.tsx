@@ -35,7 +35,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </header>
 
           {/* Main content */}
-          <main className="flex-1 p-3 md:p-6 bg-muted/30">{children}</main>
+          <main className="flex-1 overflow-x-hidden bg-muted/30">{children}</main>
         </div>
       </div>
     </SidebarProvider>
