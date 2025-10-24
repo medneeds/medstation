@@ -18,12 +18,14 @@ import Clinicus from "./pages/Clinicus";
 import Examinus from "./pages/Examinus";
 import Scorius from "./pages/Scorius";
 import Numerus from "./pages/Numerus";
-import Prescriptus from "./pages/Prescriptus";
-import Codexus from "./pages/Codexus";
-import Prescriptions from "./pages/Prescriptions";
-import NewPrescription from "./pages/NewPrescription";
-import ExamRequests from "./pages/ExamRequests";
-import NewExamRequest from "./pages/NewExamRequest";
+import Prescriptus from "@/pages/Prescriptus";
+import Codexus from "@/pages/Codexus";
+import Prescriptions from "@/pages/Prescriptions";
+import NewPrescription from "@/pages/NewPrescription";
+import PrescriptionDetail from "@/pages/PrescriptionDetail";
+import ExamRequests from "@/pages/ExamRequests";
+import NewExamRequest from "@/pages/NewExamRequest";
+import ExamRequestDetail from "@/pages/ExamRequestDetail";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -141,46 +143,12 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/prescricoes"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <Prescriptions />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/prescricoes/nova"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <NewPrescription />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/exames"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <ExamRequests />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/exames/novo"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <NewExamRequest />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
+              <Route path="/prescricoes" element={<ProtectedRoute><DashboardLayout><Prescriptions /></DashboardLayout></ProtectedRoute>} />
+              <Route path="/prescricoes/nova" element={<ProtectedRoute><DashboardLayout><NewPrescription /></DashboardLayout></ProtectedRoute>} />
+              <Route path="/prescricoes/:id" element={<ProtectedRoute><DashboardLayout><PrescriptionDetail /></DashboardLayout></ProtectedRoute>} />
+              <Route path="/exames" element={<ProtectedRoute><DashboardLayout><ExamRequests /></DashboardLayout></ProtectedRoute>} />
+              <Route path="/exames/novo" element={<ProtectedRoute><DashboardLayout><NewExamRequest /></DashboardLayout></ProtectedRoute>} />
+              <Route path="/exames/:id" element={<ProtectedRoute><DashboardLayout><ExamRequestDetail /></DashboardLayout></ProtectedRoute>} />
             <Route
               path="/settings"
               element={

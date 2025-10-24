@@ -1,3 +1,6 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,16 +15,17 @@ import {
   TrendingUp,
   AlertCircle,
   Crown,
+  TestTube,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 
-const quickStats = [
-  { label: "Pacientes Ativos", value: "42", icon: Users, trend: "+3 esta semana" },
-  { label: "Relatórios Pendentes", value: "8", icon: FileText, trend: "4 urgentes" },
-  { label: "Exames Recebidos", value: "15", icon: FlaskConical, trend: "Hoje" },
-  { label: "Prescrições", value: "23", icon: Pill, trend: "Este mês" },
-];
+interface Stats {
+  totalPatients: number;
+  totalCases: number;
+  totalPrescriptions: number;
+  totalExamRequests: number;
+}
 
 const modules = [
   {
@@ -75,7 +79,85 @@ const modules = [
 ];
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { subscribed } = useSubscription();
+  const [stats, setStats] = useState<Stats>({
+    totalPatients: 0,
+    totalCases: 0,
+    totalPrescriptions: 0,
+    totalExamRequests: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const [patientsRes, casesRes, prescriptionsRes, examsRes] = await Promise.all([
+        supabase
+          .from("patients")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("archived", false),
+        supabase
+          .from("cases")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("status", "active"),
+        supabase
+          .from("prescriptions")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id),
+        supabase
+          .from("exam_requests")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id),
+      ]);
+
+      setStats({
+        totalPatients: patientsRes.count || 0,
+        totalCases: casesRes.count || 0,
+        totalPrescriptions: prescriptionsRes.count || 0,
+        totalExamRequests: examsRes.count || 0,
+      });
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const quickStats = [
+    {
+      label: "Pacientes Ativos",
+      value: loading ? "..." : stats.totalPatients.toString(),
+      icon: Users,
+      trend: "Total cadastrados"
+    },
+    {
+      label: "Casos em Andamento",
+      value: loading ? "..." : stats.totalCases.toString(),
+      icon: FileText,
+      trend: "Casos ativos"
+    },
+    {
+      label: "Prescrições",
+      value: loading ? "..." : stats.totalPrescriptions.toString(),
+      icon: Pill,
+      trend: "Total emitidas"
+    },
+    {
+      label: "Exames Solicitados",
+      value: loading ? "..." : stats.totalExamRequests.toString(),
+      icon: TestTube,
+      trend: "Total solicitados"
+    },
+  ];
 
   return (
     <div className="space-y-6">
