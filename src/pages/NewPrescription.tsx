@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft, Plus, Trash2, Save, FileSignature, AlertCircle, User, Stethoscope, UserPlus } from "lucide-react";
 import { z } from "zod";
+import VoiceRecorder from "@/components/VoiceRecorder";
 
 const medicationSchema = z.object({
   name: z.string().min(1, "Nome do medicamento é obrigatório").max(200),
@@ -103,6 +104,54 @@ export default function NewPrescription() {
       setObservations(observations || "");
     }
   }, [location.state]);
+
+  const handleVoiceTranscription = (data: any) => {
+    // Fill diagnosis
+    if (data.diagnosis) {
+      setDiagnosis(data.diagnosis);
+    }
+
+    // Fill CID code
+    if (data.cid_code) {
+      setCidCode(data.cid_code);
+    }
+
+    // Fill medications
+    if (data.medications && data.medications.length > 0) {
+      setMedications(data.medications.map((med: any) => ({
+        name: med.name || "",
+        dosage: med.dosage || "",
+        frequency: med.frequency || "",
+        duration: med.duration || "",
+        instructions: med.instructions || "",
+      })));
+    }
+
+    // Fill observations
+    if (data.observations) {
+      setObservations(data.observations);
+    }
+
+    // Fill validity
+    if (data.validity_days) {
+      setValidityDays(data.validity_days.toString());
+    }
+
+    // Try to match patient by name
+    if (data.patient_name) {
+      const matchedPatient = patients.find(p => 
+        p.name.toLowerCase().includes(data.patient_name.toLowerCase()) ||
+        data.patient_name.toLowerCase().includes(p.name.toLowerCase())
+      );
+      if (matchedPatient) {
+        setSelectedPatient(matchedPatient.id);
+        toast({
+          title: "Paciente identificado",
+          description: `${matchedPatient.name} selecionado automaticamente`,
+        });
+      }
+    }
+  };
 
   const fetchPatients = async () => {
     try {
@@ -326,6 +375,9 @@ export default function NewPrescription() {
           </p>
         </div>
       </div>
+
+      {/* Voice Recorder */}
+      <VoiceRecorder onTranscriptionComplete={handleVoiceTranscription} />
 
       {/* Doctor Info Validation Alert */}
       {(!profile?.crm || !profile?.crm_state || !profile?.full_name) && (

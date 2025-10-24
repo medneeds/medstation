@@ -1,1 +1,22 @@
 project_id = "rwiovxyftfbkvzbepfqi"
+
+[functions.agent-chat]
+verify_jwt = false
+
+[functions.check-subscription]
+verify_jwt = true
+
+[functions.create-checkout]
+verify_jwt = true
+
+[functions.customer-portal]
+verify_jwt = true
+
+[functions.process-document]
+verify_jwt = true
+
+[functions.transcribe-audio]
+verify_jwt = true
+
+[functions.transcribe-prescription]
+verify_jwt = true
