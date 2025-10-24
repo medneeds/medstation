@@ -15,6 +15,7 @@ import {
   User,
   Home,
   Database,
+  StickyNote,
 } from "lucide-react";
 import {
   Sidebar,
@@ -38,6 +39,7 @@ const managementModules = [
   { title: "Casos", url: "/cases", icon: Folder },
   { title: "Prescrições", url: "/prescricoes", icon: FileText },
   { title: "Exames", url: "/exames", icon: FlaskConical },
+  { title: "Notas", url: "/notes", icon: StickyNote },
 ];
 
 const agentModules = [

@@ -12,6 +12,8 @@ import Patients from "./pages/Patients";
 import PatientDetail from "./pages/PatientDetail";
 import Cases from "./pages/Cases";
 import CaseDetail from "./pages/CaseDetail";
+import Notes from "./pages/Notes";
+import NoteDetail from "./pages/NoteDetail";
 import Auth from "./pages/Auth";
 import Home from "./pages/Home";
 import Pricing from "./pages/Pricing";
@@ -160,6 +162,8 @@ const App = () => (
               <Route path="/exames" element={<ProtectedRoute><DashboardLayout><ExamRequests /></DashboardLayout></ProtectedRoute>} />
               <Route path="/exames/novo" element={<ProtectedRoute><DashboardLayout><NewExamRequest /></DashboardLayout></ProtectedRoute>} />
               <Route path="/exames/:id" element={<ProtectedRoute><DashboardLayout><ExamRequestDetail /></DashboardLayout></ProtectedRoute>} />
+              <Route path="/notes" element={<ProtectedRoute><DashboardLayout><Notes /></DashboardLayout></ProtectedRoute>} />
+              <Route path="/notes/:id" element={<ProtectedRoute><DashboardLayout><NoteDetail /></DashboardLayout></ProtectedRoute>} />
             <Route
               path="/settings"
               element={
