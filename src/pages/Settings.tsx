@@ -520,7 +520,7 @@ export default function Settings() {
                 <SelectTrigger className={errors.crm_state ? "border-destructive" : ""}>
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[200px] overflow-y-auto">
                   {BRAZILIAN_STATES.map((state) => (
                     <SelectItem key={state} value={state}>
                       {state}
@@ -557,7 +557,7 @@ export default function Settings() {
                 <SelectTrigger className={errors.specialty ? "border-destructive" : ""}>
                   <SelectValue placeholder="Selecione sua especialidade" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[200px] overflow-y-auto">
                   {MEDICAL_SPECIALTIES.map((spec) => (
                     <SelectItem key={spec} value={spec}>
                       {spec}
@@ -636,7 +636,7 @@ export default function Settings() {
                   <SelectTrigger className={errors.state ? "border-destructive" : ""}>
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[200px] overflow-y-auto">
                     {BRAZILIAN_STATES.map((state) => (
                       <SelectItem key={state} value={state}>
                         {state}
