@@ -110,8 +110,8 @@ export function AppSidebar() {
                     to={homeModule.url}
                     className={({ isActive }) =>
                       isActive
-                        ? "bg-accent text-primary font-medium border-l-2 border-primary"
-                        : "hover:bg-sidebar-accent transition-colors"
+                        ? "bg-accent text-primary font-semibold border-l-2 border-primary"
+                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground hover:font-semibold transition-all"
                     }
                   >
                     <homeModule.icon className="h-4 w-4" />
@@ -137,8 +137,8 @@ export function AppSidebar() {
                       to={item.url}
                       className={({ isActive }) =>
                         isActive
-                          ? "bg-accent text-primary font-medium border-l-2 border-primary"
-                          : "hover:bg-sidebar-accent transition-colors"
+                          ? "bg-accent text-primary font-semibold border-l-2 border-primary"
+                          : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground hover:font-semibold transition-all"
                       }
                     >
                       <item.icon className="h-4 w-4" />
@@ -165,8 +165,8 @@ export function AppSidebar() {
                       to={item.url}
                       className={({ isActive }) =>
                         isActive
-                          ? "bg-accent text-primary font-medium border-l-2 border-primary"
-                          : "hover:bg-sidebar-accent transition-colors"
+                          ? "bg-accent text-primary font-semibold border-l-2 border-primary"
+                          : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground hover:font-semibold transition-all"
                       }
                     >
                       <item.icon className="h-4 w-4" />
@@ -190,8 +190,8 @@ export function AppSidebar() {
                       to={item.url}
                       className={({ isActive }) =>
                         isActive
-                          ? "bg-accent text-primary font-medium border-l-2 border-primary"
-                          : "hover:bg-sidebar-accent transition-colors"
+                          ? "bg-accent text-primary font-semibold border-l-2 border-primary"
+                          : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground hover:font-semibold transition-all"
                       }
                     >
                       <item.icon className="h-4 w-4" />
@@ -204,7 +204,7 @@ export function AppSidebar() {
                 <SidebarMenuButton 
                   tooltip="Sair" 
                   onClick={handleLogout}
-                  className="hover:bg-destructive/10 hover:text-destructive transition-colors"
+                  className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:font-semibold transition-all"
                 >
                   <LogOut className="h-4 w-4" />
                   <span className={collapsed ? 'hidden' : ''}>Sair</span>
