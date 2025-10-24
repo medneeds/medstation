@@ -503,7 +503,7 @@ export function AgentChat({
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)]">
+    <div className="flex flex-col h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)] px-3 md:px-0">
       {/* Header with agent info and actions */}
       <div className="flex flex-col gap-3 pb-4 border-b md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
@@ -685,7 +685,7 @@ export function AgentChat({
       {/* Chat messages */}
       <ScrollArea className="flex-1 py-4">
         {!currentConversation || currentConversation.messages.length === 0 ? (
-          <div className="text-center py-8 md:py-12 text-muted-foreground px-4">
+          <div className="text-center py-8 md:py-12 text-muted-foreground">
             <div className={`rounded-full p-4 md:p-6 bg-gradient-to-br from-primary/10 to-primary/5 inline-block ${agentColor} mb-4`}>
               {agentIcon}
             </div>
@@ -693,7 +693,7 @@ export function AgentChat({
             <p className="text-xs md:text-sm mt-2">Envie uma mensagem para começar</p>
           </div>
         ) : (
-          <div className="space-y-4 px-2 md:px-4">
+          <div className="space-y-4">
             {currentConversation.messages.map((msg) => (
               <div
                 key={msg.id}
