@@ -365,10 +365,10 @@ export default function Patients() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => navigate(`/cases?patient=${patient.id}`)}
+                            onClick={() => navigate(`/patients/${patient.id}`)}
                           >
                             <Folder className="h-4 w-4 mr-2" />
-                            Ver Casos
+                            Ver Histórico
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>

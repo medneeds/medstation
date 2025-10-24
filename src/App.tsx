@@ -9,6 +9,7 @@ import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 import { ProfileProvider } from "./contexts/ProfileContext";
 import Dashboard from "./pages/Dashboard";
 import Patients from "./pages/Patients";
+import PatientDetail from "./pages/PatientDetail";
 import Cases from "./pages/Cases";
 import CaseDetail from "./pages/CaseDetail";
 import Auth from "./pages/Auth";
@@ -59,6 +60,16 @@ const App = () => (
                 <ProtectedRoute>
                   <DashboardLayout>
                     <Patients />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/patients/:id"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <PatientDetail />
                   </DashboardLayout>
                 </ProtectedRoute>
               }
