@@ -332,65 +332,65 @@ export function AgentChat({
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)]">
+    <div className="flex flex-col h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)]">
       {/* Header with agent info and actions */}
-      <div className="flex items-center justify-between pb-4 border-b">
-        <div className="flex items-center gap-3 flex-1">
-          <div className={`rounded-xl p-3 bg-gradient-to-br from-primary/10 to-primary/5 ${agentColor}`}>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 md:pb-4 border-b gap-3">
+        <div className="flex items-center gap-2 md:gap-3 flex-1 w-full sm:w-auto">
+          <div className={`rounded-xl p-2 md:p-3 bg-gradient-to-br from-primary/10 to-primary/5 ${agentColor}`}>
             {agentIcon}
           </div>
-          <div className="flex-1">
-            <h2 className="text-2xl font-bold">{agentName}</h2>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl md:text-2xl font-bold truncate">{agentName}</h2>
             {currentProject && (
-              <p className="text-sm text-muted-foreground">{currentProject.name}</p>
+              <p className="text-xs md:text-sm text-muted-foreground truncate">{currentProject.name}</p>
             )}
           </div>
-
-          {/* Case selector */}
-          {cases.length > 0 && (
-            <div className="w-64">
-              <Select
-                value={selectedCaseId || "none"}
-                onValueChange={(value) => setSelectedCaseId(value === "none" ? undefined : value)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecionar caso" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Sem caso específico</SelectItem>
-                  {cases.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{c.title}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {c.patient_name}
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
         </div>
 
-        <div className="flex gap-2">
+        {/* Case selector */}
+        {cases.length > 0 && (
+          <div className="w-full sm:w-48 md:w-64">
+            <Select
+              value={selectedCaseId || "none"}
+              onValueChange={(value) => setSelectedCaseId(value === "none" ? undefined : value)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Selecionar caso" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Sem caso específico</SelectItem>
+                {cases.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{c.title}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {c.patient_name}
+                      </span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        <div className="flex gap-2 w-full sm:w-auto">
           {currentProject && currentProject.messages.length > 0 && (
-            <Button variant="outline" size="sm" onClick={exportConversation}>
-              <FileDown className="h-4 w-4 mr-2" />
-              Exportar PDF
+            <Button variant="outline" size="sm" onClick={exportConversation} className="flex-1 sm:flex-none">
+              <FileDown className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Exportar PDF</span>
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={createNewProject}>
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Projeto
+          <Button variant="outline" size="sm" onClick={createNewProject} className="flex-1 sm:flex-none">
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Novo Projeto</span>
           </Button>
 
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" size="sm">
-                <History className="h-4 w-4 mr-2" />
-                Histórico
+              <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
+                <History className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Histórico</span>
               </Button>
             </SheetTrigger>
             <SheetContent className="w-full sm:max-w-md">
@@ -495,41 +495,41 @@ export function AgentChat({
 
       {/* Action buttons if provided */}
       {actionButtons.length > 0 && (
-        <div className="flex gap-2 py-3 border-b overflow-x-auto">
+        <div className="flex gap-2 py-2 md:py-3 border-b overflow-x-auto scrollbar-hide">
           {actionButtons.map((btn, idx) => (
             <Button
               key={idx}
               variant="outline"
               size="sm"
               onClick={btn.onClick}
-              className="whitespace-nowrap"
+              className="whitespace-nowrap flex-shrink-0"
             >
               {btn.icon}
-              {btn.label}
+              <span className="hidden sm:inline">{btn.label}</span>
             </Button>
           ))}
         </div>
       )}
 
       {/* Chat messages */}
-      <ScrollArea className="flex-1 py-4">
+      <ScrollArea className="flex-1 py-2 md:py-4 px-2 md:px-0">
         {!currentProject || currentProject.messages.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
-            <div className={`rounded-full p-6 bg-gradient-to-br from-primary/10 to-primary/5 inline-block ${agentColor} mb-4`}>
+          <div className="text-center py-8 md:py-12 text-muted-foreground px-4">
+            <div className={`rounded-full p-4 md:p-6 bg-gradient-to-br from-primary/10 to-primary/5 inline-block ${agentColor} mb-4`}>
               {agentIcon}
             </div>
-            <p className="text-lg font-medium">Olá! Como posso ajudar?</p>
-            <p className="text-sm mt-2">Envie uma mensagem para começar</p>
+            <p className="text-base md:text-lg font-medium">Olá! Como posso ajudar?</p>
+            <p className="text-xs md:text-sm mt-2">Envie uma mensagem para começar</p>
           </div>
         ) : (
-          <div className="space-y-4 px-2">
+          <div className="space-y-3 md:space-y-4 px-1 md:px-2">
             {currentProject.messages.map((msg) => (
               <div
                 key={msg.id}
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-3 relative group ${
+                  className={`max-w-[85%] md:max-w-[80%] rounded-2xl px-3 md:px-4 py-2 md:py-3 relative group ${
                     msg.role === "user"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted"
@@ -584,9 +584,9 @@ export function AgentChat({
       </ScrollArea>
 
       {/* Input area */}
-      <div className="border-t pt-4">
-        <div className="flex gap-2">
-          <Button variant="outline" size="icon" className="shrink-0">
+      <div className="border-t pt-3 md:pt-4 px-2 md:px-0">
+        <div className="flex gap-1 md:gap-2">
+          <Button variant="outline" size="icon" className="shrink-0 h-9 w-9 md:h-10 md:w-10">
             <Paperclip className="h-4 w-4" />
           </Button>
           <Input
@@ -599,7 +599,7 @@ export function AgentChat({
               }
             }}
             placeholder={placeholder}
-            className="flex-1"
+            className="flex-1 text-sm md:text-base"
             disabled={isRecording || isLoading}
           />
           {isRecording ? (
@@ -607,10 +607,11 @@ export function AgentChat({
               onClick={stopRecording}
               variant="destructive"
               className="shrink-0"
+              size="sm"
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 md:gap-2">
                 <div className="h-2 w-2 bg-white rounded-full animate-pulse" />
-                Parar
+                <span className="text-xs md:text-sm">Parar</span>
               </div>
             </Button>
           ) : (
@@ -619,7 +620,7 @@ export function AgentChat({
                 variant="outline"
                 size="icon"
                 onClick={startRecording}
-                className="shrink-0"
+                className="shrink-0 h-9 w-9 md:h-10 md:w-10"
                 title="Gravar áudio"
               >
                 <Mic className="h-4 w-4" />
@@ -627,7 +628,8 @@ export function AgentChat({
               <Button 
                 onClick={sendMessage}
                 disabled={!message.trim() || isLoading}
-                className="shrink-0"
+                className="shrink-0 h-9 w-9 md:h-10 md:w-10"
+                size="icon"
                 title="Enviar mensagem"
               >
                 {isLoading ? (
@@ -639,10 +641,10 @@ export function AgentChat({
             </>
           )}
         </div>
-        <p className="text-xs text-muted-foreground mt-2">
+        <p className="text-[10px] md:text-xs text-muted-foreground mt-2">
           {isRecording 
             ? "Gravando áudio... Clique em 'Parar' quando terminar"
-            : "Pressione Enter para enviar, Shift+Enter para quebrar linha"}
+            : "Pressione Enter para enviar"}
         </p>
       </div>
     </div>
