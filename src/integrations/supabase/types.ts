@@ -14,7 +14,190 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cases: {
+        Row: {
+          chief_complaint: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          patient_id: string
+          status: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chief_complaint?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          patient_id: string
+          status?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chief_complaint?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          status?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cases_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evidences: {
+        Row: {
+          author: string | null
+          case_id: string | null
+          confidence_score: number | null
+          content: string | null
+          created_at: string
+          document_date: string | null
+          file_path: string | null
+          file_size: number | null
+          id: string
+          is_active: boolean | null
+          metadata: Json | null
+          origin: string | null
+          source_type: string | null
+          tags: string[] | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          author?: string | null
+          case_id?: string | null
+          confidence_score?: number | null
+          content?: string | null
+          created_at?: string
+          document_date?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          origin?: string | null
+          source_type?: string | null
+          tags?: string[] | null
+          title: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          author?: string | null
+          case_id?: string | null
+          confidence_score?: number | null
+          content?: string | null
+          created_at?: string
+          document_date?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          origin?: string | null
+          source_type?: string | null
+          tags?: string[] | null
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidences_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patients: {
+        Row: {
+          archived: boolean | null
+          cpf: string | null
+          created_at: string
+          date_of_birth: string | null
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          archived?: boolean | null
+          cpf?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          archived?: boolean | null
+          cpf?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          crm: string | null
+          full_name: string | null
+          id: string
+          specialty: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          crm?: string | null
+          full_name?: string | null
+          id: string
+          specialty?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          crm?: string | null
+          full_name?: string | null
+          id?: string
+          specialty?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
