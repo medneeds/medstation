@@ -8,7 +8,7 @@ export default function Scorius() {
 
   return (
     <PremiumAgentGuard agentName="Scorius">
-      <div className="h-full p-3 md:p-6">
+      <div className="h-full -m-3 md:-m-6">
         <AgentChat
         agentName="Scorius"
         agentIcon={<Activity className="h-8 w-8" />}

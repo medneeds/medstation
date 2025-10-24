@@ -503,9 +503,9 @@ export function AgentChat({
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)] w-full max-w-full overflow-hidden">
+    <div className="flex flex-col h-full p-4 md:p-6">
       {/* Header with agent info and actions */}
-      <div className="flex flex-col gap-3 pb-4 border-b md:flex-row md:items-center md:justify-between px-3 md:px-0">
+      <div className="flex flex-col gap-3 pb-4 border-b md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
           <div className={`rounded-xl p-2 md:p-3 bg-gradient-to-br from-primary/10 to-primary/5 ${agentColor} shrink-0`}>
             {agentIcon}
@@ -666,7 +666,7 @@ export function AgentChat({
 
       {/* Action buttons if provided */}
       {actionButtons.length > 0 && (
-        <div className="flex gap-2 py-3 border-b overflow-x-auto px-3 md:px-0 -mx-3 md:mx-0 pl-3 md:pl-0">
+        <div className="flex gap-2 py-3 border-b overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
           {actionButtons.map((btn, idx) => (
             <Button
               key={idx}
@@ -683,7 +683,7 @@ export function AgentChat({
       )}
 
       {/* Chat messages */}
-      <ScrollArea className="flex-1 py-4 px-3 md:px-0">
+      <ScrollArea className="flex-1 py-4">
         {!currentConversation || currentConversation.messages.length === 0 ? (
           <div className="text-center py-8 md:py-12 text-muted-foreground">
             <div className={`rounded-full p-4 md:p-6 bg-gradient-to-br from-primary/10 to-primary/5 inline-block ${agentColor} mb-4`}>
@@ -754,7 +754,7 @@ export function AgentChat({
       </ScrollArea>
 
       {/* Input area */}
-      <div className="border-t pt-3 md:pt-4 pb-safe px-3 md:px-0">
+      <div className="border-t pt-3 md:pt-4">
         <div className="flex gap-1.5 md:gap-2">
           {!isMobile && (
             <Button variant="outline" size="icon" className="shrink-0">
