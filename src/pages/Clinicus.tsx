@@ -7,6 +7,7 @@ export default function Clinicus() {
       agentName="Clínicus"
       agentIcon={<FileText className="h-8 w-8" />}
       agentColor="text-primary"
+      agentType="clinicus"
       placeholder="Descreva o caso clínico, solicite relatórios ou faça perguntas..."
       actionButtons={[
         {

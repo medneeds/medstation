@@ -7,6 +7,7 @@ export default function Numerus() {
       agentName="Numerus"
       agentIcon={<Calculator className="h-8 w-8" />}
       agentColor="text-accent"
+      agentType="numerus"
       placeholder="Solicite cálculos clínicos, conversões de unidades ou fórmulas..."
       actionButtons={[
         {

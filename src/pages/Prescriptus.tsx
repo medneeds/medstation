@@ -7,6 +7,7 @@ export default function Prescriptus() {
       agentName="Prescriptus"
       agentIcon={<Pill className="h-8 w-8" />}
       agentColor="text-destructive"
+      agentType="prescriptus"
       placeholder="Digite medicações, doses ou solicite prescrições estruturadas..."
       actionButtons={[
         {

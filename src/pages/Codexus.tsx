@@ -7,6 +7,7 @@ export default function Codexus() {
       agentName="CODexus"
       agentIcon={<FileText className="h-8 w-8" />}
       agentColor="text-primary"
+      agentType="codexus"
       placeholder="Busque diagnósticos, códigos CID-10 ou códigos LOINC..."
       actionButtons={[
         {

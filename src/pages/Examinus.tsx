@@ -7,6 +7,7 @@ export default function Examinus() {
       agentName="Examinus"
       agentIcon={<FlaskConical className="h-8 w-8" />}
       agentColor="text-secondary"
+      agentType="examinus"
       placeholder="Cole resultados de exames, peça interpretações ou análises..."
       actionButtons={[
         {

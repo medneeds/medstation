@@ -4,6 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AudioPlayer } from "@/components/AudioPlayer";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 import { 
   Send, 
   Paperclip, 
@@ -55,6 +58,8 @@ interface AgentChatProps {
   agentName: string;
   agentIcon: React.ReactNode;
   agentColor: string;
+  agentType: string;
+  caseId?: string;
   placeholder?: string;
   actionButtons?: Array<{
     label: string;
@@ -67,9 +72,12 @@ export function AgentChat({
   agentName, 
   agentIcon, 
   agentColor,
+  agentType,
+  caseId,
   placeholder = "Digite sua mensagem...",
   actionButtons = []
 }: AgentChatProps) {
+  const { toast } = useToast();
   const [message, setMessage] = useState("");
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -77,6 +85,7 @@ export function AgentChat({
   const [editingName, setEditingName] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const createNewProject = () => {
     const newProject: Project = {
@@ -90,14 +99,23 @@ export function AgentChat({
     setCurrentProject(newProject);
   };
 
-  const sendMessage = () => {
-    if (!message.trim()) return;
+  const sendMessage = async () => {
+    if (!message.trim() || isLoading) return;
 
-    if (!currentProject) {
-      createNewProject();
+    let project = currentProject;
+    if (!project) {
+      project = {
+        id: Date.now().toString(),
+        name: `Conversa ${projects.length + 1}`,
+        lastMessage: "",
+        updatedAt: new Date(),
+        messages: [],
+      };
+      setProjects([project, ...projects]);
+      setCurrentProject(project);
     }
 
-    const newMessage: Message = {
+    const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
       content: message,
@@ -105,8 +123,8 @@ export function AgentChat({
     };
 
     const updatedProject = {
-      ...currentProject!,
-      messages: [...(currentProject?.messages || []), newMessage],
+      ...project,
+      messages: [...project.messages, userMessage],
       lastMessage: message,
       updatedAt: new Date(),
     };
@@ -114,13 +132,27 @@ export function AgentChat({
     setCurrentProject(updatedProject);
     setProjects(projects.map(p => p.id === updatedProject.id ? updatedProject : p));
     setMessage("");
+    setIsLoading(true);
 
-    // Simulate assistant response
-    setTimeout(() => {
+    try {
+      // Call AI agent
+      const { data, error } = await supabase.functions.invoke("agent-chat", {
+        body: {
+          messages: updatedProject.messages.map(m => ({
+            role: m.role,
+            content: m.content,
+          })),
+          agentType,
+          caseId,
+        },
+      });
+
+      if (error) throw error;
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: `Resposta simulada do ${agentName}. Em produção, isso seria processado por IA.`,
+        content: data.message,
         timestamp: new Date(),
       };
 
@@ -131,7 +163,16 @@ export function AgentChat({
 
       setCurrentProject(finalProject);
       setProjects(projects.map(p => p.id === finalProject.id ? finalProject : p));
-    }, 1000);
+    } catch (error: any) {
+      console.error("Error sending message:", error);
+      toast({
+        title: "Erro ao enviar mensagem",
+        description: error.message || "Não foi possível processar sua mensagem.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const deleteProject = (projectId: string) => {
@@ -422,7 +463,7 @@ export function AgentChat({
             }}
             placeholder={placeholder}
             className="flex-1"
-            disabled={isRecording}
+            disabled={isRecording || isLoading}
           />
           {isRecording ? (
             <Button 
@@ -448,10 +489,14 @@ export function AgentChat({
               </Button>
               <Button 
                 onClick={sendMessage}
-                disabled={!message.trim()}
+                disabled={!message.trim() || isLoading}
                 className="shrink-0"
               >
-                <Send className="h-4 w-4" />
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
               </Button>
             </>
           )}

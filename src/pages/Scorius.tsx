@@ -7,6 +7,7 @@ export default function Scorius() {
       agentName="Scorius"
       agentIcon={<Activity className="h-8 w-8" />}
       agentColor="text-warning"
+      agentType="scorius"
       placeholder="Solicite cálculo de scores prognósticos (APACHE, SOFA, etc)..."
       actionButtons={[
         {
