@@ -36,11 +36,18 @@ const modules = [
     color: "text-secondary",
   },
   {
-    title: "Scorius/Numerus",
-    description: "Cálculos clínicos e scores prognósticos",
-    icon: Calculator,
+    title: "Scorius",
+    description: "Scores prognósticos e escalas clínicas",
+    icon: Activity,
     url: "/scorius",
     color: "text-warning",
+  },
+  {
+    title: "Numerus",
+    description: "Cálculos clínicos e conversões de unidades",
+    icon: Calculator,
+    url: "/numerus",
+    color: "text-accent",
   },
   {
     title: "Prescriptus",

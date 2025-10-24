@@ -8,6 +8,7 @@ import {
   Users,
   Settings,
   LogOut,
+  Activity,
 } from "lucide-react";
 import {
   Sidebar,
@@ -26,7 +27,8 @@ const modules = [
   { title: "Pacientes", url: "/patients", icon: Users },
   { title: "Clínicus", url: "/clinicus", icon: Stethoscope },
   { title: "Examinus", url: "/examinus", icon: FlaskConical },
-  { title: "Scorius/Numerus", url: "/scorius", icon: Calculator },
+  { title: "Scorius", url: "/scorius", icon: Activity },
+  { title: "Numerus", url: "/numerus", icon: Calculator },
   { title: "Prescriptus", url: "/prescriptus", icon: Pill },
   { title: "CODexus", url: "/codexus", icon: FileText },
 ];

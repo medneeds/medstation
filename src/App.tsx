@@ -9,6 +9,7 @@ import Patients from "./pages/Patients";
 import Clinicus from "./pages/Clinicus";
 import Examinus from "./pages/Examinus";
 import Scorius from "./pages/Scorius";
+import Numerus from "./pages/Numerus";
 import Prescriptus from "./pages/Prescriptus";
 import Codexus from "./pages/Codexus";
 import Settings from "./pages/Settings";
@@ -56,22 +57,30 @@ const App = () => (
               </DashboardLayout>
             }
           />
-          <Route
-            path="/scorius"
-            element={
-              <DashboardLayout>
-                <Scorius />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/prescriptus"
-            element={
-              <DashboardLayout>
-                <Prescriptus />
-              </DashboardLayout>
-            }
-          />
+            <Route
+              path="/scorius"
+              element={
+                <DashboardLayout>
+                  <Scorius />
+                </DashboardLayout>
+              }
+            />
+            <Route
+              path="/numerus"
+              element={
+                <DashboardLayout>
+                  <Numerus />
+                </DashboardLayout>
+              }
+            />
+            <Route
+              path="/prescriptus"
+              element={
+                <DashboardLayout>
+                  <Prescriptus />
+                </DashboardLayout>
+              }
+            />
           <Route
             path="/codexus"
             element={
