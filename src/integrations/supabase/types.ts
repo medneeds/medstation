@@ -173,6 +173,81 @@ export type Database = {
           },
         ]
       }
+      exam_requests: {
+        Row: {
+          case_id: string | null
+          cid_code: string | null
+          clinical_indication: string | null
+          completed_date: string | null
+          created_at: string
+          exams: Json
+          id: string
+          observations: string | null
+          patient_id: string
+          priority: string
+          request_number: string
+          requested_date: string
+          results_url: string | null
+          scheduled_date: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          case_id?: string | null
+          cid_code?: string | null
+          clinical_indication?: string | null
+          completed_date?: string | null
+          created_at?: string
+          exams?: Json
+          id?: string
+          observations?: string | null
+          patient_id: string
+          priority?: string
+          request_number: string
+          requested_date?: string
+          results_url?: string | null
+          scheduled_date?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          case_id?: string | null
+          cid_code?: string | null
+          clinical_indication?: string | null
+          completed_date?: string | null
+          created_at?: string
+          exams?: Json
+          id?: string
+          observations?: string | null
+          patient_id?: string
+          priority?: string
+          request_number?: string
+          requested_date?: string
+          results_url?: string | null
+          scheduled_date?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_requests_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_requests_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           audio_url: string | null
@@ -451,6 +526,7 @@ export type Database = {
     }
     Functions: {
       cleanup_old_rate_limits: { Args: never; Returns: undefined }
+      generate_exam_request_number: { Args: never; Returns: string }
       generate_prescription_number: { Args: never; Returns: string }
       has_role: {
         Args: {

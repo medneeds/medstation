@@ -22,6 +22,8 @@ import Prescriptus from "./pages/Prescriptus";
 import Codexus from "./pages/Codexus";
 import Prescriptions from "./pages/Prescriptions";
 import NewPrescription from "./pages/NewPrescription";
+import ExamRequests from "./pages/ExamRequests";
+import NewExamRequest from "./pages/NewExamRequest";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -155,6 +157,26 @@ const App = () => (
                 <ProtectedRoute>
                   <DashboardLayout>
                     <NewPrescription />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/exames"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <ExamRequests />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/exames/novo"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <NewExamRequest />
                   </DashboardLayout>
                 </ProtectedRoute>
               }

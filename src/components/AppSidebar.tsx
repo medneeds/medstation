@@ -37,15 +37,16 @@ const managementModules = [
   { title: "Pacientes", url: "/patients", icon: Users },
   { title: "Casos", url: "/cases", icon: Folder },
   { title: "Prescrições", url: "/prescricoes", icon: FileText },
+  { title: "Exames", url: "/exames", icon: FlaskConical },
 ];
 
 const agentModules = [
   { title: "Clínicus", url: "/clinicus", icon: Stethoscope },
-  { title: "Examinus", url: "/examinus", icon: FlaskConical },
-  { title: "Scorius", url: "/scorius", icon: Activity },
-  { title: "Numerus", url: "/numerus", icon: Calculator },
+  { title: "Examinus", url: "/examinus", icon: Activity },
+  { title: "Scorius", url: "/scorius", icon: Calculator },
+  { title: "Numerus", url: "/numerus", icon: Database },
   { title: "Prescriptus", url: "/prescriptus", icon: Pill },
-  { title: "CODexus", url: "/codexus", icon: Database },
+  { title: "CODexus", url: "/codexus", icon: FileText },
 ];
 
 const settings = [
