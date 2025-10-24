@@ -75,11 +75,11 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-gradient-to-b from-primary/15 via-sidebar/90 to-primary/10 backdrop-blur-sm shadow-xl">
-      <SidebarContent className="gap-0">
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-gradient-to-br from-primary/25 via-sidebar/85 to-primary/20 backdrop-blur-md shadow-2xl">
+      <SidebarContent className="gap-0 bg-gradient-to-b from-transparent via-sidebar/50 to-primary/5">
         {/* User Profile */}
-        <div className="flex items-center gap-3 px-4 py-6 border-b border-sidebar-border/50 bg-gradient-to-r from-primary/20 via-sidebar-accent/30 to-transparent shadow-inner">
-          <Avatar className="h-12 w-12 ring-2 ring-primary/20 shadow-lg transition-all hover:ring-primary/40 hover:scale-105">
+        <div className="flex items-center gap-3 px-4 py-6 border-b border-primary/20 bg-gradient-to-r from-primary/30 via-primary/15 to-transparent shadow-lg backdrop-blur-sm">
+          <Avatar className="h-12 w-12 ring-2 ring-primary/30 shadow-xl transition-all hover:ring-primary/50 hover:scale-110 hover:shadow-2xl">
             <AvatarImage src={profile?.avatar_url || ""} alt={profile?.full_name || ""} />
             <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground font-semibold">
               {getInitials()}
@@ -103,7 +103,7 @@ export function AppSidebar() {
         </div>
 
         {/* Home */}
-        <SidebarGroup className="py-3">
+        <SidebarGroup className="py-3 bg-gradient-to-r from-primary/5 to-transparent">
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
@@ -126,7 +126,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Management modules */}
-        <SidebarGroup className="py-3 border-t border-sidebar-border/50">
+        <SidebarGroup className="py-3 border-t border-primary/10 bg-gradient-to-r from-primary/8 to-transparent">
           <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70 uppercase tracking-wider px-3 mb-1">
             Gestão
           </SidebarGroupLabel>
@@ -154,7 +154,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Agent modules */}
-        <SidebarGroup className="py-3 border-t border-sidebar-border/50">
+        <SidebarGroup className="py-3 border-t border-primary/10 bg-gradient-to-r from-primary/10 to-transparent">
           <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70 uppercase tracking-wider px-3 mb-1">
             Agentes IA
           </SidebarGroupLabel>
@@ -182,7 +182,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Settings */}
-        <SidebarGroup className="mt-auto py-3 border-t border-sidebar-border/50">
+        <SidebarGroup className="mt-auto py-3 border-t border-primary/15 bg-gradient-to-r from-primary/12 to-transparent">
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
               {settings.map((item) => (
