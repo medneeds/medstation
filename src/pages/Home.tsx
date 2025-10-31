@@ -116,48 +116,48 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 py-12 md:py-20">
-        <div className="text-center mb-8">
-          <Badge className="mb-4 text-xs md:text-sm bg-primary/10 text-primary hover:bg-primary/20">
-            🎉 Grátis para sempre · Agente Examinus incluído
+      {/* Hero Section - Compact & Modern */}
+      <section className="container mx-auto px-4 py-8 md:py-16">
+        <div className="text-center mb-6 md:mb-8">
+          <Badge className="mb-3 text-xs bg-primary/10 text-primary hover:bg-primary/20 border-primary/20">
+            ✨ Grátis para sempre · Agente Examinus incluído
           </Badge>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-4 md:mb-6 bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 md:mb-4 bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent leading-tight">
             Atenda mais pacientes.<br />Documente menos.
           </h1>
-          <p className="text-base md:text-xl text-muted-foreground max-w-3xl mx-auto mb-6 md:mb-8 px-2">
-            Arraste documentos, grave áudios ou converse com 6 agentes de IA especializados.<br className="hidden md:block" />
-            A plataforma médica que economiza <strong>horas do seu dia</strong> com automação inteligente.
+          <p className="text-sm md:text-lg text-muted-foreground max-w-2xl mx-auto mb-5 md:mb-6 px-2">
+            IA especializada que economiza <strong>horas do seu dia</strong> com automação inteligente de documentação médica.
           </p>
         </div>
 
-        {/* Interactive Demo Section */}
-        <div className="mb-8">
-          <div className="text-center mb-6">
-            <Badge className="bg-purple-500/10 text-purple-600 border-purple-500/20">
-              ✨ Teste agora mesmo - Sem cadastro
-            </Badge>
-            <h2 className="text-2xl md:text-3xl font-bold mt-4 mb-2">
-              Experimente o poder da IA em interpretação de exames
+        {/* Interactive Demo - Highlighted */}
+        <div className="mb-6 md:mb-8">
+          <div className="text-center mb-4">
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-primary/10 to-accent/10 px-4 py-2 rounded-full border border-primary/20 mb-3">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium">Teste agora - Sem cadastro</span>
+            </div>
+            <h2 className="text-xl md:text-2xl font-bold mb-1">
+              Interprete exames em segundos com IA
             </h2>
-            <p className="text-muted-foreground">
-              Cole resultados de exames e veja a análise em tempo real
+            <p className="text-sm text-muted-foreground">
+              Cole resultados e receba análise detalhada instantaneamente
             </p>
           </div>
           
           <PublicExaminusChat />
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center px-4 mt-8">
-          <Button size="lg" onClick={() => navigate("/pricing")} className="w-full sm:w-auto h-12 md:h-14 px-6 md:px-8 text-base md:text-lg">
-            Criar Conta Gratuita <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5" />
+        <div className="flex flex-col sm:flex-row gap-2.5 md:gap-3 justify-center items-center px-4 mt-6">
+          <Button size="lg" onClick={() => navigate("/pricing")} className="w-full sm:w-auto h-11 md:h-12 px-6 md:px-8 text-sm md:text-base shadow-lg hover:shadow-xl">
+            Criar Conta Gratuita <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
-          <Button size="lg" variant="outline" onClick={() => navigate("/auth")} className="w-full sm:w-auto h-12 md:h-14 px-6 md:px-8 text-base md:text-lg">
+          <Button size="lg" variant="outline" onClick={() => navigate("/auth")} className="w-full sm:w-auto h-11 md:h-12 px-6 md:px-8 text-sm md:text-base">
             Já tenho conta
           </Button>
         </div>
-        <p className="text-xs md:text-sm text-muted-foreground mt-4 text-center">
-          ✓ Sem cartão de crédito · ✓ Comece em 2 minutos · ✓ Cancele quando quiser
+        <p className="text-xs text-muted-foreground mt-3 text-center">
+          ✓ Sem cartão · ✓ 2 minutos · ✓ Cancele quando quiser
         </p>
       </section>
 
