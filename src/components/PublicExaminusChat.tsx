@@ -229,35 +229,31 @@ export default function PublicExaminusChat() {
                 className={`max-w-[85%] rounded-2xl shadow-sm transition-all hover:shadow-md relative group ${
                   message.role === "user"
                     ? "bg-gradient-primary text-primary-foreground ml-4 px-4 py-3.5"
-                    : "bg-card text-card-foreground mr-4 border border-border/50"
+                    : "bg-card text-card-foreground mr-4 border border-border/50 px-4 pt-3.5 pb-10"
                 }`}
               >
+                <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                  {message.content}
+                </p>
                 {message.role === "assistant" && (
-                  <div className="flex items-start justify-between gap-3 px-4 pt-3.5">
-                    <p className="text-sm whitespace-pre-wrap leading-relaxed flex-1">
-                      {message.content}
-                    </p>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleCopy(message.content, index)}
-                      className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                    >
-                      {copiedIndex === index ? (
-                        <Check className="h-3.5 w-3.5 text-primary" />
-                      ) : (
-                        <Copy className="h-3.5 w-3.5" />
-                      )}
-                    </Button>
-                  </div>
-                )}
-                {message.role === "assistant" && (
-                  <div className="px-4 pb-3.5"></div>
-                )}
-                {message.role === "user" && (
-                  <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                    {message.content}
-                  </p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleCopy(message.content, index)}
+                    className="absolute bottom-2 right-2 h-7 px-2 gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                  >
+                    {copiedIndex === index ? (
+                      <>
+                        <Check className="h-3 w-3 text-primary" />
+                        <span className="text-primary">Copiado</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3 w-3" />
+                        <span>Copiar</span>
+                      </>
+                    )}
+                  </Button>
                 )}
               </div>
             </div>
