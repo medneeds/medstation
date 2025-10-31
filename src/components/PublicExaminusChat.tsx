@@ -109,24 +109,24 @@ export default function PublicExaminusChat() {
 
   const quickExamples = [
     { 
-      label: "Hemograma", 
-      icon: "🩸", 
-      prompt: "Hemograma Completo:\n• Hemoglobina: 10,2 g/dL (ref: 12-16)\n• Hematócrito: 32% (ref: 36-48)\n• VCM: 74 fL (ref: 80-100)\n• CHCM: 30 g/dL (ref: 32-36)\n• Leucócitos: 12.400/mm³ (ref: 4.000-11.000)\n• Neutrófilos: 78% (ref: 40-75)\n• Linfócitos: 15% (ref: 20-45)\n• Plaquetas: 180.000/mm³ (ref: 150.000-400.000)"
+      label: "Compactar", 
+      icon: "📦", 
+      prompt: "Compacte este resultado de exame para registro em prontuário:\n\nHemograma Completo:\n• Hemoglobina: 10,2 g/dL (ref: 12-16)\n• Hematócrito: 32% (ref: 36-48)\n• VCM: 74 fL (ref: 80-100)\n• CHCM: 30 g/dL (ref: 32-36)\n• Leucócitos: 12.400/mm³ (ref: 4.000-11.000)\n• Neutrófilos: 78% (ref: 40-75)\n• Linfócitos: 15% (ref: 20-45)\n• Plaquetas: 180.000/mm³ (ref: 150.000-400.000)"
     },
     { 
-      label: "Glicemia", 
-      icon: "🍬", 
-      prompt: "Exames de Glicose:\n• Glicemia de jejum: 126 mg/dL (ref: 70-100)\n• Hemoglobina glicada (HbA1c): 7,2% (ref: <5,7)\n• Insulina basal: 18 µU/mL (ref: 5-25)"
+      label: "Interpretar", 
+      icon: "🔍", 
+      prompt: "Interprete estes achados laboratoriais:\n\n• Glicemia de jejum: 126 mg/dL (ref: 70-100)\n• Hemoglobina glicada (HbA1c): 7,2% (ref: <5,7)\n• Colesterol total: 245 mg/dL (ref: <200)\n• LDL: 165 mg/dL (ref: <100)\n• Creatinina: 1,8 mg/dL (ref: 0,7-1,3)"
     },
     { 
-      label: "Tireoide", 
-      icon: "🦋", 
-      prompt: "Função Tireoidiana:\n• TSH: 8,5 mUI/L (ref: 0,4-4,0)\n• T4 livre: 0,7 ng/dL (ref: 0,9-1,8)\n• T3 total: 82 ng/dL (ref: 80-200)"
+      label: "Achados críticos", 
+      icon: "⚠️", 
+      prompt: "Identifique os achados críticos neste exame:\n\n• Potássio: 6,2 mEq/L (ref: 3,5-5,0)\n• Creatinina: 4,5 mg/dL (ref: 0,7-1,3)\n• Hemoglobina: 6,8 g/dL (ref: 12-16)\n• Plaquetas: 45.000/mm³ (ref: 150.000-400.000)\n• PCR: 180 mg/L (ref: <5)"
     },
     { 
-      label: "Lipidograma", 
-      icon: "💧", 
-      prompt: "Perfil Lipídico:\n• Colesterol total: 245 mg/dL (ref: <200)\n• HDL: 38 mg/dL (ref: >40)\n• LDL: 165 mg/dL (ref: <100)\n• Triglicerídeos: 210 mg/dL (ref: <150)"
+      label: "Listar envios", 
+      icon: "📋", 
+      prompt: "Liste em formato de prontuário sequencial:\n\n1) Hemograma: anemia microcítica, leucocitose com desvio\n2) Função renal: creatinina elevada\n3) Glicemia: 126 mg/dL em jejum\n4) Lipidograma: dislipidemia mista"
     },
   ];
 
