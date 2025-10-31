@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -136,47 +137,52 @@ export default function PublicExaminusChat() {
   const messagesHeight = Math.min(500, Math.max(280, messages.length * 70 + 80));
 
   return (
-    <Card className="w-full max-w-4xl mx-auto shadow-2xl border border-[#22c55e]/20 bg-gradient-to-b from-[#0f172a] to-[#0a0f1a] backdrop-blur transition-all duration-300 hover:shadow-[0_0_30px_rgba(34,197,94,0.15)]">
+    <Card className="w-full max-w-4xl mx-auto shadow-elevated border-border/50 backdrop-blur-xl bg-card/95 transition-all duration-300 hover:shadow-medical">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#22c55e]/90 to-[#16a34a]/90 p-4 rounded-t-xl relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMDUiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-30"></div>
+      <div className="bg-gradient-primary p-5 rounded-t-2xl relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA0MCAwIEwgMCAwIDAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-20"></div>
         <div className="relative flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center ring-2 ring-white/30">
-              <Sparkles className="w-6 h-6 text-white" />
+            <div className="w-11 h-11 rounded-2xl bg-primary-foreground/20 backdrop-blur-sm flex items-center justify-center ring-2 ring-primary-foreground/30">
+              <Sparkles className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
-              <h3 className="font-bold text-white text-lg flex items-center gap-2">
+              <h3 className="font-bold text-primary-foreground text-lg flex items-center gap-2">
                 Examinus Demo
-                <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full font-normal">Grátis</span>
+                <Badge variant="secondary" className="text-[0.65rem] bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30">
+                  Grátis
+                </Badge>
               </h3>
-              <p className="text-white/90 text-sm">Cole exames reais e veja a mágica acontecer</p>
+              <p className="text-primary-foreground/90 text-sm">Cole exames e veja a análise instantânea</p>
             </div>
           </div>
           {remainingMessages !== null && (
-            <div className="text-white text-sm bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full font-semibold ring-2 ring-white/20">
-              {remainingMessages} análises restantes
-            </div>
+            <Badge className="bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30 backdrop-blur-sm">
+              {remainingMessages} restantes
+            </Badge>
           )}
         </div>
       </div>
 
-      {/* Quick Examples - Show if no messages yet or just welcome message */}
+      {/* Quick Examples */}
       {messages.length <= 1 && (
-        <div className="p-4 bg-gradient-to-b from-[#0f172a] to-transparent border-b border-white/5">
+        <div className="p-5 border-b border-border/50">
           <div className="mb-3">
-            <p className="text-white/90 text-sm font-medium mb-1">⚡ Teste com exemplos prontos:</p>
-            <p className="text-white/50 text-xs">Clique em um exemplo abaixo para ver a análise instantânea</p>
+            <p className="text-foreground text-sm font-medium mb-1 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              Exemplos prontos para testar
+            </p>
+            <p className="text-muted-foreground text-xs">Clique e veja a análise em segundos</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
             {quickExamples.map((example, idx) => (
               <button
                 key={idx}
                 onClick={() => handleQuickAction(example.prompt)}
-                className="flex flex-col items-center gap-2 p-3 rounded-xl bg-[#0f172a]/50 hover:bg-[#22c55e]/10 border border-white/10 hover:border-[#22c55e]/30 transition-all group hover:scale-105 hover:shadow-lg"
+                className="flex flex-col items-center gap-2 p-3 rounded-xl bg-muted hover:bg-accent border border-border/50 hover:border-primary/30 transition-all group hover:scale-105 hover:shadow-sm"
               >
                 <span className="text-2xl group-hover:scale-110 transition-transform">{example.icon}</span>
-                <span className="text-xs text-center text-white/70 group-hover:text-white font-medium">
+                <span className="text-xs text-center text-muted-foreground group-hover:text-foreground font-medium">
                   {example.label}
                 </span>
               </button>
@@ -185,9 +191,9 @@ export default function PublicExaminusChat() {
         </div>
       )}
 
-      {/* Messages - Dynamic Height */}
+      {/* Messages */}
       <ScrollArea 
-        className="p-4 transition-all duration-300 bg-[#0a0f1a]/50" 
+        className="p-5 transition-all duration-300 bg-gradient-to-b from-muted/20 to-transparent" 
         style={{ height: `${messagesHeight}px` }}
         ref={scrollRef}
       >
@@ -198,10 +204,10 @@ export default function PublicExaminusChat() {
               className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-3 duration-300`}
             >
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-lg ${
+                className={`max-w-[85%] rounded-2xl px-4 py-3.5 shadow-sm transition-all hover:shadow-md ${
                   message.role === "user"
-                    ? "bg-gradient-to-br from-[#22c55e] to-[#16a34a] text-white ml-4"
-                    : "bg-[#0f172a] text-white/90 mr-4 border border-white/10"
+                    ? "bg-gradient-primary text-primary-foreground ml-4"
+                    : "bg-card text-card-foreground mr-4 border border-border/50"
                 }`}
               >
                 <p className="text-sm whitespace-pre-wrap leading-relaxed">
@@ -212,10 +218,10 @@ export default function PublicExaminusChat() {
           ))}
           {isLoading && (
             <div className="flex justify-start animate-in fade-in duration-200">
-              <div className="bg-[#0f172a] rounded-2xl px-4 py-3 border border-white/10">
-                <div className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-[#22c55e]" />
-                  <span className="text-white/60 text-sm">Analisando...</span>
+              <div className="bg-card rounded-2xl px-4 py-3 border border-border/50">
+                <div className="flex items-center gap-2.5">
+                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                  <span className="text-muted-foreground text-sm">Analisando exame...</span>
                 </div>
               </div>
             </div>
@@ -224,21 +230,21 @@ export default function PublicExaminusChat() {
       </ScrollArea>
 
       {/* Input */}
-      <div className="p-4 border-t border-white/10 bg-[#0f172a]/80 backdrop-blur rounded-b-xl">
+      <div className="p-5 border-t border-border/50 bg-muted/20 backdrop-blur rounded-b-2xl">
         <div className="flex gap-3">
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Cole resultados completos de exames aqui (hemograma, bioquímica, imagens, etc)..."
-            className="min-h-[80px] max-h-[180px] resize-none text-sm bg-[#0a0f1a] border-white/20 text-white placeholder:text-white/40 focus:border-[#22c55e]/50 focus:ring-[#22c55e]/20"
+            className="min-h-[80px] max-h-[180px] resize-none text-sm bg-background border-border placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20 transition-all"
             disabled={isLoading}
           />
           <Button
             onClick={handleSend}
             disabled={isLoading || !input.trim()}
             size="lg"
-            className="self-end h-[80px] w-[80px] bg-gradient-to-br from-[#22c55e] to-[#16a34a] hover:from-[#16a34a] hover:to-[#22c55e] shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+            className="self-end h-[80px] w-[80px] shadow-medical hover:shadow-elevated hover:scale-105 transition-all"
           >
             {isLoading ? (
               <Loader2 className="w-6 h-6 animate-spin" />
@@ -249,18 +255,19 @@ export default function PublicExaminusChat() {
         </div>
         
         {/* CTA Footer */}
-        <div className="mt-3 flex items-center justify-between text-xs flex-wrap gap-3 bg-[#22c55e]/5 border border-[#22c55e]/20 rounded-lg px-3 py-2">
-          <p className="text-white/70 flex items-center gap-2">
-            <span className="text-[#22c55e]">✓</span> Teste grátis • Sem cadastro • Sem cartão
+        <div className="mt-3.5 flex items-center justify-between text-xs flex-wrap gap-3 bg-primary/5 border border-primary/20 rounded-xl px-3.5 py-2.5">
+          <p className="text-muted-foreground flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+            Teste grátis • Sem cadastro • Sem cartão
           </p>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate("/pricing")}
-            className="text-[#22c55e] hover:text-white hover:bg-[#22c55e]/20 h-8 text-xs font-semibold"
+            className="text-primary hover:text-primary hover:bg-primary/10 h-8 text-xs font-semibold group"
           >
-            Desbloquear ilimitado
-            <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+            Uso ilimitado
+            <ArrowRight className="ml-1.5 h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
           </Button>
         </div>
       </div>
