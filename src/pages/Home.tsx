@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Stethoscope, Brain, Zap, Shield, BarChart3, Users, CheckCircle, FileText, Mic, Upload, ClipboardList, Pill, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PublicExaminusChat from "@/components/PublicExaminusChat";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -116,26 +117,46 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-12 md:py-20 text-center">
-        <Badge className="mb-4 text-xs md:text-sm bg-primary/10 text-primary hover:bg-primary/20">
-          🎉 Grátis para sempre · Agente Examinus incluído
-        </Badge>
-        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-4 md:mb-6 bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent leading-tight">
-          Atenda mais pacientes.<br />Documente menos.
-        </h1>
-        <p className="text-base md:text-xl text-muted-foreground max-w-3xl mx-auto mb-6 md:mb-8 px-2">
-          Arraste documentos, grave áudios ou converse com 6 agentes de IA especializados.<br className="hidden md:block" />
-          A plataforma médica que economiza <strong>horas do seu dia</strong> com automação inteligente.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center px-4">
+      <section className="container mx-auto px-4 py-12 md:py-20">
+        <div className="text-center mb-8">
+          <Badge className="mb-4 text-xs md:text-sm bg-primary/10 text-primary hover:bg-primary/20">
+            🎉 Grátis para sempre · Agente Examinus incluído
+          </Badge>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-4 md:mb-6 bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent leading-tight">
+            Atenda mais pacientes.<br />Documente menos.
+          </h1>
+          <p className="text-base md:text-xl text-muted-foreground max-w-3xl mx-auto mb-6 md:mb-8 px-2">
+            Arraste documentos, grave áudios ou converse com 6 agentes de IA especializados.<br className="hidden md:block" />
+            A plataforma médica que economiza <strong>horas do seu dia</strong> com automação inteligente.
+          </p>
+        </div>
+
+        {/* Interactive Demo Section */}
+        <div className="mb-8">
+          <div className="text-center mb-6">
+            <Badge className="bg-purple-500/10 text-purple-600 border-purple-500/20">
+              ✨ Teste agora mesmo - Sem cadastro
+            </Badge>
+            <h2 className="text-2xl md:text-3xl font-bold mt-4 mb-2">
+              Experimente o poder da IA em interpretação de exames
+            </h2>
+            <p className="text-muted-foreground">
+              Cole resultados de exames e veja a análise em tempo real
+            </p>
+          </div>
+          
+          <PublicExaminusChat />
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center px-4 mt-8">
           <Button size="lg" onClick={() => navigate("/pricing")} className="w-full sm:w-auto h-12 md:h-14 px-6 md:px-8 text-base md:text-lg">
-            Começar Gratuitamente <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5" />
+            Criar Conta Gratuita <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5" />
           </Button>
           <Button size="lg" variant="outline" onClick={() => navigate("/auth")} className="w-full sm:w-auto h-12 md:h-14 px-6 md:px-8 text-base md:text-lg">
             Já tenho conta
           </Button>
         </div>
-        <p className="text-xs md:text-sm text-muted-foreground mt-4">
+        <p className="text-xs md:text-sm text-muted-foreground mt-4 text-center">
           ✓ Sem cartão de crédito · ✓ Comece em 2 minutos · ✓ Cancele quando quiser
         </p>
       </section>

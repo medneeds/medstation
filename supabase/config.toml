@@ -21,6 +21,9 @@ verify_jwt = true
 [functions.transcribe-prescription]
 verify_jwt = true
 
+[functions.public-examinus]
+verify_jwt = false
+
 [functions.transcribe-case]
 verify_jwt = true
 
