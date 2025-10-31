@@ -106,47 +106,78 @@ export default function PublicExaminusChat() {
     }
   };
 
-  const messagesHeight = Math.min(600, Math.max(300, messages.length * 80 + 100));
+  const quickActions = [
+    { label: "Analisar exame de sangue", icon: "🩸", prompt: "Analise estes resultados de hemograma completo e me explique os valores alterados:" },
+    { label: "Interpretar imagem", icon: "🔬", prompt: "Preciso de ajuda para interpretar este resultado de exame de imagem:" },
+    { label: "Reescrever laudo", icon: "📝", prompt: "Reescreva este laudo de forma mais clara e objetiva para o paciente:" },
+    { label: "Valores de referência", icon: "📊", prompt: "Quais são os valores de referência normais para:" },
+  ];
+
+  const handleQuickAction = (prompt: string) => {
+    setInput(prompt);
+  };
+
+  const messagesHeight = Math.min(500, Math.max(280, messages.length * 70 + 80));
 
   return (
-    <Card className="w-full max-w-5xl mx-auto shadow-2xl border-2 border-primary/20 bg-background/95 backdrop-blur transition-all duration-300">
-      {/* Header */}
-      <div className="bg-gradient-primary p-4 rounded-t-lg">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-white" />
+    <Card className="w-full max-w-4xl mx-auto shadow-xl border border-primary/20 bg-background/98 backdrop-blur transition-all duration-300">
+      {/* Compact Header */}
+      <div className="bg-gradient-primary p-3 rounded-t-lg">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-white text-lg">Examinus Demo</h3>
-              <p className="text-white/90 text-sm">Interpretação de Exames com IA</p>
+              <h3 className="font-bold text-white text-base">Examinus Demo</h3>
+              <p className="text-white/90 text-xs">Interpretação de Exames com IA</p>
             </div>
           </div>
           {remainingMessages !== null && (
-            <div className="text-white text-sm bg-white/15 backdrop-blur px-3 py-1.5 rounded-full font-medium">
-              {remainingMessages} mensagens restantes
+            <div className="text-white text-xs bg-white/15 backdrop-blur px-2.5 py-1 rounded-full font-medium">
+              {remainingMessages} msgs
             </div>
           )}
         </div>
       </div>
 
+      {/* Quick Actions - Only show if no messages yet or just welcome message */}
+      {messages.length <= 1 && (
+        <div className="p-3 bg-muted/30 border-b">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {quickActions.map((action, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleQuickAction(action.prompt)}
+                className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg bg-background hover:bg-primary/5 border border-border/50 hover:border-primary/30 transition-all group"
+              >
+                <span className="text-xl group-hover:scale-110 transition-transform">{action.icon}</span>
+                <span className="text-xs text-center text-muted-foreground group-hover:text-foreground font-medium">
+                  {action.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Messages - Dynamic Height */}
       <ScrollArea 
-        className="p-4 transition-all duration-300" 
+        className="p-3 transition-all duration-300" 
         style={{ height: `${messagesHeight}px` }}
         ref={scrollRef}
       >
-        <div className="space-y-4">
+        <div className="space-y-3">
           {messages.map((message, index) => (
             <div
               key={index}
-              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}
+              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-200`}
             >
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${
+                className={`max-w-[85%] rounded-xl px-3.5 py-2.5 shadow-sm ${
                   message.role === "user"
-                    ? "bg-primary text-primary-foreground ml-4"
-                    : "bg-muted mr-4 border border-border/50"
+                    ? "bg-primary text-primary-foreground ml-3"
+                    : "bg-muted mr-3 border border-border/50"
                 }`}
               >
                 <p className="text-sm whitespace-pre-wrap leading-relaxed">
@@ -156,31 +187,31 @@ export default function PublicExaminusChat() {
             </div>
           ))}
           {isLoading && (
-            <div className="flex justify-start animate-in fade-in duration-300">
-              <div className="bg-muted rounded-2xl px-4 py-3 border border-border/50">
-                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+            <div className="flex justify-start animate-in fade-in duration-200">
+              <div className="bg-muted rounded-xl px-3.5 py-2.5 border border-border/50">
+                <Loader2 className="w-4 h-4 animate-spin text-primary" />
               </div>
             </div>
           )}
         </div>
       </ScrollArea>
 
-      {/* Input */}
-      <div className="p-4 border-t bg-muted/30 backdrop-blur">
+      {/* Compact Input */}
+      <div className="p-3 border-t bg-muted/30 backdrop-blur">
         <div className="flex gap-2">
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Cole os resultados de exames aqui ou faça uma pergunta..."
-            className="min-h-[80px] max-h-[200px] resize-none"
+            placeholder="Cole resultados de exames, descreva sintomas ou peça interpretações..."
+            className="min-h-[70px] max-h-[180px] resize-none text-sm"
             disabled={isLoading}
           />
           <Button
             onClick={handleSend}
             disabled={isLoading || !input.trim()}
             size="lg"
-            className="self-end h-[80px]"
+            className="self-end h-[70px] w-[70px]"
           >
             {isLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -191,18 +222,18 @@ export default function PublicExaminusChat() {
         </div>
         
         {/* CTA Footer */}
-        <div className="mt-3 flex items-center justify-between text-sm flex-wrap gap-2">
+        <div className="mt-2.5 flex items-center justify-between text-xs flex-wrap gap-2">
           <p className="text-muted-foreground">
-            💡 Teste grátis • Sem cadastro necessário
+            💡 Teste grátis • Sem cadastro
           </p>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate("/pricing")}
-            className="text-primary hover:text-primary hover:bg-primary/10"
+            className="text-primary hover:text-primary hover:bg-primary/10 h-7 text-xs"
           >
-            Criar conta para uso ilimitado
-            <ArrowRight className="ml-2 h-4 w-4" />
+            Uso ilimitado
+            <ArrowRight className="ml-1.5 h-3 w-3" />
           </Button>
         </div>
       </div>
