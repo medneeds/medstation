@@ -85,8 +85,11 @@ export default function Home() {
           </div>
 
           {/* Demo Card */}
-          <div id="demo">
-            <PublicExaminusChat />
+          <div id="demo" className="relative">
+            <div className="absolute -inset-1 bg-gradient-to-r from-[#22c55e]/20 to-[#16a34a]/20 rounded-2xl blur-xl"></div>
+            <div className="relative">
+              <PublicExaminusChat />
+            </div>
           </div>
         </div>
       </section>
