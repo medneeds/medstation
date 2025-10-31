@@ -8,31 +8,31 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Medical Professional Color Palette */
-    --background: 210 20% 98%;
-    --foreground: 215 25% 15%;
+    /* Purple Medical Professional Color Palette */
+    --background: 270 20% 98%;
+    --foreground: 270 25% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 270 25% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 270 25% 15%;
 
-    /* Hospital Blue - trustworthy and professional */
-    --primary: 210 85% 42%;
+    /* Medical Purple - trustworthy and innovative */
+    --primary: 270 70% 50%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 210 85% 35%;
+    --primary-hover: 270 70% 42%;
 
-    /* Clinical Green - success and health */
-    --secondary: 158 64% 45%;
+    /* Accent Purple - complementary */
+    --secondary: 280 65% 55%;
     --secondary-foreground: 0 0% 100%;
 
-    /* Neutral clinical tones */
-    --muted: 210 15% 94%;
-    --muted-foreground: 215 15% 45%;
+    /* Neutral purple tones */
+    --muted: 270 15% 94%;
+    --muted-foreground: 270 15% 45%;
 
-    --accent: 210 85% 96%;
-    --accent-foreground: 210 85% 42%;
+    --accent: 270 70% 96%;
+    --accent-foreground: 270 70% 50%;
 
     /* Medical alert red */
     --destructive: 0 72% 51%;
@@ -42,30 +42,30 @@ All colors MUST be HSL.
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 210 15% 88%;
-    --input: 210 15% 88%;
-    --ring: 210 85% 42%;
+    --border: 270 15% 88%;
+    --input: 270 15% 88%;
+    --ring: 270 70% 50%;
 
     --radius: 0.5rem;
 
-    /* Sidebar - professional medical interface */
-    --sidebar-background: 215 25% 15%;
-    --sidebar-foreground: 210 20% 92%;
-    --sidebar-primary: 210 85% 42%;
+    /* Sidebar - professional purple interface */
+    --sidebar-background: 270 25% 15%;
+    --sidebar-foreground: 270 20% 92%;
+    --sidebar-primary: 270 70% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 25% 20%;
-    --sidebar-accent-foreground: 210 20% 92%;
-    --sidebar-border: 215 25% 22%;
-    --sidebar-ring: 210 85% 42%;
+    --sidebar-accent: 270 25% 20%;
+    --sidebar-accent-foreground: 270 20% 92%;
+    --sidebar-border: 270 25% 22%;
+    --sidebar-ring: 270 70% 50%;
 
-    /* Medical gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(210 85% 42%), hsl(210 85% 55%));
-    --gradient-clinical: linear-gradient(135deg, hsl(158 64% 45%), hsl(158 64% 58%));
-    --gradient-hero: linear-gradient(135deg, hsl(215 25% 15%), hsl(210 85% 42%));
+    /* Purple gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(270 70% 50%), hsl(280 70% 58%));
+    --gradient-clinical: linear-gradient(135deg, hsl(280 65% 55%), hsl(290 65% 65%));
+    --gradient-hero: linear-gradient(135deg, hsl(270 25% 15%), hsl(270 70% 50%));
 
     /* Shadows */
-    --shadow-medical: 0 4px 12px hsl(210 85% 42% / 0.08);
-    --shadow-elevated: 0 8px 24px hsl(210 85% 42% / 0.12);
+    --shadow-medical: 0 4px 12px hsl(270 70% 50% / 0.08);
+    --shadow-elevated: 0 8px 24px hsl(270 70% 50% / 0.12);
     --shadow-critical: 0 8px 24px hsl(0 72% 51% / 0.15);
 
     /* Transitions */
@@ -74,27 +74,27 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 215 28% 12%;
-    --foreground: 210 20% 95%;
+    --background: 270 28% 12%;
+    --foreground: 270 20% 95%;
 
-    --card: 215 25% 15%;
-    --card-foreground: 210 20% 95%;
+    --card: 270 25% 15%;
+    --card-foreground: 270 20% 95%;
 
-    --popover: 215 25% 15%;
-    --popover-foreground: 210 20% 95%;
+    --popover: 270 25% 15%;
+    --popover-foreground: 270 20% 95%;
 
-    --primary: 210 85% 55%;
-    --primary-foreground: 215 28% 12%;
-    --primary-hover: 210 85% 48%;
+    --primary: 270 70% 58%;
+    --primary-foreground: 270 28% 12%;
+    --primary-hover: 270 70% 50%;
 
-    --secondary: 158 64% 52%;
-    --secondary-foreground: 215 28% 12%;
+    --secondary: 280 65% 60%;
+    --secondary-foreground: 270 28% 12%;
 
-    --muted: 215 25% 18%;
-    --muted-foreground: 215 15% 65%;
+    --muted: 270 25% 18%;
+    --muted-foreground: 270 15% 65%;
 
-    --accent: 215 25% 20%;
-    --accent-foreground: 210 85% 55%;
+    --accent: 270 25% 20%;
+    --accent-foreground: 270 70% 58%;
 
     --destructive: 0 72% 58%;
     --destructive-foreground: 0 0% 100%;
@@ -102,22 +102,22 @@ All colors MUST be HSL.
     --warning: 38 92% 58%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 215 25% 22%;
-    --input: 215 25% 22%;
-    --ring: 210 85% 55%;
+    --border: 270 25% 22%;
+    --input: 270 25% 22%;
+    --ring: 270 70% 58%;
 
-    --sidebar-background: 215 30% 10%;
-    --sidebar-foreground: 210 20% 92%;
-    --sidebar-primary: 210 85% 55%;
-    --sidebar-primary-foreground: 215 30% 10%;
-    --sidebar-accent: 215 25% 16%;
-    --sidebar-accent-foreground: 210 20% 92%;
-    --sidebar-border: 215 25% 18%;
-    --sidebar-ring: 210 85% 55%;
+    --sidebar-background: 270 30% 10%;
+    --sidebar-foreground: 270 20% 92%;
+    --sidebar-primary: 270 70% 58%;
+    --sidebar-primary-foreground: 270 30% 10%;
+    --sidebar-accent: 270 25% 16%;
+    --sidebar-accent-foreground: 270 20% 92%;
+    --sidebar-border: 270 25% 18%;
+    --sidebar-ring: 270 70% 58%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(210 85% 55%), hsl(210 85% 68%));
-    --gradient-clinical: linear-gradient(135deg, hsl(158 64% 52%), hsl(158 64% 65%));
-    --gradient-hero: linear-gradient(135deg, hsl(215 30% 10%), hsl(210 85% 55%));
+    --gradient-primary: linear-gradient(135deg, hsl(270 70% 58%), hsl(280 70% 68%));
+    --gradient-clinical: linear-gradient(135deg, hsl(280 65% 60%), hsl(290 65% 70%));
+    --gradient-hero: linear-gradient(135deg, hsl(270 30% 10%), hsl(270 70% 58%));
 
     --shadow-medical: 0 4px 12px hsl(0 0% 0% / 0.3);
     --shadow-elevated: 0 8px 24px hsl(0 0% 0% / 0.4);

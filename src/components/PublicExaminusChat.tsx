@@ -106,41 +106,47 @@ export default function PublicExaminusChat() {
     }
   };
 
+  const messagesHeight = Math.min(600, Math.max(300, messages.length * 80 + 100));
+
   return (
-    <Card className="w-full max-w-4xl mx-auto shadow-2xl border-2 border-primary/20 bg-background/95 backdrop-blur">
+    <Card className="w-full max-w-5xl mx-auto shadow-2xl border-2 border-primary/20 bg-background/95 backdrop-blur transition-all duration-300">
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-500 to-purple-600 p-4 rounded-t-lg">
-        <div className="flex items-center justify-between">
+      <div className="bg-gradient-primary p-4 rounded-t-lg">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
             <div>
               <h3 className="font-bold text-white text-lg">Examinus Demo</h3>
-              <p className="text-white/80 text-sm">Interpretação de Exames com IA</p>
+              <p className="text-white/90 text-sm">Interpretação de Exames com IA</p>
             </div>
           </div>
           {remainingMessages !== null && (
-            <div className="text-white/90 text-sm bg-white/10 px-3 py-1 rounded-full">
+            <div className="text-white text-sm bg-white/15 backdrop-blur px-3 py-1.5 rounded-full font-medium">
               {remainingMessages} mensagens restantes
             </div>
           )}
         </div>
       </div>
 
-      {/* Messages */}
-      <ScrollArea className="h-[400px] p-4" ref={scrollRef}>
+      {/* Messages - Dynamic Height */}
+      <ScrollArea 
+        className="p-4 transition-all duration-300" 
+        style={{ height: `${messagesHeight}px` }}
+        ref={scrollRef}
+      >
         <div className="space-y-4">
           {messages.map((message, index) => (
             <div
               key={index}
-              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}
             >
               <div
-                className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${
                   message.role === "user"
                     ? "bg-primary text-primary-foreground ml-4"
-                    : "bg-muted mr-4"
+                    : "bg-muted mr-4 border border-border/50"
                 }`}
               >
                 <p className="text-sm whitespace-pre-wrap leading-relaxed">
@@ -150,9 +156,9 @@ export default function PublicExaminusChat() {
             </div>
           ))}
           {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-muted rounded-2xl px-4 py-3">
-                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+            <div className="flex justify-start animate-in fade-in duration-300">
+              <div className="bg-muted rounded-2xl px-4 py-3 border border-border/50">
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
               </div>
             </div>
           )}
@@ -160,21 +166,21 @@ export default function PublicExaminusChat() {
       </ScrollArea>
 
       {/* Input */}
-      <div className="p-4 border-t bg-muted/30">
+      <div className="p-4 border-t bg-muted/30 backdrop-blur">
         <div className="flex gap-2">
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Cole os resultados de exames aqui ou faça uma pergunta..."
-            className="min-h-[60px] resize-none"
+            className="min-h-[80px] max-h-[200px] resize-none"
             disabled={isLoading}
           />
           <Button
             onClick={handleSend}
             disabled={isLoading || !input.trim()}
             size="lg"
-            className="self-end"
+            className="self-end h-[80px]"
           >
             {isLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -185,7 +191,7 @@ export default function PublicExaminusChat() {
         </div>
         
         {/* CTA Footer */}
-        <div className="mt-3 flex items-center justify-between text-sm">
+        <div className="mt-3 flex items-center justify-between text-sm flex-wrap gap-2">
           <p className="text-muted-foreground">
             💡 Teste grátis • Sem cadastro necessário
           </p>
@@ -193,7 +199,7 @@ export default function PublicExaminusChat() {
             variant="ghost"
             size="sm"
             onClick={() => navigate("/pricing")}
-            className="text-primary hover:text-primary"
+            className="text-primary hover:text-primary hover:bg-primary/10"
           >
             Criar conta para uso ilimitado
             <ArrowRight className="ml-2 h-4 w-4" />

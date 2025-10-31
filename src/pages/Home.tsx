@@ -20,7 +20,7 @@ export default function Home() {
       name: "Examinus",
       icon: BarChart3,
       description: "Interpretação de exames laboratoriais e radiológicos",
-      color: "from-purple-500 to-purple-600",
+      color: "from-primary to-secondary",
       isPremium: false,
     },
     {
