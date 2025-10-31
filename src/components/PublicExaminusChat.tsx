@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Sparkles, ArrowRight, Minimize2, Search, AlertTriangle, List } from "lucide-react";
+import { Loader2, Send, Sparkles, ArrowRight, Minimize2, Search, AlertTriangle, List, Copy, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -24,6 +24,7 @@ export default function PublicExaminusChat() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [remainingMessages, setRemainingMessages] = useState<number | null>(null);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -104,6 +105,24 @@ export default function PublicExaminusChat() {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+  };
+
+  const handleCopy = async (content: string, index: number) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopiedIndex(index);
+      toast({
+        title: "Copiado!",
+        description: "Resposta copiada para a área de transferência",
+      });
+      setTimeout(() => setCopiedIndex(null), 2000);
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível copiar o texto",
+        variant: "destructive",
+      });
     }
   };
 
@@ -207,15 +226,39 @@ export default function PublicExaminusChat() {
               className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-3 duration-300`}
             >
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-3.5 shadow-sm transition-all hover:shadow-md ${
+                className={`max-w-[85%] rounded-2xl shadow-sm transition-all hover:shadow-md relative group ${
                   message.role === "user"
-                    ? "bg-gradient-primary text-primary-foreground ml-4"
+                    ? "bg-gradient-primary text-primary-foreground ml-4 px-4 py-3.5"
                     : "bg-card text-card-foreground mr-4 border border-border/50"
                 }`}
               >
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                  {message.content}
-                </p>
+                {message.role === "assistant" && (
+                  <div className="flex items-start justify-between gap-3 px-4 pt-3.5">
+                    <p className="text-sm whitespace-pre-wrap leading-relaxed flex-1">
+                      {message.content}
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleCopy(message.content, index)}
+                      className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                    >
+                      {copiedIndex === index ? (
+                        <Check className="h-3.5 w-3.5 text-primary" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5" />
+                      )}
+                    </Button>
+                  </div>
+                )}
+                {message.role === "assistant" && (
+                  <div className="px-4 pb-3.5"></div>
+                )}
+                {message.role === "user" && (
+                  <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                    {message.content}
+                  </p>
+                )}
               </div>
             </div>
           ))}
