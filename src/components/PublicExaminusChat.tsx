@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Sparkles, ArrowRight } from "lucide-react";
+import { Loader2, Send, Sparkles, ArrowRight, Minimize2, Search, AlertTriangle, List } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -110,22 +110,22 @@ export default function PublicExaminusChat() {
   const quickExamples = [
     { 
       label: "Compactar", 
-      icon: "📦", 
+      icon: Minimize2, 
       prompt: "Compacte este resultado de exame para registro em prontuário:\n\nHemograma Completo:\n• Hemoglobina: 10,2 g/dL (ref: 12-16)\n• Hematócrito: 32% (ref: 36-48)\n• VCM: 74 fL (ref: 80-100)\n• CHCM: 30 g/dL (ref: 32-36)\n• Leucócitos: 12.400/mm³ (ref: 4.000-11.000)\n• Neutrófilos: 78% (ref: 40-75)\n• Linfócitos: 15% (ref: 20-45)\n• Plaquetas: 180.000/mm³ (ref: 150.000-400.000)"
     },
     { 
       label: "Interpretar", 
-      icon: "🔍", 
+      icon: Search, 
       prompt: "Interprete estes achados laboratoriais:\n\n• Glicemia de jejum: 126 mg/dL (ref: 70-100)\n• Hemoglobina glicada (HbA1c): 7,2% (ref: <5,7)\n• Colesterol total: 245 mg/dL (ref: <200)\n• LDL: 165 mg/dL (ref: <100)\n• Creatinina: 1,8 mg/dL (ref: 0,7-1,3)"
     },
     { 
       label: "Achados críticos", 
-      icon: "⚠️", 
+      icon: AlertTriangle, 
       prompt: "Identifique os achados críticos neste exame:\n\n• Potássio: 6,2 mEq/L (ref: 3,5-5,0)\n• Creatinina: 4,5 mg/dL (ref: 0,7-1,3)\n• Hemoglobina: 6,8 g/dL (ref: 12-16)\n• Plaquetas: 45.000/mm³ (ref: 150.000-400.000)\n• PCR: 180 mg/L (ref: <5)"
     },
     { 
       label: "Listar envios", 
-      icon: "📋", 
+      icon: List, 
       prompt: "Liste em formato de prontuário sequencial:\n\n1) Hemograma: anemia microcítica, leucocitose com desvio\n2) Função renal: creatinina elevada\n3) Glicemia: 126 mg/dL em jejum\n4) Lipidograma: dislipidemia mista"
     },
   ];
@@ -175,18 +175,21 @@ export default function PublicExaminusChat() {
             <p className="text-muted-foreground text-xs">Clique e veja a análise em segundos</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-            {quickExamples.map((example, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleQuickAction(example.prompt)}
-                className="flex flex-col items-center gap-2 p-3 rounded-xl bg-muted hover:bg-accent border border-border/50 hover:border-primary/30 transition-all group hover:scale-105 hover:shadow-sm"
-              >
-                <span className="text-2xl group-hover:scale-110 transition-transform">{example.icon}</span>
-                <span className="text-xs text-center text-muted-foreground group-hover:text-foreground font-medium">
-                  {example.label}
-                </span>
-              </button>
-            ))}
+            {quickExamples.map((example, idx) => {
+              const Icon = example.icon;
+              return (
+                <button
+                  key={idx}
+                  onClick={() => handleQuickAction(example.prompt)}
+                  className="flex flex-col items-center gap-2 p-3 rounded-xl bg-muted hover:bg-accent border border-border/50 hover:border-primary/30 transition-all group hover:scale-105 hover:shadow-sm"
+                >
+                  <Icon className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <span className="text-xs text-center text-muted-foreground group-hover:text-foreground font-medium">
+                    {example.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
