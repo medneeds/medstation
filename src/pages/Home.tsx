@@ -94,186 +94,159 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-3 md:py-4 flex justify-between items-center">
+      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-primary flex items-center justify-center">
-              <Stethoscope className="w-5 h-5 md:w-6 md:h-6 text-primary-foreground" />
+            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
+              <Stethoscope className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-lg md:text-xl font-bold">MedStation AI</span>
+            <span className="text-xl font-bold">MedStation AI</span>
           </div>
-          <div className="flex gap-2 md:gap-4">
-            <Button variant="ghost" size="sm" className="md:h-10 md:px-4" onClick={() => navigate("/auth")}>
+          <div className="flex gap-3">
+            <Button variant="ghost" onClick={() => navigate("/auth")}>
               Entrar
             </Button>
-            <Button size="sm" className="md:h-10 md:px-4" onClick={() => navigate("/pricing")}>
-              <span className="hidden sm:inline">Começar Agora</span>
-              <span className="sm:hidden">Começar</span>
+            <Button onClick={() => navigate("/pricing")}>
+              Começar
             </Button>
           </div>
         </div>
       </header>
 
-      {/* Hero Section - Compact & Modern */}
-      <section className="container mx-auto px-4 py-8 md:py-16">
-        <div className="text-center mb-6 md:mb-8">
-          <Badge className="mb-3 text-xs bg-primary/10 text-primary hover:bg-primary/20 border-primary/20">
-            ✨ Grátis para sempre · Agente Examinus incluído
-          </Badge>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 md:mb-4 bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent leading-tight">
-            Atenda mais pacientes.<br />Documente menos.
-          </h1>
-          <p className="text-sm md:text-lg text-muted-foreground max-w-2xl mx-auto mb-5 md:mb-6 px-2">
-            IA especializada que economiza <strong>horas do seu dia</strong> com automação inteligente de documentação médica.
-          </p>
-        </div>
-
-        {/* Interactive Demo - Highlighted */}
-        <div className="mb-6 md:mb-8">
-          <div className="text-center mb-4">
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-primary/10 to-accent/10 px-4 py-2 rounded-full border border-primary/20 mb-3">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium">Teste agora - Sem cadastro</span>
-            </div>
-            <h2 className="text-xl md:text-2xl font-bold mb-1">
-              Interprete exames em segundos com IA
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Cole resultados e receba análise detalhada instantaneamente
+      {/* Hero Section */}
+      <section className="container mx-auto px-4 py-16 md:py-24">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <Badge variant="secondary" className="mb-4">
+              Examinus grátis para sempre
+            </Badge>
+            <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-br from-primary to-primary/60 bg-clip-text text-transparent">
+              Atenda mais.<br />Documente menos.
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              IA médica que economiza horas do seu dia com automação inteligente
             </p>
           </div>
-          
-          <PublicExaminusChat />
-        </div>
 
-        <div className="flex flex-col sm:flex-row gap-2.5 md:gap-3 justify-center items-center px-4 mt-6">
-          <Button size="lg" onClick={() => navigate("/pricing")} className="w-full sm:w-auto h-11 md:h-12 px-6 md:px-8 text-sm md:text-base shadow-lg hover:shadow-xl">
-            Criar Conta Gratuita <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-          <Button size="lg" variant="outline" onClick={() => navigate("/auth")} className="w-full sm:w-auto h-11 md:h-12 px-6 md:px-8 text-sm md:text-base">
-            Já tenho conta
-          </Button>
-        </div>
-        <p className="text-xs text-muted-foreground mt-3 text-center">
-          ✓ Sem cartão · ✓ 2 minutos · ✓ Cancele quando quiser
-        </p>
-      </section>
+          {/* Demo */}
+          <div className="mb-8">
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center gap-2 bg-muted px-4 py-2 rounded-full mb-3">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium">Teste agora</span>
+              </div>
+              <h2 className="text-2xl font-bold mb-2">
+                Interprete exames com IA
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Cole resultados e receba análise detalhada
+              </p>
+            </div>
+            
+            <PublicExaminusChat />
+          </div>
 
-      {/* Agents Grid */}
-      <section className="container mx-auto px-4 py-12 md:py-20">
-        <div className="text-center mb-8 md:mb-12">
-          <h2 className="text-4xl font-bold mb-4">Conheça nossos agentes</h2>
-          <p className="text-muted-foreground text-lg">
-            Cada agente é especializado em uma área específica da prática médica<br />
-            <Badge className="mt-2 bg-green-500/10 text-green-600 border-green-500/20">Examinus grátis para sempre</Badge>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+            <Button size="lg" onClick={() => navigate("/pricing")}>
+              Criar Conta Gratuita <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+            <Button size="lg" variant="outline" onClick={() => navigate("/auth")}>
+              Já tenho conta
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-4 text-center">
+            Sem cartão · 2 minutos · Cancele quando quiser
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+      </section>
+
+      {/* Agents */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold mb-2">Agentes especializados</h2>
+          <p className="text-muted-foreground">
+            IA focada em cada área da medicina
+          </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
           {agents.map((agent, index) => (
-            <Card
-              key={index}
-              className="p-5 md:p-6 hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer border-2 hover:border-primary/50 relative"
-            >
-              {agent.isPremium ? (
-                <Badge className="absolute top-3 right-3 bg-primary/10 text-primary border-primary/20 text-xs">
-                  Pro
-                </Badge>
-              ) : (
-                <Badge className="absolute top-3 right-3 bg-green-500/10 text-green-600 border-green-500/20 text-xs">
-                  Grátis
-                </Badge>
-              )}
-              <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br ${agent.color} flex items-center justify-center mb-3 md:mb-4`}>
-                <agent.icon className="w-6 h-6 md:w-8 md:h-8 text-white" />
+            <Card key={index} className="p-5 hover:shadow-md transition-all relative group">
+              <Badge 
+                variant={agent.isPremium ? "secondary" : "default"} 
+                className="absolute top-4 right-4 text-xs"
+              >
+                {agent.isPremium ? "Pro" : "Grátis"}
+              </Badge>
+              <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${agent.color} flex items-center justify-center mb-3`}>
+                <agent.icon className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg md:text-xl font-bold mb-2">{agent.name}</h3>
-              <p className="text-sm md:text-base text-muted-foreground">{agent.description}</p>
+              <h3 className="text-lg font-bold mb-1">{agent.name}</h3>
+              <p className="text-sm text-muted-foreground">{agent.description}</p>
             </Card>
           ))}
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="container mx-auto px-4 py-12 md:py-20">
-        <div className="text-center mb-8 md:mb-12">
-          <Badge className="mb-4 bg-accent/10 text-accent border-accent/20">Tudo que você precisa</Badge>
-          <h2 className="text-2xl md:text-4xl font-bold mb-3 md:mb-4">Funcionalidades que economizam seu tempo</h2>
-          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
-            Automatize tarefas repetitivas e foque no que importa: o cuidado com seus pacientes
+      {/* Features */}
+      <section className="container mx-auto px-4 py-16 bg-muted/30">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold mb-2">Funcionalidades</h2>
+          <p className="text-muted-foreground">
+            Tudo que você precisa em um só lugar
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {features.map((feature, index) => (
-            <Card key={index} className="p-6 hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/30">
-              <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                <feature.icon className="w-6 h-6 md:w-7 md:h-7 text-primary" />
+            <div key={index} className="text-center">
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                <feature.icon className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="text-lg md:text-xl font-bold mb-2">{feature.title}</h3>
-              <p className="text-sm md:text-base text-muted-foreground leading-relaxed">{feature.text}</p>
-            </Card>
+              <h3 className="text-lg font-bold mb-2">{feature.title}</h3>
+              <p className="text-sm text-muted-foreground">{feature.text}</p>
+            </div>
           ))}
         </div>
       </section>
 
       {/* Benefits */}
-      <section className="container mx-auto px-4 py-12 md:py-20">
-        <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl md:rounded-3xl p-6 md:p-12">
-          <div className="text-center mb-8 md:mb-12">
-            <h2 className="text-2xl md:text-4xl font-bold mb-3 md:mb-4">Por que médicos escolhem MedStation AI?</h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-            {benefits.map((benefit, index) => (
-              <div key={index} className="text-center">
-                <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3 md:mb-4">
-                  <benefit.icon className="w-7 h-7 md:w-8 md:h-8 text-primary" />
-                </div>
-                <h3 className="text-lg md:text-xl font-bold mb-2">{benefit.title}</h3>
-                <p className="text-sm md:text-base text-muted-foreground">{benefit.text}</p>
+      <section className="container mx-auto px-4 py-16">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 max-w-4xl mx-auto">
+          {benefits.map((benefit, index) => (
+            <div key={index} className="text-center">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                <benefit.icon className="w-6 h-6 text-primary" />
               </div>
-            ))}
-          </div>
+              <h3 className="text-sm font-bold mb-1">{benefit.title}</h3>
+              <p className="text-xs text-muted-foreground">{benefit.text}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="container mx-auto px-4 py-12 md:py-20 text-center">
-        <Card className="p-6 md:p-12 border-2 border-primary/20 shadow-2xl bg-gradient-to-br from-background to-primary/5">
-          <Badge className="mb-4 bg-green-500/10 text-green-600 border-green-500/20">🎁 Examinus grátis para sempre</Badge>
-          <h2 className="text-2xl md:text-4xl font-bold mb-3 md:mb-4">Teste grátis. Sem compromisso.</h2>
-          <p className="text-base md:text-xl text-muted-foreground mb-6 md:mb-8 max-w-2xl mx-auto px-2">
-            Comece agora mesmo com o agente Examinus totalmente gratuito e descubra como a IA pode transformar sua prática médica
+      {/* CTA */}
+      <section className="container mx-auto px-4 py-16">
+        <Card className="p-10 text-center max-w-3xl mx-auto border-primary/20">
+          <h2 className="text-3xl font-bold mb-3">Comece agora</h2>
+          <p className="text-lg text-muted-foreground mb-6">
+            Examinus grátis para sempre. Sem compromisso.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-            <Button size="lg" onClick={() => navigate("/pricing")} className="w-full sm:w-auto h-12 md:h-14 px-8 md:px-12 text-base md:text-lg">
-              Criar Conta Gratuita <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5" />
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button size="lg" onClick={() => navigate("/pricing")}>
+              Criar Conta Gratuita <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
-            <Button size="lg" variant="outline" onClick={() => navigate("/auth")} className="w-full sm:w-auto h-12 md:h-14 px-8 md:px-12 text-base md:text-lg">
-              Ver Demonstração
+            <Button size="lg" variant="outline" onClick={() => navigate("/auth")}>
+              Entrar
             </Button>
-          </div>
-          <div className="flex flex-wrap justify-center gap-4 md:gap-8 mt-8 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-600" />
-              <span>Sem cartão necessário</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-600" />
-              <span>Configuração em 2 minutos</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-600" />
-              <span>Cancele quando quiser</span>
-            </div>
           </div>
         </Card>
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-6 md:py-8 mt-12 md:mt-20">
-        <div className="container mx-auto px-4 text-center text-sm md:text-base text-muted-foreground">
-          <p>&copy; 2025 MedStation AI. Todos os direitos reservados.</p>
+      <footer className="border-t py-8">
+        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
+          <p>&copy; 2025 MedStation AI</p>
         </div>
       </footer>
     </div>
