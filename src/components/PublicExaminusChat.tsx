@@ -60,7 +60,7 @@ export default function PublicExaminusChat() {
         // Add CTA message when limit reached
         setMessages(prev => [...prev, {
           role: "assistant",
-          content: "🎯 Você atingiu o limite de mensagens gratuitas! Crie uma conta gratuita para continuar conversando e ter acesso a recursos exclusivos como histórico de conversas, upload de documentos e todos os 6 agentes especializados."
+          content: "🎯 Você atingiu o limite de mensagens gratuitas! Crie uma conta gratuita para continuar conversando e ter acesso a recursos exclusivos como histórico de conversas, upload de documentos e todos os 6 assistentes especializados."
         }]);
         
         return;

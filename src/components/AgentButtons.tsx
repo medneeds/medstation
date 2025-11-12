@@ -40,7 +40,7 @@ export function AgentButtons({ caseId }: AgentButtonsProps) {
       <DropdownMenuTrigger asChild>
         <Button variant="outline">
           <Stethoscope className="h-4 w-4 mr-2" />
-          Consultar Agente IA
+          Consultar Assistente IA
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

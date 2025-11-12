@@ -162,7 +162,7 @@ export function AppSidebar() {
         {/* Agent modules */}
         <SidebarGroup className="py-3 border-t border-border">
           <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-1">
-            Agentes IA
+            Assistentes IA
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">

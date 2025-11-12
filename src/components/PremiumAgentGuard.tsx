@@ -30,9 +30,9 @@ export function PremiumAgentGuard({ children, agentName }: PremiumAgentGuardProp
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
               <Lock className="w-8 h-8 text-primary" />
             </div>
-            <CardTitle className="text-2xl">Agente Premium</CardTitle>
+            <CardTitle className="text-2xl">Assistente Premium</CardTitle>
             <CardDescription className="text-base mt-2">
-              O agente {agentName} está disponível apenas para assinantes do plano Pro
+              O assistente {agentName} está disponível apenas para assinantes do plano Pro
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -44,7 +44,7 @@ export function PremiumAgentGuard({ children, agentName }: PremiumAgentGuardProp
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-0.5">✓</span>
-                  <span>Acesso completo a todos os 6 agentes de IA especializados</span>
+                  <span>Acesso completo a todos os 6 assistentes de IA especializados</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-0.5">✓</span>

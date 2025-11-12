@@ -47,16 +47,16 @@ export default function Pricing() {
   };
 
   const features = [
-    { icon: Sparkles, text: "5 Agentes Premium de IA", description: "Clínicus, Scorius, Numerus, Prescriptus e CODexus" },
+    { icon: Sparkles, text: "5 Assistentes Premium de IA", description: "Clínicus, Scorius, Numerus, Prescriptus e CODexus" },
     { icon: Users, text: "Pacientes Ilimitados", description: "Gerencie quantos pacientes precisar" },
     { icon: FileText, text: "Casos Ilimitados", description: "Sem limite de casos clínicos" },
     { icon: BarChart3, text: "Análise Avançada", description: "Dashboards e métricas detalhadas" },
     { icon: Shield, text: "Dados Seguros", description: "Criptografia de ponta a ponta" },
-    { icon: Zap, text: "Performance Rápida", description: "Respostas instantâneas dos agentes" },
+    { icon: Zap, text: "Performance Rápida", description: "Respostas instantâneas dos assistentes" },
   ];
 
   const freeFeatures = [
-    { text: "Agente Examinus (Análise de Exames)" },
+    { text: "Assistente Examinus (Análise de Exames)" },
     { text: "Gestão básica de pacientes" },
     { text: "Até 10 casos clínicos" },
   ];
@@ -73,7 +73,7 @@ export default function Pricing() {
             Escolha seu Plano
           </h1>
           <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 md:mb-8 px-4">
-            Comece grátis com Examinus ou desbloqueie todos os agentes com o plano Pro
+            Comece grátis com Examinus ou desbloqueie todos os assistentes com o plano Pro
           </p>
         </div>
 
@@ -120,7 +120,7 @@ export default function Pricing() {
               <span className="text-xl md:text-2xl text-muted-foreground">/mês</span>
             </div>
             <p className="text-muted-foreground">
-              Acesso completo a todos os agentes e recursos premium
+              Acesso completo a todos os assistentes e recursos premium
             </p>
           </div>
           <div className="grid md:grid-cols-2 gap-8">

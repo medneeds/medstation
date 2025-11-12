@@ -31,7 +31,7 @@ export default function Home() {
               Demo
             </button>
             <button onClick={() => scrollToSection('agentes')} className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
-              Agentes
+              Assistentes
             </button>
             <button onClick={() => scrollToSection('planos')} className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
               Planos
@@ -68,7 +68,7 @@ export default function Home() {
                 </span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-                IA médica com agentes especializados para interpretar exames, estruturar anamneses, calcular scores e automatizar documentação.{" "}
+                IA médica com assistentes especializados para interpretar exames, estruturar anamneses, calcular scores e automatizar documentação.{" "}
                 <span className="text-foreground font-medium">Examinus grátis para sempre.</span>
               </p>
             </div>
@@ -122,7 +122,7 @@ export default function Home() {
               { step: "1", title: "Cole o exame", desc: "Sem cadastro, sem senha" },
               { step: "2", title: "Veja a análise", desc: "Estruturada para prontuário" },
               { step: "3", title: "Crie conta", desc: "2 minutos para ilimitado" },
-              { step: "4", title: "Assine Pro", desc: "R$ 9,90 · Todos agentes" }
+              { step: "4", title: "Assine Pro", desc: "R$ 9,90 · Todos assistentes" }
             ].map((item, idx) => (
               <Card key={idx} className={`p-5 transition-all hover:shadow-medical hover:-translate-y-1 ${idx === 3 ? 'border-primary/30 bg-primary/5' : ''}`}>
                 <div className="flex items-center gap-3 mb-3">
@@ -138,20 +138,19 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Agentes */}
+      {/* Assistentes */}
       <section id="agentes" className="py-24 px-6 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-primary/5 via-transparent to-transparent"></div>
-        <div className="container mx-auto relative">
-          <div className="text-center mb-16 space-y-4">
-            <Badge variant="secondary" className="backdrop-blur-sm">
-              <Brain className="w-3 h-3 mr-1.5" />
-              Suite de IA Médica
-            </Badge>
+        <div className="max-w-7xl mx-auto relative">
+          <div className="text-center mb-16 space-y-3">
+            <div className="inline-block px-4 py-1.5 bg-primary/10 rounded-full mb-4">
+              <span className="text-sm font-medium text-primary">Especialistas IA</span>
+            </div>
             <h2 className="text-3xl lg:text-4xl font-bold tracking-tight">
-              6 agentes especializados
+              6 assistentes especializados
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Cada agente domina sua especialidade. Juntos, formam o ecossistema completo.
+              Cada assistente domina sua especialidade. Juntos, formam o ecossistema completo.
             </p>
           </div>
 
@@ -244,7 +243,7 @@ export default function Home() {
                   <span className="text-muted-foreground">/mês</span>
                 </div>
                 <ul className="space-y-2.5 text-sm">
-                  {["Todos os 6 agentes", "Gestão de pacientes", "Documentação profissional", "PDFs e exportação"].map((item, i) => (
+                  {["Todos os 6 assistentes", "Gestão de pacientes", "Documentação profissional", "PDFs e exportação"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2">
                       <div className="w-1 h-1 rounded-full bg-primary"></div>
                       {item}

@@ -251,7 +251,7 @@ export default function Auth() {
           </div>
           <CardTitle className="text-3xl">MedStation AI</CardTitle>
           <CardDescription>
-            Agentes médicos de IA para apoio clínico
+            Assistentes médicos de IA para apoio clínico
           </CardDescription>
           <p className="text-xs text-muted-foreground mt-2">
             ⚠️ Configuração OAuth pendente - Google e Apple ID
