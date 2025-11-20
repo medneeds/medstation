@@ -135,7 +135,6 @@ SE NÃO FOR EXAME: "Envie um laudo de exame."`;
           },
           ...userMessages,
         ],
-        stream: true,
         temperature: 0,
         max_tokens: 2000,
       }),
@@ -162,9 +161,18 @@ SE NÃO FOR EXAME: "Envie um laudo de exame."`;
       });
     }
 
-    return new Response(response.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
-    });
+    const data = await response.json();
+    console.log("Resposta da IA recebida");
+
+    return new Response(
+      JSON.stringify({ 
+        response: data.choices[0].message.content
+      }),
+      { 
+        status: 200, 
+        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+      }
+    );
   } catch (e) {
     console.error("Erro no chat:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Erro desconhecido" }), {
