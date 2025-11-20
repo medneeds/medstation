@@ -194,30 +194,34 @@ export default function Home() {
               <div className="flex gap-6 animate-[scroll_20s_linear_infinite] hover:[animation-play-state:paused]">
                 {/* First Set */}
                 {[
-                  { gradient: "from-violet-500 to-purple-500", name: "Examinus" },
-                  { gradient: "from-blue-500 to-cyan-500", name: "Clínicus" },
-                  { gradient: "from-emerald-500 to-green-500", name: "Scorius" },
-                  { gradient: "from-rose-500 to-pink-500", name: "Prescriptus" },
-                  { gradient: "from-amber-500 to-orange-500", name: "Numerus" },
-                  { gradient: "from-indigo-500 to-blue-500", name: "CODexus" }
+                  { gradient: "from-violet-500 to-purple-500", name: "Examinus", icon: TestTube2 },
+                  { gradient: "from-blue-500 to-cyan-500", name: "Clínicus", icon: Activity },
+                  { gradient: "from-emerald-500 to-green-500", name: "Scorius", icon: Calculator },
+                  { gradient: "from-rose-500 to-pink-500", name: "Prescriptus", icon: Pill },
+                  { gradient: "from-amber-500 to-orange-500", name: "Numerus", icon: Brain },
+                  { gradient: "from-indigo-500 to-blue-500", name: "CODexus", icon: FileCode }
                 ].map((assistant, idx) => (
                   <div key={`first-${idx}`} className="flex flex-col items-center gap-2 min-w-[120px]">
-                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${assistant.gradient} border-2 border-background shadow-lg transition-transform hover:scale-110 hover:rotate-3`}></div>
+                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${assistant.gradient} border-2 border-background shadow-lg transition-transform hover:scale-110 hover:rotate-3 flex items-center justify-center`}>
+                      <assistant.icon className="w-8 h-8 text-white" />
+                    </div>
                     <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">{assistant.name}</span>
                   </div>
                 ))}
                 
                 {/* Duplicate Set for Seamless Loop */}
                 {[
-                  { gradient: "from-violet-500 to-purple-500", name: "Examinus" },
-                  { gradient: "from-blue-500 to-cyan-500", name: "Clínicus" },
-                  { gradient: "from-emerald-500 to-green-500", name: "Scorius" },
-                  { gradient: "from-rose-500 to-pink-500", name: "Prescriptus" },
-                  { gradient: "from-amber-500 to-orange-500", name: "Numerus" },
-                  { gradient: "from-indigo-500 to-blue-500", name: "CODexus" }
+                  { gradient: "from-violet-500 to-purple-500", name: "Examinus", icon: TestTube2 },
+                  { gradient: "from-blue-500 to-cyan-500", name: "Clínicus", icon: Activity },
+                  { gradient: "from-emerald-500 to-green-500", name: "Scorius", icon: Calculator },
+                  { gradient: "from-rose-500 to-pink-500", name: "Prescriptus", icon: Pill },
+                  { gradient: "from-amber-500 to-orange-500", name: "Numerus", icon: Brain },
+                  { gradient: "from-indigo-500 to-blue-500", name: "CODexus", icon: FileCode }
                 ].map((assistant, idx) => (
                   <div key={`second-${idx}`} className="flex flex-col items-center gap-2 min-w-[120px]">
-                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${assistant.gradient} border-2 border-background shadow-lg transition-transform hover:scale-110 hover:rotate-3`}></div>
+                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${assistant.gradient} border-2 border-background shadow-lg transition-transform hover:scale-110 hover:rotate-3 flex items-center justify-center`}>
+                      <assistant.icon className="w-8 h-8 text-white" />
+                    </div>
                     <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">{assistant.name}</span>
                   </div>
                 ))}
