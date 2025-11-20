@@ -695,12 +695,6 @@ export function AgentChat({
         )}
 
         <div className="flex gap-2">
-          {currentConversation && currentConversation.messages.length > 0 && (
-            <Button variant="outline" size={isMobile ? "icon" : "sm"} onClick={exportConversation} title="Exportar PDF">
-              <FileDown className="h-4 w-4" />
-              {!isMobile && <span className="ml-2">Exportar PDF</span>}
-            </Button>
-          )}
           <Button variant="outline" size={isMobile ? "icon" : "sm"} onClick={createNewConversation} title="Nova Conversa">
             <Plus className="h-4 w-4" />
             {!isMobile && <span className="ml-2">Nova Conversa</span>}
