@@ -49,66 +49,38 @@ export default function Home() {
       </header>
 
       {/* Seção 1: Examinus por MedStation AI */}
-      <section id="demo" className="py-24 px-6 relative overflow-hidden">
+      <section id="demo" className="py-16 px-6 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-30"></div>
-        <div className="container mx-auto grid lg:grid-cols-[1.1fr_0.9fr] gap-16 items-center relative">
-          <div className="space-y-8 animate-in fade-in slide-in-from-left duration-700">
+        <div className="container mx-auto max-w-4xl relative">
+          <div className="space-y-8 animate-in fade-in duration-700 text-center">
             <Badge variant="secondary" className="backdrop-blur-sm">
               <TestTube2 className="w-3 h-3 mr-1.5" />
               Examinus por MedStation AI
             </Badge>
-            <div className="space-y-4">
-              <h1 className="text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] tracking-tight">
-                <span className="bg-gradient-to-br from-foreground via-foreground/90 to-muted-foreground bg-clip-text text-transparent">
-                  Cole os resultados dos exames
-                </span>
-                <br />
-                <span className="bg-gradient-primary bg-clip-text text-transparent">
-                  e veja a mágica acontecer
-                </span>
-              </h1>
-              <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-                Extraio só o que importa, formato em padrão limpo e padronizado, pronto para você copiar e documentar, Doc!
-              </p>
-            </div>
-            
-            {/* Value Props */}
-            <div className="space-y-3">
-              {[
-                "Extraio só o que importa",
-                "Formato em padrão limpo",
-                "Pronto para documentar"
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-gradient-primary flex items-center justify-center">
-                    <div className="w-2 h-2 rounded-full bg-primary-foreground"></div>
-                  </div>
-                  <span className="text-sm font-medium">{item}</span>
-                </div>
-              ))}
+
+            {/* Demo Card Centralizado */}
+            <div className="relative">
+              <div className="absolute -inset-1 bg-gradient-primary rounded-3xl blur-2xl opacity-20"></div>
+              <div className="relative">
+                <PublicExaminusChat />
+              </div>
             </div>
 
-            <div className="flex gap-3 flex-wrap">
+            {/* CTA Footer */}
+            <div className="flex flex-col items-center gap-3 pt-4">
+              <p className="text-xs text-muted-foreground flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                Teste grátis • Sem cadastro • Sem cartão
+              </p>
               <Button 
-                size="lg"
-                variant="outline"
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-foreground"
                 onClick={() => scrollToSection('plataforma')}
               >
                 Ver plataforma completa
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <ArrowRight className="ml-2 h-3 w-3" />
               </Button>
-            </div>
-            <p className="text-xs text-muted-foreground flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-              Teste grátis • Sem cadastro • Sem cartão
-            </p>
-          </div>
-
-          {/* Demo Card */}
-          <div className="relative animate-in fade-in slide-in-from-right duration-700">
-            <div className="absolute -inset-1 bg-gradient-primary rounded-3xl blur-2xl opacity-20"></div>
-            <div className="relative">
-              <PublicExaminusChat />
             </div>
           </div>
         </div>
