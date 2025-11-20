@@ -86,22 +86,16 @@ export default function Home() {
       <section id="plataforma" className="py-24 px-6 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent"></div>
         <div className="container mx-auto relative">
-          <div className="text-center mb-16 space-y-6 max-w-3xl mx-auto animate-in fade-in duration-700">
+          <div className="text-center mb-16 space-y-4 max-w-3xl mx-auto animate-in fade-in duration-700">
             <Badge variant="secondary" className="backdrop-blur-sm">
               <Sparkles className="w-3 h-3 mr-1.5" />
-              Plataforma Completa de IA Médica
+              MedStation AI - Plataforma Completa
             </Badge>
-            <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold leading-[1.1] tracking-tight">
-              <span className="bg-gradient-to-br from-foreground via-foreground/90 to-muted-foreground bg-clip-text text-transparent">
-                Produza mais.
-              </span>
-              <br />
-              <span className="bg-gradient-primary bg-clip-text text-transparent">
-                Digite menos.
-              </span>
+            <h2 className="text-4xl lg:text-5xl font-bold leading-tight tracking-tight">
+              IA médica com assistentes especializados
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              IA médica com assistentes especializados para interpretar exames, estruturar anamneses, calcular scores de risco e automatizar documentações médicas.
+              Interprete exames, estruture anamneses, calcule scores de risco e automatize documentações médicas. Tudo em um só lugar.
             </p>
           </div>
 
