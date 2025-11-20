@@ -1,3 +1,4 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -81,7 +82,7 @@ serve(async (req) => {
     }
 
     // Parse request body
-    const { messages } = await req.json();
+    const { messages, fileContent } = await req.json();
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(
@@ -168,6 +169,30 @@ SE NÃO FOR EXAME: "Envie um laudo de exame."
 
 VERSÃO DEMO: Esta é versão gratuita limitada. Crie conta para acesso completo aos 6 assistentes médicos.`;
 
+    // Se houver arquivo PDF/imagem, processa com visão
+    let userMessages = messages;
+    if (fileContent) {
+      const lastMessage = messages[messages.length - 1];
+      userMessages = [
+        ...messages.slice(0, -1),
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: lastMessage.content || "Extraia e formate este exame:"
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: fileContent
+              }
+            }
+          ]
+        }
+      ];
+    }
+
     // Call Lovable AI API
     console.log("Calling Lovable AI with messages:", messages.length);
     
@@ -185,7 +210,7 @@ VERSÃO DEMO: Esta é versão gratuita limitada. Crie conta para acesso completo
             role: "user",
             content: "RESPONDA SEM INTRODUÇÃO. Comece DIRETO com a data ou tipo de exame."
           },
-          ...messages
+          ...userMessages
         ],
         temperature: 0,
         max_tokens: 2000,

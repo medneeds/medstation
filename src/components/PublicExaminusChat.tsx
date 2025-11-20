@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Sparkles, ArrowRight, Minimize2, Search, AlertTriangle, List, Copy, Check, FileUp } from "lucide-react";
+import { Loader2, Send, Sparkles, ArrowRight, Minimize2, Search, AlertTriangle, List, Copy, Check, FileUp, Upload, X, Image as ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -25,7 +25,10 @@ export default function PublicExaminusChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [remainingMessages, setRemainingMessages] = useState<number | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -35,17 +38,83 @@ export default function PublicExaminusChat() {
     }
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  const convertFileToBase64 = async (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
 
-    const userMessage: Message = { role: "user", content: input };
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Verificar tamanho (máximo 20MB)
+    if (file.size > 20 * 1024 * 1024) {
+      toast({
+        title: "Arquivo muito grande",
+        description: "O arquivo deve ter no máximo 20MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Verificar tipo
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+    if (!validTypes.includes(file.type)) {
+      toast({
+        title: "Formato não suportado",
+        description: "Use JPG, PNG, WEBP ou PDF",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSelectedFile(file);
+    
+    // Criar preview
+    if (file.type.startsWith('image/')) {
+      const preview = await convertFileToBase64(file);
+      setFilePreview(preview);
+    } else {
+      setFilePreview(null);
+    }
+  };
+
+  const removeFile = () => {
+    setSelectedFile(null);
+    setFilePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleSend = async () => {
+    if ((!input.trim() && !selectedFile) || isLoading) return;
+
+    const userMessage: Message = { 
+      role: "user", 
+      content: input || "Extraia e formate este exame:" 
+    };
     setMessages(prev => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
 
     try {
+      let fileContent: string | undefined;
+      
+      if (selectedFile) {
+        fileContent = await convertFileToBase64(selectedFile);
+        removeFile();
+      }
+
       const { data, error } = await supabase.functions.invoke("public-examinus", {
-        body: { messages: [...messages, userMessage] }
+        body: { 
+          messages: [...messages, userMessage],
+          fileContent 
+        }
       });
 
       if (error) throw error;
@@ -290,7 +359,51 @@ export default function PublicExaminusChat() {
 
       {/* Input */}
       <div className="p-5 border-t border-border/50 bg-muted/20 backdrop-blur rounded-b-2xl">
+        {/* File Preview */}
+        {selectedFile && (
+          <div className="mb-3 flex items-center gap-3 bg-muted/50 border border-border rounded-lg p-3">
+            {filePreview ? (
+              <img src={filePreview} alt="Preview" className="w-12 h-12 object-cover rounded" />
+            ) : (
+              <div className="w-12 h-12 bg-primary/10 rounded flex items-center justify-center">
+                <ImageIcon className="w-6 h-6 text-primary" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{selectedFile.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={removeFile}
+              className="h-8 w-8 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+
         <div className="flex gap-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,application/pdf"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isLoading}
+            className="self-end h-[80px] w-[80px] border-dashed hover:border-primary hover:bg-primary/5 transition-all"
+            title="Fazer upload de imagem ou PDF"
+          >
+            <Upload className="w-6 h-6" />
+          </Button>
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -301,7 +414,7 @@ export default function PublicExaminusChat() {
           />
           <Button
             onClick={handleSend}
-            disabled={isLoading || !input.trim()}
+            disabled={isLoading || (!input.trim() && !selectedFile)}
             size="lg"
             className="self-end h-[80px] w-[80px] shadow-medical hover:shadow-elevated hover:scale-105 transition-all"
           >
