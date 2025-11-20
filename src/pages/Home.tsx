@@ -272,12 +272,14 @@ export default function Home() {
                   <span className="text-muted-foreground">/sempre</span>
                 </div>
                 <ul className="space-y-2.5 text-sm">
-                  {["Interpretação de exames", "Análise estruturada", "Sem cadastro inicial"].map((item, i) => (
-                    <li key={i} className="flex items-center gap-2 text-muted-foreground">
-                      <div className="w-1 h-1 rounded-full bg-primary"></div>
-                      {item}
-                    </li>
-                  ))}
+                  <li className="flex items-start gap-2 text-muted-foreground">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-2"></div>
+                    <span><strong className="text-foreground">Organização e estruturação inteligente</strong> de qualquer resultado de exame laboratorial (hemograma, bioquímica, gasometria) e de imagem (tomografia, raio-X, ultrassom)</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-muted-foreground">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-2"></div>
+                    <span>Uso ilimitado, sem cadastro inicial</span>
+                  </li>
                 </ul>
                 <Button 
                   variant="outline"
@@ -297,17 +299,29 @@ export default function Home() {
               <div className="space-y-4">
                 <div>
                   <h3 className="text-xl font-semibold mb-1">Pro</h3>
-                  <p className="text-sm text-muted-foreground">Ecossistema completo</p>
+                  <p className="text-sm text-muted-foreground">Ecossistema completo • 6 assistentes IA</p>
                 </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold">R$ 19,90</span>
-                  <span className="text-muted-foreground">/mês</span>
+                <div className="space-y-2">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-bold">R$ 19,90</span>
+                    <span className="text-muted-foreground">/mês</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Ou <span className="font-semibold text-foreground">R$ 191,04/ano</span> (20% de desconto)
+                  </div>
                 </div>
                 <ul className="space-y-2.5 text-sm">
-                  {["Todos os 6 assistentes", "Gestão de pacientes", "Documentação profissional", "PDFs e exportação"].map((item, i) => (
-                    <li key={i} className="flex items-center gap-2">
-                      <div className="w-1 h-1 rounded-full bg-primary"></div>
-                      {item}
+                  {[
+                    { name: "Examinus", desc: "Interpretação de exames" },
+                    { name: "Clínicus", desc: "Anamneses estruturadas" },
+                    { name: "Scorius", desc: "Cálculo de scores clínicos" },
+                    { name: "Prescriptus", desc: "Prescrições baseadas em evidências" },
+                    { name: "Numerus", desc: "Calculadoras médicas" },
+                    { name: "CODexus", desc: "Codificação CID-10 e TISS" }
+                  ].map((agent, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <div className="w-1 h-1 rounded-full bg-primary mt-2"></div>
+                      <span><strong className="text-foreground">{agent.name}:</strong> {agent.desc}</span>
                     </li>
                   ))}
                 </ul>
