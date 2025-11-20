@@ -277,7 +277,7 @@ export default function Auth() {
               </div>
               
               <CardTitle className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                Bem-vindo de volta
+                Boas vindas!
               </CardTitle>
               <CardDescription className="text-base mt-2">
                 Entre ou crie sua conta para continuar
