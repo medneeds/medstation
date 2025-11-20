@@ -183,21 +183,51 @@ export default function Home() {
             ))}
           </div>
 
-          {/* CTA Bottom */}
-          <div className="text-center mt-20 space-y-6 animate-in fade-in duration-700" style={{ animationDelay: '600ms' }}>
-            <div className="inline-flex items-center gap-3 px-6 py-3 bg-muted/50 backdrop-blur-sm rounded-full border border-border/50">
-              <div className="flex -space-x-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-500 border-2 border-background"></div>
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 border-2 border-background"></div>
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-green-500 border-2 border-background"></div>
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-rose-500 to-pink-500 border-2 border-background"></div>
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 border-2 border-background"></div>
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-blue-500 border-2 border-background"></div>
+          {/* CTA Bottom - Infinite Scroll Ecosystem */}
+          <div className="text-center mt-20 space-y-6 animate-in fade-in duration-700 overflow-hidden" style={{ animationDelay: '600ms' }}>
+            <div className="relative">
+              {/* Gradient Overlays */}
+              <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-background to-transparent z-10"></div>
+              <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-background to-transparent z-10"></div>
+              
+              {/* Infinite Scroll Container */}
+              <div className="flex gap-6 animate-[scroll_20s_linear_infinite] hover:[animation-play-state:paused]">
+                {/* First Set */}
+                {[
+                  { gradient: "from-violet-500 to-purple-500", name: "Examinus" },
+                  { gradient: "from-blue-500 to-cyan-500", name: "Clínicus" },
+                  { gradient: "from-emerald-500 to-green-500", name: "Scorius" },
+                  { gradient: "from-rose-500 to-pink-500", name: "Prescriptus" },
+                  { gradient: "from-amber-500 to-orange-500", name: "Numerus" },
+                  { gradient: "from-indigo-500 to-blue-500", name: "CODexus" }
+                ].map((assistant, idx) => (
+                  <div key={`first-${idx}`} className="flex flex-col items-center gap-2 min-w-[120px]">
+                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${assistant.gradient} border-2 border-background shadow-lg transition-transform hover:scale-110 hover:rotate-3`}></div>
+                    <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">{assistant.name}</span>
+                  </div>
+                ))}
+                
+                {/* Duplicate Set for Seamless Loop */}
+                {[
+                  { gradient: "from-violet-500 to-purple-500", name: "Examinus" },
+                  { gradient: "from-blue-500 to-cyan-500", name: "Clínicus" },
+                  { gradient: "from-emerald-500 to-green-500", name: "Scorius" },
+                  { gradient: "from-rose-500 to-pink-500", name: "Prescriptus" },
+                  { gradient: "from-amber-500 to-orange-500", name: "Numerus" },
+                  { gradient: "from-indigo-500 to-blue-500", name: "CODexus" }
+                ].map((assistant, idx) => (
+                  <div key={`second-${idx}`} className="flex flex-col items-center gap-2 min-w-[120px]">
+                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${assistant.gradient} border-2 border-background shadow-lg transition-transform hover:scale-110 hover:rotate-3`}></div>
+                    <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">{assistant.name}</span>
+                  </div>
+                ))}
               </div>
-              <span className="text-sm font-medium text-muted-foreground">
-                Ecossistema completo • R$ 9,90/mês
-              </span>
             </div>
+            
+            <p className="text-sm font-medium text-muted-foreground pt-4">
+              Ecossistema completo • R$ 9,90/mês
+            </p>
+            
             <Button 
               size="lg"
               className="shadow-medical hover:shadow-elevated transition-all hover:scale-105 px-8"
