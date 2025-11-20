@@ -20,7 +20,8 @@ import {
   Mic,
   Copy,
   Check,
-  FileDown
+  FileDown,
+  FileUp
 } from "lucide-react";
 import {
   Sheet,
@@ -853,10 +854,10 @@ export function AgentChat({
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[85%] md:max-w-[80%] rounded-2xl px-3 md:px-4 py-2 md:py-3 relative group ${
+                  className={`max-w-[85%] md:max-w-[80%] rounded-2xl px-3 md:px-4 relative group ${
                     msg.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
+                      ? "bg-primary text-primary-foreground py-2 md:py-3"
+                      : "bg-muted pt-2 md:pt-3 pb-8 md:pb-10"
                   }`}
                 >
                   {msg.audioBlob && msg.audioUrl ? (
@@ -875,29 +876,51 @@ export function AgentChat({
                   ) : (
                     <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                   )}
-                  <div className="flex items-center justify-between gap-2 mt-1">
-                    <p className="text-xs opacity-70">
-                      {new Date(msg.created_at).toLocaleTimeString([], { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })}
-                    </p>
-                    {msg.role === "assistant" && (
+                  <p className="text-xs opacity-70 mt-1">
+                    {new Date(msg.created_at).toLocaleTimeString([], { 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    })}
+                  </p>
+                  {msg.role === "assistant" && (
+                    <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => {
+                          const upperText = msg.content.toUpperCase();
+                          navigator.clipboard.writeText(upperText);
+                          toast({
+                            description: "Texto em caixa alta copiado!",
+                          });
+                        }}
+                        className="h-7 px-2 gap-1.5 text-xs"
+                        title="Copiar em caixa alta"
+                      >
+                        <FileUp className="h-3 w-3" />
+                        <span className="hidden md:inline">Maiúscula</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => copyToClipboard(msg.content, msg.id)}
+                        className="h-7 px-2 gap-1.5 text-xs"
                         title="Copiar texto"
                       >
                         {copiedMessageId === msg.id ? (
-                          <Check className="h-3 w-3 text-green-600" />
+                          <>
+                            <Check className="h-3 w-3 text-primary" />
+                            <span className="text-primary hidden md:inline">Copiado</span>
+                          </>
                         ) : (
-                          <Copy className="h-3 w-3" />
+                          <>
+                            <Copy className="h-3 w-3" />
+                            <span className="hidden md:inline">Copiar</span>
+                          </>
                         )}
                       </Button>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
