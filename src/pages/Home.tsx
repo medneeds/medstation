@@ -141,8 +141,6 @@ export default function Home() {
                       <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-muted to-muted/50 group-hover:from-primary group-hover:to-primary/80 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-lg group-hover:shadow-2xl">
                         <agent.icon className="w-8 h-8 text-muted-foreground group-hover:text-primary-foreground transition-colors duration-300" />
                       </div>
-                      {/* Sparkle Effect */}
-                      <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse" />
                     </div>
                     {agent.badge && (
                       <Badge className="bg-gradient-primary text-primary-foreground border-0 shadow-medical px-3 py-1 text-xs font-bold">
