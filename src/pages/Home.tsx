@@ -83,60 +83,116 @@ export default function Home() {
       </section>
 
       {/* Seção 2: Plataforma Completa MedStation AI */}
-      <section id="plataforma" className="py-24 px-6 relative overflow-hidden">
+      <section id="plataforma" className="py-32 px-6 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent"></div>
         <div className="container mx-auto relative">
-          <div className="text-center mb-16 space-y-4 max-w-3xl mx-auto animate-in fade-in duration-700">
-            <Badge variant="secondary" className="backdrop-blur-sm">
-              <Sparkles className="w-3 h-3 mr-1.5" />
+          <div className="text-center mb-20 space-y-6 max-w-3xl mx-auto animate-in fade-in duration-700">
+            <Badge variant="secondary" className="backdrop-blur-sm px-4 py-1.5 text-sm">
+              <Sparkles className="w-3.5 h-3.5 mr-2 animate-pulse" />
               MedStation AI - Plataforma Completa
             </Badge>
-            <h2 className="text-4xl lg:text-5xl font-bold leading-tight tracking-tight">
+            <h2 className="text-4xl lg:text-6xl font-bold leading-tight tracking-tight bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
               Inteligência artificial com assistentes médicos especializados
             </h2>
-            <p className="text-lg text-muted-foreground leading-relaxed">
+            <p className="text-xl text-muted-foreground leading-relaxed">
               Organize exames, estruture anamneses, calcule scores, automatize documentações médicas e muito mais. Tudo em um só lugar.
             </p>
           </div>
 
           {/* Assistentes */}
-          <div id="agentes" className="text-center mb-12 space-y-3">
-            <div className="inline-block px-4 py-1.5 bg-primary/10 rounded-full mb-4">
-              <span className="text-sm font-medium text-primary">Especialistas IA</span>
+          <div id="agentes" className="text-center mb-16 space-y-4">
+            <div className="inline-flex items-center gap-2 px-5 py-2 bg-gradient-primary rounded-full mb-6 shadow-medical">
+              <div className="w-2 h-2 rounded-full bg-primary-foreground animate-pulse"></div>
+              <span className="text-sm font-semibold text-primary-foreground tracking-wide">6 ESPECIALISTAS IA</span>
             </div>
-            <h3 className="text-2xl lg:text-3xl font-bold tracking-tight">
-              6 assistentes especializados
+            <h3 className="text-3xl lg:text-4xl font-bold tracking-tight">
+              Cada assistente domina sua especialidade
             </h3>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Cada assistente domina sua especialidade. Juntos, formam o ecossistema completo.
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Juntos, formam o ecossistema médico mais completo do mercado
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
             {[
-              { icon: TestTube2, name: "Examinus", desc: "Interpreta exames de sangue, imagem e laudos", badge: "Grátis" },
-              { icon: Activity, name: "Clínicus", desc: "Estrutura anamneses e histórias clínicas", badge: null },
-              { icon: Calculator, name: "Scorius", desc: "Calcula scores e classificações de risco", badge: null },
-              { icon: Pill, name: "Prescriptus", desc: "Guia prescrições baseadas em evidências", badge: null },
-              { icon: Brain, name: "Numerus", desc: "Calculadoras médicas e conversores", badge: null },
-              { icon: FileCode, name: "CODexus", desc: "Codificação CID-10 e TISS automatizada", badge: null }
+              { icon: TestTube2, name: "Examinus", desc: "Interpreta exames de sangue, imagem e laudos", badge: "Grátis", color: "from-violet-500/20 to-purple-500/20" },
+              { icon: Activity, name: "Clínicus", desc: "Estrutura anamneses e histórias clínicas", badge: null, color: "from-blue-500/20 to-cyan-500/20" },
+              { icon: Calculator, name: "Scorius", desc: "Calcula scores e classificações de risco", badge: null, color: "from-emerald-500/20 to-green-500/20" },
+              { icon: Pill, name: "Prescriptus", desc: "Guia prescrições baseadas em evidências", badge: null, color: "from-rose-500/20 to-pink-500/20" },
+              { icon: Brain, name: "Numerus", desc: "Calculadoras médicas e conversores", badge: null, color: "from-amber-500/20 to-orange-500/20" },
+              { icon: FileCode, name: "CODexus", desc: "Codificação CID-10 e TISS automatizada", badge: null, color: "from-indigo-500/20 to-blue-500/20" }
             ].map((agent, idx) => (
-              <Card key={idx} className="group p-6 transition-all hover:shadow-medical hover:-translate-y-1 hover:border-primary/30 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity"></div>
-                <div className="relative space-y-3">
+              <Card 
+                key={idx} 
+                className="group p-8 transition-all duration-300 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] hover:-translate-y-2 hover:border-primary/50 relative overflow-hidden bg-gradient-to-br from-card to-card/50 backdrop-blur-sm"
+                style={{ animationDelay: `${idx * 100}ms` }}
+              >
+                {/* Gradient Background on Hover */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${agent.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
+                
+                {/* Animated Border Glow */}
+                <div className="absolute -inset-0.5 bg-gradient-primary rounded-lg opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500"></div>
+                
+                <div className="relative space-y-5">
                   <div className="flex items-start justify-between">
-                    <div className="w-12 h-12 rounded-2xl bg-muted group-hover:bg-gradient-primary flex items-center justify-center transition-all group-hover:scale-110 shadow-sm">
-                      <agent.icon className="w-6 h-6 text-muted-foreground group-hover:text-primary-foreground transition-colors" />
+                    <div className="relative">
+                      {/* Icon Container */}
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-muted to-muted/50 group-hover:from-primary group-hover:to-primary/80 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-lg group-hover:shadow-2xl">
+                        <agent.icon className="w-8 h-8 text-muted-foreground group-hover:text-primary-foreground transition-colors duration-300" />
+                      </div>
+                      {/* Sparkle Effect */}
+                      <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse" />
                     </div>
                     {agent.badge && (
-                      <Badge variant="secondary" className="text-[0.65rem]">{agent.badge}</Badge>
+                      <Badge className="bg-gradient-primary text-primary-foreground border-0 shadow-medical px-3 py-1 text-xs font-bold">
+                        {agent.badge}
+                      </Badge>
                     )}
                   </div>
-                  <h3 className="font-semibold text-lg">{agent.name}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{agent.desc}</p>
+                  
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-2xl tracking-tight group-hover:text-primary transition-colors duration-300">
+                      {agent.name}
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed group-hover:text-foreground transition-colors duration-300">
+                      {agent.desc}
+                    </p>
+                  </div>
+
+                  {/* Call to Action Indicator */}
+                  <div className="flex items-center gap-2 text-xs font-medium text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                    <span>Explorar</span>
+                    <ArrowRight className="w-3 h-3 animate-pulse" />
+                  </div>
                 </div>
               </Card>
             ))}
+          </div>
+
+          {/* CTA Bottom */}
+          <div className="text-center mt-20 space-y-6 animate-in fade-in duration-700" style={{ animationDelay: '600ms' }}>
+            <div className="inline-flex items-center gap-3 px-6 py-3 bg-muted/50 backdrop-blur-sm rounded-full border border-border/50">
+              <div className="flex -space-x-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-500 border-2 border-background"></div>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 border-2 border-background"></div>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-green-500 border-2 border-background"></div>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-rose-500 to-pink-500 border-2 border-background"></div>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 border-2 border-background"></div>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-blue-500 border-2 border-background"></div>
+              </div>
+              <span className="text-sm font-medium text-muted-foreground">
+                Ecossistema completo • R$ 9,90/mês
+              </span>
+            </div>
+            <Button 
+              size="lg"
+              className="shadow-medical hover:shadow-elevated transition-all hover:scale-105 px-8"
+              onClick={() => scrollToSection('planos')}
+            >
+              Ver todos os planos
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
           </div>
         </div>
       </section>
