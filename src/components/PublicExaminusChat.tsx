@@ -334,7 +334,7 @@ export default function PublicExaminusChat() {
         )}
 
         {/* Input Area */}
-        <div className={`p-5 bg-muted/20 backdrop-blur ${hasMessages ? 'border-t border-border/50 rounded-b-2xl' : 'rounded-2xl'}`}>
+        <div className={`p-3 md:p-5 bg-muted/20 backdrop-blur ${hasMessages ? 'border-t border-border/50 rounded-b-2xl' : 'rounded-2xl'}`}>
           {/* File Preview */}
           {selectedFile && (
             <div className="mb-3 flex items-center gap-3 bg-muted/50 border border-border rounded-lg p-3">
@@ -362,7 +362,55 @@ export default function PublicExaminusChat() {
             </div>
           )}
 
-          <div className="flex gap-2 md:gap-3">
+          {/* Mobile: Textarea first, buttons below */}
+          <div className="flex flex-col md:hidden gap-2">
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder={hasMessages ? "Cole mais exames aqui..." : "Cole ou digite os resultados dos exames"}
+              className="min-h-[100px] max-h-[180px] resize-none text-base bg-background border-border placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20 transition-all"
+              disabled={isLoading}
+            />
+            <div className="flex gap-2 justify-end">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isLoading}
+                className="h-11 px-4 border-dashed hover:border-primary hover:bg-primary/5 transition-all group"
+                title="Upload"
+              >
+                <Upload className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                <span className="text-sm">Upload</span>
+              </Button>
+              <Button
+                onClick={handleSend}
+                disabled={isLoading || (!input.trim() && !selectedFile)}
+                size="lg"
+                className="h-11 px-6 shadow-medical hover:shadow-elevated hover:scale-105 transition-all"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    <Send className="w-4 h-4 mr-2" />
+                    <span className="text-sm font-semibold">Enviar</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* Desktop: Original layout */}
+          <div className="hidden md:flex gap-3">
             <input
               ref={fileInputRef}
               type="file"
@@ -375,48 +423,48 @@ export default function PublicExaminusChat() {
               size="lg"
               onClick={() => fileInputRef.current?.click()}
               disabled={isLoading}
-              className="self-end h-12 w-12 md:h-[70px] md:w-[70px] border-dashed hover:border-primary hover:bg-primary/5 transition-all group shrink-0"
+              className="self-end h-[70px] w-[70px] border-dashed hover:border-primary hover:bg-primary/5 transition-all group shrink-0"
               title="Fazer upload de imagem ou PDF"
             >
-              <Upload className="w-4 h-4 md:w-5 md:h-5 group-hover:scale-110 transition-transform" />
+              <Upload className="w-5 h-5 group-hover:scale-110 transition-transform" />
             </Button>
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={hasMessages ? "Cole mais exames aqui..." : "Cole resultados de exames - hemograma, bioquímica, imagens, PDFs... Literalmente qualquer um! 😎"}
-              className="min-h-12 md:min-h-[70px] max-h-[180px] resize-none text-sm bg-background border-border placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20 transition-all flex-1"
+              className="min-h-[70px] max-h-[180px] resize-none text-sm bg-background border-border placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20 transition-all flex-1"
               disabled={isLoading}
             />
             <Button
               onClick={handleSend}
               disabled={isLoading || (!input.trim() && !selectedFile)}
               size="lg"
-              className="self-end h-12 w-12 md:h-[70px] md:w-[70px] shadow-medical hover:shadow-elevated hover:scale-105 transition-all shrink-0"
+              className="self-end h-[70px] w-[70px] shadow-medical hover:shadow-elevated hover:scale-105 transition-all shrink-0"
             >
               {isLoading ? (
-                <Loader2 className="w-5 h-5 md:w-6 md:h-6 animate-spin" />
+                <Loader2 className="w-6 h-6 animate-spin" />
               ) : (
-                <Send className="w-5 h-5 md:w-6 md:h-6" />
+                <Send className="w-6 h-6" />
               )}
             </Button>
           </div>
           
           {/* CTA Footer */}
           {!hasMessages && (
-            <div className="mt-4 flex items-center justify-between text-xs flex-wrap gap-3 bg-primary/5 border border-primary/20 rounded-xl px-4 py-3">
-              <p className="text-muted-foreground flex items-center gap-2">
+            <div className="mt-3 md:mt-4 flex items-center justify-between text-xs flex-wrap gap-2 md:gap-3 bg-primary/5 border border-primary/20 rounded-xl px-3 md:px-4 py-2.5 md:py-3">
+              <p className="text-muted-foreground flex items-center gap-2 text-[11px] md:text-xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-                Teste grátis • Sem cadastro • Sem cartão
+                Teste grátis • Sem cadastro
               </p>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/pricing")}
-                className="text-primary hover:text-primary hover:bg-primary/10 h-8 text-xs font-semibold group"
+                className="text-primary hover:text-primary hover:bg-primary/10 h-7 md:h-8 text-[11px] md:text-xs font-semibold group px-2 md:px-3"
               >
                 Uso ilimitado
-                <ArrowRight className="ml-1.5 h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                <ArrowRight className="ml-1 md:ml-1.5 h-3 md:h-3.5 w-3 md:w-3.5 group-hover:translate-x-0.5 transition-transform" />
               </Button>
             </div>
           )}
