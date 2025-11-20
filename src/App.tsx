@@ -8,12 +8,6 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 import { ProfileProvider } from "./contexts/ProfileContext";
 import Dashboard from "./pages/Dashboard";
-import Patients from "./pages/Patients";
-import PatientDetail from "./pages/PatientDetail";
-import Cases from "./pages/Cases";
-import CaseDetail from "./pages/CaseDetail";
-import Notes from "./pages/Notes";
-import NoteDetail from "./pages/NoteDetail";
 import Auth from "./pages/Auth";
 import Home from "./pages/Home";
 import Pricing from "./pages/Pricing";
@@ -23,14 +17,6 @@ import Scorius from "./pages/Scorius";
 import Numerus from "./pages/Numerus";
 import Prescriptus from "@/pages/Prescriptus";
 import Codexus from "@/pages/Codexus";
-import Prescriptions from "@/pages/Prescriptions";
-import NewPrescription from "@/pages/NewPrescription";
-import PrescriptionDetail from "@/pages/PrescriptionDetail";
-import ExamRequests from "@/pages/ExamRequests";
-import NewExamRequest from "@/pages/NewExamRequest";
-import ExamRequestDetail from "@/pages/ExamRequestDetail";
-import MedicalDocuments from "@/pages/MedicalDocuments";
-import MedicalDocumentDetail from "@/pages/MedicalDocumentDetail";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -54,46 +40,6 @@ const App = () => (
                 <ProtectedRoute>
                   <DashboardLayout>
                     <Dashboard />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/patients"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <Patients />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/patients/:id"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <PatientDetail />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/cases"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <Cases />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/case/:caseId"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <CaseDetail />
                   </DashboardLayout>
                 </ProtectedRoute>
               }
@@ -158,16 +104,6 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-              <Route path="/prescricoes" element={<ProtectedRoute><DashboardLayout><Prescriptions /></DashboardLayout></ProtectedRoute>} />
-              <Route path="/prescricoes/nova" element={<ProtectedRoute><DashboardLayout><NewPrescription /></DashboardLayout></ProtectedRoute>} />
-              <Route path="/prescricoes/:id" element={<ProtectedRoute><DashboardLayout><PrescriptionDetail /></DashboardLayout></ProtectedRoute>} />
-              <Route path="/exames" element={<ProtectedRoute><DashboardLayout><ExamRequests /></DashboardLayout></ProtectedRoute>} />
-              <Route path="/exames/novo" element={<ProtectedRoute><DashboardLayout><NewExamRequest /></DashboardLayout></ProtectedRoute>} />
-              <Route path="/exames/:id" element={<ProtectedRoute><DashboardLayout><ExamRequestDetail /></DashboardLayout></ProtectedRoute>} />
-              <Route path="/documentos" element={<ProtectedRoute><DashboardLayout><MedicalDocuments /></DashboardLayout></ProtectedRoute>} />
-              <Route path="/documentos/:id" element={<ProtectedRoute><DashboardLayout><MedicalDocumentDetail /></DashboardLayout></ProtectedRoute>} />
-              <Route path="/notes" element={<ProtectedRoute><DashboardLayout><Notes /></DashboardLayout></ProtectedRoute>} />
-              <Route path="/notes/:id" element={<ProtectedRoute><DashboardLayout><NoteDetail /></DashboardLayout></ProtectedRoute>} />
             <Route
               path="/settings"
               element={
