@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Sparkles, ArrowRight, Minimize2, Search, AlertTriangle, List, Copy, Check } from "lucide-react";
+import { Loader2, Send, Sparkles, ArrowRight, Minimize2, Search, AlertTriangle, List, Copy, Check, FileUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -236,24 +236,41 @@ export default function PublicExaminusChat() {
                   {message.content}
                 </p>
                 {message.role === "assistant" && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleCopy(message.content, index)}
-                    className="absolute bottom-2 right-2 h-7 px-2 gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity text-xs"
-                  >
-                    {copiedIndex === index ? (
-                      <>
-                        <Check className="h-3 w-3 text-primary" />
-                        <span className="text-primary">Copiado</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-3 w-3" />
-                        <span>Copiar</span>
-                      </>
-                    )}
-                  </Button>
+                  <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        const upperText = message.content.toUpperCase();
+                        navigator.clipboard.writeText(upperText);
+                        toast({
+                          description: "Texto em caixa alta copiado!",
+                        });
+                      }}
+                      className="h-7 px-2 gap-1.5 text-xs"
+                    >
+                      <FileUp className="h-3 w-3" />
+                      <span>Maiúscula</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleCopy(message.content, index)}
+                      className="h-7 px-2 gap-1.5 text-xs"
+                    >
+                      {copiedIndex === index ? (
+                        <>
+                          <Check className="h-3 w-3 text-primary" />
+                          <span className="text-primary">Copiado</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3 w-3" />
+                          <span>Copiar</span>
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>
