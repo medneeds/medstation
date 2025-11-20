@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Sparkles, Zap, Shield, Users, BarChart3, FileText } from "lucide-react";
+import { Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -46,19 +46,18 @@ export default function Pricing() {
     }
   };
 
-  const features = [
-    { icon: Sparkles, text: "5 Assistentes Premium de IA", description: "Clínicus, Scorius, Numerus, Prescriptus e CODexus" },
-    { icon: Users, text: "Pacientes Ilimitados", description: "Gerencie quantos pacientes precisar" },
-    { icon: FileText, text: "Casos Ilimitados", description: "Sem limite de casos clínicos" },
-    { icon: BarChart3, text: "Análise Avançada", description: "Dashboards e métricas detalhadas" },
-    { icon: Shield, text: "Dados Seguros", description: "Criptografia de ponta a ponta" },
-    { icon: Zap, text: "Performance Rápida", description: "Respostas instantâneas dos assistentes" },
+  const proAgents = [
+    { name: "Examinus", desc: "Interpretação de exames" },
+    { name: "Clínicus", desc: "Anamneses estruturadas" },
+    { name: "Scorius", desc: "Cálculo de scores clínicos" },
+    { name: "Prescriptus", desc: "Prescrições baseadas em evidências" },
+    { name: "Numerus", desc: "Calculadoras médicas" },
+    { name: "CODexus", desc: "Codificação CID-10 e TISS" }
   ];
 
   const freeFeatures = [
-    { text: "Assistente Examinus (Análise de Exames)" },
-    { text: "Gestão básica de pacientes" },
-    { text: "Até 10 casos clínicos" },
+    { text: "Organização e estruturação inteligente de qualquer resultado de exame laboratorial (hemograma, bioquímica, gasometria) e de imagem (tomografia, raio-X, ultrassom)" },
+    { text: "Uso ilimitado dentro da plataforma (cadastro gratuito)" },
   ];
 
   return (
@@ -80,29 +79,35 @@ export default function Pricing() {
         {/* Free Plan Card */}
         <div className="max-w-4xl mx-auto mb-8">
           <Card className="p-6 md:p-8 border-2">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-              <div>
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+              <div className="flex-1">
                 <Badge className="mb-2 bg-green-500/10 text-green-600 border-green-500/20">
                   Plano Gratuito
                 </Badge>
-                <h2 className="text-2xl md:text-3xl font-bold mb-2">Comece Grátis</h2>
+                <h2 className="text-2xl md:text-3xl font-bold mb-2">Examinus Grátis</h2>
                 <p className="text-muted-foreground mb-4">
-                  Experimente o poder da IA médica com acesso ao Examinus
+                  Experimente o poder da IA médica para organização de exames
                 </p>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {freeFeatures.map((feature, index) => (
-                    <div key={index} className="flex items-center gap-2 text-sm">
-                      <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                      <span>{feature.text}</span>
+                    <div key={index} className="flex items-start gap-2 text-sm">
+                      <div className="w-1 h-1 rounded-full bg-primary mt-2 flex-shrink-0"></div>
+                      <span className="text-muted-foreground">{feature.text}</span>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="flex flex-col items-center md:items-end gap-2">
-                <div className="text-3xl md:text-4xl font-bold">R$ 0</div>
+              <div className="flex flex-col items-center md:items-end gap-3">
+                <div className="text-center md:text-right">
+                  <div className="text-4xl md:text-5xl font-bold">R$ 0</div>
+                  <div className="text-muted-foreground">/sempre</div>
+                </div>
                 <Button variant="outline" size="lg" onClick={() => navigate("/auth")} className="w-full md:w-auto">
                   Criar Conta Grátis
                 </Button>
+                <p className="text-xs text-muted-foreground text-center">
+                  Sem cartão • Sem compromisso
+                </p>
               </div>
             </div>
           </Card>
@@ -147,18 +152,19 @@ export default function Pricing() {
               Acesso completo a todos os assistentes e recursos premium
             </p>
           </div>
-          <div className="relative grid md:grid-cols-2 gap-8">
-            {features.map((feature, index) => (
-              <div key={index} className="flex gap-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <feature.icon className="w-6 h-6 text-primary" />
+          {/* Lista dos 6 assistentes */}
+          <div className="relative mb-8">
+            <h3 className="font-semibold text-lg mb-4 text-center">6 Assistentes Especializados:</h3>
+            <div className="grid md:grid-cols-2 gap-3">
+              {proAgents.map((agent, index) => (
+                <div key={index} className="flex items-start gap-2">
+                  <div className="w-1 h-1 rounded-full bg-primary mt-2 flex-shrink-0"></div>
+                  <span className="text-sm">
+                    <strong className="text-foreground">{agent.name}:</strong> {agent.desc}
+                  </span>
                 </div>
-                <div>
-                  <h3 className="font-semibold mb-1">{feature.text}</h3>
-                  <p className="text-sm text-muted-foreground">{feature.description}</p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           {/* Garantia de 7 dias - Destaque */}
