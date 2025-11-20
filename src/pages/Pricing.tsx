@@ -228,7 +228,7 @@ export default function Pricing() {
                     placeholder="Digite o código do cupom"
                     value={couponCode}
                     onChange={(e) => {
-                      setCouponCode(e.target.value.toUpperCase());
+                      setCouponCode(e.target.value);
                       setCouponApplied(false);
                     }}
                     className="flex-1"
