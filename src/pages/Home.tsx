@@ -98,6 +98,21 @@ export default function Home() {
             <p className="text-xl text-muted-foreground leading-relaxed">
               Organize exames, estruture anamneses, calcule scores, automatize documentações médicas e muito mais. Tudo em um só lugar.
             </p>
+            
+            {/* CTA Button */}
+            <div className="mt-12">
+              <Button 
+                size="lg"
+                className="group relative overflow-hidden bg-gradient-primary text-primary-foreground shadow-medical hover:shadow-elevated transition-all duration-300 hover:scale-105 px-8 py-6 text-lg font-semibold"
+                onClick={() => scrollToSection('agentes')}
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  Conhecer agora
+                  <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary-foreground/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+              </Button>
+            </div>
           </div>
 
           {/* Assistentes */}
