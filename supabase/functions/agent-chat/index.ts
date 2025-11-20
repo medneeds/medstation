@@ -446,20 +446,11 @@ ${contextData}`,
 
     const systemPrompt = agentPrompts[agentType] || agentPrompts.clinicus;
 
-    // Prepare messages with reinforcement for Examinus
-    const messagesForAI = agentType === "examinus" 
-      ? [
-          { role: "system", content: systemPrompt },
-          {
-            role: "user",
-            content: "RESPONDA SEM INTRODUÇÃO. Comece DIRETO com a data ou tipo de exame."
-          },
-          ...messages,
-        ]
-      : [
-          { role: "system", content: systemPrompt },
-          ...messages,
-        ];
+    // Prepare messages for AI
+    const messagesForAI = [
+      { role: "system", content: systemPrompt },
+      ...messages,
+    ];
 
     // Call Lovable AI
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
