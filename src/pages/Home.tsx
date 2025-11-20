@@ -229,7 +229,7 @@ export default function Home() {
             </div>
             
             <p className="text-sm font-medium text-muted-foreground pt-4">
-              Ecossistema completo • R$ 9,90/mês
+              Ecossistema completo • R$ 19,90/mês
             </p>
             
             <Button 
@@ -300,7 +300,7 @@ export default function Home() {
                   <p className="text-sm text-muted-foreground">Ecossistema completo</p>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold">R$ 9,90</span>
+                  <span className="text-4xl font-bold">R$ 19,90</span>
                   <span className="text-muted-foreground">/mês</span>
                 </div>
                 <ul className="space-y-2.5 text-sm">
@@ -355,7 +355,7 @@ export default function Home() {
           </div>
           <p className="text-xs text-muted-foreground flex items-center justify-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-            Examinus grátis para sempre • Pro R$ 9,90/mês
+            Examinus grátis para sempre • Pro R$ 19,90/mês
           </p>
         </div>
       </section>
