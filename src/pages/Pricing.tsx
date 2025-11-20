@@ -12,8 +12,27 @@ export default function Pricing() {
   const [loading, setLoading] = useState(false);
   const [showCoupon, setShowCoupon] = useState(false);
   const [couponCode, setCouponCode] = useState("");
+  const [couponApplied, setCouponApplied] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const handleApplyCoupon = () => {
+    const trimmedCode = couponCode.trim();
+    if (!trimmedCode) {
+      toast({
+        title: "Código inválido",
+        description: "Por favor, digite um código de cupom válido.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setCouponApplied(true);
+    toast({
+      title: "Cupom aplicado!",
+      description: `Código ${trimmedCode} será aplicado no checkout.`,
+    });
+  };
 
   const handleSubscribe = async () => {
     try {
@@ -202,24 +221,47 @@ export default function Pricing() {
                 Tem um cupom de desconto?
               </button>
             ) : (
-              <div className="flex gap-2">
-                <Input
-                  type="text"
-                  placeholder="Digite o código do cupom"
-                  value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                  className="flex-1"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setShowCoupon(false);
-                    setCouponCode("");
-                  }}
-                >
-                  Cancelar
-                </Button>
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    placeholder="Digite o código do cupom"
+                    value={couponCode}
+                    onChange={(e) => {
+                      setCouponCode(e.target.value.toUpperCase());
+                      setCouponApplied(false);
+                    }}
+                    className="flex-1"
+                    disabled={couponApplied}
+                  />
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={handleApplyCoupon}
+                    disabled={!couponCode.trim() || couponApplied}
+                  >
+                    Aplicar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setShowCoupon(false);
+                      setCouponCode("");
+                      setCouponApplied(false);
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+                {couponApplied && (
+                  <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Cupom aplicado com sucesso
+                  </div>
+                )}
               </div>
             )}
           </div>
