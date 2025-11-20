@@ -207,7 +207,7 @@ export default function PublicExaminusChat() {
             <span className="text-sm font-medium text-primary">Examinus por MedStation AI</span>
           </div>
           
-          <div className="space-y-4">
+          <div className="space-y-2">
             <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
               Produza Mais.{" "}
               <span className="bg-gradient-primary bg-clip-text text-transparent">
@@ -219,7 +219,7 @@ export default function PublicExaminusChat() {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground pt-2 pb-2">
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground pt-1">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-primary" />
               <span>Extraio só o que importa</span>
