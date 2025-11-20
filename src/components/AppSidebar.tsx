@@ -131,8 +131,8 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Management modules */}
-        <SidebarGroup className="py-3 border-t border-border">
+        {/* Management modules - HIDDEN FOR NOW */}
+        {/* <SidebarGroup className="py-3 border-t border-border">
           <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-1">
             Prática Médica
           </SidebarGroupLabel>
@@ -157,7 +157,7 @@ export function AppSidebar() {
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
-        </SidebarGroup>
+        </SidebarGroup> */}
 
         {/* Agent modules */}
         <SidebarGroup className="py-3 border-t border-border">
