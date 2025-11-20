@@ -18,7 +18,7 @@ export default function PublicExaminusChat() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "👋 Olá! Sou o **Examinus**, especializado em interpretação de exames médicos.\n\n💡 **Como funciona:**\n1. Clique em um exemplo rápido ou cole seus resultados\n2. Receba análise estruturada em segundos\n3. Zero digitação, máxima produtividade\n\nVamos começar?"
+      content: "Olá! Sou o Examinus, seu assistente especializado em extrair e formatar exames médicos de forma padronizada.\n\nFunciona assim:\n• Cole aqui os resultados de exames laboratoriais ou de imagem\n• Clique em um exemplo rápido abaixo para testar\n• Receba tudo formatado em segundos, pronto para documentação\n\nZero digitação. Máxima produtividade. Vamos começar?"
     }
   ]);
   const [input, setInput] = useState("");
