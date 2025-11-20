@@ -27,6 +27,7 @@ export default function Auth() {
   const [signUpPassword, setSignUpPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [resetEmail, setResetEmail] = useState("");
   const [gender, setGender] = useState<"M" | "F" | "Outro" | "">("");
   const [crm, setCrm] = useState("");
@@ -129,6 +130,7 @@ export default function Auth() {
       setSignUpEmail("");
       setSignUpPassword("");
       setConfirmPassword("");
+      setDateOfBirth("");
       setGender("");
       setCrm("");
       setCrmState("");
@@ -413,6 +415,17 @@ export default function Auth() {
                   />
                 </div>
                 
+                <div className="space-y-2">
+                  <Label htmlFor="signup-dob" className="text-sm font-medium">Data de Nascimento</Label>
+                  <Input
+                    id="signup-dob"
+                    type="date"
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                    className="h-11 transition-all duration-300 focus:ring-2 focus:ring-primary/20 hover:border-primary/50"
+                  />
+                </div>
+                
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label htmlFor="signup-gender" className="text-sm font-medium">Sexo</Label>
@@ -466,7 +479,7 @@ export default function Auth() {
                         <SelectValue placeholder="Selecione" />
                       </SelectTrigger>
                       <SelectContent className="max-h-[200px] overflow-y-auto">
-                        {["Médico generalista", "Clínica Geral", "Cardiologia", "Dermatologia", "Endocrinologia", "Gastroenterologia",
+                        {["Generalista", "Clínica Geral", "Cardiologia", "Dermatologia", "Endocrinologia", "Gastroenterologia",
                           "Geriatria", "Ginecologia", "Neurologia", "Pediatria", "Psiquiatria", "Outra"].map((spec) => (
                           <SelectItem key={spec} value={spec}>
                             {spec}
