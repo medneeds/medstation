@@ -2,16 +2,20 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Stethoscope,
+  FlaskConical,
   Calculator,
   Pill,
   FileText,
+  Users,
   Settings,
   LogOut,
   Activity,
+  Folder,
   CreditCard,
   User,
   Home,
   Database,
+  StickyNote,
 } from "lucide-react";
 import {
   Sidebar,
@@ -29,6 +33,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProfile } from "@/contexts/ProfileContext";
 
 const homeModule = { title: "Início", url: "/dashboard", icon: Home };
+
+// Management modules - HIDDEN from sidebar but routes still active
+const managementModules = [
+  { title: "Pacientes", url: "/patients", icon: Users },
+  { title: "Casos", url: "/cases", icon: Folder },
+  { title: "Prescrições", url: "/prescricoes", icon: FileText },
+  { title: "Exames", url: "/exames", icon: FlaskConical },
+  { title: "Emitir Documentos", url: "/documentos", icon: FileText },
+  { title: "Notas", url: "/notes", icon: StickyNote },
+];
 
 const agentModules = [
   { title: "Clínicus", url: "/clinicus", icon: Stethoscope },
