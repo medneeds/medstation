@@ -92,10 +92,10 @@ export default function Home() {
               MedStation AI - Plataforma Completa
             </Badge>
             <h2 className="text-4xl lg:text-5xl font-bold leading-tight tracking-tight">
-              IA médica com assistentes especializados
+              Inteligência artificial com assistentes médicos especializados
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              Interprete exames, estruture anamneses, calcule scores de risco e automatize documentações médicas. Tudo em um só lugar.
+              Organize exames, estruture anamneses, calcule scores, automatize documentações médicas e muito mais. Tudo em um só lugar.
             </p>
           </div>
 
