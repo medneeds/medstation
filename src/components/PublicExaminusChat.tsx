@@ -198,28 +198,28 @@ export default function PublicExaminusChat() {
   const messagesHeight = hasMessages ? Math.min(500, Math.max(200, messages.length * 80)) : 0;
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4">
+    <div className="w-full max-w-5xl mx-auto px-2 md:px-4">
       {/* Hero Section */}
       {!hasMessages && (
-        <div className="text-center space-y-6 mb-12 animate-in fade-in duration-700 slide-in-from-bottom-4">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Examinus por MedStation AI</span>
+        <div className="text-center space-y-4 md:space-y-6 mb-6 md:mb-12 animate-in fade-in duration-700 slide-in-from-bottom-4">
+          <div className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-primary/10 border border-primary/20">
+            <Sparkles className="w-3.5 md:w-4 h-3.5 md:h-4 text-primary" />
+            <span className="text-xs md:text-sm font-medium text-primary">Examinus por MedStation AI</span>
           </div>
           
-          <div className="space-y-2">
-            <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
+          <div className="space-y-1.5 md:space-y-2 px-2">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight">
               Produza Mais.{" "}
               <span className="bg-gradient-primary bg-clip-text text-transparent">
                 Digite Menos.
               </span>
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Cole os resultados dos exames aqui e veja a mágica acontecer!
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground pt-1">
+          <div className="hidden md:flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground pt-1">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-primary" />
               <span>Extraio só o que importa</span>
@@ -237,18 +237,18 @@ export default function PublicExaminusChat() {
       )}
 
       {/* Chat Card */}
-      <Card className={`shadow-elevated border-border/50 backdrop-blur-xl bg-card/95 transition-all duration-500 ${hasMessages ? 'hover:shadow-medical' : ''}`}>
+      <Card className={`shadow-elevated border-border/50 backdrop-blur-xl bg-card/95 transition-all duration-500 ${hasMessages ? 'hover:shadow-medical' : ''} mx-2 md:mx-0`}>
         {/* Compact Header (only shown when there are messages) */}
         {hasMessages && (
-          <div className="bg-gradient-primary p-4 rounded-t-2xl relative overflow-hidden">
+          <div className="bg-gradient-primary p-3 md:p-4 rounded-t-2xl relative overflow-hidden">
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA0MCAwIEwgMCAwIDAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-20"></div>
             <div className="relative flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-primary-foreground" />
-                <span className="font-semibold text-primary-foreground">Examinus</span>
+                <Sparkles className="w-4 md:w-5 h-4 md:h-5 text-primary-foreground" />
+                <span className="font-semibold text-sm md:text-base text-primary-foreground">Examinus</span>
               </div>
               {remainingMessages !== null && (
-                <Badge variant="secondary" className="text-xs bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30">
+                <Badge variant="secondary" className="text-[10px] md:text-xs bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30 px-2 py-0.5">
                   {remainingMessages} restantes
                 </Badge>
               )}
@@ -259,28 +259,28 @@ export default function PublicExaminusChat() {
         {/* Messages Area */}
         {hasMessages && (
           <ScrollArea 
-            className="p-5 transition-all duration-300 bg-gradient-to-b from-muted/20 to-transparent" 
+            className="p-3 md:p-5 transition-all duration-300 bg-gradient-to-b from-muted/20 to-transparent" 
             style={{ height: `${messagesHeight}px` }}
             ref={scrollRef}
           >
-            <div className="space-y-4">
+            <div className="space-y-2 md:space-y-4">
               {messages.map((message, index) => (
                 <div
                   key={index}
                   className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-3 duration-300`}
                 >
                   <div
-                    className={`max-w-[85%] rounded-2xl shadow-sm transition-all hover:shadow-md relative group ${
+                    className={`max-w-[90%] md:max-w-[85%] rounded-2xl md:rounded-2xl shadow-sm transition-all hover:shadow-md relative group ${
                       message.role === "user"
-                        ? "bg-gradient-primary text-primary-foreground ml-4 px-4 py-3.5"
-                        : "bg-card text-card-foreground mr-4 border border-border/50 px-4 pt-3.5 pb-10"
+                        ? "bg-gradient-primary text-primary-foreground ml-2 md:ml-4 px-3 md:px-4 py-2.5 md:py-3.5 rounded-br-sm md:rounded-br-2xl"
+                        : "bg-card text-card-foreground mr-2 md:mr-4 border border-border/50 px-3 md:px-4 pt-2.5 md:pt-3.5 pb-9 md:pb-10 rounded-bl-sm md:rounded-bl-2xl"
                     }`}
                   >
-                    <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                    <p className="text-sm md:text-sm whitespace-pre-wrap leading-relaxed">
                       {message.content}
                     </p>
                     {message.role === "assistant" && (
-                      <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute bottom-1.5 md:bottom-2 right-1.5 md:right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -291,26 +291,26 @@ export default function PublicExaminusChat() {
                               description: "Texto em caixa alta copiado!",
                             });
                           }}
-                          className="h-7 px-2 gap-1.5 text-xs"
+                          className="h-6 md:h-7 px-1.5 md:px-2 gap-1 md:gap-1.5 text-[10px] md:text-xs"
                         >
-                          <FileUp className="h-3 w-3" />
-                          <span>Maiúscula</span>
+                          <FileUp className="h-2.5 md:h-3 w-2.5 md:w-3" />
+                          <span className="hidden md:inline">Maiúscula</span>
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleCopy(message.content, index)}
-                          className="h-7 px-2 gap-1.5 text-xs"
+                          className="h-6 md:h-7 px-1.5 md:px-2 gap-1 md:gap-1.5 text-[10px] md:text-xs"
                         >
                           {copiedIndex === index ? (
                             <>
-                              <Check className="h-3 w-3 text-primary" />
-                              <span className="text-primary">Copiado</span>
+                              <Check className="h-2.5 md:h-3 w-2.5 md:w-3 text-primary" />
+                              <span className="hidden md:inline text-primary">Copiado</span>
                             </>
                           ) : (
                             <>
-                              <Copy className="h-3 w-3" />
-                              <span>Copiar</span>
+                              <Copy className="h-2.5 md:h-3 w-2.5 md:w-3" />
+                              <span className="hidden md:inline">Copiar</span>
                             </>
                           )}
                         </Button>
@@ -321,10 +321,10 @@ export default function PublicExaminusChat() {
               ))}
               {isLoading && (
                 <div className="flex justify-start animate-in fade-in duration-200">
-                  <div className="bg-card rounded-2xl px-4 py-3 border border-border/50">
-                    <div className="flex items-center gap-2.5">
-                      <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                      <span className="text-muted-foreground text-sm">Analisando exame...</span>
+                  <div className="bg-card rounded-2xl rounded-bl-sm px-3 md:px-4 py-2 md:py-3 border border-border/50 ml-2 md:ml-0">
+                    <div className="flex items-center gap-2 md:gap-2.5">
+                      <Loader2 className="w-3.5 md:w-4 h-3.5 md:h-4 animate-spin text-primary" />
+                      <span className="text-muted-foreground text-xs md:text-sm">Analisando...</span>
                     </div>
                   </div>
                 </div>
@@ -362,51 +362,45 @@ export default function PublicExaminusChat() {
             </div>
           )}
 
-          {/* Mobile: Textarea first, buttons below */}
-          <div className="flex flex-col md:hidden gap-2">
+          {/* Mobile: Horizontal layout like WhatsApp */}
+          <div className="flex md:hidden gap-2 items-end">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,application/pdf"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isLoading}
+              className="h-10 w-10 shrink-0 rounded-full hover:bg-primary/10 transition-all group"
+              title="Upload"
+            >
+              <Upload className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+            </Button>
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={hasMessages ? "Cole mais exames aqui..." : "Cole ou digite os resultados dos exames"}
-              className="min-h-[100px] max-h-[180px] resize-none text-base bg-background border-border placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20 transition-all"
+              placeholder={hasMessages ? "Digite ou cole exames..." : "Cole exames aqui"}
+              className="min-h-[44px] max-h-[120px] resize-none text-base bg-background border-border placeholder:text-muted-foreground/70 focus:border-primary/50 focus:ring-primary/20 transition-all rounded-3xl px-4 py-3"
               disabled={isLoading}
             />
-            <div className="flex gap-2 justify-end">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp,application/pdf"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isLoading}
-                className="h-11 px-4 border-dashed hover:border-primary hover:bg-primary/5 transition-all group"
-                title="Upload"
-              >
-                <Upload className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                <span className="text-sm">Upload</span>
-              </Button>
-              <Button
-                onClick={handleSend}
-                disabled={isLoading || (!input.trim() && !selectedFile)}
-                size="lg"
-                className="h-11 px-6 shadow-medical hover:shadow-elevated hover:scale-105 transition-all"
-              >
-                {isLoading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <>
-                    <Send className="w-4 h-4 mr-2" />
-                    <span className="text-sm font-semibold">Enviar</span>
-                  </>
-                )}
-              </Button>
-            </div>
+            <Button
+              onClick={handleSend}
+              disabled={isLoading || (!input.trim() && !selectedFile)}
+              size="icon"
+              className="h-10 w-10 shrink-0 rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all"
+            >
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Send className="w-5 h-5" />
+              )}
+            </Button>
           </div>
 
           {/* Desktop: Original layout */}
