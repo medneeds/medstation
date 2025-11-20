@@ -17,11 +17,17 @@ export default function Auth() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  
+  // Sign in states
+  const [signInEmail, setSignInEmail] = useState("");
+  const [signInPassword, setSignInPassword] = useState("");
+  
+  // Sign up states
+  const [signUpEmail, setSignUpEmail] = useState("");
+  const [signUpPassword, setSignUpPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [resetEmail, setResetEmail] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [gender, setGender] = useState<"M" | "F" | "Outro" | "">("");
   const [crm, setCrm] = useState("");
   const [crmState, setCrmState] = useState("");
@@ -53,7 +59,7 @@ export default function Auth() {
       console.log('Validating signup data...');
       
       // Verificar se as senhas coincidem
-      if (password !== confirmPassword) {
+      if (signUpPassword !== confirmPassword) {
         toast({
           variant: "destructive",
           title: "Senhas não coincidem",
@@ -64,7 +70,11 @@ export default function Auth() {
       }
 
       // Validate input
-      const validated = signUpSchema.parse({ email, password, fullName });
+      const validated = signUpSchema.parse({ 
+        email: signUpEmail, 
+        password: signUpPassword, 
+        fullName 
+      });
       console.log('Validation passed, calling Supabase...');
 
       const redirectUrl = `${window.location.origin}/dashboard`;
@@ -116,8 +126,8 @@ export default function Auth() {
       
       // Limpar formulário
       setFullName("");
-      setEmail("");
-      setPassword("");
+      setSignUpEmail("");
+      setSignUpPassword("");
       setConfirmPassword("");
       setGender("");
       setCrm("");
@@ -145,7 +155,10 @@ export default function Auth() {
       console.log('Validating signin data...');
       
       // Validate input
-      const validated = signInSchema.parse({ email, password });
+      const validated = signInSchema.parse({ 
+        email: signInEmail, 
+        password: signInPassword 
+      });
       console.log('Validation passed, calling Supabase...');
 
       const { error } = await supabase.auth.signInWithPassword({
@@ -320,8 +333,8 @@ export default function Auth() {
                     id="signin-email"
                     type="email"
                     placeholder="seu@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={signInEmail}
+                    onChange={(e) => setSignInEmail(e.target.value)}
                     className="h-11 transition-all duration-300 focus:ring-2 focus:ring-primary/20 hover:border-primary/50"
                     required
                   />
@@ -366,8 +379,8 @@ export default function Auth() {
                     id="signin-password"
                     type="password"
                     placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={signInPassword}
+                    onChange={(e) => setSignInPassword(e.target.value)}
                     className="h-11 transition-all duration-300 focus:ring-2 focus:ring-primary/20 hover:border-primary/50"
                     required
                   />
@@ -467,8 +480,8 @@ export default function Auth() {
                     id="signup-email"
                     type="email"
                     placeholder="seu@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={signUpEmail}
+                    onChange={(e) => setSignUpEmail(e.target.value)}
                     className="h-11 transition-all duration-300 focus:ring-2 focus:ring-primary/20 hover:border-primary/50"
                     required
                   />
@@ -479,8 +492,8 @@ export default function Auth() {
                     id="signup-password"
                     type="password"
                     placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={signUpPassword}
+                    onChange={(e) => setSignUpPassword(e.target.value)}
                     className="h-11 transition-all duration-300 focus:ring-2 focus:ring-primary/20 hover:border-primary/50"
                     required
                     minLength={8}
@@ -501,7 +514,7 @@ export default function Auth() {
                     required
                     minLength={8}
                   />
-                  {confirmPassword && password !== confirmPassword && (
+                  {confirmPassword && signUpPassword !== confirmPassword && (
                     <p className="text-xs text-destructive flex items-center gap-1">
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
