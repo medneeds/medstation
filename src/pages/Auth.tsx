@@ -82,6 +82,7 @@ export default function Auth() {
           title: "Erro no cadastro",
           description: error.message,
         });
+        setLoading(false);
         return;
       }
 
@@ -147,9 +148,16 @@ export default function Auth() {
           title: "Erro no login",
           description: error.message,
         });
-      } else {
-        navigate("/dashboard");
+        setLoading(false);
+        return;
       }
+
+      toast({
+        title: "Login realizado!",
+        description: "Redirecionando...",
+      });
+      
+      navigate("/dashboard");
     } catch (error: any) {
       toast({
         variant: "destructive",
