@@ -7,6 +7,13 @@ import { Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function Pricing() {
   const [loading, setLoading] = useState(false);
@@ -14,6 +21,7 @@ export default function Pricing() {
   const [couponCode, setCouponCode] = useState("");
   const [couponApplied, setCouponApplied] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
+  const [showComingSoonDialog, setShowComingSoonDialog] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -36,42 +44,7 @@ export default function Pricing() {
   };
 
   const handleSubscribe = async () => {
-    try {
-      setLoading(true);
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          title: "Login necessário",
-          description: "Você precisa fazer login para assinar.",
-          variant: "destructive",
-        });
-        navigate("/auth");
-        return;
-      }
-
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { 
-          couponCode: couponCode.trim() || undefined,
-          billingPeriod 
-        }
-      });
-      
-      if (error) throw error;
-      
-      if (data?.url) {
-        window.open(data.url, "_blank");
-      }
-    } catch (error) {
-      console.error("Error creating checkout:", error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível iniciar o processo de assinatura.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
+    setShowComingSoonDialog(true);
   };
 
   const proAgents = [
@@ -130,7 +103,7 @@ export default function Pricing() {
                   <div className="text-3xl md:text-4xl lg:text-5xl font-bold">R$ 0</div>
                   <div className="text-xs md:text-sm text-muted-foreground">/sempre</div>
                 </div>
-                <Button variant="outline" size="lg" onClick={() => navigate("/auth")} className="w-full md:w-auto h-11 md:h-12 text-sm md:text-base">
+                <Button variant="outline" size="lg" onClick={() => setShowComingSoonDialog(true)} className="w-full md:w-auto h-11 md:h-12 text-sm md:text-base">
                   Criar Conta Grátis
                 </Button>
                 <p className="text-[10px] md:text-xs text-muted-foreground text-center">
@@ -188,43 +161,55 @@ export default function Pricing() {
               </div>
             </div>
 
-            {/* Pricing display */}
-            <div className="flex flex-col items-center gap-2 my-6">
-              {billingPeriod === "monthly" ? (
-                <>
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl text-muted-foreground line-through decoration-2">R$ 59,90</span>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-5xl md:text-6xl font-black bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">R$ 19,90</span>
-                      <span className="text-2xl text-muted-foreground font-medium">/mês</span>
+            {/* Pricing display with "Em breve" overlay */}
+            <div className="flex flex-col items-center gap-2 my-6 relative">
+              {/* Tarja "Em breve" */}
+              <div className="absolute inset-0 z-20 flex items-center justify-center">
+                <div className="bg-primary/95 backdrop-blur-sm px-6 py-3 rounded-xl border-2 border-primary-foreground/20 shadow-2xl rotate-[-3deg] transform hover:rotate-0 transition-transform duration-300">
+                  <span className="text-2xl md:text-3xl font-black text-primary-foreground tracking-wide">
+                    EM BREVE
+                  </span>
+                </div>
+              </div>
+              
+              {/* Preços com blur */}
+              <div className="blur-sm pointer-events-none">
+                {billingPeriod === "monthly" ? (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl text-muted-foreground line-through decoration-2">R$ 59,90</span>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-5xl md:text-6xl font-black bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">R$ 19,90</span>
+                        <span className="text-2xl text-muted-foreground font-medium">/mês</span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg border border-border/50 mt-2">
-                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
-                    <span className="text-sm text-muted-foreground">
-                      Ou <span className="font-bold text-foreground">R$ 199,90/ano</span> • Economize R$ 38,90
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl text-muted-foreground line-through decoration-2">R$ 238,80</span>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-5xl md:text-6xl font-black bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">R$ 199,90</span>
-                      <span className="text-2xl text-muted-foreground font-medium">/ano</span>
+                    <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg border border-border/50 mt-2">
+                      <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                      <span className="text-sm text-muted-foreground">
+                        Ou <span className="font-bold text-foreground">R$ 199,90/ano</span> • Economize R$ 38,90
+                      </span>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 px-4 py-2 bg-green-500/10 rounded-lg border border-green-500/30 mt-2">
-                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span className="text-sm font-semibold text-green-600 dark:text-green-400">
-                      Economize R$ 38,90 por ano • Apenas R$ 16,66/mês
-                    </span>
-                  </div>
-                </>
-              )}
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl text-muted-foreground line-through decoration-2">R$ 238,80</span>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-5xl md:text-6xl font-black bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">R$ 199,90</span>
+                        <span className="text-2xl text-muted-foreground font-medium">/ano</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 px-4 py-2 bg-green-500/10 rounded-lg border border-green-500/30 mt-2">
+                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-sm font-semibold text-green-600 dark:text-green-400">
+                        Economize R$ 38,90 por ano • Apenas R$ 16,66/mês
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
             
             <p className="text-muted-foreground text-lg">
@@ -359,6 +344,42 @@ export default function Pricing() {
           </div>
         </div>
       </div>
+
+      {/* Coming Soon Dialog */}
+      <Dialog open={showComingSoonDialog} onOpenChange={setShowComingSoonDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+              Assinatura em Breve! 🚀
+            </DialogTitle>
+            <DialogDescription className="text-base pt-4 space-y-4">
+              <p className="text-foreground/90">
+                A assinatura da plataforma MedStation AI estará disponível em breve!
+              </p>
+              <p className="text-foreground/90">
+                Seja um dos primeiros a ter acesso exclusivo falando diretamente com{" "}
+                <span className="font-semibold text-primary">Artur Batista</span>, 
+                médico desenvolvedor da plataforma.
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 mt-4">
+            <Button
+              onClick={() => window.open("https://w.app/medstationai", "_blank")}
+              className="w-full h-12 text-base font-semibold"
+            >
+              💬 Falar com Artur no WhatsApp
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowComingSoonDialog(false)}
+              className="w-full"
+            >
+              Fechar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

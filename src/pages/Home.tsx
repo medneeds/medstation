@@ -4,9 +4,18 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Sparkles, Activity, Brain, Calculator, Pill, FileCode, TestTube2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PublicExaminusChat from "@/components/PublicExaminusChat";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function Home() {
   const navigate = useNavigate();
+  const [showComingSoonDialog, setShowComingSoonDialog] = useState(false);
 
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
@@ -390,7 +399,7 @@ export default function Home() {
                 
                 <Button 
                   className="w-full h-11 md:h-12 shadow-medical hover:shadow-elevated transition-all hover:scale-105 text-sm md:text-base"
-                  onClick={() => navigate("/pricing")}
+                  onClick={() => setShowComingSoonDialog(true)}
                 >
                   Começar agora
                   <ArrowRight className="ml-2 h-3.5 md:h-4 w-3.5 md:w-4" />
@@ -421,7 +430,7 @@ export default function Home() {
             <Button 
               size="lg"
               className="shadow-medical hover:shadow-elevated transition-all hover:scale-105 h-11 md:h-12 text-sm md:text-base"
-              onClick={() => navigate("/auth")}
+              onClick={() => setShowComingSoonDialog(true)}
             >
               Criar conta gratuita
               <ArrowRight className="ml-2 h-3.5 md:h-4 w-3.5 md:w-4" />
@@ -455,6 +464,42 @@ export default function Home() {
           </p>
         </div>
       </footer>
+
+      {/* Coming Soon Dialog */}
+      <Dialog open={showComingSoonDialog} onOpenChange={setShowComingSoonDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+              Assinatura em Breve! 🚀
+            </DialogTitle>
+            <DialogDescription className="text-base pt-4 space-y-4">
+              <p className="text-foreground/90">
+                A assinatura da plataforma MedStation AI estará disponível em breve!
+              </p>
+              <p className="text-foreground/90">
+                Seja um dos primeiros a ter acesso exclusivo falando diretamente com{" "}
+                <span className="font-semibold text-primary">Artur Batista</span>, 
+                médico desenvolvedor da plataforma.
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 mt-4">
+            <Button
+              onClick={() => window.open("https://w.app/medstationai", "_blank")}
+              className="w-full h-12 text-base font-semibold"
+            >
+              💬 Falar com Artur no WhatsApp
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowComingSoonDialog(false)}
+              className="w-full"
+            >
+              Fechar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
