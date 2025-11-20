@@ -261,33 +261,40 @@ export default function Home() {
 
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {/* Plano Grátis */}
-            <Card className="p-8 text-left">
-              <div className="space-y-4">
+            <Card className="p-8 text-left border-2 border-border/50 h-full flex flex-col">
+              <div className="space-y-5 flex-1 flex flex-col">
                 <div>
-                  <h3 className="text-xl font-semibold mb-1">Grátis</h3>
+                  <h3 className="text-2xl font-bold mb-1">Grátis</h3>
                   <p className="text-sm text-muted-foreground">Examinus ilimitado</p>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold">R$ 0</span>
-                  <span className="text-muted-foreground">/sempre</span>
+                  <span className="text-5xl font-bold">R$ 0</span>
+                  <span className="text-xl text-muted-foreground">/sempre</span>
                 </div>
-                <ul className="space-y-2.5 text-sm">
+                <ul className="space-y-2.5 text-sm flex-1">
                   <li className="flex items-start gap-2 text-muted-foreground">
                     <div className="w-1 h-1 rounded-full bg-primary mt-2"></div>
                     <span><strong className="text-foreground">Organização e estruturação inteligente</strong> de qualquer resultado de exame laboratorial (hemograma, bioquímica, gasometria) e de imagem (tomografia, raio-X, ultrassom)</span>
                   </li>
                   <li className="flex items-start gap-2 text-muted-foreground">
                     <div className="w-1 h-1 rounded-full bg-primary mt-2"></div>
-                    <span>Uso ilimitado, sem cadastro inicial</span>
+                    <span>Uso ilimitado dentro da plataforma (cadastro gratuito)</span>
                   </li>
                 </ul>
-                <Button 
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => scrollToSection('demo')}
-                >
-                  Testar agora
-                </Button>
+                
+                <div className="space-y-3 mt-auto">
+                  <Button 
+                    variant="outline"
+                    className="w-full h-12"
+                    onClick={() => scrollToSection('demo')}
+                  >
+                    Testar agora
+                  </Button>
+                  
+                  <p className="text-xs text-center text-muted-foreground">
+                    Sem cartão • Sem compromisso
+                  </p>
+                </div>
               </div>
             </Card>
 
