@@ -147,7 +147,7 @@ export default function Pricing() {
               Acesso completo a todos os assistentes e recursos premium
             </p>
           </div>
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="relative grid md:grid-cols-2 gap-8">
             {features.map((feature, index) => (
               <div key={index} className="flex gap-4">
                 <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -161,7 +161,26 @@ export default function Pricing() {
             ))}
           </div>
 
-          <div className="mt-10 pt-8 border-t">
+          {/* Garantia de 7 dias - Destaque */}
+          <div className="mt-8 p-6 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-2 border-green-500/30 rounded-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-full blur-3xl"></div>
+            <div className="relative flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+              <div className="flex-shrink-0 w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-xl text-foreground mb-2">Garantia Incondicional de 7 Dias</h3>
+                <p className="text-muted-foreground">
+                  Experimente o MedStation AI Pro por 7 dias. Se não ficar completamente satisfeito, devolvemos 100% do seu investimento. 
+                  <span className="font-semibold text-foreground"> Sem perguntas. Sem burocracia. Sem riscos.</span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-10 pt-8 border-t relative">
             <h3 className="font-semibold mb-4 text-center">Também incluso:</h3>
             <div className="grid md:grid-cols-2 gap-3">
               {[
@@ -188,12 +207,20 @@ export default function Pricing() {
             onClick={handleSubscribe}
             disabled={loading}
           >
-            {loading ? "Processando..." : "Assinar Agora"}
+            {loading ? "Processando..." : "Começar agora - Sem riscos"}
           </Button>
 
-          <p className="text-center text-sm text-muted-foreground mt-6">
-            Cancele a qualquer momento. Sem taxas ocultas.
-          </p>
+          <div className="text-center mt-6 space-y-2">
+            <p className="text-sm font-medium text-green-600 dark:text-green-400 flex items-center justify-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Garantia de reembolso total em 7 dias
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Cancele a qualquer momento • Sem taxas ocultas • Sem compromisso
+            </p>
+          </div>
         </Card>
 
         {/* Trust Badges */}
