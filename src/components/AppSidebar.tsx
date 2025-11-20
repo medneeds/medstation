@@ -2,20 +2,16 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Stethoscope,
-  FlaskConical,
   Calculator,
   Pill,
   FileText,
-  Users,
   Settings,
   LogOut,
   Activity,
-  Folder,
   CreditCard,
   User,
   Home,
   Database,
-  StickyNote,
 } from "lucide-react";
 import {
   Sidebar,
@@ -33,15 +29,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProfile } from "@/contexts/ProfileContext";
 
 const homeModule = { title: "Início", url: "/dashboard", icon: Home };
-
-const managementModules = [
-  { title: "Pacientes", url: "/patients", icon: Users },
-  { title: "Casos", url: "/cases", icon: Folder },
-  { title: "Prescrições", url: "/prescricoes", icon: FileText },
-  { title: "Exames", url: "/exames", icon: FlaskConical },
-  { title: "Emitir Documentos", url: "/documentos", icon: FileText },
-  { title: "Notas", url: "/notes", icon: StickyNote },
-];
 
 const agentModules = [
   { title: "Clínicus", url: "/clinicus", icon: Stethoscope },
@@ -130,34 +117,6 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        {/* Management modules - HIDDEN FOR NOW */}
-        {/* <SidebarGroup className="py-3 border-t border-border">
-          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-1">
-            Prática Médica
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
-              {managementModules.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title}>
-                    <NavLink
-                      to={item.url}
-                      className={({ isActive }) =>
-                        isActive
-                          ? "bg-muted text-foreground font-semibold"
-                          : "hover:bg-muted/50 hover:translate-x-1 transition-all duration-200"
-                      }
-                    >
-                      <item.icon className="h-4 w-4" />
-                      {!collapsed && <span className="animate-fade-in">{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup> */}
 
         {/* Agent modules */}
         <SidebarGroup className="py-3 border-t border-border">

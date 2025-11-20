@@ -71,7 +71,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   };
 
   const handleResultClick = (caseId: string) => {
-    navigate(`/cases/${caseId}`);
+    // Navigation removed - cases module hidden
     onOpenChange(false);
     setQuery("");
     setResults([]);
