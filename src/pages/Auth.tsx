@@ -389,6 +389,9 @@ export default function Auth() {
                   type="submit" 
                   className="w-full h-11 shadow-md hover:shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]" 
                   disabled={loading}
+                  onClick={(e) => {
+                    console.log('SignIn Button CLICKED');
+                  }}
                 >
                   {loading ? "Entrando..." : "Entrar"}
                 </Button>
@@ -527,6 +530,9 @@ export default function Auth() {
                   type="submit" 
                   className="w-full h-11 shadow-md hover:shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]" 
                   disabled={loading}
+                  onClick={(e) => {
+                    console.log('SignUp Button CLICKED');
+                  }}
                 >
                   {loading ? "Cadastrando..." : "Cadastrar"}
                 </Button>
