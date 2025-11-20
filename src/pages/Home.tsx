@@ -49,14 +49,10 @@ export default function Home() {
       </header>
 
       {/* Seção 1: Examinus por MedStation AI */}
-      <section id="demo" className="py-16 px-6 relative overflow-hidden">
+      <section id="demo" className="py-8 px-6 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-30"></div>
         <div className="container mx-auto max-w-4xl relative">
           <div className="space-y-8 animate-in fade-in duration-700 text-center">
-            <Badge variant="secondary" className="backdrop-blur-sm">
-              <TestTube2 className="w-3 h-3 mr-1.5" />
-              Examinus por MedStation AI
-            </Badge>
 
             {/* Demo Card Centralizado */}
             <div className="relative">
