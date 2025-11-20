@@ -215,7 +215,7 @@ export default function PublicExaminusChat() {
               </span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Cole os resultados dos exames aqui e veja a mágica acontecer
+              Cole os resultados dos exames aqui e veja a mágica acontecer!
             </p>
           </div>
 
