@@ -362,7 +362,7 @@ export default function PublicExaminusChat() {
             </div>
           )}
 
-          <div className="flex gap-3">
+          <div className="flex gap-2 md:gap-3">
             <input
               ref={fileInputRef}
               type="file"
@@ -375,29 +375,29 @@ export default function PublicExaminusChat() {
               size="lg"
               onClick={() => fileInputRef.current?.click()}
               disabled={isLoading}
-              className="self-end h-[70px] w-[70px] border-dashed hover:border-primary hover:bg-primary/5 transition-all group"
+              className="self-end h-12 w-12 md:h-[70px] md:w-[70px] border-dashed hover:border-primary hover:bg-primary/5 transition-all group shrink-0"
               title="Fazer upload de imagem ou PDF"
             >
-              <Upload className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              <Upload className="w-4 h-4 md:w-5 md:h-5 group-hover:scale-110 transition-transform" />
             </Button>
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={hasMessages ? "Cole mais exames aqui..." : "Cole resultados de exames - hemograma, bioquímica, imagens, PDFs... Literalmente qualquer um! 😎"}
-              className="min-h-[70px] max-h-[180px] resize-none text-sm bg-background border-border placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20 transition-all"
+              className="min-h-12 md:min-h-[70px] max-h-[180px] resize-none text-sm bg-background border-border placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20 transition-all flex-1"
               disabled={isLoading}
             />
             <Button
               onClick={handleSend}
               disabled={isLoading || (!input.trim() && !selectedFile)}
               size="lg"
-              className="self-end h-[70px] w-[70px] shadow-medical hover:shadow-elevated hover:scale-105 transition-all"
+              className="self-end h-12 w-12 md:h-[70px] md:w-[70px] shadow-medical hover:shadow-elevated hover:scale-105 transition-all shrink-0"
             >
               {isLoading ? (
-                <Loader2 className="w-6 h-6 animate-spin" />
+                <Loader2 className="w-5 h-5 md:w-6 md:h-6 animate-spin" />
               ) : (
-                <Send className="w-6 h-6" />
+                <Send className="w-5 h-5 md:w-6 md:h-6" />
               )}
             </Button>
           </div>
