@@ -120,46 +120,12 @@ export default function Pricing() {
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-purple-500/5 to-pink-500/10 opacity-50 pointer-events-none"></div>
           
           <div className="text-center mb-4 md:mb-6 lg:mb-8 relative z-10">
-            {/* Discount badge */}
-            <div className="inline-flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-full mb-3 md:mb-4">
-              <span className="text-xs md:text-sm font-bold text-green-600 dark:text-green-400">🎉 67% DE DESCONTO</span>
-            </div>
-            
             <Badge className="mb-2 md:mb-3 text-xs md:text-sm bg-gradient-primary text-primary-foreground border-0 shadow-lg">
               Plano Pro
             </Badge>
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent px-4">
               MedStation AI Pro
             </h2>
-            
-            {/* Billing Period Toggle */}
-            <div className="flex justify-center mb-4 md:mb-6">
-              <div className="inline-flex items-center gap-1.5 md:gap-2 p-1 bg-muted/50 rounded-lg border border-border/50">
-                <button
-                  onClick={() => setBillingPeriod("monthly")}
-                  className={`px-4 md:px-6 py-1.5 md:py-2 rounded-md text-xs md:text-sm font-medium transition-all ${
-                    billingPeriod === "monthly"
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Mensal
-                </button>
-                <button
-                  onClick={() => setBillingPeriod("yearly")}
-                  className={`px-4 md:px-6 py-1.5 md:py-2 rounded-md text-xs md:text-sm font-medium transition-all ${
-                    billingPeriod === "yearly"
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Anual
-                  <span className="ml-1.5 md:ml-2 text-[10px] md:text-xs bg-green-500/20 text-green-600 dark:text-green-400 px-1.5 md:px-2 py-0.5 rounded-full">
-                    -16%
-                  </span>
-                </button>
-              </div>
-            </div>
 
             {/* Pricing display with "Em breve" overlay */}
             <div className="flex flex-col items-center gap-2 my-6 relative min-h-[120px]">
