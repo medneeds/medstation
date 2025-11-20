@@ -165,15 +165,15 @@ export default function Pricing() {
             <div className="flex flex-col items-center gap-2 my-6 relative">
               {/* Tarja "Em breve" */}
               <div className="absolute inset-0 z-20 flex items-center justify-center">
-                <div className="bg-primary/95 backdrop-blur-sm px-6 py-3 rounded-xl border-2 border-primary-foreground/20 shadow-2xl rotate-[-3deg] transform hover:rotate-0 transition-transform duration-300">
-                  <span className="text-2xl md:text-3xl font-black text-primary-foreground tracking-wide">
+                <div className="bg-primary backdrop-blur-md px-8 py-4 rounded-xl border-2 border-primary-foreground/30 shadow-2xl rotate-[-3deg] transform hover:rotate-0 transition-transform duration-300">
+                  <span className="text-3xl md:text-4xl font-black text-primary-foreground tracking-wide">
                     EM BREVE
                   </span>
                 </div>
               </div>
               
-              {/* Preços com blur */}
-              <div className="blur-sm pointer-events-none">
+              {/* Preços com blur e opacidade */}
+              <div className="blur-xl opacity-20 pointer-events-none select-none">
                 {billingPeriod === "monthly" ? (
                   <>
                     <div className="flex items-center gap-3">
