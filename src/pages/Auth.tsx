@@ -46,9 +46,12 @@ export default function Auth() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('SignUp button clicked');
     setLoading(true);
 
     try {
+      console.log('Validating signup data...');
+      
       // Verificar se as senhas coincidem
       if (password !== confirmPassword) {
         toast({
@@ -62,6 +65,7 @@ export default function Auth() {
 
       // Validate input
       const validated = signUpSchema.parse({ email, password, fullName });
+      console.log('Validation passed, calling Supabase...');
 
       const redirectUrl = `${window.location.origin}/dashboard`;
 
@@ -75,6 +79,8 @@ export default function Auth() {
           emailRedirectTo: redirectUrl,
         },
       });
+
+      console.log('Supabase response:', { data, error });
 
       if (error) {
         toast({
@@ -118,10 +124,11 @@ export default function Auth() {
       setCrmState("");
       setSpecialty("");
     } catch (error: any) {
+      console.error('SignUp error:', error);
       toast({
         variant: "destructive",
         title: "Dados inválidos",
-        description: error.errors?.[0]?.message || "Por favor, verifique os dados informados",
+        description: error.errors?.[0]?.message || error.message || "Por favor, verifique os dados informados",
       });
     } finally {
       setLoading(false);
@@ -131,16 +138,22 @@ export default function Auth() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('SignIn button clicked');
     setLoading(true);
 
     try {
+      console.log('Validating signin data...');
+      
       // Validate input
       const validated = signInSchema.parse({ email, password });
+      console.log('Validation passed, calling Supabase...');
 
       const { error } = await supabase.auth.signInWithPassword({
         email: validated.email,
         password: validated.password,
       });
+
+      console.log('Supabase login response:', { error });
 
       if (error) {
         toast({
@@ -159,10 +172,11 @@ export default function Auth() {
       
       navigate("/dashboard");
     } catch (error: any) {
+      console.error('SignIn error:', error);
       toast({
         variant: "destructive",
         title: "Dados inválidos",
-        description: error.errors?.[0]?.message || "Por favor, verifique os dados informados",
+        description: error.errors?.[0]?.message || error.message || "Por favor, verifique os dados informados",
       });
     } finally {
       setLoading(false);
