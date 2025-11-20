@@ -219,7 +219,7 @@ export default function PublicExaminusChat() {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground pt-4">
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground pt-2 pb-2">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-primary" />
               <span>Extraio só o que importa</span>
