@@ -8,6 +8,13 @@ import { Loader2, Send, Sparkles, ArrowRight, Copy, Check, FileUp, Upload, X, Im
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Message {
   role: "user" | "assistant";
@@ -22,6 +29,7 @@ export default function PublicExaminusChat() {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [showComingSoonDialog, setShowComingSoonDialog] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -149,7 +157,7 @@ export default function PublicExaminusChat() {
             title: "💡 Gostando do Examinus?",
             description: `Você tem ${data.remainingMessages} mensagens restantes. Crie uma conta gratuita para uso ilimitado!`,
             action: (
-              <Button size="sm" onClick={() => navigate("/pricing")} className="ml-2">
+              <Button size="sm" onClick={() => setShowComingSoonDialog(true)} className="ml-2">
                 Criar Conta
               </Button>
             ),
@@ -454,7 +462,7 @@ export default function PublicExaminusChat() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate("/pricing")}
+                onClick={() => setShowComingSoonDialog(true)}
                 className="text-primary hover:text-primary hover:bg-primary/10 h-7 md:h-8 text-[11px] md:text-xs font-semibold group px-2 md:px-3"
               >
                 Uso ilimitado
@@ -464,6 +472,42 @@ export default function PublicExaminusChat() {
           )}
         </div>
       </Card>
+
+      {/* Coming Soon Dialog */}
+      <Dialog open={showComingSoonDialog} onOpenChange={setShowComingSoonDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+              Assinatura em Breve! 🚀
+            </DialogTitle>
+            <DialogDescription className="text-base pt-4 space-y-4">
+              <p className="text-foreground/90">
+                A assinatura da plataforma MedStation AI estará disponível em breve!
+              </p>
+              <p className="text-foreground/90">
+                Seja um dos primeiros a ter acesso exclusivo falando diretamente com{" "}
+                <span className="font-semibold text-primary">Artur Batista</span>, 
+                médico desenvolvedor da plataforma.
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 mt-4">
+            <Button
+              onClick={() => window.open("https://w.app/medstationai", "_blank")}
+              className="w-full h-12 text-base font-semibold"
+            >
+              💬 Falar com Artur no WhatsApp
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowComingSoonDialog(false)}
+              className="w-full"
+            >
+              Fechar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
