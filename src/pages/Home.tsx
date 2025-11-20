@@ -30,8 +30,8 @@ export default function Home() {
             <button onClick={() => scrollToSection('demo')} className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
               Demo
             </button>
-            <button onClick={() => scrollToSection('agentes')} className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
-              Assistentes
+            <button onClick={() => scrollToSection('plataforma')} className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
+              Plataforma
             </button>
             <button onClick={() => scrollToSection('planos')} className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
               Planos
@@ -48,55 +48,64 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="py-24 px-6 relative overflow-hidden">
+      {/* Seção 1: Examinus por MedStation AI */}
+      <section id="demo" className="py-24 px-6 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-30"></div>
         <div className="container mx-auto grid lg:grid-cols-[1.1fr_0.9fr] gap-16 items-center relative">
           <div className="space-y-8 animate-in fade-in slide-in-from-left duration-700">
             <Badge variant="secondary" className="backdrop-blur-sm">
-              <Sparkles className="w-3 h-3 mr-1.5" />
-              Plataforma de IA Médica
+              <TestTube2 className="w-3 h-3 mr-1.5" />
+              Examinus por MedStation AI
             </Badge>
             <div className="space-y-4">
               <h1 className="text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] tracking-tight">
                 <span className="bg-gradient-to-br from-foreground via-foreground/90 to-muted-foreground bg-clip-text text-transparent">
-                  Produza mais.
+                  Cole os resultados dos exames
                 </span>
                 <br />
                 <span className="bg-gradient-primary bg-clip-text text-transparent">
-                  Digite menos.
+                  e veja a mágica acontecer
                 </span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-                IA médica com assistentes especializados para interpretar exames, estruturar anamneses, calcular scores e automatizar documentação.{" "}
-                <span className="text-foreground font-medium">Examinus grátis para sempre.</span>
+                Extraio só o que importa, formato em padrão limpo e padronizado, pronto para você copiar e documentar, Doc!
               </p>
             </div>
+            
+            {/* Value Props */}
+            <div className="space-y-3">
+              {[
+                "Extraio só o que importa",
+                "Formato em padrão limpo",
+                "Pronto para documentar"
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="w-5 h-5 rounded-full bg-gradient-primary flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-primary-foreground"></div>
+                  </div>
+                  <span className="text-sm font-medium">{item}</span>
+                </div>
+              ))}
+            </div>
+
             <div className="flex gap-3 flex-wrap">
               <Button 
                 size="lg"
-                className="shadow-medical hover:shadow-elevated transition-all hover:scale-105"
-                onClick={() => scrollToSection('demo')}
-              >
-                Testar agora
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-              <Button 
-                size="lg"
                 variant="outline"
-                onClick={() => scrollToSection('cadastro')}
+                onClick={() => scrollToSection('plataforma')}
               >
-                Criar conta gratuita
+                Ver plataforma completa
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
             <p className="text-xs text-muted-foreground flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-              Sem cartão • Sem login • Comece em 30 segundos
+              Teste grátis • Sem cadastro • Sem cartão
             </p>
           </div>
 
           {/* Demo Card */}
-          <div id="demo" className="relative animate-in fade-in slide-in-from-right duration-700">
+          <div className="relative animate-in fade-in slide-in-from-right duration-700">
             <div className="absolute -inset-1 bg-gradient-primary rounded-3xl blur-2xl opacity-20"></div>
             <div className="relative">
               <PublicExaminusChat />
@@ -105,50 +114,47 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Experiência sem login */}
-      <section className="py-20 px-6 border-y border-border/50">
-        <div className="container mx-auto max-w-5xl">
-          <div className="text-center mb-12 space-y-3">
-            <h2 className="text-3xl lg:text-4xl font-bold tracking-tight">
-              Experiência sem atrito
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Teste primeiro, decida depois. O fluxo mais rápido do mercado.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { step: "1", title: "Cole o exame", desc: "Sem cadastro, sem senha" },
-              { step: "2", title: "Veja a análise", desc: "Estruturada para prontuário" },
-              { step: "3", title: "Crie conta", desc: "2 minutos para ilimitado" },
-              { step: "4", title: "Assine Pro", desc: "R$ 9,90 · Todos assistentes" }
-            ].map((item, idx) => (
-              <Card key={idx} className={`p-5 transition-all hover:shadow-medical hover:-translate-y-1 ${idx === 3 ? 'border-primary/30 bg-primary/5' : ''}`}>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${idx === 3 ? 'bg-gradient-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                    {item.step}
-                  </div>
-                  <h3 className="font-semibold text-sm">{item.title}</h3>
-                </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
-              </Card>
-            ))}
-          </div>
+      {/* Divider com mensagem */}
+      <section className="py-12 px-6 border-y border-border/50 bg-muted/30">
+        <div className="container mx-auto text-center">
+          <p className="text-sm text-muted-foreground">
+            Experimente um exemplo rápido acima ou cole qualquer resultado de exame.{" "}
+            <span className="text-foreground font-medium">Literalmente qualquer um. Eu dou conta! 😎</span>
+          </p>
         </div>
       </section>
 
-      {/* Assistentes */}
-      <section id="agentes" className="py-24 px-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-primary/5 via-transparent to-transparent"></div>
-        <div className="max-w-7xl mx-auto relative">
-          <div className="text-center mb-16 space-y-3">
+      {/* Seção 2: Plataforma Completa MedStation AI */}
+      <section id="plataforma" className="py-24 px-6 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent"></div>
+        <div className="container mx-auto relative">
+          <div className="text-center mb-16 space-y-6 max-w-3xl mx-auto animate-in fade-in duration-700">
+            <Badge variant="secondary" className="backdrop-blur-sm">
+              <Sparkles className="w-3 h-3 mr-1.5" />
+              Plataforma Completa de IA Médica
+            </Badge>
+            <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold leading-[1.1] tracking-tight">
+              <span className="bg-gradient-to-br from-foreground via-foreground/90 to-muted-foreground bg-clip-text text-transparent">
+                Produza mais.
+              </span>
+              <br />
+              <span className="bg-gradient-primary bg-clip-text text-transparent">
+                Digite menos.
+              </span>
+            </h2>
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              IA médica com assistentes especializados para interpretar exames, estruturar anamneses, calcular scores de risco e automatizar documentações médicas.
+            </p>
+          </div>
+
+          {/* Assistentes */}
+          <div id="agentes" className="text-center mb-12 space-y-3">
             <div className="inline-block px-4 py-1.5 bg-primary/10 rounded-full mb-4">
               <span className="text-sm font-medium text-primary">Especialistas IA</span>
             </div>
-            <h2 className="text-3xl lg:text-4xl font-bold tracking-tight">
+            <h3 className="text-2xl lg:text-3xl font-bold tracking-tight">
               6 assistentes especializados
-            </h2>
+            </h3>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Cada assistente domina sua especialidade. Juntos, formam o ecossistema completo.
             </p>
