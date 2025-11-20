@@ -15,7 +15,7 @@ export default function Codexus() {
         agentColor="text-primary"
         agentType="codexus"
         caseId={caseId}
-        placeholder="Busque diagnósticos, códigos CID-10 ou códigos LOINC..."
+        placeholder="Codificação CID-10 e TISS automatizada e precisa..."
         actionButtons={[
           {
             label: "Buscar CID-10",

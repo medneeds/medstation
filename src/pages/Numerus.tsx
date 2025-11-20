@@ -15,7 +15,7 @@ export default function Numerus() {
         agentColor="text-accent"
         agentType="numerus"
         caseId={caseId}
-        placeholder="Solicite cálculos clínicos, conversões de unidades ou fórmulas..."
+        placeholder="Calculadoras médicas e conversores de unidades para seu dia a dia..."
         actionButtons={[
           {
             label: "Converter Unidades",

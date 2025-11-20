@@ -15,7 +15,7 @@ export default function Clinicus() {
           agentColor="text-primary"
           agentType="clinicus"
           caseId={caseId}
-          placeholder="Descreva o caso clínico, solicite relatórios ou faça perguntas..."
+          placeholder="Estruture anamneses e histórias clínicas de forma clara e organizada..."
           actionButtons={[
             {
               label: "Novo Relatório",
