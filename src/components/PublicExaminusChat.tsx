@@ -195,68 +195,43 @@ export default function PublicExaminusChat() {
   };
 
   const hasMessages = messages.length > 0;
-  const messagesHeight = hasMessages ? Math.min(500, Math.max(200, messages.length * 80)) : 0;
+  const messagesHeight = hasMessages ? Math.min(450, Math.max(200, messages.length * 80)) : 0;
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4">
-      {/* Hero Section */}
-      {!hasMessages && (
-        <div className="text-center space-y-6 mb-12 animate-in fade-in duration-700 slide-in-from-bottom-4">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Examinus por MedStation AI</span>
-          </div>
-          
-          <div className="space-y-4">
-            <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
-              Produza Mais.{" "}
-              <span className="bg-gradient-primary bg-clip-text text-transparent">
-                Digite Menos.
-              </span>
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Cole os resultados dos exames aqui e veja a mágica acontecer
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground pt-4">
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-              <span>Extraio só o que importa</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-              <span>Formato em padrão limpo</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-              <span>Pronto para documentar</span>
-            </div>
-          </div>
+    <div className="w-full max-w-4xl mx-auto px-4">
+      {/* Hero compacto sempre visível */}
+      <div className="text-center space-y-3 mb-8 animate-in fade-in duration-500">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+          <Sparkles className="w-3.5 h-3.5 text-primary" />
+          <span className="text-xs font-medium text-primary">Examinus</span>
         </div>
-      )}
+        
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+          Produza Mais.{" "}
+          <span className="bg-gradient-primary bg-clip-text text-transparent">
+            Digite Menos.
+          </span>
+        </h1>
+        <p className="text-sm text-muted-foreground max-w-xl mx-auto">
+          Extraio só o que importa • Formato em padrão limpo • Pronto para documentar
+        </p>
+      </div>
 
-      {/* Chat Card */}
-      <Card className={`shadow-elevated border-border/50 backdrop-blur-xl bg-card/95 transition-all duration-500 ${hasMessages ? 'hover:shadow-medical' : ''}`}>
-        {/* Compact Header (only shown when there are messages) */}
-        {hasMessages && (
-          <div className="bg-gradient-primary p-4 rounded-t-2xl relative overflow-hidden">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA0MCAwIEwgMCAwIDAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-20"></div>
-            <div className="relative flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-primary-foreground" />
-                <span className="font-semibold text-primary-foreground">Examinus</span>
-              </div>
-              {remainingMessages !== null && (
-                <Badge variant="secondary" className="text-xs bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30">
-                  {remainingMessages} restantes
-                </Badge>
-              )}
+      {/* Chat Card unificado */}
+      <Card className="shadow-elevated border-border/50 backdrop-blur-xl bg-card/95 transition-all duration-300 hover:shadow-medical">
+        {/* Header compacto com contador */}
+        {remainingMessages !== null && messages.length > 0 && (
+          <div className="px-5 pt-3 pb-2 border-b border-border/30">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Conversando com Examinus</span>
+              <Badge variant="secondary" className="text-xs bg-primary/10 text-primary border-primary/30">
+                {remainingMessages} restantes
+              </Badge>
             </div>
           </div>
         )}
 
-        {/* Messages Area */}
+        {/* Messages Area - só aparece quando há mensagens */}
         {hasMessages && (
           <ScrollArea 
             className="p-5 transition-all duration-300 bg-gradient-to-b from-muted/20 to-transparent" 
@@ -384,7 +359,7 @@ export default function PublicExaminusChat() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={hasMessages ? "Cole mais exames aqui..." : "Cole resultados de exames - hemograma, bioquímica, imagens, PDFs... Literalmente qualquer um! 😎"}
+              placeholder="Cole resultados de exames - hemograma, bioquímica, imagens, PDFs... 😎"
               className="min-h-[70px] max-h-[180px] resize-none text-sm bg-background border-border placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20 transition-all"
               disabled={isLoading}
             />
@@ -402,24 +377,22 @@ export default function PublicExaminusChat() {
             </Button>
           </div>
           
-          {/* CTA Footer */}
-          {!hasMessages && (
-            <div className="mt-4 flex items-center justify-between text-xs flex-wrap gap-3 bg-primary/5 border border-primary/20 rounded-xl px-4 py-3">
-              <p className="text-muted-foreground flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-                Teste grátis • Sem cadastro • Sem cartão
-              </p>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/pricing")}
-                className="text-primary hover:text-primary hover:bg-primary/10 h-8 text-xs font-semibold group"
-              >
-                Uso ilimitado
-                <ArrowRight className="ml-1.5 h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
-              </Button>
-            </div>
-          )}
+          {/* CTA Footer sempre visível */}
+          <div className="mt-4 flex items-center justify-between text-xs flex-wrap gap-3 bg-primary/5 border border-primary/20 rounded-xl px-4 py-2.5">
+            <p className="text-muted-foreground flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+              Teste grátis • Sem cadastro
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/pricing")}
+              className="text-primary hover:text-primary hover:bg-primary/10 h-7 text-xs font-semibold group"
+            >
+              Criar conta grátis
+              <ArrowRight className="ml-1.5 h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+            </Button>
+          </div>
         </div>
       </Card>
     </div>
