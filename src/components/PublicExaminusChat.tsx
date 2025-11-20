@@ -199,14 +199,17 @@ export default function PublicExaminusChat() {
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4">
-      {/* Hero Section */}
+      {/* Title - Always visible */}
+      <div className="text-center mb-8 animate-in fade-in duration-700">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
+          <Sparkles className="w-4 h-4 text-primary" />
+          <span className="text-sm font-medium text-primary">Examinus por MedStation AI</span>
+        </div>
+      </div>
+
+      {/* Hero Section - Only when no messages */}
       {!hasMessages && (
         <div className="text-center space-y-6 mb-12 animate-in fade-in duration-700 slide-in-from-bottom-4">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Examinus por MedStation AI</span>
-          </div>
-          
           <div className="space-y-4">
             <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
               Produza Mais.{" "}
