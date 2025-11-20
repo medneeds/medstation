@@ -391,22 +391,23 @@ export default function Auth() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="signup-crm">CRM</Label>
+                    <Label htmlFor="signup-crm" className="text-sm font-medium">CRM</Label>
                     <Input
                       id="signup-crm"
                       type="text"
                       placeholder="123456"
                       value={crm}
                       onChange={(e) => setCrm(e.target.value)}
+                      className="h-11 transition-all duration-300 focus:ring-2 focus:ring-primary/20 hover:border-primary/50"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-crm-state">UF do CRM</Label>
+                    <Label htmlFor="signup-crm-state" className="text-sm font-medium">UF do CRM</Label>
                     <Select value={crmState} onValueChange={setCrmState}>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-11">
                         <SelectValue placeholder="Estado" />
                       </SelectTrigger>
                       <SelectContent className="max-h-[200px] overflow-y-auto">
@@ -421,9 +422,9 @@ export default function Auth() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signup-specialty">Especialidade</Label>
+                    <Label htmlFor="signup-specialty" className="text-sm font-medium">Especialidade</Label>
                     <Select value={specialty} onValueChange={setSpecialty}>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-11">
                         <SelectValue placeholder="Selecione" />
                       </SelectTrigger>
                       <SelectContent className="max-h-[200px] overflow-y-auto">
@@ -439,49 +440,59 @@ export default function Auth() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email *</Label>
+                  <Label htmlFor="signup-email" className="text-sm font-medium">Email *</Label>
                   <Input
                     id="signup-email"
                     type="email"
                     placeholder="seu@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    className="h-11 transition-all duration-300 focus:ring-2 focus:ring-primary/20 hover:border-primary/50"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Senha *</Label>
+                  <Label htmlFor="signup-password" className="text-sm font-medium">Senha *</Label>
                   <Input
                     id="signup-password"
                     type="password"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    className="h-11 transition-all duration-300 focus:ring-2 focus:ring-primary/20 hover:border-primary/50"
                     required
                     minLength={8}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Mínimo 8 caracteres, com maiúscula, minúscula e número
+                    Mínimo 8 caracteres
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-confirm-password">Confirmar Senha *</Label>
+                  <Label htmlFor="signup-confirm-password" className="text-sm font-medium">Confirmar Senha *</Label>
                   <Input
                     id="signup-confirm-password"
                     type="password"
                     placeholder="••••••••"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="h-11 transition-all duration-300 focus:ring-2 focus:ring-primary/20 hover:border-primary/50"
                     required
                     minLength={8}
                   />
                   {confirmPassword && password !== confirmPassword && (
-                    <p className="text-xs text-destructive">
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
                       As senhas não coincidem
                     </p>
                   )}
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button 
+                  type="submit" 
+                  className="w-full h-11 shadow-md hover:shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]" 
+                  disabled={loading}
+                >
                   {loading ? "Cadastrando..." : "Cadastrar"}
                 </Button>
                 <p className="text-xs text-muted-foreground text-center">
