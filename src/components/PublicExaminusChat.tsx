@@ -199,17 +199,14 @@ export default function PublicExaminusChat() {
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4">
-      {/* Title - Always visible */}
-      <div className="text-center mb-8 animate-in fade-in duration-700">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-          <Sparkles className="w-4 h-4 text-primary" />
-          <span className="text-sm font-medium text-primary">Examinus por MedStation AI</span>
-        </div>
-      </div>
-
-      {/* Hero Section - Only when no messages */}
+      {/* Hero Section */}
       {!hasMessages && (
         <div className="text-center space-y-6 mb-12 animate-in fade-in duration-700 slide-in-from-bottom-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
+            <Sparkles className="w-4 h-4 text-primary" />
+            <span className="text-sm font-medium text-primary">Examinus por MedStation AI</span>
+          </div>
+          
           <div className="space-y-4">
             <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
               Produza Mais.{" "}
@@ -236,63 +233,6 @@ export default function PublicExaminusChat() {
               <span>Pronto para documentar</span>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Platform Section - Only when no messages */}
-      {!hasMessages && (
-        <div className="text-center space-y-8 mb-12 animate-in fade-in duration-700 delay-150">
-          <div className="space-y-4 max-w-3xl mx-auto">
-            <div className="space-y-2">
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-                Plataforma de IA Médica
-              </h2>
-              <p className="text-2xl md:text-3xl font-bold tracking-tight">
-                Produza mais.{" "}
-                <span className="bg-gradient-primary bg-clip-text text-transparent">
-                  Digite menos.
-                </span>
-              </p>
-            </div>
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              IA médica com assistentes especializados para interpretar exames, estruturar anamneses, calcular scores e automatizar documentação. Examinus grátis para sempre.
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button
-              size="lg"
-              onClick={handleSend}
-              disabled={isLoading}
-              className="shadow-medical hover:shadow-elevated hover:scale-105 transition-all h-12 px-8 text-base"
-            >
-              <Sparkles className="w-5 h-5 mr-2" />
-              Testar agora
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => navigate("/pricing")}
-              className="h-12 px-8 text-base hover:bg-primary/5 hover:border-primary/50 transition-all"
-            >
-              Criar conta gratuita
-            </Button>
-          </div>
-
-          <p className="text-sm text-muted-foreground flex items-center justify-center gap-3 flex-wrap">
-            <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-              Sem cartão
-            </span>
-            <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-              Sem login
-            </span>
-            <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-              Comece em 30 segundos
-            </span>
-          </p>
         </div>
       )}
 
