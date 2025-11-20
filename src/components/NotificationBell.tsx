@@ -197,13 +197,17 @@ export default function NotificationBell() {
 
     if (notification.reference_type && notification.reference_id) {
       setOpen(false);
-      // Navigation removed - management modules hidden
-      // switch (notification.reference_type) {
-      //   case "prescription":
-      //   case "exam_request":
-      //   case "case":
-      //     break;
-      // }
+      switch (notification.reference_type) {
+        case "prescription":
+          navigate(`/prescricoes/${notification.reference_id}`);
+          break;
+        case "exam_request":
+          navigate(`/exames/${notification.reference_id}`);
+          break;
+        case "case":
+          navigate(`/cases/${notification.reference_id}`);
+          break;
+      }
     }
   };
 
