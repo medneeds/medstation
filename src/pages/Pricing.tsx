@@ -162,53 +162,14 @@ export default function Pricing() {
             </div>
 
             {/* Pricing display with "Em breve" overlay */}
-            <div className="flex flex-col items-center gap-2 my-6 relative">
-              {/* Tarja "Em breve" */}
-              <div className="absolute inset-0 z-20 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-2 my-6 relative min-h-[120px]">
+              {/* Tarja "Em breve" - totalmente opaca cobrindo tudo */}
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/80 backdrop-blur-xl rounded-2xl">
                 <div className="bg-primary backdrop-blur-md px-8 py-4 rounded-xl border-2 border-primary-foreground/30 shadow-2xl rotate-[-3deg] transform hover:rotate-0 transition-transform duration-300">
                   <span className="text-3xl md:text-4xl font-black text-primary-foreground tracking-wide">
                     EM BREVE
                   </span>
                 </div>
-              </div>
-              
-              {/* Preços com blur e opacidade */}
-              <div className="blur-xl opacity-20 pointer-events-none select-none">
-                {billingPeriod === "monthly" ? (
-                  <>
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl text-muted-foreground line-through decoration-2">R$ 59,90</span>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-5xl md:text-6xl font-black bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">R$ 19,90</span>
-                        <span className="text-2xl text-muted-foreground font-medium">/mês</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg border border-border/50 mt-2">
-                      <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
-                      <span className="text-sm text-muted-foreground">
-                        Ou <span className="font-bold text-foreground">R$ 199,90/ano</span> • Economize R$ 38,90
-                      </span>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl text-muted-foreground line-through decoration-2">R$ 238,80</span>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-5xl md:text-6xl font-black bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">R$ 199,90</span>
-                        <span className="text-2xl text-muted-foreground font-medium">/ano</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 px-4 py-2 bg-green-500/10 rounded-lg border border-green-500/30 mt-2">
-                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span className="text-sm font-semibold text-green-600 dark:text-green-400">
-                        Economize R$ 38,90 por ano • Apenas R$ 16,66/mês
-                      </span>
-                    </div>
-                  </>
-                )}
               </div>
             </div>
             
