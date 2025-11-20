@@ -18,7 +18,7 @@ export default function PublicExaminusChat() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Olá! Sou o Examinus, seu assistente especializado em extrair e formatar exames médicos de forma padronizada.\n\nFunciona assim:\n• Cole aqui os resultados de exames laboratoriais ou de imagem\n• Clique em um exemplo rápido abaixo para testar\n• Receba tudo formatado em segundos, pronto para documentação\n\nZero digitação. Máxima produtividade. Vamos começar?"
+      content: "Olá! Sou o Examinus, seu assistente para extrair e formatar exames médicos.\n\nPode colar seus resultados aqui do jeito que vier - foto borrada, PDF escaneado, texto bagunçado, tudo misturado. Eu organizo!\n\n✨ O que eu faço:\n• Extraio só o que importa (valores, achados, datas)\n• Formato em padrão limpo e padronizado\n• Pronto para você copiar e documentar\n\nExperimente um exemplo rápido abaixo ou cole qualquer resultado de exame. Literalmente qualquer um. Eu dou conta! 😎"
     }
   ]);
   const [input, setInput] = useState("");
