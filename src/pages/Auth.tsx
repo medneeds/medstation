@@ -466,7 +466,7 @@ export default function Auth() {
                         <SelectValue placeholder="Selecione" />
                       </SelectTrigger>
                       <SelectContent className="max-h-[200px] overflow-y-auto">
-                        {["Clínica Geral", "Cardiologia", "Dermatologia", "Endocrinologia", "Gastroenterologia",
+                        {["Médico generalista", "Clínica Geral", "Cardiologia", "Dermatologia", "Endocrinologia", "Gastroenterologia",
                           "Geriatria", "Ginecologia", "Neurologia", "Pediatria", "Psiquiatria", "Outra"].map((spec) => (
                           <SelectItem key={spec} value={spec}>
                             {spec}
