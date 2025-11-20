@@ -229,7 +229,7 @@ export default function Home() {
             </div>
             
             <p className="text-sm font-medium text-muted-foreground pt-4">
-              Ecossistema completo • R$ 19,90/mês
+              Ecossistema completo • <span className="line-through opacity-60">R$ 59,90</span> <span className="font-bold text-primary">R$ 19,90/mês</span>
             </p>
             
             <Button 
@@ -292,22 +292,53 @@ export default function Home() {
             </Card>
 
             {/* Plano Pro */}
-            <Card className="p-8 text-left border-primary/30 bg-gradient-to-br from-primary/5 to-secondary/5 relative overflow-hidden shadow-medical">
-              <div className="absolute top-4 right-4">
-                <Badge className="bg-gradient-primary text-primary-foreground border-0">Popular</Badge>
+            <Card className="p-8 text-left border-2 border-primary relative overflow-hidden shadow-[0_20px_70px_-15px_rgba(168,85,247,0.4)] animate-in fade-in duration-700 hover:shadow-[0_25px_80px_-15px_rgba(168,85,247,0.5)] transition-all">
+              {/* Animated gradient background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-purple-500/5 to-pink-500/10 animate-pulse"></div>
+              
+              {/* Popular badge with glow */}
+              <div className="absolute -top-1 -right-1">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-primary blur-lg opacity-70 animate-pulse"></div>
+                  <Badge className="relative bg-gradient-primary text-primary-foreground border-0 px-4 py-1.5 text-xs font-bold shadow-lg">
+                    🔥 POPULAR
+                  </Badge>
+                </div>
               </div>
-              <div className="space-y-4">
+
+              <div className="space-y-5 relative">
                 <div>
-                  <h3 className="text-xl font-semibold mb-1">Pro</h3>
+                  <h3 className="text-2xl font-bold mb-1 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">Pro</h3>
                   <p className="text-sm text-muted-foreground">Ecossistema completo • 6 assistentes IA</p>
                 </div>
-                <div className="space-y-2">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold">R$ 19,90</span>
-                    <span className="text-muted-foreground">/mês</span>
+                
+                {/* Pricing with discount highlight */}
+                <div className="space-y-3">
+                  {/* Discount badge */}
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-full">
+                    <span className="text-xs font-bold text-green-600 dark:text-green-400">67% DE DESCONTO</span>
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    Ou <span className="font-semibold text-foreground">R$ 199,90/ano</span> (16% de desconto)
+                  
+                  <div className="flex items-end gap-3">
+                    <div className="flex flex-col">
+                      {/* Old price crossed out */}
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-lg text-muted-foreground line-through decoration-2">De R$ 59,90</span>
+                      </div>
+                      {/* New price highlighted */}
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-5xl font-black bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">R$ 19,90</span>
+                        <span className="text-xl text-muted-foreground font-medium">/mês</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Annual option */}
+                  <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border border-border/50">
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                    <span className="text-xs text-muted-foreground">
+                      Ou <span className="font-bold text-foreground">R$ 199,90/ano</span> • Economize R$ 38,90
+                    </span>
                   </div>
                 </div>
                 <ul className="space-y-2.5 text-sm">
@@ -369,7 +400,7 @@ export default function Home() {
           </div>
           <p className="text-xs text-muted-foreground flex items-center justify-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-            Examinus grátis para sempre • Pro R$ 19,90/mês
+            Examinus grátis para sempre • Pro <span className="line-through opacity-60">R$ 59,90</span> <span className="font-semibold text-primary">R$ 19,90/mês</span>
           </p>
         </div>
       </section>

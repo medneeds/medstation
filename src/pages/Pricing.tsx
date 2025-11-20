@@ -109,17 +109,41 @@ export default function Pricing() {
         </div>
 
         {/* Pro Plan Card */}
-        <Card className="max-w-4xl mx-auto p-6 md:p-12 border-2 border-primary/20 shadow-2xl">
-          <div className="text-center mb-6 md:mb-8">
-            <Badge className="mb-3 bg-primary/10 text-primary">
+        <Card className="max-w-4xl mx-auto p-6 md:p-12 border-2 border-primary relative overflow-hidden shadow-[0_20px_70px_-15px_rgba(168,85,247,0.4)]">
+          {/* Animated gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-purple-500/5 to-pink-500/10 opacity-50"></div>
+          
+          <div className="text-center mb-6 md:mb-8 relative">
+            {/* Discount badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-full mb-4">
+              <span className="text-sm font-bold text-green-600 dark:text-green-400">🎉 67% DE DESCONTO</span>
+            </div>
+            
+            <Badge className="mb-3 bg-gradient-primary text-primary-foreground border-0 shadow-lg">
               Plano Pro
             </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-2">MedStation AI Pro</h2>
-            <div className="flex items-baseline justify-center gap-2 my-4">
-              <span className="text-4xl md:text-5xl font-bold">R$ 49</span>
-              <span className="text-xl md:text-2xl text-muted-foreground">/mês</span>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+              MedStation AI Pro
+            </h2>
+            
+            {/* Pricing display */}
+            <div className="flex flex-col items-center gap-2 my-6">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl text-muted-foreground line-through decoration-2">R$ 59,90</span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl md:text-6xl font-black bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">R$ 19,90</span>
+                  <span className="text-2xl text-muted-foreground font-medium">/mês</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg border border-border/50 mt-2">
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                <span className="text-sm text-muted-foreground">
+                  Ou <span className="font-bold text-foreground">R$ 199,90/ano</span> • Economize R$ 38,90
+                </span>
+              </div>
             </div>
-            <p className="text-muted-foreground">
+            
+            <p className="text-muted-foreground text-lg">
               Acesso completo a todos os assistentes e recursos premium
             </p>
           </div>

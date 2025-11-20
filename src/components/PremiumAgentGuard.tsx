@@ -63,7 +63,13 @@ export function PremiumAgentGuard({ children, agentName }: PremiumAgentGuardProp
             
             <div className="text-center">
               <div className="mb-4">
-                <span className="text-3xl font-bold">R$ 49</span>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-full mb-3">
+                  <span className="text-xs font-bold text-green-600 dark:text-green-400">67% OFF</span>
+                </div>
+                <div className="flex items-center justify-center gap-3 mb-2">
+                  <span className="text-lg text-muted-foreground line-through">R$ 59,90</span>
+                  <span className="text-4xl font-black bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">R$ 19,90</span>
+                </div>
                 <span className="text-muted-foreground">/mês</span>
               </div>
               <Button size="lg" className="w-full mb-3" onClick={() => navigate("/pricing")}>
