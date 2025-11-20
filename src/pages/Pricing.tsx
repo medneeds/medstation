@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -9,6 +10,8 @@ import { useNavigate } from "react-router-dom";
 
 export default function Pricing() {
   const [loading, setLoading] = useState(false);
+  const [showCoupon, setShowCoupon] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -27,7 +30,9 @@ export default function Pricing() {
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke("create-checkout");
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { couponCode: couponCode.trim() || undefined }
+      });
       
       if (error) throw error;
       
@@ -186,9 +191,42 @@ export default function Pricing() {
             </div>
           </div>
 
+          {/* Coupon Section */}
+          <div className="mt-6 space-y-3">
+            {!showCoupon ? (
+              <button
+                type="button"
+                onClick={() => setShowCoupon(true)}
+                className="text-sm text-primary hover:underline font-medium"
+              >
+                Tem um cupom de desconto?
+              </button>
+            ) : (
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  placeholder="Digite o código do cupom"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                  className="flex-1"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setShowCoupon(false);
+                    setCouponCode("");
+                  }}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            )}
+          </div>
+
           <Button
             size="lg"
-            className="w-full mt-8 h-14 text-lg"
+            className="w-full mt-6 h-14 text-lg"
             onClick={handleSubscribe}
             disabled={loading}
           >

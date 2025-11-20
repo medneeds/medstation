@@ -33,6 +33,11 @@ serve(async (req) => {
     
     logStep("User authenticated", { userId: user.id, email: user.email });
 
+    // Get coupon code from request body if provided
+    const body = await req.json().catch(() => ({}));
+    const couponCode = body.couponCode?.trim();
+    logStep("Coupon code provided", { couponCode: couponCode || "none" });
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
       apiVersion: "2025-08-27.basil" 
     });
@@ -46,7 +51,7 @@ serve(async (req) => {
       logStep("No customer found, will create one in checkout");
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionConfig: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
@@ -58,7 +63,15 @@ serve(async (req) => {
       mode: "subscription",
       success_url: `${req.headers.get("origin")}/dashboard?success=true`,
       cancel_url: `${req.headers.get("origin")}/pricing?canceled=true`,
-    });
+    };
+
+    // Add coupon if provided
+    if (couponCode) {
+      sessionConfig.discounts = [{ coupon: couponCode }];
+      logStep("Applying coupon to checkout", { coupon: couponCode });
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
     logStep("Checkout session created", { sessionId: session.id });
 
