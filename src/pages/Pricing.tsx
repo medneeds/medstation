@@ -121,9 +121,9 @@ export default function Pricing() {
         {/* Pro Plan Card */}
         <Card className="max-w-4xl mx-auto p-6 md:p-12 border-2 border-primary relative overflow-hidden shadow-[0_20px_70px_-15px_rgba(168,85,247,0.4)]">
           {/* Animated gradient background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-purple-500/5 to-pink-500/10 opacity-50"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-purple-500/5 to-pink-500/10 opacity-50 pointer-events-none"></div>
           
-          <div className="text-center mb-6 md:mb-8 relative">
+          <div className="text-center mb-6 md:mb-8 relative z-10">
             {/* Discount badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-full mb-4">
               <span className="text-sm font-bold text-green-600 dark:text-green-400">🎉 67% DE DESCONTO</span>
@@ -158,7 +158,7 @@ export default function Pricing() {
             </p>
           </div>
           {/* Lista dos 6 assistentes */}
-          <div className="relative mb-8">
+          <div className="relative mb-8 z-10">
             <h3 className="font-semibold text-lg mb-4 text-center">6 Assistentes Especializados:</h3>
             <div className="grid md:grid-cols-2 gap-3">
               {proAgents.map((agent, index) => (
@@ -173,7 +173,7 @@ export default function Pricing() {
           </div>
 
           {/* Garantia de 7 dias - Destaque */}
-          <div className="mt-8 p-6 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-2 border-green-500/30 rounded-2xl relative overflow-hidden">
+          <div className="mt-8 p-6 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-2 border-green-500/30 rounded-2xl relative overflow-hidden z-10">
             <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-full blur-3xl"></div>
             <div className="relative flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
               <div className="flex-shrink-0 w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center">
@@ -192,7 +192,7 @@ export default function Pricing() {
           </div>
 
           {/* Coupon Section */}
-          <div className="mt-6 space-y-3">
+          <div className="mt-6 space-y-3 relative z-10">
             {!showCoupon ? (
               <button
                 type="button"
@@ -226,14 +226,14 @@ export default function Pricing() {
 
           <Button
             size="lg"
-            className="w-full mt-6 h-14 text-lg"
+            className="w-full mt-6 h-14 text-lg relative z-10"
             onClick={handleSubscribe}
             disabled={loading}
           >
             {loading ? "Processando..." : "Começar agora - Sem riscos"}
           </Button>
 
-          <div className="text-center mt-6 space-y-2">
+          <div className="text-center mt-6 space-y-2 relative z-10">
             <p className="text-sm font-medium text-green-600 dark:text-green-400 flex items-center justify-center gap-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
