@@ -203,16 +203,16 @@ export default function Dashboard() {
         <p className="text-sm md:text-base text-white/90 mb-4">
           Assistente clínico inteligente para otimizar seu fluxo de trabalho médico
         </p>
-        <Button variant="secondary" size="sm" className="md:size-lg" asChild>
+        {/* <Button variant="secondary" size="sm" className="md:size-lg" asChild>
           <Link to="/patients">
             <Users className="mr-2 h-4 w-4" />
             Ver Pacientes
           </Link>
-        </Button>
+        </Button> */}
       </div>
 
-      {/* Prática Médica Section */}
-      <div>
+      {/* Prática Médica Section - HIDDEN */}
+      {/* <div>
         <div className="flex items-center gap-2 mb-4">
           <Stethoscope className="h-5 w-5 md:h-6 md:w-6 text-primary" />
           <h2 className="text-xl md:text-2xl font-bold">Prática Médica</h2>
@@ -245,7 +245,7 @@ export default function Dashboard() {
             </Link>
           ))}
         </div>
-      </div>
+      </div> */}
 
       {/* AI Agents - Main Section */}
       <div>
@@ -301,8 +301,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Quick stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Quick stats - HIDDEN */}
+      {/* <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {quickStats.map((stat) => (
           <Card key={stat.label}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -317,10 +317,10 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         ))}
-      </div>
+      </div> */}
 
-      {/* Recent alerts */}
-      <Card>
+      {/* Recent alerts - HIDDEN */}
+      {/* <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-warning" />
@@ -351,7 +351,7 @@ export default function Dashboard() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   );
 }
