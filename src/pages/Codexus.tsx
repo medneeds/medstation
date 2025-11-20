@@ -1,6 +1,6 @@
 import { AgentChat } from "@/components/AgentChat";
 import { PremiumAgentGuard } from "@/components/PremiumAgentGuard";
-import { FileText, Search, Database, Copy } from "lucide-react";
+import { FileText } from "lucide-react";
 
 export default function Codexus() {
   const searchParams = new URLSearchParams(window.location.search);
@@ -10,29 +10,12 @@ export default function Codexus() {
     <PremiumAgentGuard agentName="CODexus">
       <div className="h-full -m-3 md:-m-6">
         <AgentChat
-        agentName="CODexus"
-        agentIcon={<FileText className="h-8 w-8" />}
-        agentColor="text-primary"
-        agentType="codexus"
-        caseId={caseId}
-        placeholder="Codificação CID-10 e TISS automatizada e precisa..."
-        actionButtons={[
-          {
-            label: "Buscar CID-10",
-            icon: <Search className="mr-2 h-4 w-4" />,
-            onClick: () => console.log("Buscar CID-10"),
-          },
-          {
-            label: "Buscar LOINC",
-            icon: <Database className="mr-2 h-4 w-4" />,
-            onClick: () => console.log("Buscar LOINC"),
-          },
-          {
-            label: "Copiar Códigos",
-            icon: <Copy className="mr-2 h-4 w-4" />,
-            onClick: () => console.log("Copiar códigos"),
-          },
-        ]}
+          agentName="CODexus"
+          agentIcon={<FileText className="h-8 w-8" />}
+          agentColor="text-primary"
+          agentType="codexus"
+          caseId={caseId}
+          placeholder="Codificação CID-10 e TISS automatizada e precisa..."
         />
       </div>
     </PremiumAgentGuard>
