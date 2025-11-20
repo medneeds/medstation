@@ -186,27 +186,6 @@ export default function Pricing() {
             </div>
           </div>
 
-          <div className="mt-10 pt-8 border-t relative">
-            <h3 className="font-semibold mb-4 text-center">Também incluso:</h3>
-            <div className="grid md:grid-cols-2 gap-3">
-              {[
-                "Exportação de relatórios em PDF",
-                "Busca inteligente por casos",
-                "Sistema de tags e categorização",
-                "Upload de arquivos e evidências",
-                "Transcrição de áudio",
-                "Chat com IA contextual por caso",
-                "Suporte prioritário",
-                "Atualizações automáticas",
-              ].map((item, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary flex-shrink-0" />
-                  <span className="text-sm">{item}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
           <Button
             size="lg"
             className="w-full mt-8 h-14 text-lg"
