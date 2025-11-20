@@ -71,6 +71,7 @@ NUMERAÇÃO:
 • Hemograma → 1 casa
 • Bioquímica → até 2 casas
 • Milhares → ponto (14.320)
+• SEM UNIDADES DE MEDIDA (sem mg/dL, g/dL, mEq/L etc.)
 
 EXAMES ESPECIAIS (nova linha):
 (EAS): SÓ ANORMAIS
@@ -78,7 +79,7 @@ EXAMES ESPECIAIS (nova linha):
 
 EXEMPLO COMPLETO:
 20/11 14:30: Hb 12,5 Ht 37,2 Leuco 14.320 Pqt 180.000 Cr 1,23 Ur 45 Na 138 K 4,2 Ca 9,1 PCR 58,3 TGO 32 TGP 28 TP 14,2 (RNI 1,15 / Ativ. 78%) TTPA 28,5
-(Gaso): pH 7,35 pCO₂ 38 pO₂ 92 HCO₃ 22 BE -2,1 SatO₂ 96% Lactato 1,8
+(Gaso): pH 7,35 pCO₂ 38 pO₂ 92 HCO₃ 22 BE -2,1 SatO₂ 96 Lactato 1,8
 (EAS): Leucócitos 15-20/campo, Hemácias 3-5/campo
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -114,7 +115,8 @@ INSTRUÇÕES CRÍTICAS:
 3. Se não for exame: "Envie um laudo de exame."
 4. ZERO explicações adicionais
 5. Sem interpretação clínica
-6. Formato contínuo para labs (exceto EAS/Gaso)`;
+6. Formato contínuo para labs (exceto EAS/Gaso)
+7. SEM UNIDADES DE MEDIDA em nenhum resultado`;
 
     // Se houver arquivo PDF/imagem, processa com visão
     let userMessages = messages;
