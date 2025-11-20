@@ -82,16 +82,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Divider com mensagem */}
-      <section className="py-12 px-6 border-y border-border/50 bg-muted/30">
-        <div className="container mx-auto text-center">
-          <p className="text-sm text-muted-foreground">
-            Experimente um exemplo rápido acima ou cole qualquer resultado de exame.{" "}
-            <span className="text-foreground font-medium">Literalmente qualquer um. Eu dou conta! 😎</span>
-          </p>
-        </div>
-      </section>
-
       {/* Seção 2: Plataforma Completa MedStation AI */}
       <section id="plataforma" className="py-24 px-6 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent"></div>
