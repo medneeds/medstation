@@ -18,7 +18,7 @@ export default function Prescriptus() {
         agentColor="text-destructive"
         agentType="prescriptus"
         caseId={caseId}
-        placeholder="Digite medicações, doses ou solicite prescrições estruturadas..."
+        placeholder="Prescrições estruturadas e guiadas por evidências científicas..."
         actionButtons={[
           {
             label: "Nova Prescrição Real",

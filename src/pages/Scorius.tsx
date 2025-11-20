@@ -15,7 +15,7 @@ export default function Scorius() {
         agentColor="text-warning"
         agentType="scorius"
         caseId={caseId}
-        placeholder="Solicite cálculo de scores prognósticos (APACHE, SOFA, etc)..."
+        placeholder="Calcule scores e classificações de risco de forma rápida e precisa..."
         actionButtons={[
           {
             label: "APACHE II",
