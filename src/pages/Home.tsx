@@ -307,7 +307,7 @@ export default function Home() {
                     <span className="text-muted-foreground">/mês</span>
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Ou <span className="font-semibold text-foreground">R$ 191,04/ano</span> (20% de desconto)
+                    Ou <span className="font-semibold text-foreground">R$ 199,90/ano</span> (16% de desconto)
                   </div>
                 </div>
                 <ul className="space-y-2.5 text-sm">
