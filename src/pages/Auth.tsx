@@ -298,7 +298,7 @@ export default function Auth() {
         <div className="animate-in fade-in slide-in-from-right duration-700">
           <Card className="relative overflow-hidden border-2 hover:border-primary/20 transition-all duration-300 hover:shadow-[0_20px_70px_-15px_rgba(168,85,247,0.3)] group">
             {/* Card glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
             
             <CardHeader className="text-center pb-6 relative">
               {/* Mobile logo */}
