@@ -13,6 +13,7 @@ export default function Pricing() {
   const [showCoupon, setShowCoupon] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [couponApplied, setCouponApplied] = useState(false);
+  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -50,7 +51,10 @@ export default function Pricing() {
       }
 
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { couponCode: couponCode.trim() || undefined }
+        body: { 
+          couponCode: couponCode.trim() || undefined,
+          billingPeriod 
+        }
       });
       
       if (error) throw error;
@@ -155,21 +159,72 @@ export default function Pricing() {
               MedStation AI Pro
             </h2>
             
+            {/* Billing Period Toggle */}
+            <div className="flex justify-center mb-6">
+              <div className="inline-flex items-center gap-2 p-1 bg-muted/50 rounded-lg border border-border/50">
+                <button
+                  onClick={() => setBillingPeriod("monthly")}
+                  className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
+                    billingPeriod === "monthly"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Mensal
+                </button>
+                <button
+                  onClick={() => setBillingPeriod("yearly")}
+                  className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
+                    billingPeriod === "yearly"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Anual
+                  <span className="ml-2 text-xs bg-green-500/20 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-full">
+                    -16%
+                  </span>
+                </button>
+              </div>
+            </div>
+
             {/* Pricing display */}
             <div className="flex flex-col items-center gap-2 my-6">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl text-muted-foreground line-through decoration-2">R$ 59,90</span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-5xl md:text-6xl font-black bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">R$ 19,90</span>
-                  <span className="text-2xl text-muted-foreground font-medium">/mês</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg border border-border/50 mt-2">
-                <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
-                <span className="text-sm text-muted-foreground">
-                  Ou <span className="font-bold text-foreground">R$ 199,90/ano</span> • Economize R$ 38,90
-                </span>
-              </div>
+              {billingPeriod === "monthly" ? (
+                <>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl text-muted-foreground line-through decoration-2">R$ 59,90</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-5xl md:text-6xl font-black bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">R$ 19,90</span>
+                      <span className="text-2xl text-muted-foreground font-medium">/mês</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg border border-border/50 mt-2">
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                    <span className="text-sm text-muted-foreground">
+                      Ou <span className="font-bold text-foreground">R$ 199,90/ano</span> • Economize R$ 38,90
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl text-muted-foreground line-through decoration-2">R$ 238,80</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-5xl md:text-6xl font-black bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">R$ 199,90</span>
+                      <span className="text-2xl text-muted-foreground font-medium">/ano</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 px-4 py-2 bg-green-500/10 rounded-lg border border-green-500/30 mt-2">
+                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-sm font-semibold text-green-600 dark:text-green-400">
+                      Economize R$ 38,90 por ano • Apenas R$ 16,66/mês
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
             
             <p className="text-muted-foreground text-lg">

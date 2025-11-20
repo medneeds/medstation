@@ -33,10 +33,11 @@ serve(async (req) => {
     
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Get coupon code from request body if provided
+    // Get coupon code and billing period from request body if provided
     const body = await req.json().catch(() => ({}));
     const couponCode = body.couponCode?.trim();
-    logStep("Coupon code provided", { couponCode: couponCode || "none" });
+    const billingPeriod = body.billingPeriod || "monthly";
+    logStep("Request parameters", { couponCode: couponCode || "none", billingPeriod });
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
       apiVersion: "2025-08-27.basil" 
@@ -51,12 +52,19 @@ serve(async (req) => {
       logStep("No customer found, will create one in checkout");
     }
 
+    // Determine which price to use based on billing period
+    const priceId = billingPeriod === "yearly" 
+      ? "price_1SVf3KArMslBEVDur219MGI8"  // R$ 199,90/year
+      : "price_1SVf3KArMslBEVDuydWkh06x";  // R$ 19,90/month
+    
+    logStep("Price selected", { priceId, billingPeriod });
+
     const sessionConfig: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price: "price_1SVf3KArMslBEVDuydWkh06x",
+          price: priceId,
           quantity: 1,
         },
       ],
