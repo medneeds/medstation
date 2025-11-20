@@ -16,18 +16,6 @@ export default function Clinicus() {
           agentType="clinicus"
           caseId={caseId}
           placeholder="Estruture anamneses e histórias clínicas de forma clara e organizada..."
-          actionButtons={[
-            {
-              label: "Novo Relatório",
-              icon: <Plus className="mr-2 h-4 w-4" />,
-              onClick: () => console.log("Criar relatório"),
-            },
-            {
-              label: "Exportar PDF",
-              icon: <FileDown className="mr-2 h-4 w-4" />,
-              onClick: () => console.log("Exportar PDF"),
-            },
-          ]}
         />
       </div>
     </PremiumAgentGuard>
