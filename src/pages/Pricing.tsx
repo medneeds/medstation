@@ -128,15 +128,30 @@ export default function Pricing() {
             </h2>
 
             {/* Pricing display with "Em breve" overlay */}
-            <div className="flex flex-col items-center gap-2 my-6 md:my-8 relative min-h-[140px] md:min-h-[160px]">
-              {/* Tarja "Em breve" - totalmente opaca cobrindo tudo */}
-              <div className="absolute inset-0 z-20 flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 backdrop-blur-3xl rounded-2xl border-2 border-primary/20">
+            <div className="flex flex-col items-center gap-2 my-6 md:my-8 relative">
+              {/* Preço original (coberto pela tarja) */}
+              <div className="relative z-10 text-center">
+                <div className="flex items-baseline justify-center gap-2 mb-2">
+                  <span className="text-5xl md:text-6xl lg:text-7xl font-black bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                    R$ 19,90
+                  </span>
+                </div>
+                <p className="text-sm md:text-base text-muted-foreground">
+                  /mês
+                </p>
+                <p className="text-xs md:text-sm text-muted-foreground mt-2">
+                  ou R$ 199,90/ano (16% de desconto)
+                </p>
+              </div>
+
+              {/* Tarja "Em breve" sobreposta */}
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/95 backdrop-blur-3xl rounded-2xl">
                 <div className="relative group cursor-pointer">
                   {/* Glow effect on hover */}
                   <div className="absolute inset-0 bg-primary/30 blur-2xl rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   
                   {/* Main badge */}
-                  <div className="relative bg-gradient-to-br from-primary via-purple-600 to-pink-600 backdrop-blur-md px-6 py-3 md:px-10 md:py-5 rounded-xl border-2 border-primary-foreground/20 shadow-[0_20px_60px_-15px_rgba(168,85,247,0.6)] rotate-[-2deg] group-hover:rotate-0 group-hover:scale-110 transition-all duration-500 ease-out">
+                  <div className="relative bg-gradient-to-br from-primary via-purple-600 to-pink-600 px-6 py-3 md:px-10 md:py-5 rounded-xl border-2 border-primary-foreground/20 shadow-[0_20px_60px_-15px_rgba(168,85,247,0.6)] rotate-[-2deg] group-hover:rotate-0 group-hover:scale-110 transition-all duration-500 ease-out">
                     <span className="text-2xl md:text-4xl lg:text-5xl font-black text-primary-foreground tracking-wider drop-shadow-lg">
                       Em breve!
                     </span>
