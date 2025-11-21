@@ -128,7 +128,7 @@ export default function Pricing() {
             </h2>
 
             {/* Pricing display with "Em breve" overlay */}
-            <div className="flex flex-col items-center gap-2 my-6 md:my-8 relative">
+            <div className="flex flex-col items-center gap-2 my-6 md:my-8 relative min-h-[180px] md:min-h-[200px]">
               {/* Preço original (coberto pela tarja) */}
               <div className="relative z-10 text-center">
                 <div className="flex items-baseline justify-center gap-2 mb-2">
@@ -144,17 +144,32 @@ export default function Pricing() {
                 </p>
               </div>
 
-              {/* Tarja "Em breve" sobreposta */}
-              <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/95 backdrop-blur-3xl rounded-2xl">
+              {/* Tarja "Em breve" sobreposta - ENHANCED */}
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-gradient-to-br from-background/99 via-background/98 to-background/97 backdrop-blur-3xl rounded-2xl border-2 border-primary/30">
                 <div className="relative group cursor-pointer">
-                  {/* Glow effect on hover */}
-                  <div className="absolute inset-0 bg-primary/30 blur-2xl rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  {/* Glow on hover only */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary via-purple-500 to-pink-500 blur-3xl opacity-0 group-hover:opacity-30 transition-opacity duration-700"></div>
                   
-                  {/* Main badge */}
-                  <div className="relative bg-gradient-to-br from-primary via-purple-600 to-pink-600 px-6 py-3 md:px-10 md:py-5 rounded-xl border-2 border-primary-foreground/20 shadow-[0_20px_60px_-15px_rgba(168,85,247,0.6)] rotate-[-2deg] group-hover:rotate-0 group-hover:scale-110 transition-all duration-500 ease-out">
-                    <span className="text-2xl md:text-4xl lg:text-5xl font-black text-primary-foreground tracking-wider drop-shadow-lg">
-                      Em breve!
-                    </span>
+                  {/* Decorative sparkles - subtle */}
+                  <div className="absolute -top-4 -left-4 w-1.5 h-1.5 bg-primary/60 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping transition-opacity"></div>
+                  <div className="absolute -bottom-4 -right-4 w-1.5 h-1.5 bg-purple-500/60 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping transition-opacity" style={{ animationDelay: '0.3s' }}></div>
+                  
+                  {/* Main badge with enhanced styling */}
+                  <div className="relative bg-gradient-to-br from-primary via-purple-600 to-pink-600 px-8 py-4 md:px-14 md:py-7 rounded-2xl border-2 border-primary-foreground/30 shadow-[0_0_60px_-10px_rgba(168,85,247,0.7)] rotate-[-3deg] group-hover:rotate-0 group-hover:scale-110 transition-all duration-700 ease-out">
+                    {/* Inner glow */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/10 to-white/20 rounded-2xl"></div>
+                    
+                    {/* Text with enhanced effects */}
+                    <div className="relative flex flex-col items-center gap-1">
+                      <span className="text-3xl md:text-5xl lg:text-6xl font-black text-primary-foreground tracking-wider drop-shadow-[0_5px_15px_rgba(0,0,0,0.5)]">
+                        EM BREVE!
+                      </span>
+                      <div className="flex items-center gap-1.5 text-primary-foreground/90 text-xs md:text-sm font-medium">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground/80"></div>
+                        <span>Aguarde o lançamento</span>
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground/80"></div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
