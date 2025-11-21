@@ -346,7 +346,7 @@ export default function Home() {
                 </div>
                 
                 {/* Pricing with "Em breve" overlay */}
-                <div className="relative my-4 md:my-6">
+                <div className="relative my-4 md:my-6 min-h-[180px] md:min-h-[200px]">
                   {/* Preço original (coberto pela tarja) */}
                   <div className="relative z-10">
                     {/* Discount badge */}
@@ -377,17 +377,33 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* Tarja "Em breve" sobreposta */}
-                  <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/95 backdrop-blur-3xl rounded-xl">
+                  {/* Tarja "Em breve" sobreposta - ENHANCED */}
+                  <div className="absolute inset-0 z-20 flex items-center justify-center bg-gradient-to-br from-background/98 via-background/95 to-primary/10 backdrop-blur-3xl rounded-2xl border-2 border-primary/20">
                     <div className="relative group cursor-pointer">
-                      {/* Glow effect on hover */}
-                      <div className="absolute inset-0 bg-primary/30 blur-2xl rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                      {/* Multiple glow layers for depth */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary via-purple-500 to-pink-500 blur-3xl opacity-0 group-hover:opacity-40 transition-opacity duration-700 animate-pulse"></div>
+                      <div className="absolute inset-0 bg-primary/40 blur-2xl rounded-2xl opacity-30 group-hover:opacity-60 transition-opacity duration-500"></div>
                       
-                      {/* Main badge */}
-                      <div className="relative bg-gradient-to-br from-primary via-purple-600 to-pink-600 px-5 py-2.5 md:px-8 md:py-4 rounded-xl border-2 border-primary-foreground/20 shadow-[0_20px_60px_-15px_rgba(168,85,247,0.6)] rotate-[-2deg] group-hover:rotate-0 group-hover:scale-110 transition-all duration-500 ease-out">
-                        <span className="text-xl md:text-3xl lg:text-4xl font-black text-primary-foreground tracking-wider drop-shadow-lg">
-                          Em breve!
-                        </span>
+                      {/* Decorative sparkles */}
+                      <div className="absolute -top-4 -left-4 w-2 h-2 bg-primary rounded-full animate-ping opacity-75"></div>
+                      <div className="absolute -bottom-4 -right-4 w-2 h-2 bg-purple-500 rounded-full animate-ping opacity-75" style={{ animationDelay: '0.5s' }}></div>
+                      
+                      {/* Main badge with enhanced styling */}
+                      <div className="relative bg-gradient-to-br from-primary via-purple-600 to-pink-600 px-8 py-4 md:px-14 md:py-7 rounded-2xl border-3 border-primary-foreground/30 shadow-[0_0_80px_-10px_rgba(168,85,247,0.8)] rotate-[-3deg] group-hover:rotate-0 group-hover:scale-[1.15] transition-all duration-700 ease-out">
+                        {/* Inner glow */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/10 to-white/20 rounded-2xl"></div>
+                        
+                        {/* Text with enhanced effects */}
+                        <div className="relative flex flex-col items-center gap-1">
+                          <span className="text-3xl md:text-5xl lg:text-6xl font-black text-primary-foreground tracking-wider drop-shadow-[0_5px_15px_rgba(0,0,0,0.5)] animate-pulse">
+                            EM BREVE!
+                          </span>
+                          <div className="flex items-center gap-1.5 text-primary-foreground/80 text-xs md:text-sm font-medium">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground/80 animate-pulse"></div>
+                            <span>Aguarde o lançamento</span>
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground/80 animate-pulse"></div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
