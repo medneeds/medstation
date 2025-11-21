@@ -245,7 +245,17 @@ export default function Home() {
             </div>
             
             <p className="text-sm font-medium text-muted-foreground pt-4">
-              Ecossistema completo • <span className="line-through opacity-60">R$ 59,90</span> <span className="font-bold text-primary">R$ 19,90/mês</span>
+              <span className="relative inline-block">
+                <span className="opacity-0 select-none">Ecossistema completo • R$ 59,90 R$ 19,90/mês</span>
+                <span className="absolute inset-0 flex items-center justify-center">
+                  <span className="relative group cursor-pointer">
+                    <span className="absolute inset-0 bg-primary/30 blur-xl rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span>
+                    <span className="relative bg-gradient-to-br from-primary via-purple-600 to-pink-600 px-4 py-1.5 rounded-lg border border-primary-foreground/20 shadow-[0_10px_40px_-10px_rgba(168,85,247,0.6)] rotate-[-1deg] group-hover:rotate-0 group-hover:scale-105 transition-all duration-300 inline-block">
+                      <span className="text-sm font-black text-primary-foreground tracking-wide drop-shadow">Em breve!</span>
+                    </span>
+                  </span>
+                </span>
+              </span>
             </p>
             
             <Button 
@@ -335,35 +345,54 @@ export default function Home() {
                   <p className="text-xs md:text-sm text-muted-foreground">Ecossistema completo • 6 assistentes IA</p>
                 </div>
                 
-                {/* Pricing with discount highlight */}
-                <div className="space-y-2 md:space-y-3">
-                  {/* Discount badge */}
-                  <div className="inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1 md:py-1.5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-full">
-                    <span className="text-[10px] md:text-xs font-bold text-green-600 dark:text-green-400">67% DE DESCONTO</span>
-                  </div>
-                  
-                  <div className="flex items-end gap-2 md:gap-3">
-                    <div className="flex flex-col">
-                      {/* Old price crossed out */}
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm md:text-base lg:text-lg text-muted-foreground line-through decoration-2">De R$ 59,90</span>
+                {/* Pricing with "Em breve" overlay */}
+                <div className="relative my-4 md:my-6">
+                  {/* Preço original (coberto pela tarja) */}
+                  <div className="relative z-10">
+                    {/* Discount badge */}
+                    <div className="inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1 md:py-1.5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-full mb-3">
+                      <span className="text-[10px] md:text-xs font-bold text-green-600 dark:text-green-400">67% DE DESCONTO</span>
+                    </div>
+                    
+                    <div className="flex items-end gap-2 md:gap-3">
+                      <div className="flex flex-col">
+                        {/* Old price crossed out */}
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm md:text-base lg:text-lg text-muted-foreground line-through decoration-2">De R$ 59,90</span>
+                        </div>
+                        {/* New price highlighted */}
+                        <div className="flex items-baseline gap-1 md:gap-2">
+                          <span className="text-3xl md:text-4xl lg:text-5xl font-black bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">R$ 19,90</span>
+                          <span className="text-base md:text-lg lg:text-xl text-muted-foreground font-medium">/mês</span>
+                        </div>
                       </div>
-                      {/* New price highlighted */}
-                      <div className="flex items-baseline gap-1 md:gap-2">
-                        <span className="text-3xl md:text-4xl lg:text-5xl font-black bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">R$ 19,90</span>
-                        <span className="text-base md:text-lg lg:text-xl text-muted-foreground font-medium">/mês</span>
+                    </div>
+                    
+                    {/* Annual option */}
+                    <div className="flex items-center gap-2 p-2 md:p-3 bg-muted/50 rounded-lg border border-border/50 mt-3">
+                      <div className="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-primary animate-pulse"></div>
+                      <span className="text-[10px] md:text-xs text-muted-foreground">
+                        Ou <span className="font-bold text-foreground">R$ 199,90/ano</span> • Economize R$ 38,90
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Tarja "Em breve" sobreposta */}
+                  <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/95 backdrop-blur-3xl rounded-xl">
+                    <div className="relative group cursor-pointer">
+                      {/* Glow effect on hover */}
+                      <div className="absolute inset-0 bg-primary/30 blur-2xl rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                      
+                      {/* Main badge */}
+                      <div className="relative bg-gradient-to-br from-primary via-purple-600 to-pink-600 px-5 py-2.5 md:px-8 md:py-4 rounded-xl border-2 border-primary-foreground/20 shadow-[0_20px_60px_-15px_rgba(168,85,247,0.6)] rotate-[-2deg] group-hover:rotate-0 group-hover:scale-110 transition-all duration-500 ease-out">
+                        <span className="text-xl md:text-3xl lg:text-4xl font-black text-primary-foreground tracking-wider drop-shadow-lg">
+                          Em breve!
+                        </span>
                       </div>
                     </div>
                   </div>
-                  
-                  {/* Annual option */}
-                  <div className="flex items-center gap-2 p-2 md:p-3 bg-muted/50 rounded-lg border border-border/50">
-                    <div className="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-primary animate-pulse"></div>
-                    <span className="text-[10px] md:text-xs text-muted-foreground">
-                      Ou <span className="font-bold text-foreground">R$ 199,90/ano</span> • Economize R$ 38,90
-                    </span>
-                  </div>
                 </div>
+                
                 <ul className="space-y-2 md:space-y-2.5 text-xs md:text-sm">
                   {[
                     { name: "Examinus", desc: "Interpretação de exames" },
@@ -447,8 +476,17 @@ export default function Home() {
           <p className="text-[10px] md:text-xs text-muted-foreground flex flex-wrap items-center justify-center gap-1.5 md:gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
             <span>Examinus grátis • Pro</span>
-            <span className="line-through opacity-60">R$ 59,90</span>
-            <span className="font-semibold text-primary">R$ 19,90/mês</span>
+            <span className="relative inline-block">
+              <span className="opacity-0 select-none">R$ 59,90 R$ 19,90/mês</span>
+              <span className="absolute inset-0 flex items-center justify-center">
+                <span className="relative group cursor-pointer">
+                  <span className="absolute inset-0 bg-primary/30 blur-lg rounded opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span>
+                  <span className="relative bg-gradient-to-br from-primary via-purple-600 to-pink-600 px-3 py-1 rounded-md border border-primary-foreground/20 shadow-[0_8px_30px_-8px_rgba(168,85,247,0.6)] rotate-[-1deg] group-hover:rotate-0 group-hover:scale-105 transition-all duration-300 inline-block">
+                    <span className="text-[10px] md:text-xs font-black text-primary-foreground tracking-wide drop-shadow">Em breve!</span>
+                  </span>
+                </span>
+              </span>
+            </span>
           </p>
         </div>
       </section>
