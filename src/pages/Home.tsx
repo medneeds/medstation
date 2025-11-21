@@ -53,6 +53,14 @@ export default function Home() {
               Plataforma
             </Button>
             <Button 
+              variant="ghost" 
+              size="sm"
+              className="text-xs md:text-sm h-8 md:h-9 px-3 md:px-4"
+              onClick={() => navigate('/auth')}
+            >
+              Login
+            </Button>
+            <Button 
               variant="outline" 
               size="sm"
               className="text-xs md:text-sm h-8 md:h-9 px-3 md:px-4"
