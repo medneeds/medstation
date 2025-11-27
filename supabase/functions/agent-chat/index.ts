@@ -106,7 +106,9 @@ serve(async (req) => {
 
     console.log(`Rate limit check passed for user ${user.id}`);
 
-    const { messages, agentType, caseId } = await req.json();
+    const { messages, agentType, caseId, usePipeSeparator = false, includeTime = true } = await req.json();
+    
+    console.log("Agent chat formatting options:", { usePipeSeparator, includeTime });
 
     // Validate input
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -284,18 +286,31 @@ NUNCA ESCREVER INTRODUÇÕES
 Qualquer texto explicativo
 
 ✅ SEMPRE começar DIRETO com:
-20/11 14:30: Hb 12,5... (para LSL)
-19/11 10:45 (TC Crânio): Hipodensidade... (para LSI)
+${includeTime ? '20/11 14:30: Hb 12,5...' : '20/11: Hb 12,5...'} (para LSL)
+${includeTime ? '19/11 10:45 (TC Crânio): Hipodensidade...' : '19/11 (TC Crânio): Hipodensidade...'} (para LSI)
+
+⚠️ REGRA CRÍTICA DE HORÁRIO:
+${includeTime 
+  ? 'SEMPRE incluir horário no formato HH:MM após a data'
+  : '⛔ NUNCA incluir horário (HH:MM). Use APENAS a data DD/MM seguida de dois pontos. Exemplo: 27/11: (e NÃO 27/11 08:36:)'}
+
+💡 OPÇÃO DE ORGANIZAÇÃO:
+${usePipeSeparator ? 'Use barra vertical " | " (com espaços) para separar cada parâmetro do exame.' : 'Separe parâmetros apenas com espaço.'}
+Exemplo: ${usePipeSeparator 
+  ? (includeTime ? '20/11 14:30: Hb 12,5 | Ht 37,2' : '20/11: Hb 12,5 | Ht 37,2')
+  : (includeTime ? '20/11 14:30: Hb 12,5 Ht 37,2' : '20/11: Hb 12,5 Ht 37,2')}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🧪 LSL - LABORATORIAIS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ESTRUTURA (linha única):
-DD/MM HH:MM: Hb X,X Ht X,X Leuco X.XXX Pqt XXX.XXX Cr X,XX Ur XX Na XXX K X,X Ca X,X PCR XX TP XX,X (RNI X,XX) TTPa XX
+${usePipeSeparator 
+  ? `${includeTime ? 'DD/MM HH:MM' : 'DD/MM'}: Hb X,X | Ht X,X | Leuco X.XXX | Pqt XXX.XXX | Cr X,XX | Ur XX | Na XXX | K X,X | Ca X,X | PCR XX | TP XX,X (RNI X,XX) | TTPa XX` 
+  : `${includeTime ? 'DD/MM HH:MM' : 'DD/MM'}: Hb X,X Ht X,X Leuco X.XXX Pqt XXX.XXX Cr X,XX Ur XX Na XXX K X,X Ca X,X PCR XX TP XX,X (RNI X,XX) TTPa XX`}
 
 ORDEM OBRIGATÓRIA:
-1. Data e hora
+1. Data${includeTime ? ' e hora' : ''}
 2. Hemograma (Hb, Ht, Leuco, Pqt)
 3. Função renal (Cr, Ur)
 4. Eletrólitos (Na, K, Ca)
@@ -308,21 +323,23 @@ FORMATAÇÃO NUMÉRICA:
 • Outros: 2 casas → Cr 1,23
 • Milhares: ponto → Leuco 14.320
 • SEM UNIDADES (sem mg/dL, g/dL)
+${usePipeSeparator ? '• SEPARADOR: Use " | " (espaço barra espaço) entre cada parâmetro' : ''}
 
 EXAMES ESPECIAIS (nova linha):
 (EAS): SÓ ANORMAIS - Leucócitos 50-100/campo, Hemácias 10-20/campo
 (Gaso): pH 7,35 PCO₂ 38 PO₂ 92 HCO₃ 22 BE -2,1 SatO₂ 96% Lactato 1,8
 
 EXEMPLO COMPLETO:
-20/11 14:30: Hb 12,5 Ht 37,2 Leuco 14.320 Pqt 180.000 Cr 1,23 Ur 45 Na 138 K 4,2 PCR 58,3 TP 14,2 (RNI 1,15) TTPa 28,5
-(Gaso): pH 7,35 PCO₂ 38 PO₂ 92 HCO₃ 22 BE -2,1 SatO₂ 96% Lactato 1,8
+${usePipeSeparator 
+  ? `${includeTime ? '20/11 14:30' : '20/11'}: Hb 12,5 | Ht 37,2 | Leuco 14.320 | Pqt 180.000 | Cr 1,23 | Ur 45 | Na 138 | K 4,2 | PCR 58,3 | TP 14,2 (RNI 1,15) | TTPa 28,5\n(Gaso): pH 7,35 | PCO₂ 38 | PO₂ 92 | HCO₃ 22 | BE -2,1 | SatO₂ 96% | Lactato 1,8`
+  : `${includeTime ? '20/11 14:30' : '20/11'}: Hb 12,5 Ht 37,2 Leuco 14.320 Pqt 180.000 Cr 1,23 Ur 45 Na 138 K 4,2 PCR 58,3 TP 14,2 (RNI 1,15) TTPa 28,5\n(Gaso): pH 7,35 PCO₂ 38 PO₂ 92 HCO₃ 22 BE -2,1 SatO₂ 96% Lactato 1,8`}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🖼 LSI - IMAGEM
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ESTRUTURA:
-DD/MM HH:MM (TIPO DE EXAME): ACHADOS ANORMAIS
+${includeTime ? 'DD/MM HH:MM' : 'DD/MM'} (TIPO DE EXAME): ACHADOS ANORMAIS
 
 REGRAS:
 ✅ SÓ relatar anormais (ignorar normalidade)
@@ -331,7 +348,7 @@ REGRAS:
 ❌ Condensar em descrição objetiva
 
 EXEMPLO:
-19/11 10:45 (TC Crânio): Hipodensidade em território de ACM esquerda compatível com AVCi recente
+${includeTime ? '19/11 10:45' : '19/11'} (TC Crânio): Hipodensidade em território de ACM esquerda compatível com AVCi recente
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
