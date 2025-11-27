@@ -453,7 +453,30 @@ ${contextData}`,
     });
 
     if (!aiResponse.ok) {
-      console.error("AI response failed with status:", aiResponse.status);
+      const errorText = await aiResponse.text();
+      console.error("AI response failed with status:", aiResponse.status, errorText);
+      
+      if (aiResponse.status === 429) {
+        return new Response(
+          JSON.stringify({ error: "Limite de requisições excedido. Tente novamente mais tarde." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      
+      if (aiResponse.status === 402) {
+        return new Response(
+          JSON.stringify({ error: "Serviço temporariamente indisponível." }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      
+      if (aiResponse.status === 503) {
+        return new Response(
+          JSON.stringify({ error: "Serviço temporariamente indisponível. Tente novamente em alguns instantes." }),
+          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      
       return new Response(
         JSON.stringify({ error: "Falha ao processar requisição. Tente novamente." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

@@ -401,9 +401,14 @@ export function AgentChat({
         setCurrentConversation({ ...conversation, messages: messagesWithoutThinking });
       }
       
+      // Check if it's a service unavailable error (503)
+      const errorMessage = error?.message?.includes("503") || error?.message?.includes("temporariamente") 
+        ? "Serviço temporariamente indisponível. Tente novamente em alguns instantes."
+        : error.message || "Não foi possível processar sua mensagem.";
+      
       toast({
         title: "Erro ao enviar mensagem",
-        description: error.message || "Não foi possível processar sua mensagem.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
