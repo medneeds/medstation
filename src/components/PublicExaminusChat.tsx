@@ -407,13 +407,13 @@ export default function PublicExaminusChat() {
             >
               <SeparatorVertical className="w-4 h-4" />
             </Toggle>
-            <div className="flex flex-col items-center gap-1 px-2 py-1.5 bg-muted/50 rounded-lg hover:bg-muted transition-all border border-border" title="Incluir horário (HH:MM)">
-              <Clock className={`w-4 h-4 transition-colors ${includeTime ? 'text-primary' : 'text-muted-foreground'}`} />
+            <div className={`flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-lg hover:bg-muted transition-all border-2 ${includeTime ? 'bg-primary/10 border-primary' : 'bg-muted/50 border-border'}`} title="Incluir horário (HH:MM)">
+              <Clock className={`w-5 h-5 transition-colors ${includeTime ? 'text-primary' : 'text-muted-foreground'}`} />
               <Switch
                 id="include-time-mobile"
                 checked={includeTime}
                 onCheckedChange={setIncludeTime}
-                className="data-[state=checked]:bg-primary scale-75"
+                className="data-[state=checked]:bg-primary scale-90"
               />
             </div>
             <Textarea
@@ -466,13 +466,13 @@ export default function PublicExaminusChat() {
             >
               <SeparatorVertical className="w-5 h-5" />
             </Toggle>
-            <div className="self-end flex flex-col items-center gap-1.5 p-2 border rounded-lg bg-muted/30 h-[55px] w-[55px] justify-center hover:bg-muted/50 transition-all cursor-pointer" title="Incluir horário (HH:MM)">
-              <Clock className={`w-5 h-5 transition-colors ${includeTime ? 'text-primary' : 'text-muted-foreground'}`} />
+            <div className={`self-end flex flex-col items-center gap-2 p-2.5 border-2 rounded-lg h-[55px] w-[65px] justify-center hover:bg-muted/50 transition-all cursor-pointer ${includeTime ? 'bg-primary/10 border-primary' : 'bg-muted/30 border-border'}`} title="Incluir horário (HH:MM)">
+              <Clock className={`w-6 h-6 transition-colors ${includeTime ? 'text-primary' : 'text-muted-foreground'}`} />
               <Switch
                 id="include-time-desktop"
                 checked={includeTime}
                 onCheckedChange={setIncludeTime}
-                className="data-[state=checked]:bg-primary scale-75"
+                className="data-[state=checked]:bg-primary scale-90"
               />
             </div>
             <Textarea
