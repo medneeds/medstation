@@ -968,7 +968,7 @@ export function AgentChat({
                 <SeparatorVertical className="h-4 w-4" />
               </Toggle>
               <div className="flex flex-col items-center gap-1 px-2 py-1.5 bg-muted/50 rounded-lg hover:bg-muted transition-all border border-border" title="Incluir horário (HH:MM)">
-                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                <Clock className={`h-4 w-4 transition-colors ${includeTime ? 'text-primary' : 'text-muted-foreground'}`} />
                 <Switch
                   id="include-time"
                   checked={includeTime}
