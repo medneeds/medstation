@@ -967,13 +967,13 @@ export function AgentChat({
               >
                 <SeparatorVertical className="h-4 w-4" />
               </Toggle>
-              <div className={`flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-lg hover:bg-muted transition-all border-2 ${includeTime ? 'bg-primary/10 border-primary' : 'bg-muted/50 border-border'}`} title="Incluir horário (HH:MM)">
+              <div className={`flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted transition-all border-2 ${includeTime ? 'bg-primary/10 border-primary' : 'bg-muted/50 border-border'}`} title="Incluir horário (HH:MM)">
                 <Clock className={`h-5 w-5 transition-colors ${includeTime ? 'text-primary' : 'text-muted-foreground'}`} />
                 <Switch
                   id="include-time"
                   checked={includeTime}
                   onCheckedChange={setIncludeTime}
-                  className="data-[state=checked]:bg-primary scale-90"
+                  className="data-[state=checked]:bg-primary"
                 />
               </div>
             </>
