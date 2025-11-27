@@ -407,15 +407,15 @@ export default function PublicExaminusChat() {
             >
               <SeparatorVertical className="w-4 h-4" />
             </Toggle>
-            <Toggle
-              pressed={includeTime}
-              onPressedChange={setIncludeTime}
-              size="sm"
-              className="h-9 w-9 shrink-0 rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground hover:bg-muted transition-all border border-border data-[state=on]:border-primary"
-              title="Incluir horário (HH:MM)"
-            >
-              <Clock className="w-4 h-4" />
-            </Toggle>
+            <div className="flex items-center gap-1.5 px-2 bg-muted/50 rounded-full h-9 hover:bg-muted transition-all border border-border" title="Incluir horário (HH:MM)">
+              <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+              <Switch
+                id="include-time-mobile"
+                checked={includeTime}
+                onCheckedChange={setIncludeTime}
+                className="data-[state=checked]:bg-primary"
+              />
+            </div>
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -466,15 +466,15 @@ export default function PublicExaminusChat() {
             >
               <SeparatorVertical className="w-5 h-5" />
             </Toggle>
-            <Toggle
-              pressed={includeTime}
-              onPressedChange={setIncludeTime}
-              size="default"
-              className="self-end h-[55px] w-[55px] data-[state=on]:bg-primary data-[state=on]:text-primary-foreground hover:bg-muted data-[state=on]:border-primary transition-all border border-border"
-              title="Incluir horário (HH:MM)"
-            >
-              <Clock className="w-5 h-5" />
-            </Toggle>
+            <div className="self-end flex flex-col items-center gap-2 p-2.5 border rounded-lg bg-muted/30 h-[55px] w-[55px] justify-center hover:bg-muted/50 transition-all cursor-pointer" title="Incluir horário (HH:MM)">
+              <Clock className="w-4 h-4 text-muted-foreground" />
+              <Switch
+                id="include-time-desktop"
+                checked={includeTime}
+                onCheckedChange={setIncludeTime}
+                className="data-[state=checked]:bg-primary scale-75"
+              />
+            </div>
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
