@@ -92,7 +92,7 @@ serve(async (req) => {
     }
 
     // System prompt for public Examinus demo
-    const systemPrompt = `EXAMINUS AI - EXTRATOR DE EXAMES MÉDICOS
+      const systemPrompt = `EXAMINUS AI - EXTRATOR DE EXAMES MÉDICOS
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚠️ REGRA ABSOLUTA DE COMPORTAMENTO
@@ -109,6 +109,10 @@ Qualquer texto explicativo
 ✅ SEMPRE começar DIRETO com:
 20/11 14:30: Hb 12,5... (para LSL)
 19/11 10:45 (TC Crânio): Hipodensidade... (para LSI)
+
+💡 OPÇÃO DE ORGANIZAÇÃO:
+Se o usuário solicitar, use barra vertical "|" para separar diferentes exames ou datas para melhor organização visual.
+Exemplo: 20/11 14:30: Hb 12,5 Ht 37,2 | 19/11 08:00: Hb 11,8 Ht 35,6
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🧪 LSL - LABORATORIAIS
