@@ -962,7 +962,7 @@ export function AgentChat({
                 pressed={usePipeSeparator}
                 onPressedChange={setUsePipeSeparator}
                 size="sm"
-                className="h-9 w-9 shrink-0 data-[state=on]:bg-primary/20 hover:bg-muted transition-all"
+                className="h-9 w-9 shrink-0 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground hover:bg-muted transition-all border border-border data-[state=on]:border-primary"
                 title="Separar exames com barra vertical (|)"
               >
                 <SeparatorVertical className="h-4 w-4" />
@@ -971,7 +971,7 @@ export function AgentChat({
                 pressed={includeTime}
                 onPressedChange={setIncludeTime}
                 size="sm"
-                className="h-9 w-9 shrink-0 data-[state=on]:bg-primary/20 hover:bg-muted transition-all"
+                className="h-9 w-9 shrink-0 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground hover:bg-muted transition-all border border-border data-[state=on]:border-primary"
                 title="Incluir horário (HH:MM)"
               >
                 <Clock className="h-4 w-4" />
