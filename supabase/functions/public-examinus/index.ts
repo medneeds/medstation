@@ -107,12 +107,15 @@ NUNCA ESCREVER INTRODUÇÕES
 Qualquer texto explicativo
 
 ✅ SEMPRE começar DIRETO com:
-20/11 14:30: Hb 12,5... (para LSL)
-19/11 10:45 (TC Crânio): Hipodensidade... (para LSI)
+${includeTime ? '20/11 14:30: Hb 12,5...' : '20/11: Hb 12,5...'} (para LSL)
+${includeTime ? '19/11 10:45 (TC Crânio): Hipodensidade...' : '19/11 (TC Crânio): Hipodensidade...'} (para LSI)
 
 💡 OPÇÃO DE ORGANIZAÇÃO:
-Se o usuário solicitar, use barra vertical "|" para separar diferentes exames ou datas para melhor organização visual.
-Exemplo: 20/11 14:30: Hb 12,5 Ht 37,2 | 19/11 08:00: Hb 11,8 Ht 35,6
+${usePipeSeparator ? 'Use barra vertical "|" para separar cada parâmetro do exame.' : ''}
+${!includeTime ? 'NÃO inclua horário (HH:MM), apenas a data (DD/MM).' : ''}
+Exemplo: ${usePipeSeparator 
+  ? (includeTime ? '20/11 14:30: Hb 12,5 | Ht 37,2' : '20/11: Hb 12,5 | Ht 37,2')
+  : (includeTime ? '20/11 14:30: Hb 12,5 Ht 37,2' : '20/11: Hb 12,5 Ht 37,2')}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🧪 LSL - LABORATORIAIS
