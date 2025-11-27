@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Sparkles, ArrowRight, Copy, Check, FileUp, Upload, X, Image as ImageIcon } from "lucide-react";
+import { Loader2, Send, Sparkles, ArrowRight, Copy, Check, FileUp, Upload, X, Image as ImageIcon, SeparatorVertical } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Toggle } from "@/components/ui/toggle";
 
 interface Message {
   role: "user" | "assistant";
@@ -30,6 +31,7 @@ export default function PublicExaminusChat() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [showComingSoonDialog, setShowComingSoonDialog] = useState(false);
+  const [usePipeSeparator, setUsePipeSeparator] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -101,9 +103,14 @@ export default function PublicExaminusChat() {
   const handleSend = async () => {
     if ((!input.trim() && !selectedFile) || isLoading) return;
 
+    let messageContent = input || "Extraia e formate este exame:";
+    if (usePipeSeparator) {
+      messageContent += " (Use separador | entre exames diferentes)";
+    }
+
     const userMessage: Message = { 
       role: "user", 
-      content: input || "Extraia e formate este exame:" 
+      content: messageContent
     };
     setMessages(prev => [...prev, userMessage]);
     setInput("");
@@ -389,6 +396,15 @@ export default function PublicExaminusChat() {
             >
               <Upload className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
             </Button>
+            <Toggle
+              pressed={usePipeSeparator}
+              onPressedChange={setUsePipeSeparator}
+              size="sm"
+              className="h-10 w-10 shrink-0 rounded-full data-[state=on]:bg-primary/20"
+              title="Separar exames com |"
+            >
+              <SeparatorVertical className="w-4 h-4" />
+            </Toggle>
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -430,6 +446,18 @@ export default function PublicExaminusChat() {
             >
               <Upload className="w-5 h-5 group-hover:scale-110 transition-transform" />
             </Button>
+            <Toggle
+              pressed={usePipeSeparator}
+              onPressedChange={setUsePipeSeparator}
+              size="lg"
+              className="self-end h-[70px] w-[70px] data-[state=on]:bg-primary/10 data-[state=on]:border-primary transition-all"
+              title="Separar exames com barra vertical |"
+            >
+              <div className="flex flex-col items-center gap-1">
+                <SeparatorVertical className="w-5 h-5" />
+                <span className="text-[10px]">Separar</span>
+              </div>
+            </Toggle>
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
