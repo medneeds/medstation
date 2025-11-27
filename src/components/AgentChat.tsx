@@ -302,10 +302,7 @@ export function AgentChat({
       setCurrentConversation(conversation);
     }
 
-    let messageContent = message;
-    if (agentType === "examinus" && usePipeSeparator) {
-      messageContent += " (Use separador | entre exames diferentes)";
-    }
+    const messageContent = message;
     setMessage("");
     setIsLoading(true);
 
@@ -348,6 +345,7 @@ export function AgentChat({
           })),
           agentType,
           caseId: selectedCaseId,
+          ...(agentType === "examinus" && { usePipeSeparator })
         },
       });
 
