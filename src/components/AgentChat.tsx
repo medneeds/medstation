@@ -32,6 +32,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -965,15 +967,18 @@ export function AgentChat({
               >
                 <SeparatorVertical className="h-4 w-4" />
               </Toggle>
-              <Toggle
-                pressed={includeTime}
-                onPressedChange={setIncludeTime}
-                size="sm"
-                className="shrink-0 data-[state=on]:bg-primary/20"
-                title="Incluir horário (HH:MM)"
-              >
-                <Clock className="h-4 w-4" />
-              </Toggle>
+              <div className="flex items-center gap-2 px-2">
+                <Switch
+                  id="include-time"
+                  checked={includeTime}
+                  onCheckedChange={setIncludeTime}
+                  className="data-[state=checked]:bg-primary"
+                />
+                <Label htmlFor="include-time" className="text-sm cursor-pointer flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  Horário
+                </Label>
+              </div>
             </>
           )}
           <Input

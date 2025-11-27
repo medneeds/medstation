@@ -16,6 +16,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Toggle } from "@/components/ui/toggle";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface Message {
   role: "user" | "assistant";
@@ -405,15 +407,18 @@ export default function PublicExaminusChat() {
             >
               <SeparatorVertical className="w-4 h-4" />
             </Toggle>
-            <Toggle
-              pressed={includeTime}
-              onPressedChange={setIncludeTime}
-              size="sm"
-              className="h-10 w-10 shrink-0 rounded-full data-[state=on]:bg-primary/20"
-              title="Incluir horário (HH:MM)"
-            >
-              <Clock className="w-4 h-4" />
-            </Toggle>
+            <div className="flex items-center gap-2 px-2 bg-muted/50 rounded-full h-10">
+              <Switch
+                id="include-time-desktop"
+                checked={includeTime}
+                onCheckedChange={setIncludeTime}
+                className="data-[state=checked]:bg-primary"
+              />
+              <Label htmlFor="include-time-desktop" className="text-xs cursor-pointer flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                Horário
+              </Label>
+            </div>
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -467,18 +472,18 @@ export default function PublicExaminusChat() {
                 <span className="text-[10px]">Separar</span>
               </div>
             </Toggle>
-            <Toggle
-              pressed={includeTime}
-              onPressedChange={setIncludeTime}
-              size="lg"
-              className="self-end h-[70px] w-[70px] data-[state=on]:bg-primary/10 data-[state=on]:border-primary transition-all"
-              title="Incluir horário (HH:MM)"
-            >
-              <div className="flex flex-col items-center gap-1">
-                <Clock className="w-5 h-5" />
-                <span className="text-[10px]">Horário</span>
-              </div>
-            </Toggle>
+            <div className="self-end flex flex-col items-center gap-2 p-3 border rounded-lg bg-muted/30 h-[70px] w-[70px] justify-center">
+              <Switch
+                id="include-time-mobile"
+                checked={includeTime}
+                onCheckedChange={setIncludeTime}
+                className="data-[state=checked]:bg-primary scale-75"
+              />
+              <Label htmlFor="include-time-mobile" className="text-[10px] cursor-pointer flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                Horário
+              </Label>
+            </div>
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
