@@ -174,11 +174,17 @@ export default function PublicExaminusChat() {
         }, 1000);
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error sending message:", error);
+      
+      // Check if it's a service unavailable error (503)
+      const errorMessage = error?.message?.includes("503") || error?.message?.includes("temporariamente") 
+        ? "Serviço temporariamente indisponível. Tente novamente em alguns instantes."
+        : "Não foi possível enviar a mensagem. Tente novamente.";
+      
       toast({
         title: "Erro",
-        description: "Não foi possível enviar a mensagem. Tente novamente.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
