@@ -402,7 +402,7 @@ export default function PublicExaminusChat() {
               pressed={usePipeSeparator}
               onPressedChange={setUsePipeSeparator}
               size="sm"
-              className="h-9 w-9 shrink-0 rounded-full data-[state=on]:bg-primary/20 hover:bg-muted transition-all"
+              className="h-9 w-9 shrink-0 rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground hover:bg-muted transition-all border border-border data-[state=on]:border-primary"
               title="Separar exames com barra vertical (|)"
             >
               <SeparatorVertical className="w-4 h-4" />
@@ -411,7 +411,7 @@ export default function PublicExaminusChat() {
               pressed={includeTime}
               onPressedChange={setIncludeTime}
               size="sm"
-              className="h-9 w-9 shrink-0 rounded-full data-[state=on]:bg-primary/20 hover:bg-muted transition-all"
+              className="h-9 w-9 shrink-0 rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground hover:bg-muted transition-all border border-border data-[state=on]:border-primary"
               title="Incluir horário (HH:MM)"
             >
               <Clock className="w-4 h-4" />
@@ -461,7 +461,7 @@ export default function PublicExaminusChat() {
               pressed={usePipeSeparator}
               onPressedChange={setUsePipeSeparator}
               size="default"
-              className="self-end h-[55px] w-[55px] data-[state=on]:bg-primary/20 hover:bg-muted data-[state=on]:border-primary transition-all"
+              className="self-end h-[55px] w-[55px] data-[state=on]:bg-primary data-[state=on]:text-primary-foreground hover:bg-muted data-[state=on]:border-primary transition-all border border-border"
               title="Separar exames com barra vertical (|)"
             >
               <SeparatorVertical className="w-5 h-5" />
@@ -470,7 +470,7 @@ export default function PublicExaminusChat() {
               pressed={includeTime}
               onPressedChange={setIncludeTime}
               size="default"
-              className="self-end h-[55px] w-[55px] data-[state=on]:bg-primary/20 hover:bg-muted data-[state=on]:border-primary transition-all"
+              className="self-end h-[55px] w-[55px] data-[state=on]:bg-primary data-[state=on]:text-primary-foreground hover:bg-muted data-[state=on]:border-primary transition-all border border-border"
               title="Incluir horário (HH:MM)"
             >
               <Clock className="w-5 h-5" />
