@@ -408,7 +408,7 @@ export default function PublicExaminusChat() {
               <SeparatorVertical className="w-4 h-4" />
             </Toggle>
             <div className="flex flex-col items-center gap-1 px-2 py-1.5 bg-muted/50 rounded-lg hover:bg-muted transition-all border border-border" title="Incluir horário (HH:MM)">
-              <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+              <Clock className={`w-4 h-4 transition-colors ${includeTime ? 'text-primary' : 'text-muted-foreground'}`} />
               <Switch
                 id="include-time-mobile"
                 checked={includeTime}
@@ -467,7 +467,7 @@ export default function PublicExaminusChat() {
               <SeparatorVertical className="w-5 h-5" />
             </Toggle>
             <div className="self-end flex flex-col items-center gap-1.5 p-2 border rounded-lg bg-muted/30 h-[55px] w-[55px] justify-center hover:bg-muted/50 transition-all cursor-pointer" title="Incluir horário (HH:MM)">
-              <Clock className="w-4 h-4 text-muted-foreground" />
+              <Clock className={`w-5 h-5 transition-colors ${includeTime ? 'text-primary' : 'text-muted-foreground'}`} />
               <Switch
                 id="include-time-desktop"
                 checked={includeTime}
