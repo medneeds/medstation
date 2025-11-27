@@ -84,6 +84,8 @@ serve(async (req) => {
     // Parse request body
     const { messages, fileContent, usePipeSeparator, includeTime = true } = await req.json();
 
+    console.log("Public Examinus formatting options:", { usePipeSeparator, includeTime });
+
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(
         JSON.stringify({ error: "Formato de mensagens inválido" }),
@@ -110,9 +112,13 @@ Qualquer texto explicativo
 ${includeTime ? '20/11 14:30: Hb 12,5...' : '20/11: Hb 12,5...'} (para LSL)
 ${includeTime ? '19/11 10:45 (TC Crânio): Hipodensidade...' : '19/11 (TC Crânio): Hipodensidade...'} (para LSI)
 
+⚠️ REGRA CRÍTICA DE HORÁRIO:
+${includeTime 
+  ? 'SEMPRE incluir horário no formato HH:MM após a data'
+  : '⛔ NUNCA incluir horário (HH:MM). Use APENAS a data DD/MM seguida de dois pontos. Exemplo: 27/11: (e NÃO 27/11 08:36:)'}
+
 💡 OPÇÃO DE ORGANIZAÇÃO:
-${usePipeSeparator ? 'Use barra vertical "|" para separar cada parâmetro do exame.' : ''}
-${!includeTime ? 'NÃO inclua horário (HH:MM), apenas a data (DD/MM).' : ''}
+${usePipeSeparator ? 'Use barra vertical " | " (com espaços) para separar cada parâmetro do exame.' : 'Separe parâmetros apenas com espaço.'}
 Exemplo: ${usePipeSeparator 
   ? (includeTime ? '20/11 14:30: Hb 12,5 | Ht 37,2' : '20/11: Hb 12,5 | Ht 37,2')
   : (includeTime ? '20/11 14:30: Hb 12,5 Ht 37,2' : '20/11: Hb 12,5 Ht 37,2')}
