@@ -22,7 +22,8 @@ import {
   Check,
   FileDown,
   FileUp,
-  SeparatorVertical
+  SeparatorVertical,
+  Clock
 } from "lucide-react";
 import {
   Sheet,
@@ -118,6 +119,7 @@ export function AgentChat({
   const [isDragging, setIsDragging] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [usePipeSeparator, setUsePipeSeparator] = useState(false);
+  const [includeTime, setIncludeTime] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -345,7 +347,7 @@ export function AgentChat({
           })),
           agentType,
           caseId: selectedCaseId,
-          ...(agentType === "examinus" && { usePipeSeparator })
+          ...(agentType === "examinus" && { usePipeSeparator, includeTime })
         },
       });
 
@@ -953,15 +955,26 @@ export function AgentChat({
             </Button>
           )}
           {agentType === "examinus" && (
-            <Toggle
-              pressed={usePipeSeparator}
-              onPressedChange={setUsePipeSeparator}
-              size="sm"
-              className="shrink-0 data-[state=on]:bg-primary/20"
-              title="Separar exames com |"
-            >
-              <SeparatorVertical className="h-4 w-4" />
-            </Toggle>
+            <>
+              <Toggle
+                pressed={usePipeSeparator}
+                onPressedChange={setUsePipeSeparator}
+                size="sm"
+                className="shrink-0 data-[state=on]:bg-primary/20"
+                title="Separar exames com |"
+              >
+                <SeparatorVertical className="h-4 w-4" />
+              </Toggle>
+              <Toggle
+                pressed={includeTime}
+                onPressedChange={setIncludeTime}
+                size="sm"
+                className="shrink-0 data-[state=on]:bg-primary/20"
+                title="Incluir horário (HH:MM)"
+              >
+                <Clock className="h-4 w-4" />
+              </Toggle>
+            </>
           )}
           <Input
             value={message}
