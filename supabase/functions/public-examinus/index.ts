@@ -251,13 +251,6 @@ VERSÃO DEMO: Esta é versão gratuita limitada. Crie conta para acesso completo
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      
-      if (response.status === 503) {
-        return new Response(
-          JSON.stringify({ error: "Serviço temporariamente indisponível. Tente novamente em alguns instantes." }),
-          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
 
       throw new Error(`AI API error: ${response.status}`);
     }

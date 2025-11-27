@@ -401,14 +401,9 @@ export function AgentChat({
         setCurrentConversation({ ...conversation, messages: messagesWithoutThinking });
       }
       
-      // Check if it's a service unavailable error (503)
-      const errorMessage = error?.message?.includes("503") || error?.message?.includes("temporariamente") 
-        ? "Serviço temporariamente indisponível. Tente novamente em alguns instantes."
-        : error.message || "Não foi possível processar sua mensagem.";
-      
       toast({
         title: "Erro ao enviar mensagem",
-        description: errorMessage,
+        description: error.message || "Não foi possível processar sua mensagem.",
         variant: "destructive",
       });
     } finally {
@@ -967,19 +962,22 @@ export function AgentChat({
                 pressed={usePipeSeparator}
                 onPressedChange={setUsePipeSeparator}
                 size="sm"
-                className="h-9 w-9 shrink-0 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground hover:bg-muted transition-all"
-                title="Separar exames com barra vertical (|)"
+                className="shrink-0 data-[state=on]:bg-primary/20"
+                title="Separar exames com |"
               >
                 <SeparatorVertical className="h-4 w-4" />
               </Toggle>
-              <div className={`flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted transition-all ${includeTime ? 'bg-primary/10' : 'bg-muted/30'}`} title="Incluir horário (HH:MM)">
-                <Clock className={`h-5 w-5 transition-colors ${includeTime ? 'text-primary' : 'text-muted-foreground'}`} />
+              <div className="flex items-center gap-2 px-2">
                 <Switch
                   id="include-time"
                   checked={includeTime}
                   onCheckedChange={setIncludeTime}
                   className="data-[state=checked]:bg-primary"
                 />
+                <Label htmlFor="include-time" className="text-sm cursor-pointer flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  Horário
+                </Label>
               </div>
             </>
           )}
@@ -993,7 +991,7 @@ export function AgentChat({
               }
             }}
             placeholder={isMobile ? "Mensagem..." : placeholder}
-            className="flex-1 text-sm h-9"
+            className="flex-1 text-sm md:text-base"
             disabled={isRecording || isLoading}
           />
           {isRecording ? (

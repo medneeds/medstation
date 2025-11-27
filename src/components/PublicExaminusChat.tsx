@@ -174,17 +174,11 @@ export default function PublicExaminusChat() {
         }, 1000);
       }
 
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error sending message:", error);
-      
-      // Check if it's a service unavailable error (503)
-      const errorMessage = error?.message?.includes("503") || error?.message?.includes("temporariamente") 
-        ? "Serviço temporariamente indisponível. Tente novamente em alguns instantes."
-        : "Não foi possível enviar a mensagem. Tente novamente.";
-      
       toast({
         title: "Erro",
-        description: errorMessage,
+        description: "Não foi possível enviar a mensagem. Tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -408,26 +402,29 @@ export default function PublicExaminusChat() {
               pressed={usePipeSeparator}
               onPressedChange={setUsePipeSeparator}
               size="sm"
-              className="h-9 w-9 shrink-0 rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground hover:bg-muted transition-all"
-              title="Separar exames com barra vertical (|)"
+              className="h-10 w-10 shrink-0 rounded-full data-[state=on]:bg-primary/20"
+              title="Separar exames com |"
             >
               <SeparatorVertical className="w-4 h-4" />
             </Toggle>
-            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted transition-all ${includeTime ? 'bg-primary/10' : 'bg-muted/30'}`} title="Incluir horário (HH:MM)">
-              <Clock className={`w-5 h-5 transition-colors ${includeTime ? 'text-primary' : 'text-muted-foreground'}`} />
+            <div className="flex items-center gap-2 px-2 bg-muted/50 rounded-full h-10">
               <Switch
-                id="include-time-mobile"
+                id="include-time-desktop"
                 checked={includeTime}
                 onCheckedChange={setIncludeTime}
                 className="data-[state=checked]:bg-primary"
               />
+              <Label htmlFor="include-time-desktop" className="text-xs cursor-pointer flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                Horário
+              </Label>
             </div>
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={hasMessages ? "Digite ou cole exames..." : "Cole exames aqui"}
-              className="min-h-[36px] max-h-[90px] resize-none text-sm bg-background border-border placeholder:text-muted-foreground/70 focus:border-primary/50 focus:ring-primary/20 transition-all rounded-3xl px-3 py-2 self-center"
+              className="min-h-[44px] max-h-[120px] resize-none text-base bg-background border-border placeholder:text-muted-foreground/70 focus:border-primary/50 focus:ring-primary/20 transition-all rounded-3xl px-4 py-3"
               disabled={isLoading}
             />
             <Button
@@ -455,10 +452,10 @@ export default function PublicExaminusChat() {
             />
             <Button
               variant="outline"
-              size="default"
+              size="lg"
               onClick={() => fileInputRef.current?.click()}
               disabled={isLoading}
-              className="self-end h-[55px] w-[55px] border-dashed hover:border-primary hover:bg-primary/5 transition-all group shrink-0"
+              className="self-end h-[70px] w-[70px] border-dashed hover:border-primary hover:bg-primary/5 transition-all group shrink-0"
               title="Fazer upload de imagem ou PDF"
             >
               <Upload className="w-5 h-5 group-hover:scale-110 transition-transform" />
@@ -466,34 +463,40 @@ export default function PublicExaminusChat() {
             <Toggle
               pressed={usePipeSeparator}
               onPressedChange={setUsePipeSeparator}
-              size="default"
-              className="self-end h-[55px] w-[55px] data-[state=on]:bg-primary data-[state=on]:text-primary-foreground hover:bg-muted transition-all"
-              title="Separar exames com barra vertical (|)"
+              size="lg"
+              className="self-end h-[70px] w-[70px] data-[state=on]:bg-primary/10 data-[state=on]:border-primary transition-all"
+              title="Separar exames com barra vertical |"
             >
-              <SeparatorVertical className="w-5 h-5" />
+              <div className="flex flex-col items-center gap-1">
+                <SeparatorVertical className="w-5 h-5" />
+                <span className="text-[10px]">Separar</span>
+              </div>
             </Toggle>
-            <div className={`self-end flex items-center gap-3 px-3 py-2 rounded-lg h-[55px] hover:bg-muted/50 transition-all cursor-pointer ${includeTime ? 'bg-primary/10' : 'bg-muted/30'}`} title="Incluir horário (HH:MM)">
-              <Clock className={`w-6 h-6 transition-colors ${includeTime ? 'text-primary' : 'text-muted-foreground'}`} />
+            <div className="self-end flex flex-col items-center gap-2 p-3 border rounded-lg bg-muted/30 h-[70px] w-[70px] justify-center">
               <Switch
-                id="include-time-desktop"
+                id="include-time-mobile"
                 checked={includeTime}
                 onCheckedChange={setIncludeTime}
-                className="data-[state=checked]:bg-primary"
+                className="data-[state=checked]:bg-primary scale-75"
               />
+              <Label htmlFor="include-time-mobile" className="text-[10px] cursor-pointer flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                Horário
+              </Label>
             </div>
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={hasMessages ? "Cole mais exames aqui..." : "Cole resultados de exames - hemograma, bioquímica, imagens, PDFs... Literalmente qualquer um! 😎"}
-              className="min-h-[55px] max-h-[130px] resize-none text-sm bg-background border-border placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20 transition-all flex-1"
+              className="min-h-[70px] max-h-[180px] resize-none text-sm bg-background border-border placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20 transition-all flex-1"
               disabled={isLoading}
             />
             <Button
               onClick={handleSend}
               disabled={isLoading || (!input.trim() && !selectedFile)}
-              size="default"
-              className="self-end h-[55px] w-[55px] shadow-medical hover:shadow-elevated hover:scale-105 transition-all shrink-0"
+              size="lg"
+              className="self-end h-[70px] w-[70px] shadow-medical hover:shadow-elevated hover:scale-105 transition-all shrink-0"
             >
               {isLoading ? (
                 <Loader2 className="w-6 h-6 animate-spin" />

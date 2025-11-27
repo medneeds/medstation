@@ -106,9 +106,7 @@ serve(async (req) => {
 
     console.log(`Rate limit check passed for user ${user.id}`);
 
-    const { messages, agentType, caseId, usePipeSeparator = false, includeTime = true } = await req.json();
-    
-    console.log("Agent chat formatting options:", { usePipeSeparator, includeTime });
+    const { messages, agentType, caseId } = await req.json();
 
     // Validate input
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -286,31 +284,18 @@ NUNCA ESCREVER INTRODUÇÕES
 Qualquer texto explicativo
 
 ✅ SEMPRE começar DIRETO com:
-${includeTime ? '20/11 14:30: Hb 12,5...' : '20/11: Hb 12,5...'} (para LSL)
-${includeTime ? '19/11 10:45 (TC Crânio): Hipodensidade...' : '19/11 (TC Crânio): Hipodensidade...'} (para LSI)
-
-⚠️ REGRA CRÍTICA ABSOLUTA DE HORÁRIO:
-${includeTime 
-  ? '✅ SEMPRE incluir horário no formato HH:MM após a data. Formato obrigatório: DD/MM HH:MM:'
-  : '⛔ PROIBIDO incluir horário. Use APENAS DD/MM: (sem HH:MM). Exemplos CORRETOS: "20/11:" ou "19/11 (TC Crânio)". Exemplos ERRADOS: "20/11 14:30:" ou "19/11 10:45 (TC Crânio)"'}
-
-💡 OPÇÃO DE ORGANIZAÇÃO:
-${usePipeSeparator ? 'Use barra vertical " | " (com espaços) para separar cada parâmetro do exame.' : 'Separe parâmetros apenas com espaço.'}
-Exemplo: ${usePipeSeparator 
-  ? (includeTime ? '20/11 14:30: Hb 12,5 | Ht 37,2' : '20/11: Hb 12,5 | Ht 37,2')
-  : (includeTime ? '20/11 14:30: Hb 12,5 Ht 37,2' : '20/11: Hb 12,5 Ht 37,2')}
+20/11 14:30: Hb 12,5... (para LSL)
+19/11 10:45 (TC Crânio): Hipodensidade... (para LSI)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🧪 LSL - LABORATORIAIS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ESTRUTURA (linha única):
-${usePipeSeparator 
-  ? `${includeTime ? 'DD/MM HH:MM' : 'DD/MM'}: Hb X,X | Ht X,X | Leuco X.XXX | Pqt XXX.XXX | Cr X,XX | Ur XX | Na XXX | K X,X | Ca X,X | PCR XX | TP XX,X (RNI X,XX) | TTPa XX` 
-  : `${includeTime ? 'DD/MM HH:MM' : 'DD/MM'}: Hb X,X Ht X,X Leuco X.XXX Pqt XXX.XXX Cr X,XX Ur XX Na XXX K X,X Ca X,X PCR XX TP XX,X (RNI X,XX) TTPa XX`}
+DD/MM HH:MM: Hb X,X Ht X,X Leuco X.XXX Pqt XXX.XXX Cr X,XX Ur XX Na XXX K X,X Ca X,X PCR XX TP XX,X (RNI X,XX) TTPa XX
 
 ORDEM OBRIGATÓRIA:
-1. ${includeTime ? 'Data com hora obrigatória (DD/MM HH:MM)' : 'Data SEM hora (DD/MM apenas)'}
+1. Data e hora
 2. Hemograma (Hb, Ht, Leuco, Pqt)
 3. Função renal (Cr, Ur)
 4. Eletrólitos (Na, K, Ca)
@@ -323,23 +308,21 @@ FORMATAÇÃO NUMÉRICA:
 • Outros: 2 casas → Cr 1,23
 • Milhares: ponto → Leuco 14.320
 • SEM UNIDADES (sem mg/dL, g/dL)
-${usePipeSeparator ? '• SEPARADOR: Use " | " (espaço barra espaço) entre cada parâmetro' : ''}
 
 EXAMES ESPECIAIS (nova linha):
 (EAS): SÓ ANORMAIS - Leucócitos 50-100/campo, Hemácias 10-20/campo
 (Gaso): pH 7,35 PCO₂ 38 PO₂ 92 HCO₃ 22 BE -2,1 SatO₂ 96% Lactato 1,8
 
 EXEMPLO COMPLETO:
-${usePipeSeparator 
-  ? `${includeTime ? '20/11 14:30' : '20/11'}: Hb 12,5 | Ht 37,2 | Leuco 14.320 | Pqt 180.000 | Cr 1,23 | Ur 45 | Na 138 | K 4,2 | PCR 58,3 | TP 14,2 (RNI 1,15) | TTPa 28,5\n(Gaso): pH 7,35 | PCO₂ 38 | PO₂ 92 | HCO₃ 22 | BE -2,1 | SatO₂ 96% | Lactato 1,8`
-  : `${includeTime ? '20/11 14:30' : '20/11'}: Hb 12,5 Ht 37,2 Leuco 14.320 Pqt 180.000 Cr 1,23 Ur 45 Na 138 K 4,2 PCR 58,3 TP 14,2 (RNI 1,15) TTPa 28,5\n(Gaso): pH 7,35 PCO₂ 38 PO₂ 92 HCO₃ 22 BE -2,1 SatO₂ 96% Lactato 1,8`}
+20/11 14:30: Hb 12,5 Ht 37,2 Leuco 14.320 Pqt 180.000 Cr 1,23 Ur 45 Na 138 K 4,2 PCR 58,3 TP 14,2 (RNI 1,15) TTPa 28,5
+(Gaso): pH 7,35 PCO₂ 38 PO₂ 92 HCO₃ 22 BE -2,1 SatO₂ 96% Lactato 1,8
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🖼 LSI - IMAGEM
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ESTRUTURA:
-${includeTime ? 'DD/MM HH:MM' : 'DD/MM'} (TIPO DE EXAME): ACHADOS ANORMAIS
+DD/MM HH:MM (TIPO DE EXAME): ACHADOS ANORMAIS
 
 REGRAS:
 ✅ SÓ relatar anormais (ignorar normalidade)
@@ -348,7 +331,7 @@ REGRAS:
 ❌ Condensar em descrição objetiva
 
 EXEMPLO:
-${includeTime ? '19/11 10:45' : '19/11'} (TC Crânio): Hipodensidade em território de ACM esquerda compatível com AVCi recente
+19/11 10:45 (TC Crânio): Hipodensidade em território de ACM esquerda compatível com AVCi recente
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -358,8 +341,6 @@ COMPORTAMENTO:
 • NÃO interpreto clinicamente
 • NÃO explico o exame
 • Aceito textos confusos, PDFs, imagens
-
-${includeTime ? '' : '⚠️ LEMBRETE FINAL: NÃO incluir HH:MM no output. Formato correto: DD/MM: (exemplo: 26/11: ou 19/11 (TC))'}
 
 SE NÃO FOR EXAME: "Envie um laudo de exame."
 
@@ -453,30 +434,7 @@ ${contextData}`,
     });
 
     if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error("AI response failed with status:", aiResponse.status, errorText);
-      
-      if (aiResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Limite de requisições excedido. Tente novamente mais tarde." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      
-      if (aiResponse.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Serviço temporariamente indisponível." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      
-      if (aiResponse.status === 503) {
-        return new Response(
-          JSON.stringify({ error: "Serviço temporariamente indisponível. Tente novamente em alguns instantes." }),
-          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      
+      console.error("AI response failed with status:", aiResponse.status);
       return new Response(
         JSON.stringify({ error: "Falha ao processar requisição. Tente novamente." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
