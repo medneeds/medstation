@@ -21,7 +21,8 @@ import {
   Copy,
   Check,
   FileDown,
-  FileUp
+  FileUp,
+  SeparatorVertical
 } from "lucide-react";
 import {
   Sheet,
@@ -48,6 +49,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Toggle } from "@/components/ui/toggle";
 
 interface Message {
   id: string;
@@ -115,6 +117,7 @@ export function AgentChat({
   const [historyOpen, setHistoryOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [usePipeSeparator, setUsePipeSeparator] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -299,7 +302,10 @@ export function AgentChat({
       setCurrentConversation(conversation);
     }
 
-    const messageContent = message;
+    let messageContent = message;
+    if (agentType === "examinus" && usePipeSeparator) {
+      messageContent += " (Use separador | entre exames diferentes)";
+    }
     setMessage("");
     setIsLoading(true);
 
@@ -947,6 +953,17 @@ export function AgentChat({
                 <Paperclip className="h-4 w-4" />
               )}
             </Button>
+          )}
+          {agentType === "examinus" && (
+            <Toggle
+              pressed={usePipeSeparator}
+              onPressedChange={setUsePipeSeparator}
+              size="sm"
+              className="shrink-0 data-[state=on]:bg-primary/20"
+              title="Separar exames com |"
+            >
+              <SeparatorVertical className="h-4 w-4" />
+            </Toggle>
           )}
           <Input
             value={message}
