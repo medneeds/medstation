@@ -967,15 +967,15 @@ export function AgentChat({
               >
                 <SeparatorVertical className="h-4 w-4" />
               </Toggle>
-              <Toggle
-                pressed={includeTime}
-                onPressedChange={setIncludeTime}
-                size="sm"
-                className="h-9 w-9 shrink-0 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground hover:bg-muted transition-all border border-border data-[state=on]:border-primary"
-                title="Incluir horário (HH:MM)"
-              >
-                <Clock className="h-4 w-4" />
-              </Toggle>
+              <div className="flex items-center gap-1.5 px-2 bg-muted/50 rounded-full h-9 hover:bg-muted transition-all border border-border" title="Incluir horário (HH:MM)">
+                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                <Switch
+                  id="include-time"
+                  checked={includeTime}
+                  onCheckedChange={setIncludeTime}
+                  className="data-[state=checked]:bg-primary"
+                />
+              </div>
             </>
           )}
           <Input
