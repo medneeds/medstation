@@ -82,7 +82,7 @@ serve(async (req) => {
     }
 
     // Parse request body
-    const { messages, fileContent } = await req.json();
+    const { messages, fileContent, usePipeSeparator } = await req.json();
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(
@@ -119,7 +119,9 @@ Exemplo: 20/11 14:30: Hb 12,5 Ht 37,2 | 19/11 08:00: Hb 11,8 Ht 35,6
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ESTRUTURA (linha única):
-DD/MM HH:MM: Hb X,X Ht X,X Leuco X.XXX Pqt XXX.XXX Cr X,XX Ur XX Na XXX K X,X Ca X,X PCR XX TP XX,X (RNI X,XX) TTPa XX
+${usePipeSeparator 
+  ? 'DD/MM HH:MM: Hb X,X | Ht X,X | Leuco X.XXX | Pqt XXX.XXX | Cr X,XX | Ur XX | Na XXX | K X,X | Ca X,X | PCR XX | TP XX,X (RNI X,XX) | TTPa XX' 
+  : 'DD/MM HH:MM: Hb X,X Ht X,X Leuco X.XXX Pqt XXX.XXX Cr X,XX Ur XX Na XXX K X,X Ca X,X PCR XX TP XX,X (RNI X,XX) TTPa XX'}
 
 ORDEM OBRIGATÓRIA:
 1. Data e hora
@@ -135,14 +137,16 @@ FORMATAÇÃO NUMÉRICA:
 • Outros: 2 casas → Cr 1,23
 • Milhares: ponto → Leuco 14.320
 • SEM UNIDADES (sem mg/dL, g/dL)
+${usePipeSeparator ? '• SEPARADOR: Use " | " (espaço barra espaço) entre cada parâmetro' : ''}
 
 EXAMES ESPECIAIS (nova linha):
 (EAS): SÓ ANORMAIS - Leucócitos 50-100/campo, Hemácias 10-20/campo
 (Gaso): pH 7,35 PCO₂ 38 PO₂ 92 HCO₃ 22 BE -2,1 SatO₂ 96% Lactato 1,8
 
 EXEMPLO COMPLETO:
-20/11 14:30: Hb 12,5 Ht 37,2 Leuco 14.320 Pqt 180.000 Cr 1,23 Ur 45 Na 138 K 4,2 PCR 58,3 TP 14,2 (RNI 1,15) TTPa 28,5
-(Gaso): pH 7,35 PCO₂ 38 PO₂ 92 HCO₃ 22 BE -2,1 SatO₂ 96% Lactato 1,8
+${usePipeSeparator 
+  ? '20/11 14:30: Hb 12,5 | Ht 37,2 | Leuco 14.320 | Pqt 180.000 | Cr 1,23 | Ur 45 | Na 138 | K 4,2 | PCR 58,3 | TP 14,2 (RNI 1,15) | TTPa 28,5\n(Gaso): pH 7,35 | PCO₂ 38 | PO₂ 92 | HCO₃ 22 | BE -2,1 | SatO₂ 96% | Lactato 1,8'
+  : '20/11 14:30: Hb 12,5 Ht 37,2 Leuco 14.320 Pqt 180.000 Cr 1,23 Ur 45 Na 138 K 4,2 PCR 58,3 TP 14,2 (RNI 1,15) TTPa 28,5\n(Gaso): pH 7,35 PCO₂ 38 PO₂ 92 HCO₃ 22 BE -2,1 SatO₂ 96% Lactato 1,8'}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🖼 LSI - IMAGEM

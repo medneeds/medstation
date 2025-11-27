@@ -103,10 +103,7 @@ export default function PublicExaminusChat() {
   const handleSend = async () => {
     if ((!input.trim() && !selectedFile) || isLoading) return;
 
-    let messageContent = input || "Extraia e formate este exame:";
-    if (usePipeSeparator) {
-      messageContent += " (Use separador | entre exames diferentes)";
-    }
+    const messageContent = input || "Extraia e formate este exame:";
 
     const userMessage: Message = { 
       role: "user", 
@@ -127,7 +124,8 @@ export default function PublicExaminusChat() {
       const { data, error } = await supabase.functions.invoke("public-examinus", {
         body: { 
           messages: [...messages, userMessage],
-          fileContent 
+          fileContent,
+          usePipeSeparator
         }
       });
 
