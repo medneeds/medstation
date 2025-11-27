@@ -289,10 +289,10 @@ Qualquer texto explicativo
 ${includeTime ? '20/11 14:30: Hb 12,5...' : '20/11: Hb 12,5...'} (para LSL)
 ${includeTime ? '19/11 10:45 (TC Crânio): Hipodensidade...' : '19/11 (TC Crânio): Hipodensidade...'} (para LSI)
 
-⚠️ REGRA CRÍTICA DE HORÁRIO:
+⚠️ REGRA CRÍTICA ABSOLUTA DE HORÁRIO:
 ${includeTime 
-  ? 'SEMPRE incluir horário no formato HH:MM após a data'
-  : '⛔ NUNCA incluir horário (HH:MM). Use APENAS a data DD/MM seguida de dois pontos. Exemplo: 27/11: (e NÃO 27/11 08:36:)'}
+  ? '✅ SEMPRE incluir horário no formato HH:MM após a data. Formato obrigatório: DD/MM HH:MM:'
+  : '⛔ PROIBIDO incluir horário. Use APENAS DD/MM: (sem HH:MM). Exemplos CORRETOS: "20/11:" ou "19/11 (TC Crânio)". Exemplos ERRADOS: "20/11 14:30:" ou "19/11 10:45 (TC Crânio)"'}
 
 💡 OPÇÃO DE ORGANIZAÇÃO:
 ${usePipeSeparator ? 'Use barra vertical " | " (com espaços) para separar cada parâmetro do exame.' : 'Separe parâmetros apenas com espaço.'}
@@ -310,7 +310,7 @@ ${usePipeSeparator
   : `${includeTime ? 'DD/MM HH:MM' : 'DD/MM'}: Hb X,X Ht X,X Leuco X.XXX Pqt XXX.XXX Cr X,XX Ur XX Na XXX K X,X Ca X,X PCR XX TP XX,X (RNI X,XX) TTPa XX`}
 
 ORDEM OBRIGATÓRIA:
-1. Data${includeTime ? ' e hora' : ''}
+1. ${includeTime ? 'Data com hora obrigatória (DD/MM HH:MM)' : 'Data SEM hora (DD/MM apenas)'}
 2. Hemograma (Hb, Ht, Leuco, Pqt)
 3. Função renal (Cr, Ur)
 4. Eletrólitos (Na, K, Ca)
@@ -358,6 +358,8 @@ COMPORTAMENTO:
 • NÃO interpreto clinicamente
 • NÃO explico o exame
 • Aceito textos confusos, PDFs, imagens
+
+${includeTime ? '' : '⚠️ LEMBRETE FINAL: NÃO incluir HH:MM no output. Formato correto: DD/MM: (exemplo: 26/11: ou 19/11 (TC))'}
 
 SE NÃO FOR EXAME: "Envie um laudo de exame."
 
