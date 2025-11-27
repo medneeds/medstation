@@ -962,20 +962,20 @@ export function AgentChat({
                 pressed={usePipeSeparator}
                 onPressedChange={setUsePipeSeparator}
                 size="sm"
-                className="shrink-0 data-[state=on]:bg-primary/20 h-4 w-4"
+                className="shrink-0 data-[state=on]:bg-primary/20 h-7 w-7"
                 title="Separar exames com |"
               >
-                <SeparatorVertical className="h-2 w-2" />
+                <SeparatorVertical className="h-3 w-3" />
               </Toggle>
-              <div className="flex items-center gap-1 px-1">
+              <div className="flex items-center gap-1.5 px-1.5">
                 <Switch
                   id="include-time"
                   checked={includeTime}
                   onCheckedChange={setIncludeTime}
-                  className="data-[state=checked]:bg-primary scale-50"
+                  className="data-[state=checked]:bg-primary scale-75"
                 />
-                <Label htmlFor="include-time" className="text-[10px] cursor-pointer flex items-center gap-0.5">
-                  <Clock className="h-2 w-2" />
+                <Label htmlFor="include-time" className="text-[11px] cursor-pointer flex items-center gap-0.5">
+                  <Clock className="h-2.5 w-2.5" />
                   Horário
                 </Label>
               </div>
@@ -991,7 +991,7 @@ export function AgentChat({
               }
             }}
             placeholder={isMobile ? "Mensagem..." : placeholder}
-            className="flex-1 text-xs md:text-sm h-6"
+            className="flex-1 text-sm h-8"
             disabled={isRecording || isLoading}
           />
           {isRecording ? (

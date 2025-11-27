@@ -402,20 +402,20 @@ export default function PublicExaminusChat() {
               pressed={usePipeSeparator}
               onPressedChange={setUsePipeSeparator}
               size="sm"
-              className="h-5 w-5 shrink-0 rounded-full data-[state=on]:bg-primary/20"
+              className="h-7 w-7 shrink-0 rounded-full data-[state=on]:bg-primary/20"
               title="Separar exames com |"
             >
-              <SeparatorVertical className="w-2 h-2" />
+              <SeparatorVertical className="w-3 h-3" />
             </Toggle>
-            <div className="flex items-center gap-1 px-1.5 bg-muted/50 rounded-full h-5">
+            <div className="flex items-center gap-1.5 px-2 bg-muted/50 rounded-full h-7">
               <Switch
                 id="include-time-desktop"
                 checked={includeTime}
                 onCheckedChange={setIncludeTime}
-                className="data-[state=checked]:bg-primary scale-50"
+                className="data-[state=checked]:bg-primary scale-75"
               />
-              <Label htmlFor="include-time-desktop" className="text-[10px] cursor-pointer flex items-center gap-0.5">
-                <Clock className="w-2 h-2" />
+              <Label htmlFor="include-time-desktop" className="text-[11px] cursor-pointer flex items-center gap-1">
+                <Clock className="w-2.5 h-2.5" />
                 Horário
               </Label>
             </div>
@@ -424,7 +424,7 @@ export default function PublicExaminusChat() {
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={hasMessages ? "Digite ou cole exames..." : "Cole exames aqui"}
-              className="min-h-[22px] max-h-[60px] resize-none text-sm bg-background border-border placeholder:text-muted-foreground/70 focus:border-primary/50 focus:ring-primary/20 transition-all rounded-3xl px-3 py-1.5"
+              className="min-h-[32px] max-h-[90px] resize-none text-sm bg-background border-border placeholder:text-muted-foreground/70 focus:border-primary/50 focus:ring-primary/20 transition-all rounded-3xl px-3 py-2"
               disabled={isLoading}
             />
             <Button
@@ -452,35 +452,35 @@ export default function PublicExaminusChat() {
             />
             <Button
               variant="outline"
-              size="sm"
+              size="default"
               onClick={() => fileInputRef.current?.click()}
               disabled={isLoading}
-              className="self-end h-[35px] w-[35px] border-dashed hover:border-primary hover:bg-primary/5 transition-all group shrink-0"
+              className="self-end h-[50px] w-[50px] border-dashed hover:border-primary hover:bg-primary/5 transition-all group shrink-0"
               title="Fazer upload de imagem ou PDF"
             >
-              <Upload className="w-3 h-3 group-hover:scale-110 transition-transform" />
+              <Upload className="w-4 h-4 group-hover:scale-110 transition-transform" />
             </Button>
             <Toggle
               pressed={usePipeSeparator}
               onPressedChange={setUsePipeSeparator}
-              size="sm"
-              className="self-end h-[35px] w-[35px] data-[state=on]:bg-primary/10 data-[state=on]:border-primary transition-all"
+              size="default"
+              className="self-end h-[50px] w-[50px] data-[state=on]:bg-primary/10 data-[state=on]:border-primary transition-all"
               title="Separar exames com barra vertical |"
             >
               <div className="flex flex-col items-center gap-0.5">
-                <SeparatorVertical className="w-3 h-3" />
-                <span className="text-[8px]">Separar</span>
+                <SeparatorVertical className="w-4 h-4" />
+                <span className="text-[9px]">Separar</span>
               </div>
             </Toggle>
-            <div className="self-end flex flex-col items-center gap-1 p-1.5 border rounded-lg bg-muted/30 h-[35px] w-[35px] justify-center">
+            <div className="self-end flex flex-col items-center gap-1.5 p-2 border rounded-lg bg-muted/30 h-[50px] w-[50px] justify-center">
               <Switch
                 id="include-time-mobile"
                 checked={includeTime}
                 onCheckedChange={setIncludeTime}
-                className="data-[state=checked]:bg-primary scale-50"
+                className="data-[state=checked]:bg-primary scale-75"
               />
-              <Label htmlFor="include-time-mobile" className="text-[8px] cursor-pointer flex items-center gap-0.5">
-                <Clock className="w-2 h-2" />
+              <Label htmlFor="include-time-mobile" className="text-[9px] cursor-pointer flex items-center gap-0.5">
+                <Clock className="w-2.5 h-2.5" />
                 Horário
               </Label>
             </div>
@@ -489,14 +489,14 @@ export default function PublicExaminusChat() {
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={hasMessages ? "Cole mais exames aqui..." : "Cole resultados de exames - hemograma, bioquímica, imagens, PDFs... Literalmente qualquer um! 😎"}
-              className="min-h-[35px] max-h-[90px] resize-none text-sm bg-background border-border placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20 transition-all flex-1"
+              className="min-h-[50px] max-h-[130px] resize-none text-sm bg-background border-border placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20 transition-all flex-1"
               disabled={isLoading}
             />
             <Button
               onClick={handleSend}
               disabled={isLoading || (!input.trim() && !selectedFile)}
-              size="sm"
-              className="self-end h-[35px] w-[35px] shadow-medical hover:shadow-elevated hover:scale-105 transition-all shrink-0"
+              size="default"
+              className="self-end h-[50px] w-[50px] shadow-medical hover:shadow-elevated hover:scale-105 transition-all shrink-0"
             >
               {isLoading ? (
                 <Loader2 className="w-6 h-6 animate-spin" />
