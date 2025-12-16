@@ -379,66 +379,73 @@ export default function PublicExaminusChat() {
             </div>
           )}
 
-          {/* Mobile: Horizontal layout like WhatsApp */}
-          <div className="flex md:hidden gap-2 items-end">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp,application/pdf"
-              onChange={handleFileSelect}
-              className="hidden"
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isLoading}
-              className="h-10 w-10 shrink-0 rounded-full hover:bg-primary/10 transition-all group"
-              title="Upload"
-            >
-              <Upload className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
-            </Button>
-            <Toggle
-              pressed={usePipeSeparator}
-              onPressedChange={setUsePipeSeparator}
-              size="sm"
-              className="h-10 w-10 shrink-0 rounded-full data-[state=on]:bg-primary/20"
-              title="Separar exames com |"
-            >
-              <SeparatorVertical className="w-4 h-4" />
-            </Toggle>
-            <div className="flex items-center gap-2 px-2 bg-muted/50 rounded-full h-10">
-              <Switch
-                id="include-time-desktop"
-                checked={includeTime}
-                onCheckedChange={setIncludeTime}
-                className="data-[state=checked]:bg-primary"
-              />
-              <Label htmlFor="include-time-desktop" className="text-xs cursor-pointer flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                Horário
-              </Label>
+          {/* Mobile: Clean WhatsApp-style layout */}
+          <div className="flex md:hidden flex-col gap-2">
+            {/* Formatting options row - compact */}
+            <div className="flex items-center gap-2 px-1">
+              <Toggle
+                pressed={usePipeSeparator}
+                onPressedChange={setUsePipeSeparator}
+                size="sm"
+                className="h-7 px-2 text-xs rounded-full data-[state=on]:bg-primary/20"
+                title="Separar exames com |"
+              >
+                <SeparatorVertical className="w-3 h-3 mr-1" />
+                <span>Separar</span>
+              </Toggle>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-muted/50 rounded-full h-7">
+                <Switch
+                  id="include-time-mobile"
+                  checked={includeTime}
+                  onCheckedChange={setIncludeTime}
+                  className="data-[state=checked]:bg-primary scale-75"
+                />
+                <Label htmlFor="include-time-mobile" className="text-[10px] cursor-pointer flex items-center gap-1">
+                  <Clock className="w-2.5 h-2.5" />
+                  Horário
+                </Label>
+              </div>
             </div>
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder={hasMessages ? "Digite ou cole exames..." : "Cole exames aqui"}
-              className="min-h-[44px] max-h-[120px] resize-none text-base bg-background border-border placeholder:text-muted-foreground/70 focus:border-primary/50 focus:ring-primary/20 transition-all rounded-3xl px-4 py-3"
-              disabled={isLoading}
-            />
-            <Button
-              onClick={handleSend}
-              disabled={isLoading || (!input.trim() && !selectedFile)}
-              size="icon"
-              className="h-10 w-10 shrink-0 rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all"
-            >
-              {isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <Send className="w-5 h-5" />
-              )}
-            </Button>
+            {/* Input row */}
+            <div className="flex gap-2 items-end">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isLoading}
+                className="h-10 w-10 shrink-0 rounded-full hover:bg-primary/10 transition-all"
+                title="Upload"
+              >
+                <Upload className="w-5 h-5 text-primary" />
+              </Button>
+              <Textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={hasMessages ? "Cole exames..." : "Cole exames aqui"}
+                className="min-h-[44px] max-h-[100px] resize-none text-base bg-background border-border placeholder:text-muted-foreground/70 focus:border-primary/50 focus:ring-primary/20 transition-all rounded-2xl px-4 py-2.5 flex-1"
+                disabled={isLoading}
+              />
+              <Button
+                onClick={handleSend}
+                disabled={isLoading || (!input.trim() && !selectedFile)}
+                size="icon"
+                className="h-10 w-10 shrink-0 rounded-full shadow-md hover:shadow-lg transition-all"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Send className="w-5 h-5" />
+                )}
+              </Button>
+            </div>
           </div>
 
           {/* Desktop: Original layout */}
