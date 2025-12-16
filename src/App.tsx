@@ -24,6 +24,7 @@ import Numerus from "./pages/Numerus";
 import Prescriptus from "@/pages/Prescriptus";
 import Codexus from "@/pages/Codexus";
 import Gasometrus from "@/pages/Gasometrus";
+import Atestus from "@/pages/Atestus";
 import Prescriptions from "@/pages/Prescriptions";
 import NewPrescription from "@/pages/NewPrescription";
 import PrescriptionDetail from "@/pages/PrescriptionDetail";
@@ -175,6 +176,16 @@ const App = () => (
                 <ProtectedRoute>
                   <DashboardLayout>
                     <Gasometrus />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/atestus"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <Atestus />
                   </DashboardLayout>
                 </ProtectedRoute>
               }

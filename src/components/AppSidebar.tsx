@@ -17,6 +17,7 @@ import {
   Database,
   StickyNote,
   Wind,
+  FileCheck,
 } from "lucide-react";
 import {
   Sidebar,
@@ -52,6 +53,7 @@ const agentModules = [
   { title: "Scorius", url: "/scorius", icon: Calculator },
   { title: "Numerus", url: "/numerus", icon: Database },
   { title: "Prescriptus", url: "/prescriptus", icon: Pill },
+  { title: "Atestus", url: "/atestus", icon: FileCheck },
   { title: "CODexus", url: "/codexus", icon: FileText },
 ];
 

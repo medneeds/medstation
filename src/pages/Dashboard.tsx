@@ -18,6 +18,7 @@ import {
   TestTube,
   Folder,
   Wind,
+  FileCheck,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSubscription } from "@/contexts/SubscriptionContext";
@@ -119,6 +120,14 @@ const agentModules = [
     icon: Wind,
     url: "/gasometrus",
     color: "text-cyan-500",
+    isPremium: true,
+  },
+  {
+    title: "Atestus",
+    description: "Geração inteligente de atestados médicos",
+    icon: FileCheck,
+    url: "/atestus",
+    color: "text-emerald-500",
     isPremium: true,
   },
 ];
