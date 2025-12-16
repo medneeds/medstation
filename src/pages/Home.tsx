@@ -2,11 +2,25 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Sparkles, Activity, Brain, Calculator, Pill, FileCode, TestTube2, Wind, FileCheck, BookOpen, Compass } from "lucide-react";
+import { ArrowRight, Sparkles, Activity, Brain, Calculator, Pill, FileCode, TestTube2, Wind, FileCheck, BookOpen, Compass, Stethoscope, Sigma } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PublicExaminusChat from "@/components/PublicExaminusChat";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+
+// Definição centralizada dos agentes com descrições precisas
+const agents = [
+  { name: "Examinus", icon: TestTube2, shortDesc: "Exames", fullDesc: "Extração e formatação de exames laboratoriais e de imagem", color: "from-purple-500 to-purple-600" },
+  { name: "Clínicus", icon: Stethoscope, shortDesc: "Anamnese", fullDesc: "Anamneses hospitalares estruturadas e passagem de plantão", color: "from-blue-500 to-blue-600" },
+  { name: "Scorius", icon: Calculator, shortDesc: "Scores", fullDesc: "Cálculo e interpretação de scores clínicos e escalas prognósticas", color: "from-red-500 to-red-600" },
+  { name: "Numerus", icon: Sigma, shortDesc: "Cálculos", fullDesc: "Calculadoras médicas e conversão de unidades", color: "from-green-500 to-green-600" },
+  { name: "Prescriptus", icon: Pill, shortDesc: "Prescrição", fullDesc: "Prescrições estruturadas com Bula Inteligente integrada", color: "from-orange-500 to-orange-600" },
+  { name: "CODexus", icon: FileCode, shortDesc: "CID-10", fullDesc: "Codificação CID-10, TISS e procedimentos médicos", color: "from-indigo-500 to-indigo-600" },
+  { name: "Gasometrus", icon: Wind, shortDesc: "Gasometria", fullDesc: "Análise completa e interpretação de gasometria arterial", color: "from-cyan-500 to-cyan-600" },
+  { name: "Atestus", icon: FileCheck, shortDesc: "Atestados", fullDesc: "Geração de atestados médicos e declarações", color: "from-emerald-500 to-emerald-600" },
+  { name: "Protocolus", icon: BookOpen, shortDesc: "Protocolos", fullDesc: "Consulta a protocolos e guidelines nacionais e internacionais", color: "from-amber-500 to-amber-600" },
+  { name: "Orientus", icon: Compass, shortDesc: "Orientações", fullDesc: "Orientações ao paciente e instruções de alta hospitalar", color: "from-rose-500 to-rose-600" },
+];
 
 export default function Home() {
   const navigate = useNavigate();
@@ -151,24 +165,13 @@ export default function Home() {
               </span>
             </h2>
             <p className="text-sm md:text-base lg:text-lg text-muted-foreground max-w-xl mx-auto">
-              10 assistentes especializados trabalhando juntos para você
+              10 assistentes especializados para acelerar sua rotina médica
             </p>
           </div>
 
           {/* Agents Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 mb-10 md:mb-14 lg:mb-16">
-            {[
-              { name: "Examinus", icon: TestTube2, desc: "Exames", color: "from-purple-500 to-purple-600" },
-              { name: "Clínicus", icon: Activity, desc: "Anamnese", color: "from-blue-500 to-blue-600" },
-              { name: "Scorius", icon: Calculator, desc: "Scores", color: "from-red-500 to-red-600" },
-              { name: "Numerus", icon: Calculator, desc: "Cálculos", color: "from-green-500 to-green-600" },
-              { name: "Prescriptus", icon: Pill, desc: "Prescrição", color: "from-orange-500 to-orange-600" },
-              { name: "CODexus", icon: FileCode, desc: "CID-10", color: "from-indigo-500 to-indigo-600" },
-              { name: "Gasometrus", icon: Wind, desc: "Gasometria", color: "from-cyan-500 to-cyan-600" },
-              { name: "Atestus", icon: FileCheck, desc: "Atestados", color: "from-emerald-500 to-emerald-600" },
-              { name: "Protocolus", icon: BookOpen, desc: "Protocolos", color: "from-amber-500 to-amber-600" },
-              { name: "Orientus", icon: Compass, desc: "Orientações", color: "from-orange-500 to-orange-600" },
-            ].map((agent, i) => {
+            {agents.map((agent, i) => {
               const Icon = agent.icon;
               return (
                 <div 
@@ -180,7 +183,7 @@ export default function Home() {
                     <Icon className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
                   <h4 className="font-semibold text-xs md:text-sm mb-0.5">{agent.name}</h4>
-                  <p className="text-[10px] md:text-xs text-muted-foreground">{agent.desc}</p>
+                  <p className="text-[10px] md:text-xs text-muted-foreground">{agent.shortDesc}</p>
                 </div>
               );
             })}
@@ -212,7 +215,7 @@ export default function Home() {
               className="shadow-medical hover:shadow-elevated transition-all hover:scale-105 px-8"
               onClick={() => scrollToSection('planos')}
             >
-              Ver todos os planos
+              Ver planos e preços
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
@@ -224,13 +227,13 @@ export default function Home() {
         <div className="container mx-auto text-center max-w-5xl">
           <div className="mb-8 md:mb-10 lg:mb-12 space-y-3 md:space-y-4 px-4">
             <Badge variant="secondary" className="backdrop-blur-sm text-xs md:text-sm">
-              Preço transparente
+              Preço justo para médicos
             </Badge>
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight">
               Comece grátis, evolua quando quiser
             </h2>
             <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
-              Examinus sempre grátis. Premium desbloqueia todo o ecossistema.
+              Examinus sempre grátis. Pro desbloqueia todos os 10 assistentes.
             </p>
           </div>
 
@@ -240,7 +243,7 @@ export default function Home() {
               <div className="space-y-4 md:space-y-5 flex-1 flex flex-col">
                 <div>
                   <h3 className="text-xl md:text-2xl font-bold mb-1">Grátis</h3>
-                  <p className="text-xs md:text-sm text-muted-foreground">Examinus ilimitado</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">Examinus ilimitado para sempre</p>
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className="text-3xl md:text-4xl lg:text-5xl font-bold">R$ 0</span>
@@ -249,11 +252,11 @@ export default function Home() {
                 <ul className="space-y-2.5 text-sm flex-1">
                   <li className="flex items-start gap-2 text-muted-foreground">
                     <div className="w-1 h-1 rounded-full bg-primary mt-2"></div>
-                    <span><strong className="text-foreground">Organização e estruturação inteligente</strong> de qualquer resultado de exame laboratorial (hemograma, bioquímica, gasometria) e de imagem (tomografia, raio-X, ultrassom)</span>
+                    <span><strong className="text-foreground">Examinus ilimitado:</strong> extração e formatação inteligente de exames laboratoriais e de imagem</span>
                   </li>
                   <li className="flex items-start gap-2 text-muted-foreground">
                     <div className="w-1 h-1 rounded-full bg-primary mt-2"></div>
-                    <span>Uso ilimitado dentro da plataforma (cadastro gratuito)</span>
+                    <span>Aceita PDFs, fotos, textos confusos — qualquer formato</span>
                   </li>
                 </ul>
                 
@@ -283,7 +286,7 @@ export default function Home() {
                 <div className="relative">
                   <div className="absolute inset-0 bg-gradient-primary blur-lg opacity-70 animate-pulse"></div>
                   <Badge className="relative bg-gradient-primary text-primary-foreground border-0 px-4 py-1.5 text-xs font-bold shadow-lg">
-                    🔥 POPULAR
+                    RECOMENDADO
                   </Badge>
                 </div>
               </div>
@@ -291,13 +294,13 @@ export default function Home() {
               <div className="space-y-4 md:space-y-5 relative">
                 <div>
                   <h3 className="text-xl md:text-2xl font-bold mb-1 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">Pro</h3>
-                  <p className="text-xs md:text-sm text-muted-foreground">Ecossistema completo • 10 assistentes IA</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">10 assistentes IA especializados</p>
                 </div>
                 
                 {/* Pricing */}
                 <div className="my-4 md:my-6">
                   <div className="inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1 md:py-1.5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-full mb-3">
-                    <span className="text-[10px] md:text-xs font-bold text-green-600 dark:text-green-400">67% DE DESCONTO</span>
+                    <span className="text-[10px] md:text-xs font-bold text-green-600 dark:text-green-400">OFERTA DE LANÇAMENTO</span>
                   </div>
                   
                   <div className="flex items-end gap-2 md:gap-3">
@@ -315,27 +318,16 @@ export default function Home() {
                   <div className="flex items-center gap-2 p-2 md:p-3 bg-muted/50 rounded-lg border border-border/50 mt-3">
                     <div className="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-primary animate-pulse"></div>
                     <span className="text-[10px] md:text-xs text-muted-foreground">
-                      Ou <span className="font-bold text-foreground">R$ 199,90/ano</span> • Economize R$ 38,90
+                      Ou <span className="font-bold text-foreground">R$ 199,90/ano</span> — economize 2 meses
                     </span>
                   </div>
                 </div>
                 
                 <ul className="space-y-2 md:space-y-2.5 text-xs md:text-sm">
-                  {[
-                    { name: "Examinus", desc: "Interpretação de exames" },
-                    { name: "Clínicus", desc: "Anamneses estruturadas" },
-                    { name: "Scorius", desc: "Cálculo de scores clínicos" },
-                    { name: "Prescriptus", desc: "Prescrições baseadas em evidências" },
-                    { name: "Numerus", desc: "Calculadoras médicas" },
-                    { name: "CODexus", desc: "Codificação CID-10 e TISS" },
-                    { name: "Gasometrus", desc: "Análise de gasometria arterial" },
-                    { name: "Atestus", desc: "Geração de atestados médicos" },
-                    { name: "Protocolus", desc: "Protocolos clínicos e guidelines" },
-                    { name: "Orientus", desc: "Orientações ao paciente e alta" }
-                  ].map((agent, i) => (
+                  {agents.map((agent, i) => (
                     <li key={i} className="flex items-start gap-2">
                       <div className="w-1 h-1 rounded-full bg-primary mt-2"></div>
-                      <span><strong className="text-foreground">{agent.name}:</strong> {agent.desc}</span>
+                      <span><strong className="text-foreground">{agent.name}:</strong> {agent.fullDesc}</span>
                     </li>
                   ))}
                 </ul>
@@ -349,9 +341,9 @@ export default function Home() {
                       </svg>
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-bold text-xs md:text-sm text-foreground mb-0.5 md:mb-1">Garantia incondicional de 7 dias</h4>
+                      <h4 className="font-bold text-xs md:text-sm text-foreground mb-0.5 md:mb-1">Garantia de 7 dias</h4>
                       <p className="text-[10px] md:text-xs text-muted-foreground leading-relaxed">
-                        Teste sem riscos. Se não ficar satisfeito, devolvemos 100% do seu dinheiro.
+                        Teste sem risco. Se não gostar, devolvemos 100% do valor.
                       </p>
                     </div>
                   </div>
@@ -362,12 +354,12 @@ export default function Home() {
                   onClick={handleSubscribe}
                   disabled={loading}
                 >
-                  {loading ? "Processando..." : "Começar agora"}
+                  {loading ? "Processando..." : "Assinar agora"}
                   {!loading && <ArrowRight className="ml-2 h-3.5 md:h-4 w-3.5 md:w-4" />}
                 </Button>
                 
                 <p className="text-[10px] md:text-xs text-center text-muted-foreground">
-                  Cancele quando quiser • Sem taxa
+                  Cancele quando quiser • Sem multa
                 </p>
               </div>
             </Card>
@@ -384,7 +376,7 @@ export default function Home() {
               Comece em 30 segundos
             </h2>
             <p className="text-sm md:text-base lg:text-lg text-muted-foreground">
-              Sem cartão. Sem burocracia. Apenas IA médica que funciona.
+              Sem cartão. Sem burocracia. Examinus grátis para sempre.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -407,7 +399,7 @@ export default function Home() {
           </div>
           <p className="text-[10px] md:text-xs text-muted-foreground flex flex-wrap items-center justify-center gap-1.5 md:gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-            <span>Examinus grátis • Pro R$ 19,90/mês</span>
+            <span>Examinus grátis • Pro a partir de R$ 19,90/mês</span>
           </p>
         </div>
       </section>

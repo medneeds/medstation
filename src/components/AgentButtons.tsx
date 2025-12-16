@@ -34,7 +34,7 @@ const agents = [
   { name: "Gasometrus", path: "/gasometrus", icon: Wind, color: "text-cyan-600" },
   { name: "Atestus", path: "/atestus", icon: FileCheck, color: "text-emerald-600" },
   { name: "Protocolus", path: "/protocolus", icon: BookOpen, color: "text-amber-600" },
-  { name: "Orientus", path: "/orientus", icon: Compass, color: "text-orange-600" },
+  { name: "Orientus", path: "/orientus", icon: Compass, color: "text-rose-600" },
 ];
 
 export function AgentButtons({ caseId }: AgentButtonsProps) {

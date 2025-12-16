@@ -45,16 +45,16 @@ interface SearchDialogProps {
 }
 
 const agents = [
-  { name: "Examinus", path: "/examinus", icon: FlaskConical, color: "text-purple-500", description: "Análise de exames laboratoriais e de imagem" },
-  { name: "Clínicus", path: "/clinicus", icon: Stethoscope, color: "text-blue-500", description: "Anamneses estruturadas e passagem de caso" },
-  { name: "Scorius", path: "/scorius", icon: Calculator, color: "text-red-500", description: "Scores prognósticos e escalas clínicas" },
-  { name: "Numerus", path: "/numerus", icon: Sigma, color: "text-green-500", description: "Cálculos clínicos e conversões" },
-  { name: "Prescriptus", path: "/prescriptus", icon: Pill, color: "text-orange-500", description: "Prescrições estruturadas" },
-  { name: "CODexus", path: "/codexus", icon: FileText, color: "text-indigo-500", description: "Codificação CID-10 e LOINC" },
-  { name: "Gasometrus", path: "/gasometrus", icon: Wind, color: "text-cyan-500", description: "Análise de gasometria arterial" },
-  { name: "Atestus", path: "/atestus", icon: FileCheck, color: "text-emerald-500", description: "Geração de atestados médicos" },
-  { name: "Protocolus", path: "/protocolus", icon: BookOpen, color: "text-amber-500", description: "Protocolos e guidelines clínicos" },
-  { name: "Orientus", path: "/orientus", icon: Compass, color: "text-orange-500", description: "Orientações ao paciente" },
+  { name: "Examinus", path: "/examinus", icon: FlaskConical, color: "text-purple-500", description: "Extração e formatação de exames laboratoriais e de imagem" },
+  { name: "Clínicus", path: "/clinicus", icon: Stethoscope, color: "text-blue-500", description: "Anamneses hospitalares estruturadas e passagem de plantão" },
+  { name: "Scorius", path: "/scorius", icon: Calculator, color: "text-red-500", description: "Cálculo e interpretação de scores clínicos e escalas prognósticas" },
+  { name: "Numerus", path: "/numerus", icon: Sigma, color: "text-green-500", description: "Calculadoras médicas e conversão de unidades" },
+  { name: "Prescriptus", path: "/prescriptus", icon: Pill, color: "text-orange-500", description: "Prescrições estruturadas com Bula Inteligente" },
+  { name: "CODexus", path: "/codexus", icon: FileText, color: "text-indigo-500", description: "Codificação CID-10, TISS e procedimentos" },
+  { name: "Gasometrus", path: "/gasometrus", icon: Wind, color: "text-cyan-500", description: "Análise completa e interpretação de gasometria arterial" },
+  { name: "Atestus", path: "/atestus", icon: FileCheck, color: "text-emerald-500", description: "Geração de atestados médicos e declarações" },
+  { name: "Protocolus", path: "/protocolus", icon: BookOpen, color: "text-amber-500", description: "Consulta a protocolos e guidelines nacionais e internacionais" },
+  { name: "Orientus", path: "/orientus", icon: Compass, color: "text-rose-500", description: "Orientações ao paciente e instruções de alta hospitalar" },
 ];
 
 const quickActions = [
