@@ -17,6 +17,7 @@ import {
   Crown,
   TestTube,
   Folder,
+  Wind,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSubscription } from "@/contexts/SubscriptionContext";
@@ -110,6 +111,14 @@ const agentModules = [
     icon: FileText,
     url: "/codexus",
     color: "text-primary",
+    isPremium: true,
+  },
+  {
+    title: "Gasometrus",
+    description: "Análise avançada de gasometria arterial",
+    icon: Wind,
+    url: "/gasometrus",
+    color: "text-cyan-500",
     isPremium: true,
   },
 ];
