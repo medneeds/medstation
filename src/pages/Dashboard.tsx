@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   Stethoscope,
   FlaskConical,
-  Calculator,
   Pill,
   FileText,
   Users,
@@ -21,6 +20,7 @@ import {
   FileCheck,
   BookOpen,
   Compass,
+  Sigma,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSubscription } from "@/contexts/SubscriptionContext";
@@ -70,7 +70,7 @@ const practiceModules = [
 const agentModules = [
   {
     title: "Clínicus",
-    description: "Relatórios de transferência e evolução clínica",
+    description: "Anamneses estruturadas e passagem de caso",
     icon: Stethoscope,
     url: "/clinicus",
     color: "text-primary",
@@ -95,7 +95,7 @@ const agentModules = [
   {
     title: "Numerus",
     description: "Cálculos clínicos e conversões de unidades",
-    icon: Calculator,
+    icon: Sigma,
     url: "/numerus",
     color: "text-accent",
     isPremium: true,

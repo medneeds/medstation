@@ -3,23 +3,24 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   Stethoscope,
   FlaskConical,
-  Calculator,
+  Sigma,
   Pill,
   FileText,
   Users,
-  Settings,
   LogOut,
   Activity,
   Folder,
   CreditCard,
   User,
   Home,
-  Database,
   StickyNote,
   Wind,
   FileCheck,
   BookOpen,
   Compass,
+  Calculator,
+  Moon,
+  Sun,
 } from "lucide-react";
 import {
   Sidebar,
@@ -35,6 +36,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProfile } from "@/contexts/ProfileContext";
+import { useTheme } from "next-themes";
 
 const homeModule = { title: "Início", url: "/dashboard", icon: Home };
 
@@ -53,7 +55,7 @@ const agentModules = [
   { title: "Examinus", url: "/examinus", icon: Activity },
   { title: "Gasometrus", url: "/gasometrus", icon: Wind },
   { title: "Scorius", url: "/scorius", icon: Calculator },
-  { title: "Numerus", url: "/numerus", icon: Database },
+  { title: "Numerus", url: "/numerus", icon: Sigma },
   { title: "Prescriptus", url: "/prescriptus", icon: Pill },
   { title: "Atestus", url: "/atestus", icon: FileCheck },
   { title: "Protocolus", url: "/protocolus", icon: BookOpen },
@@ -71,6 +73,7 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const navigate = useNavigate();
   const { profile } = useProfile();
+  const { theme, setTheme } = useTheme();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -189,6 +192,20 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  tooltip={theme === "dark" ? "Modo claro" : "Modo escuro"} 
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className="hover:bg-muted/50 hover:translate-x-1 transition-all duration-200"
+                >
+                  {theme === "dark" ? (
+                    <Sun className="h-4 w-4" />
+                  ) : (
+                    <Moon className="h-4 w-4" />
+                  )}
+                  {!collapsed && <span className="animate-fade-in">{theme === "dark" ? "Modo claro" : "Modo escuro"}</span>}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   tooltip="Sair" 
