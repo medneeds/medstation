@@ -1136,16 +1136,16 @@ TIPOS DE ATESTADOS DISPONÍVEIS
    • Especifica necessidade médica
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ESTRUTURA PADRÃO DO ATESTADO
+ESTRUTURA PADRÃO DO ATESTADO DE AFASTAMENTO
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ATESTADO MÉDICO
 
-Atesto, para os devidos fins, que o(a) Sr(a). [NOME COMPLETO], portador(a) do CPF [XXX.XXX.XXX-XX], [DESCRIÇÃO DA SITUAÇÃO MÉDICA].
+Atesto, para os devidos fins, que o(a) Sr(a). [NOME COMPLETO], portador(a) do CPF [XXX.XXX.XXX-XX], esteve sob meus cuidados médicos nesta data, apresentando quadro especificado em CID que o(a) incapacita para suas atividades habituais.
 
-[PERÍODO DE AFASTAMENTO se aplicável]
+Desta forma, justifico seu afastamento de suas atividades por [PERÍODO POR EXTENSO].
 
-[CID-10 se autorizado e aplicável]
+CID-10: [CÓDIGO]
 
 [Local], [Data por extenso]
 
