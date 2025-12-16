@@ -24,7 +24,8 @@ import {
   FileUp,
   SeparatorVertical,
   Clock,
-  Pill
+  Pill,
+  ListChecks
 } from "lucide-react";
 import {
   Sheet,
@@ -125,6 +126,7 @@ export function AgentChat({
   const [includeTime, setIncludeTime] = useState(true);
   const [directAHEMode, setDirectAHEMode] = useState(false);
   const [bulaInteligenteMode, setBulaInteligenteMode] = useState(false);
+  const [directLIMode, setDirectLIMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -359,7 +361,8 @@ export function AgentChat({
           caseId: selectedCaseId,
           ...(agentType === "examinus" && { usePipeSeparator, includeTime }),
           ...(agentType === "clinicus" && { directAHEMode }),
-          ...(agentType === "prescriptus" && { bulaInteligenteMode })
+          ...(agentType === "prescriptus" && { bulaInteligenteMode }),
+          ...(agentType === "gasometrus" && { directLIMode })
         }),
       });
 
@@ -1040,6 +1043,18 @@ export function AgentChat({
             >
               <Pill className="h-4 w-4" />
               <span className="text-xs hidden sm:inline">B.I.</span>
+            </Toggle>
+          )}
+          {agentType === "gasometrus" && (
+            <Toggle
+              pressed={directLIMode}
+              onPressedChange={setDirectLIMode}
+              size="sm"
+              className="shrink-0 data-[state=on]:bg-primary/20 gap-1"
+              title="Modo L.I.: Leitura Sistemática - análise objetiva focada"
+            >
+              <ListChecks className="h-4 w-4" />
+              <span className="text-xs hidden sm:inline">L.I.</span>
             </Toggle>
           )}
           {agentType === "examinus" && (

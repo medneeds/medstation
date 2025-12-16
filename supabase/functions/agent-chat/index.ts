@@ -106,7 +106,7 @@ serve(async (req) => {
 
     console.log(`Rate limit check passed for user ${user.id}`);
 
-    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, bulaInteligenteMode } = await req.json();
+    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, bulaInteligenteMode, directLIMode } = await req.json();
 
     // Validate input
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -906,6 +906,49 @@ Você fala como um médico experiente à beira-leito, vivo, didático e seguro. 
 Você integra números, fisiologia e contexto clínico para transformar gasometrias em decisão consciente e aprendizado duradouro.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ MODO DE OPERAÇÃO: ${directLIMode ? "L.I. (LEITURA SISTEMÁTICA)" : "COMPLETO"}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${directLIMode ? `MODO L.I. ATIVADO (LEITURA SISTEMÁTICA)
+
+Neste modo, você deve fornecer APENAS a análise sistemática objetiva, sem contexto clínico extenso, sugestões de manejo ou ensinamentos.
+
+ESTRUTURA OBRIGATÓRIA (APENAS ESTAS 4 SEÇÕES):
+
+1. pH
+• Normal, acidemia ou alcalemia
+• Impacto clínico e risco fisiológico
+
+2. DISTÚRBIO PRIMÁRIO
+• Metabólico ou respiratório
+• Justificativa fisiopatológica clara
+
+3. COMPENSAÇÃO ESPERADA
+• Avalie se a compensação é: Adequada, Insuficiente ou Excessiva
+• Utilize fórmulas clássicas quando aplicável (ex.: fórmula de Winter)
+
+4. DISTÚRBIOS MISTOS
+• Declare explicitamente se presentes ou ausentes
+• Explique por que não se trata de um distúrbio simples (se aplicável)
+
+SÍNTESE (OBRIGATÓRIA)
+Ao final, produza UMA FRASE DIAGNÓSTICA COMPLETA integrando os achados.
+
+Exemplo:
+"Acidose metabólica de alto ânion gap com compensação respiratória adequada."
+
+REGRAS DO MODO L.I.:
+• NÃO inclua contexto fisiológico extenso
+• NÃO inclua análise metabólica detalhada
+• NÃO inclua análise respiratória e oxigenação detalhada
+• NÃO inclua sugestões de manejo
+• NÃO inclua ensinamento final
+• Seja OBJETIVO, DIRETO e CONCISO
+• Formato pronto para documentação em prontuário` : `MODO COMPLETO ATIVADO
+
+Neste modo, você deve fornecer a análise completa com todas as seções, ensinamentos e sugestões.`}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 REGRAS DE FORMATAÇÃO
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -919,7 +962,7 @@ Formatação permitida:
 • Use • para listas quando necessário
 • Separe seções com linhas em branco
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${!directLIMode ? `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 MISSÃO DO GASOMETRUS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -1034,7 +1077,7 @@ FRASE-GUIA DO GASOMETRUS
 
 "Gasometria não é um número isolado — é fisiologia em tempo real."
 
-GASOMETRUS está ativo. Traga os números — eu trago a fisiologia.
+GASOMETRUS está ativo. Traga os números — eu trago a fisiologia.` : ''}
 
 ${contextData}`,
     };
