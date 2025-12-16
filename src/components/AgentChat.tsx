@@ -23,7 +23,8 @@ import {
   FileDown,
   FileUp,
   SeparatorVertical,
-  Clock
+  Clock,
+  Pill
 } from "lucide-react";
 import {
   Sheet,
@@ -123,6 +124,7 @@ export function AgentChat({
   const [usePipeSeparator, setUsePipeSeparator] = useState(false);
   const [includeTime, setIncludeTime] = useState(true);
   const [directAHEMode, setDirectAHEMode] = useState(false);
+  const [bulaInteligenteMode, setBulaInteligenteMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -356,7 +358,8 @@ export function AgentChat({
           agentType,
           caseId: selectedCaseId,
           ...(agentType === "examinus" && { usePipeSeparator, includeTime }),
-          ...(agentType === "clinicus" && { directAHEMode })
+          ...(agentType === "clinicus" && { directAHEMode }),
+          ...(agentType === "prescriptus" && { bulaInteligenteMode })
         }),
       });
 
@@ -1025,6 +1028,18 @@ export function AgentChat({
             >
               <FileDown className="h-4 w-4" />
               <span className="text-xs hidden sm:inline">AHE</span>
+            </Toggle>
+          )}
+          {agentType === "prescriptus" && (
+            <Toggle
+              pressed={bulaInteligenteMode}
+              onPressedChange={setBulaInteligenteMode}
+              size="sm"
+              className="shrink-0 data-[state=on]:bg-primary/20 gap-1"
+              title="Modo B.I.: Bula Inteligente - resposta estruturada sobre medicamento"
+            >
+              <Pill className="h-4 w-4" />
+              <span className="text-xs hidden sm:inline">B.I.</span>
             </Toggle>
           )}
           {agentType === "examinus" && (
