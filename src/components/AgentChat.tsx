@@ -394,6 +394,9 @@ export function AgentChat({
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) {
               assistantContent += content;
+              if (agentType === "clinicus") {
+                assistantContent = assistantContent.replace(/\*\*/g, "");
+              }
               // Update UI with new content
               setCurrentConversation(prev => {
                 if (!prev) return prev;
@@ -938,7 +941,7 @@ export function AgentChat({
                       }}
                     />
                   ) : (
-                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                    <p className="text-sm whitespace-pre-wrap">{msg.role === "assistant" && agentType === "clinicus" ? msg.content.replace(/\*\*/g, "") : msg.content}</p>
                   )}
                   <p className="text-xs opacity-70 mt-1">
                     {new Date(msg.created_at).toLocaleTimeString([], { 
