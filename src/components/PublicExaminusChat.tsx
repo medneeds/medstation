@@ -136,18 +136,16 @@ export default function PublicExaminusChat() {
       if (error) throw error;
 
       if (data.error) {
-        toast({
-          title: "Limite atingido",
-          description: data.error,
-          variant: "destructive",
-        });
-        
-        // Add CTA message when limit reached
+        // Limit reached - show signup CTA
         setMessages(prev => [...prev, {
           role: "assistant",
-          content: "🎯 Você atingiu o limite de mensagens gratuitas! Crie uma conta gratuita para continuar conversando e ter acesso a recursos exclusivos como histórico de conversas, upload de documentos e todos os 10 assistentes especializados."
+          content: "🎯 Você usou suas 10 extrações gratuitas!\n\n✨ Crie sua conta grátis agora e continue usando o Examinus sem limites — é rápido, sem cartão de crédito.\n\nAlém disso, você terá acesso aos outros 9 assistentes médicos especializados!"
         }]);
         
+        toast({
+          title: "Limite atingido",
+          description: "Crie sua conta grátis para continuar!",
+        });
         return;
       }
 
@@ -159,14 +157,14 @@ export default function PublicExaminusChat() {
       setMessages(prev => [...prev, assistantMessage]);
       setRemainingMessages(data.remainingMessages);
 
-      // Show upgrade prompt after 3 messages
-      if (data.remainingMessages <= 7 && data.remainingMessages > 0) {
+      // Show upgrade prompt when 3 or fewer messages remaining
+      if (data.remainingMessages <= 3 && data.remainingMessages > 0) {
         setTimeout(() => {
           toast({
-            title: "💡 Gostando do Examinus?",
-            description: `Você tem ${data.remainingMessages} mensagens restantes. Crie uma conta gratuita para uso ilimitado!`,
+            title: `${data.remainingMessages} extrações restantes`,
+            description: "Crie sua conta grátis para uso ilimitado!",
             action: (
-              <Button size="sm" onClick={() => setShowComingSoonDialog(true)} className="ml-2">
+              <Button size="sm" onClick={() => navigate('/auth')} className="ml-2">
                 Criar Conta
               </Button>
             ),
@@ -518,15 +516,15 @@ export default function PublicExaminusChat() {
             <div className="mt-3 md:mt-4 flex items-center justify-between text-xs flex-wrap gap-2 md:gap-3 bg-primary/5 border border-primary/20 rounded-xl px-3 md:px-4 py-2.5 md:py-3">
               <p className="text-muted-foreground flex items-center gap-2 text-[11px] md:text-xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-                Teste grátis • Sem cadastro
+                10 extrações grátis • Sem cadastro
               </p>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowComingSoonDialog(true)}
+                onClick={() => navigate('/auth')}
                 className="text-primary hover:text-primary hover:bg-primary/10 h-7 md:h-8 text-[11px] md:text-xs font-semibold group px-2 md:px-3"
               >
-                Uso ilimitado
+                Uso ilimitado grátis
                 <ArrowRight className="ml-1 md:ml-1.5 h-3 md:h-3.5 w-3 md:w-3.5 group-hover:translate-x-0.5 transition-transform" />
               </Button>
             </div>
@@ -534,37 +532,35 @@ export default function PublicExaminusChat() {
         </div>
       </Card>
 
-      {/* Coming Soon Dialog */}
+      {/* Signup Dialog */}
       <Dialog open={showComingSoonDialog} onOpenChange={setShowComingSoonDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-              Assinatura em Breve! 🚀
+              Continue usando grátis! ✨
             </DialogTitle>
             <DialogDescription className="text-base pt-4 space-y-4">
               <p className="text-foreground/90">
-                A assinatura da plataforma MedStation AI estará disponível em breve!
+                Crie sua conta gratuita e continue usando o <span className="font-semibold text-primary">Examinus</span> sem limites!
               </p>
               <p className="text-foreground/90">
-                Seja um dos primeiros a ter acesso exclusivo falando diretamente com{" "}
-                <span className="font-semibold text-primary">Artur Batista</span>, 
-                médico desenvolvedor da plataforma.
+                Além disso, você terá acesso aos outros <span className="font-semibold">9 assistentes médicos</span> especializados do MedStation AI.
               </p>
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3 mt-4">
             <Button
-              onClick={() => window.open("https://w.app/medstationai", "_blank")}
+              onClick={() => navigate('/auth')}
               className="w-full h-12 text-base font-semibold"
             >
-              💬 Falar com Artur no WhatsApp
+              Criar Conta Grátis
             </Button>
             <Button
               variant="outline"
               onClick={() => setShowComingSoonDialog(false)}
               className="w-full"
             >
-              Fechar
+              Continuar testando
             </Button>
           </div>
         </DialogContent>
