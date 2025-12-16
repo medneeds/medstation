@@ -4,13 +4,14 @@ import {
   Stethoscope,
   FlaskConical,
   Activity,
-  Calculator,
+  Sigma,
   Pill,
   FileText,
   Wind,
   FileCheck,
   BookOpen,
   Compass,
+  Calculator,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -26,8 +27,8 @@ interface AgentButtonsProps {
 const agents = [
   { name: "Clínicus", path: "/clinicus", icon: Stethoscope, color: "text-blue-600" },
   { name: "Examinus", path: "/examinus", icon: FlaskConical, color: "text-purple-600" },
-  { name: "Scorius", path: "/scorius", icon: Activity, color: "text-red-600" },
-  { name: "Numerus", path: "/numerus", icon: Calculator, color: "text-green-600" },
+  { name: "Scorius", path: "/scorius", icon: Calculator, color: "text-red-600" },
+  { name: "Numerus", path: "/numerus", icon: Sigma, color: "text-green-600" },
   { name: "Prescriptus", path: "/prescriptus", icon: Pill, color: "text-orange-600" },
   { name: "CODexus", path: "/codexus", icon: FileText, color: "text-indigo-600" },
   { name: "Gasometrus", path: "/gasometrus", icon: Wind, color: "text-cyan-600" },

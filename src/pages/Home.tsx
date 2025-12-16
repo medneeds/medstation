@@ -156,7 +156,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8 max-w-7xl mx-auto">
             {[
               { icon: TestTube2, name: "Examinus", desc: "Interpreta exames de sangue, imagem e laudos", badge: "Grátis", color: "from-violet-500/20 to-purple-500/20" },
-              { icon: Activity, name: "Clínicus", desc: "Estrutura anamneses e histórias clínicas", badge: null, color: "from-blue-500/20 to-cyan-500/20" },
+              { icon: Activity, name: "Clínicus", desc: "Anamneses estruturadas e passagem de caso", badge: null, color: "from-blue-500/20 to-cyan-500/20" },
               { icon: Calculator, name: "Scorius", desc: "Calcula scores e classificações de risco", badge: null, color: "from-emerald-500/20 to-green-500/20" },
               { icon: Pill, name: "Prescriptus", desc: "Guia prescrições baseadas em evidências", badge: null, color: "from-rose-500/20 to-pink-500/20" },
               { icon: Brain, name: "Numerus", desc: "Calculadoras médicas e conversores", badge: null, color: "from-amber-500/20 to-orange-500/20" },
