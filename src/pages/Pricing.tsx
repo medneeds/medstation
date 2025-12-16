@@ -56,7 +56,8 @@ export default function Pricing() {
     { name: "CODexus", desc: "Codificação CID-10 e TISS" },
     { name: "Gasometrus", desc: "Análise de gasometria arterial" },
     { name: "Atestus", desc: "Geração de atestados médicos" },
-    { name: "Protocolus", desc: "Protocolos clínicos e guidelines" }
+    { name: "Protocolus", desc: "Protocolos clínicos e guidelines" },
+    { name: "Orientus", desc: "Orientações ao paciente e alta" }
   ];
 
   const freeFeatures = [

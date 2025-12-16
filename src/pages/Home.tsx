@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Sparkles, Activity, Brain, Calculator, Pill, FileCode, TestTube2, Wind, FileCheck, BookOpen } from "lucide-react";
+import { ArrowRight, Sparkles, Activity, Brain, Calculator, Pill, FileCode, TestTube2, Wind, FileCheck, BookOpen, Compass } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PublicExaminusChat from "@/components/PublicExaminusChat";
 import { useState } from "react";
@@ -143,7 +143,7 @@ export default function Home() {
           <div id="agentes" className="text-center mb-8 md:mb-12 lg:mb-16 space-y-3 md:space-y-4 px-4">
             <div className="inline-flex items-center gap-2 px-3 md:px-5 py-1.5 md:py-2 bg-gradient-primary rounded-full mb-4 md:mb-6 shadow-medical">
               <div className="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-primary-foreground animate-pulse"></div>
-              <span className="text-xs md:text-sm font-semibold text-primary-foreground tracking-wide">9 ESPECIALISTAS IA</span>
+              <span className="text-xs md:text-sm font-semibold text-primary-foreground tracking-wide">10 ESPECIALISTAS IA</span>
             </div>
             <h3 className="text-xl md:text-3xl lg:text-4xl font-bold tracking-tight">
               Cada assistente domina sua especialidade
@@ -163,7 +163,8 @@ export default function Home() {
               { icon: FileCode, name: "CODexus", desc: "Codificação CID-10 e TISS automatizada", badge: null, color: "from-indigo-500/20 to-blue-500/20" },
               { icon: Wind, name: "Gasometrus", desc: "Análise avançada de gasometria arterial", badge: null, color: "from-cyan-500/20 to-teal-500/20" },
               { icon: FileCheck, name: "Atestus", desc: "Geração inteligente de atestados médicos", badge: null, color: "from-emerald-500/20 to-teal-500/20" },
-              { icon: BookOpen, name: "Protocolus", desc: "Protocolos clínicos e guidelines atualizados", badge: null, color: "from-amber-500/20 to-yellow-500/20" }
+              { icon: BookOpen, name: "Protocolus", desc: "Protocolos clínicos e guidelines atualizados", badge: null, color: "from-amber-500/20 to-yellow-500/20" },
+              { icon: Compass, name: "Orientus", desc: "Orientações ao paciente e instruções de alta", badge: null, color: "from-orange-500/20 to-red-500/20" }
             ].map((agent, idx) => (
               <Card 
                 key={idx} 
@@ -229,7 +230,8 @@ export default function Home() {
                   { gradient: "from-indigo-500 to-blue-500", name: "CODexus", icon: FileCode },
                   { gradient: "from-cyan-500 to-teal-500", name: "Gasometrus", icon: Wind },
                   { gradient: "from-emerald-500 to-teal-500", name: "Atestus", icon: FileCheck },
-                  { gradient: "from-amber-500 to-yellow-500", name: "Protocolus", icon: BookOpen }
+                  { gradient: "from-amber-500 to-yellow-500", name: "Protocolus", icon: BookOpen },
+                  { gradient: "from-orange-500 to-red-500", name: "Orientus", icon: Compass }
                 ].map((assistant, idx) => (
                   <div key={`first-${idx}`} className="flex flex-col items-center gap-2 min-w-[120px]">
                     <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${assistant.gradient} border-2 border-background shadow-lg transition-transform hover:scale-110 hover:rotate-3 flex items-center justify-center`}>
@@ -249,7 +251,8 @@ export default function Home() {
                   { gradient: "from-indigo-500 to-blue-500", name: "CODexus", icon: FileCode },
                   { gradient: "from-cyan-500 to-teal-500", name: "Gasometrus", icon: Wind },
                   { gradient: "from-emerald-500 to-teal-500", name: "Atestus", icon: FileCheck },
-                  { gradient: "from-amber-500 to-yellow-500", name: "Protocolus", icon: BookOpen }
+                  { gradient: "from-amber-500 to-yellow-500", name: "Protocolus", icon: BookOpen },
+                  { gradient: "from-orange-500 to-red-500", name: "Orientus", icon: Compass }
                 ].map((assistant, idx) => (
                   <div key={`second-${idx}`} className="flex flex-col items-center gap-2 min-w-[120px]">
                     <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${assistant.gradient} border-2 border-background shadow-lg transition-transform hover:scale-110 hover:rotate-3 flex items-center justify-center`}>
