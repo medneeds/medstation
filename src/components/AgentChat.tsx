@@ -122,6 +122,7 @@ export function AgentChat({
   const [uploadingFile, setUploadingFile] = useState(false);
   const [usePipeSeparator, setUsePipeSeparator] = useState(false);
   const [includeTime, setIncludeTime] = useState(true);
+  const [directAHEMode, setDirectAHEMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -348,7 +349,8 @@ export function AgentChat({
           })),
           agentType,
           caseId: selectedCaseId,
-          ...(agentType === "examinus" && { usePipeSeparator, includeTime })
+          ...(agentType === "examinus" && { usePipeSeparator, includeTime }),
+          ...(agentType === "clinicus" && { directAHEMode })
         }),
       });
 
@@ -1014,6 +1016,18 @@ export function AgentChat({
                 <Paperclip className="h-4 w-4" />
               )}
             </Button>
+          )}
+          {agentType === "clinicus" && (
+            <Toggle
+              pressed={directAHEMode}
+              onPressedChange={setDirectAHEMode}
+              size="sm"
+              className="shrink-0 data-[state=on]:bg-primary/20 gap-1"
+              title="Modo AHE: gerar anamnese hospitalar estruturada diretamente"
+            >
+              <FileDown className="h-4 w-4" />
+              <span className="text-xs hidden sm:inline">AHE</span>
+            </Toggle>
           )}
           {agentType === "examinus" && (
             <>
