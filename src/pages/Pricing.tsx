@@ -146,7 +146,7 @@ export default function Pricing() {
         </div>
 
         {/* Pro Plan Card */}
-        <Card className="max-w-4xl mx-auto p-4 md:p-8 lg:p-12 border-2 border-primary relative overflow-hidden shadow-[0_20px_70px_-15px_rgba(168,85,247,0.4)]">
+        <Card className="max-w-4xl mx-auto p-4 sm:p-6 md:p-8 lg:p-12 border-2 border-primary relative overflow-hidden shadow-[0_20px_70px_-15px_rgba(168,85,247,0.4)]">
           {/* Animated gradient background */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-purple-500/5 to-pink-500/10 opacity-50 pointer-events-none"></div>
           
@@ -169,42 +169,42 @@ export default function Pricing() {
             </h2>
 
             {/* Pricing display */}
-            <div className="flex flex-col items-center gap-2 my-6 md:my-8">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-full mb-3">
-                <span className="text-xs font-bold text-green-600 dark:text-green-400">OFERTA DE LANÇAMENTO</span>
+            <div className="flex flex-col items-center gap-2 my-4 md:my-6 lg:my-8">
+              <div className="inline-flex items-center gap-2 px-2.5 md:px-3 py-1 md:py-1.5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-full mb-2 md:mb-3">
+                <span className="text-[10px] md:text-xs font-bold text-green-600 dark:text-green-400">OFERTA DE LANÇAMENTO</span>
               </div>
               <div className="text-center">
-                <div className="flex items-center justify-center gap-3 mb-2">
-                  <span className="text-lg text-muted-foreground line-through">R$ 59,90</span>
+                <div className="flex items-center justify-center gap-2 mb-1 md:mb-2">
+                  <span className="text-sm md:text-lg text-muted-foreground line-through">R$ 59,90</span>
                 </div>
-                <div className="flex items-baseline justify-center gap-2 mb-2">
-                  <span className="text-5xl md:text-6xl lg:text-7xl font-black bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                <div className="flex items-baseline justify-center gap-2 mb-1 md:mb-2">
+                  <span className="text-4xl md:text-5xl lg:text-7xl font-black bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
                     R$ 19,90
                   </span>
                 </div>
-                <p className="text-sm md:text-base text-muted-foreground">
+                <p className="text-xs md:text-sm lg:text-base text-muted-foreground">
                   /mês
                 </p>
-                <p className="text-xs md:text-sm text-muted-foreground mt-2">
+                <p className="text-[10px] md:text-xs lg:text-sm text-muted-foreground mt-1 md:mt-2">
                   ou R$ 199,90/ano — economize 2 meses
                 </p>
               </div>
             </div>
             
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground text-sm md:text-base lg:text-lg px-4">
               Acesso completo aos 10 assistentes IA especializados
             </p>
           </div>
 
           {/* Lista dos 10 assistentes */}
-          <div className="relative mb-8 z-10">
-            <h3 className="font-semibold text-lg mb-4 text-center">10 Assistentes Especializados:</h3>
-            <div className="grid md:grid-cols-2 gap-3">
+          <div className="relative mb-6 md:mb-8 z-10">
+            <h3 className="font-semibold text-sm md:text-lg mb-3 md:mb-4 text-center">10 Assistentes Especializados:</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
               {proAgents.map((agent, index) => (
                 <div key={index} className="flex items-start gap-2">
-                  <div className="w-1 h-1 rounded-full bg-primary mt-2 flex-shrink-0"></div>
-                  <span className="text-sm">
-                    <strong className="text-foreground">{agent.name}:</strong> {agent.desc}
+                  <div className="w-1 h-1 rounded-full bg-primary mt-1.5 md:mt-2 flex-shrink-0"></div>
+                  <span className="text-xs md:text-sm">
+                    <strong className="text-foreground">{agent.name}:</strong> <span className="text-muted-foreground">{agent.desc}</span>
                   </span>
                 </div>
               ))}
@@ -212,37 +212,37 @@ export default function Pricing() {
           </div>
 
           {/* Garantia de 7 dias - Destaque */}
-          <div className="mt-6 md:mt-8 p-4 md:p-6 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-2 border-green-500/30 rounded-2xl relative overflow-hidden z-10">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-full blur-3xl"></div>
-            <div className="relative flex flex-col md:flex-row items-center gap-3 md:gap-4 text-center md:text-left">
-              <div className="flex-shrink-0 w-12 h-12 md:w-16 md:h-16 rounded-full bg-green-500/20 flex items-center justify-center">
-                <svg className="w-6 h-6 md:w-8 md:h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="mt-4 md:mt-6 lg:mt-8 p-3 md:p-4 lg:p-6 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-2 border-green-500/30 rounded-xl md:rounded-2xl relative overflow-hidden z-10">
+            <div className="absolute top-0 right-0 w-24 md:w-32 h-24 md:h-32 bg-green-500/5 rounded-full blur-3xl"></div>
+            <div className="relative flex flex-col sm:flex-row items-center gap-2 md:gap-3 lg:gap-4 text-center sm:text-left">
+              <div className="flex-shrink-0 w-10 h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 rounded-full bg-green-500/20 flex items-center justify-center">
+                <svg className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-base md:text-lg lg:text-xl text-foreground mb-1.5 md:mb-2">Garantia de 7 Dias</h3>
-                <p className="text-xs md:text-sm text-muted-foreground">
+                <h3 className="font-bold text-sm md:text-base lg:text-xl text-foreground mb-1 md:mb-1.5 lg:mb-2">Garantia de 7 Dias</h3>
+                <p className="text-[10px] md:text-xs lg:text-sm text-muted-foreground leading-relaxed">
                   Teste o MedStation AI Pro por 7 dias. Se não gostar, devolvemos 100% do valor. 
-                  <span className="font-semibold text-foreground"> Sem perguntas. Sem burocracia.</span>
+                  <span className="font-semibold text-foreground"> Sem perguntas.</span>
                 </p>
               </div>
             </div>
           </div>
 
           {/* Coupon Section */}
-          <div className="mt-6 space-y-3 relative z-10">
+          <div className="mt-4 md:mt-6 space-y-3 relative z-10">
             {!showCoupon ? (
               <button
                 type="button"
                 onClick={() => setShowCoupon(true)}
-                className="text-sm text-primary hover:underline font-medium"
+                className="text-xs md:text-sm text-primary hover:underline font-medium"
               >
                 Tem um cupom de desconto?
               </button>
             ) : (
               <div className="space-y-2">
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Input
                     type="text"
                     placeholder="Digite o código do cupom"
@@ -251,32 +251,36 @@ export default function Pricing() {
                       setCouponCode(e.target.value);
                       setCouponApplied(false);
                     }}
-                    className="flex-1"
+                    className="flex-1 h-10 text-sm"
                     disabled={couponApplied}
                   />
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={handleApplyCoupon}
-                    disabled={!couponCode.trim() || couponApplied}
-                  >
-                    Aplicar
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setShowCoupon(false);
-                      setCouponCode("");
-                      setCouponApplied(false);
-                    }}
-                  >
-                    Cancelar
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={handleApplyCoupon}
+                      disabled={!couponCode.trim() || couponApplied}
+                      className="flex-1 sm:flex-none h-10"
+                    >
+                      Aplicar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setShowCoupon(false);
+                        setCouponCode("");
+                        setCouponApplied(false);
+                      }}
+                      className="flex-1 sm:flex-none h-10"
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
                 </div>
                 {couponApplied && (
-                  <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex items-center gap-2 text-xs md:text-sm text-green-600 dark:text-green-400">
+                    <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                     Cupom aplicado com sucesso
@@ -310,18 +314,18 @@ export default function Pricing() {
         </Card>
 
         {/* Trust Badges */}
-        <div className="max-w-4xl mx-auto mt-10 md:mt-12 lg:mt-16 grid grid-cols-3 gap-4 md:gap-6 lg:gap-8 text-center">
+        <div className="max-w-4xl mx-auto mt-8 md:mt-12 lg:mt-16 grid grid-cols-3 gap-3 md:gap-6 lg:gap-8 text-center px-2">
           <div>
-            <div className="text-2xl md:text-3xl font-bold text-primary mb-1 md:mb-2">99.9%</div>
-            <div className="text-xs md:text-sm text-muted-foreground">Uptime</div>
+            <div className="text-xl md:text-2xl lg:text-3xl font-bold text-primary mb-0.5 md:mb-2">99.9%</div>
+            <div className="text-[10px] md:text-xs lg:text-sm text-muted-foreground">Uptime</div>
           </div>
           <div>
-            <div className="text-2xl md:text-3xl font-bold text-primary mb-1 md:mb-2">LGPD</div>
-            <div className="text-xs md:text-sm text-muted-foreground">Compliance</div>
+            <div className="text-xl md:text-2xl lg:text-3xl font-bold text-primary mb-0.5 md:mb-2">LGPD</div>
+            <div className="text-[10px] md:text-xs lg:text-sm text-muted-foreground">Compliance</div>
           </div>
           <div>
-            <div className="text-2xl md:text-3xl font-bold text-primary mb-1 md:mb-2">24/7</div>
-            <div className="text-xs md:text-sm text-muted-foreground">Disponível</div>
+            <div className="text-xl md:text-2xl lg:text-3xl font-bold text-primary mb-0.5 md:mb-2">24/7</div>
+            <div className="text-[10px] md:text-xs lg:text-sm text-muted-foreground">Disponível</div>
           </div>
         </div>
       </div>
