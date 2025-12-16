@@ -19,6 +19,7 @@ import {
   Folder,
   Wind,
   FileCheck,
+  BookOpen,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSubscription } from "@/contexts/SubscriptionContext";
@@ -128,6 +129,14 @@ const agentModules = [
     icon: FileCheck,
     url: "/atestus",
     color: "text-emerald-500",
+    isPremium: true,
+  },
+  {
+    title: "Protocolus",
+    description: "Protocolos clínicos e guidelines atualizados",
+    icon: BookOpen,
+    url: "/protocolus",
+    color: "text-amber-500",
     isPremium: true,
   },
 ];
