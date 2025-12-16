@@ -330,8 +330,14 @@ export function AgentChat({
         role: userMsgData.role as "user" | "assistant"
       };
 
-      // Add user message immediately
-      const updatedMessages = [...conversation.messages, userMessage];
+      // Add user message and "Pensando..." message
+      const thinkingMessage: Message = {
+        id: "streaming-temp",
+        role: "assistant",
+        content: "Pensando...",
+        created_at: new Date().toISOString()
+      };
+      const updatedMessages = [...conversation.messages, userMessage, thinkingMessage];
       setCurrentConversation({ ...conversation, messages: updatedMessages });
 
       // Call AI agent with streaming
@@ -363,17 +369,6 @@ export function AgentChat({
       const decoder = new TextDecoder();
       let textBuffer = "";
       let assistantContent = "";
-
-      // Create streaming message
-      const streamingMessage: Message = {
-        id: "streaming-temp",
-        role: "assistant",
-        content: "",
-        created_at: new Date().toISOString()
-      };
-
-      const messagesWithStreaming = [...conversation.messages, userMessage, streamingMessage];
-      setCurrentConversation({ ...conversation, messages: messagesWithStreaming });
 
       while (true) {
         const { done, value } = await reader.read();
