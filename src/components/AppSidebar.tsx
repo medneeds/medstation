@@ -16,6 +16,7 @@ import {
   Home,
   Database,
   StickyNote,
+  Wind,
 } from "lucide-react";
 import {
   Sidebar,
@@ -47,6 +48,7 @@ const managementModules = [
 const agentModules = [
   { title: "Clínicus", url: "/clinicus", icon: Stethoscope },
   { title: "Examinus", url: "/examinus", icon: Activity },
+  { title: "Gasometrus", url: "/gasometrus", icon: Wind },
   { title: "Scorius", url: "/scorius", icon: Calculator },
   { title: "Numerus", url: "/numerus", icon: Database },
   { title: "Prescriptus", url: "/prescriptus", icon: Pill },

@@ -23,6 +23,7 @@ import Scorius from "./pages/Scorius";
 import Numerus from "./pages/Numerus";
 import Prescriptus from "@/pages/Prescriptus";
 import Codexus from "@/pages/Codexus";
+import Gasometrus from "@/pages/Gasometrus";
 import Prescriptions from "@/pages/Prescriptions";
 import NewPrescription from "@/pages/NewPrescription";
 import PrescriptionDetail from "@/pages/PrescriptionDetail";
@@ -164,6 +165,16 @@ const App = () => (
                 <ProtectedRoute>
                   <DashboardLayout>
                     <Codexus />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/gasometrus"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <Gasometrus />
                   </DashboardLayout>
                 </ProtectedRoute>
               }
