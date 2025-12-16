@@ -3,10 +3,24 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Check } from "lucide-react";
+import { Check, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+
+// Definição centralizada dos agentes com descrições precisas
+const proAgents = [
+  { name: "Examinus", desc: "Extração e formatação de exames laboratoriais e de imagem" },
+  { name: "Clínicus", desc: "Anamneses hospitalares estruturadas e passagem de plantão" },
+  { name: "Scorius", desc: "Cálculo e interpretação de scores clínicos e escalas prognósticas" },
+  { name: "Numerus", desc: "Calculadoras médicas e conversão de unidades" },
+  { name: "Prescriptus", desc: "Prescrições estruturadas com Bula Inteligente integrada" },
+  { name: "CODexus", desc: "Codificação CID-10, TISS e procedimentos médicos" },
+  { name: "Gasometrus", desc: "Análise completa e interpretação de gasometria arterial" },
+  { name: "Atestus", desc: "Geração de atestados médicos e declarações" },
+  { name: "Protocolus", desc: "Consulta a protocolos e guidelines nacionais e internacionais" },
+  { name: "Orientus", desc: "Orientações ao paciente e instruções de alta hospitalar" }
+];
 
 export default function Pricing() {
   const [loading, setLoading] = useState(false);
@@ -73,22 +87,9 @@ export default function Pricing() {
     }
   };
 
-  const proAgents = [
-    { name: "Examinus", desc: "Interpretação de exames" },
-    { name: "Clínicus", desc: "Anamneses estruturadas" },
-    { name: "Scorius", desc: "Cálculo de scores clínicos" },
-    { name: "Prescriptus", desc: "Prescrições baseadas em evidências" },
-    { name: "Numerus", desc: "Calculadoras médicas" },
-    { name: "CODexus", desc: "Codificação CID-10 e TISS" },
-    { name: "Gasometrus", desc: "Análise de gasometria arterial" },
-    { name: "Atestus", desc: "Geração de atestados médicos" },
-    { name: "Protocolus", desc: "Protocolos clínicos e guidelines" },
-    { name: "Orientus", desc: "Orientações ao paciente e alta" }
-  ];
-
   const freeFeatures = [
-    { text: "Organização e estruturação inteligente de qualquer resultado de exame laboratorial (hemograma, bioquímica, gasometria) e de imagem (tomografia, raio-X, ultrassom)" },
-    { text: "Uso ilimitado dentro da plataforma (cadastro gratuito)" },
+    { text: "Examinus ilimitado: extração e formatação inteligente de exames laboratoriais e de imagem" },
+    { text: "Aceita PDFs, fotos, textos confusos — qualquer formato de entrada" },
   ];
 
   return (
@@ -97,13 +98,13 @@ export default function Pricing() {
       <div className="container mx-auto px-4 py-8 md:py-12 lg:py-20">
         <div className="text-center mb-8 md:mb-12 lg:mb-16">
           <Badge className="mb-3 md:mb-4 text-xs md:text-sm bg-primary/10 text-primary hover:bg-primary/20">
-            Oferta Especial de Lançamento
+            Oferta de Lançamento
           </Badge>
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-3 md:mb-4 lg:mb-6 bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent px-4">
-            Escolha seu Plano
+            Planos que cabem no seu bolso
           </h1>
           <p className="text-sm md:text-base lg:text-xl text-muted-foreground max-w-2xl mx-auto mb-4 md:mb-6 lg:mb-8 px-4">
-            Comece grátis com Examinus ou desbloqueie todos os assistentes com o plano Pro
+            Examinus grátis para sempre. Pro desbloqueia 10 assistentes especializados.
           </p>
         </div>
 
@@ -113,11 +114,11 @@ export default function Pricing() {
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 md:gap-6">
               <div className="flex-1">
                 <Badge className="mb-2 text-xs md:text-sm bg-green-500/10 text-green-600 border-green-500/20">
-                  Plano Gratuito
+                  Grátis para sempre
                 </Badge>
-                <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-1.5 md:mb-2">Examinus Grátis</h2>
+                <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-1.5 md:mb-2">Examinus Free</h2>
                 <p className="text-sm md:text-base text-muted-foreground mb-3 md:mb-4">
-                  Experimente o poder da IA médica para organização de exames
+                  Organização inteligente de exames médicos
                 </p>
                 <div className="space-y-2 md:space-y-3">
                   {freeFeatures.map((feature, index) => (
@@ -149,6 +150,16 @@ export default function Pricing() {
           {/* Animated gradient background */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-purple-500/5 to-pink-500/10 opacity-50 pointer-events-none"></div>
           
+          {/* Badge */}
+          <div className="absolute -top-1 -right-1 z-10">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-primary blur-lg opacity-70 animate-pulse"></div>
+              <Badge className="relative bg-gradient-primary text-primary-foreground border-0 px-4 py-1.5 text-xs font-bold shadow-lg">
+                RECOMENDADO
+              </Badge>
+            </div>
+          </div>
+          
           <div className="text-center mb-4 md:mb-6 lg:mb-8 relative z-10">
             <Badge className="mb-2 md:mb-3 text-xs md:text-sm bg-gradient-primary text-primary-foreground border-0 shadow-lg">
               Plano Pro
@@ -159,7 +170,13 @@ export default function Pricing() {
 
             {/* Pricing display */}
             <div className="flex flex-col items-center gap-2 my-6 md:my-8">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-full mb-3">
+                <span className="text-xs font-bold text-green-600 dark:text-green-400">OFERTA DE LANÇAMENTO</span>
+              </div>
               <div className="text-center">
+                <div className="flex items-center justify-center gap-3 mb-2">
+                  <span className="text-lg text-muted-foreground line-through">R$ 59,90</span>
+                </div>
                 <div className="flex items-baseline justify-center gap-2 mb-2">
                   <span className="text-5xl md:text-6xl lg:text-7xl font-black bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
                     R$ 19,90
@@ -169,13 +186,13 @@ export default function Pricing() {
                   /mês
                 </p>
                 <p className="text-xs md:text-sm text-muted-foreground mt-2">
-                  ou R$ 199,90/ano (16% de desconto)
+                  ou R$ 199,90/ano — economize 2 meses
                 </p>
               </div>
             </div>
             
             <p className="text-muted-foreground text-lg">
-              Acesso completo a todos os assistentes e recursos premium
+              Acesso completo aos 10 assistentes IA especializados
             </p>
           </div>
 
@@ -204,9 +221,9 @@ export default function Pricing() {
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-base md:text-lg lg:text-xl text-foreground mb-1.5 md:mb-2">Garantia Incondicional de 7 Dias</h3>
+                <h3 className="font-bold text-base md:text-lg lg:text-xl text-foreground mb-1.5 md:mb-2">Garantia de 7 Dias</h3>
                 <p className="text-xs md:text-sm text-muted-foreground">
-                  Experimente o MedStation AI Pro por 7 dias. Se não ficar completamente satisfeito, devolvemos 100% do seu investimento. 
+                  Teste o MedStation AI Pro por 7 dias. Se não gostar, devolvemos 100% do valor. 
                   <span className="font-semibold text-foreground"> Sem perguntas. Sem burocracia.</span>
                 </p>
               </div>
@@ -275,7 +292,8 @@ export default function Pricing() {
             onClick={handleSubscribe}
             disabled={loading}
           >
-            {loading ? "Processando..." : "Começar agora - Sem riscos"}
+            {loading ? "Processando..." : "Assinar agora"}
+            {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
           </Button>
 
           <div className="text-center mt-4 md:mt-6 space-y-1.5 md:space-y-2 relative z-10">
@@ -286,7 +304,7 @@ export default function Pricing() {
               Garantia de reembolso total em 7 dias
             </p>
             <p className="text-[10px] md:text-xs text-muted-foreground">
-              Cancele a qualquer momento • Sem taxas ocultas
+              Cancele quando quiser • Sem taxas ocultas • Sem multa
             </p>
           </div>
         </Card>

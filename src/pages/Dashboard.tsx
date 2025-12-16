@@ -70,7 +70,7 @@ const practiceModules = [
 const agentModules = [
   {
     title: "Clínicus",
-    description: "Anamneses estruturadas e passagem de caso",
+    description: "Anamneses hospitalares estruturadas e passagem de plantão",
     icon: Stethoscope,
     url: "/clinicus",
     color: "text-primary",
@@ -78,7 +78,7 @@ const agentModules = [
   },
   {
     title: "Examinus",
-    description: "Gestão e análise de exames laboratoriais",
+    description: "Extração e formatação de exames laboratoriais e de imagem",
     icon: FlaskConical,
     url: "/examinus",
     color: "text-secondary",
@@ -86,7 +86,7 @@ const agentModules = [
   },
   {
     title: "Scorius",
-    description: "Scores prognósticos e escalas clínicas",
+    description: "Cálculo e interpretação de scores clínicos e escalas prognósticas",
     icon: Activity,
     url: "/scorius",
     color: "text-warning",
@@ -94,7 +94,7 @@ const agentModules = [
   },
   {
     title: "Numerus",
-    description: "Cálculos clínicos e conversões de unidades",
+    description: "Calculadoras médicas e conversão de unidades",
     icon: Sigma,
     url: "/numerus",
     color: "text-green-500",
@@ -102,7 +102,7 @@ const agentModules = [
   },
   {
     title: "Prescriptus",
-    description: "Prescrições estruturadas e validadas",
+    description: "Prescrições estruturadas com Bula Inteligente integrada",
     icon: Pill,
     url: "/prescriptus",
     color: "text-destructive",
@@ -110,7 +110,7 @@ const agentModules = [
   },
   {
     title: "CODexus",
-    description: "Busca e codificação CID-10 e LOINC",
+    description: "Codificação CID-10, TISS e procedimentos médicos",
     icon: FileText,
     url: "/codexus",
     color: "text-primary",
@@ -118,7 +118,7 @@ const agentModules = [
   },
   {
     title: "Gasometrus",
-    description: "Análise avançada de gasometria arterial",
+    description: "Análise completa e interpretação de gasometria arterial",
     icon: Wind,
     url: "/gasometrus",
     color: "text-cyan-500",
@@ -126,7 +126,7 @@ const agentModules = [
   },
   {
     title: "Atestus",
-    description: "Geração inteligente de atestados médicos",
+    description: "Geração de atestados médicos e declarações",
     icon: FileCheck,
     url: "/atestus",
     color: "text-emerald-500",
@@ -134,7 +134,7 @@ const agentModules = [
   },
   {
     title: "Protocolus",
-    description: "Protocolos clínicos e guidelines atualizados",
+    description: "Consulta a protocolos e guidelines nacionais e internacionais",
     icon: BookOpen,
     url: "/protocolus",
     color: "text-amber-500",
@@ -142,7 +142,7 @@ const agentModules = [
   },
   {
     title: "Orientus",
-    description: "Orientações ao paciente e instruções de alta",
+    description: "Orientações ao paciente e instruções de alta hospitalar",
     icon: Compass,
     url: "/orientus",
     color: "text-orange-500",
