@@ -97,7 +97,7 @@ const agentModules = [
     description: "Cálculos clínicos e conversões de unidades",
     icon: Sigma,
     url: "/numerus",
-    color: "text-accent",
+    color: "text-green-500",
     isPremium: true,
   },
   {
