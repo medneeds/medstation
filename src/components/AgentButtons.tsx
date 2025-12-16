@@ -7,6 +7,8 @@ import {
   Calculator,
   Pill,
   FileText,
+  Wind,
+  FileCheck,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -26,6 +28,8 @@ const agents = [
   { name: "Numerus", path: "/numerus", icon: Calculator, color: "text-green-600" },
   { name: "Prescriptus", path: "/prescriptus", icon: Pill, color: "text-orange-600" },
   { name: "CODexus", path: "/codexus", icon: FileText, color: "text-indigo-600" },
+  { name: "Gasometrus", path: "/gasometrus", icon: Wind, color: "text-cyan-600" },
+  { name: "Atestus", path: "/atestus", icon: FileCheck, color: "text-emerald-600" },
 ];
 
 export function AgentButtons({ caseId }: AgentButtonsProps) {

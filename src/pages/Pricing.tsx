@@ -54,7 +54,8 @@ export default function Pricing() {
     { name: "Prescriptus", desc: "Prescrições baseadas em evidências" },
     { name: "Numerus", desc: "Calculadoras médicas" },
     { name: "CODexus", desc: "Codificação CID-10 e TISS" },
-    { name: "Gasometrus", desc: "Análise de gasometria arterial" }
+    { name: "Gasometrus", desc: "Análise de gasometria arterial" },
+    { name: "Atestus", desc: "Geração de atestados médicos" }
   ];
 
   const freeFeatures = [
@@ -182,7 +183,7 @@ export default function Pricing() {
           </div>
           {/* Lista dos 6 assistentes */}
           <div className="relative mb-8 z-10">
-            <h3 className="font-semibold text-lg mb-4 text-center">7 Assistentes Especializados:</h3>
+            <h3 className="font-semibold text-lg mb-4 text-center">8 Assistentes Especializados:</h3>
             <div className="grid md:grid-cols-2 gap-3">
               {proAgents.map((agent, index) => (
                 <div key={index} className="flex items-start gap-2">
