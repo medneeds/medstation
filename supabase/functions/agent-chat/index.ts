@@ -461,7 +461,7 @@ ${contextData}`,
       ...messages,
     ];
 
-    // Call Lovable AI
+    // Call Lovable AI with streaming
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -472,6 +472,7 @@ ${contextData}`,
         model: "google/gemini-2.5-flash",
         messages: messagesForAI,
         temperature: agentType === "examinus" ? 0 : undefined,
+        stream: true,
       }),
     });
 
@@ -483,20 +484,17 @@ ${contextData}`,
       );
     }
 
-    const aiResult = await aiResponse.json();
-    const assistantMessage = aiResult.choices?.[0]?.message?.content || "";
+    console.log("AI streaming response started");
 
-    console.log("AI response generated successfully");
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: assistantMessage,
-      }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    // Return the stream directly
+    return new Response(aiResponse.body, {
+      headers: { 
+        ...corsHeaders, 
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive"
+      },
+    });
   } catch (error: any) {
     console.error("Error in agent-chat:", error.message);
     return new Response(

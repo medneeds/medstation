@@ -329,20 +329,19 @@ export function AgentChat({
         role: userMsgData.role as "user" | "assistant"
       };
 
-      // Add user message and temporary "thinking" message
-      const thinkingMessage: Message = {
-        id: "thinking-temp",
-        role: "assistant",
-        content: "Pensando...",
-        created_at: new Date().toISOString()
-      };
-
-      const updatedMessages = [...conversation.messages, userMessage, thinkingMessage];
+      // Add user message immediately
+      const updatedMessages = [...conversation.messages, userMessage];
       setCurrentConversation({ ...conversation, messages: updatedMessages });
 
-      // Call AI agent
-      const { data: aiData, error: aiError } = await supabase.functions.invoke("agent-chat", {
-        body: {
+      // Call AI agent with streaming
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/agent-chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({
           messages: [...conversation.messages, userMessage].map(m => ({
             role: m.role,
             content: m.content,
@@ -350,18 +349,78 @@ export function AgentChat({
           agentType,
           caseId: selectedCaseId,
           ...(agentType === "examinus" && { usePipeSeparator, includeTime })
-        },
+        }),
       });
 
-      if (aiError) throw aiError;
+      if (!response.ok || !response.body) {
+        throw new Error("Falha ao conectar com o assistente");
+      }
 
-      // Save assistant message
+      // Process streaming response
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = "";
+      let assistantContent = "";
+
+      // Create streaming message
+      const streamingMessage: Message = {
+        id: "streaming-temp",
+        role: "assistant",
+        content: "",
+        created_at: new Date().toISOString()
+      };
+
+      const messagesWithStreaming = [...conversation.messages, userMessage, streamingMessage];
+      setCurrentConversation({ ...conversation, messages: messagesWithStreaming });
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        textBuffer += decoder.decode(value, { stream: true });
+
+        // Process line-by-line
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (line.startsWith(":") || line.trim() === "") continue;
+          if (!line.startsWith("data: ")) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              assistantContent += content;
+              // Update UI with new content
+              setCurrentConversation(prev => {
+                if (!prev) return prev;
+                const updatedMessages = prev.messages.map(m => 
+                  m.id === "streaming-temp" ? { ...m, content: assistantContent } : m
+                );
+                return { ...prev, messages: updatedMessages };
+              });
+            }
+          } catch {
+            // Incomplete JSON, put back and wait for more data
+            textBuffer = line + "\n" + textBuffer;
+            break;
+          }
+        }
+      }
+
+      // Save final assistant message to database
       const { data: assistantMsgData, error: assistantError } = await supabase
         .from("messages")
         .insert({
           conversation_id: conversation.id,
           role: "assistant",
-          content: aiData.message
+          content: assistantContent
         })
         .select()
         .single();
@@ -373,7 +432,7 @@ export function AgentChat({
         role: assistantMsgData.role as "user" | "assistant"
       };
 
-      // Replace thinking message with actual response
+      // Replace streaming message with final saved message
       const finalMessages = [...conversation.messages, userMessage, assistantMessage];
       
       // Update conversation
@@ -395,10 +454,10 @@ export function AgentChat({
     } catch (error: any) {
       console.error("Error sending message:", error);
       
-      // Remove thinking message on error
+      // Remove streaming message on error
       if (conversation) {
-        const messagesWithoutThinking = conversation.messages.filter(m => m.id !== "thinking-temp");
-        setCurrentConversation({ ...conversation, messages: messagesWithoutThinking });
+        const messagesWithoutStreaming = conversation.messages.filter(m => m.id !== "streaming-temp");
+        setCurrentConversation({ ...conversation, messages: messagesWithoutStreaming });
       }
       
       toast({
