@@ -7,13 +7,6 @@ import { Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 export default function Pricing() {
   const [loading, setLoading] = useState(false);
@@ -21,7 +14,6 @@ export default function Pricing() {
   const [couponCode, setCouponCode] = useState("");
   const [couponApplied, setCouponApplied] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
-  const [showComingSoonDialog, setShowComingSoonDialog] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -44,7 +36,41 @@ export default function Pricing() {
   };
 
   const handleSubscribe = async () => {
-    setShowComingSoonDialog(true);
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: "Login necessário",
+          description: "Faça login para assinar o plano Pro.",
+        });
+        navigate("/auth");
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: {
+          couponCode: couponApplied ? couponCode.trim() : undefined,
+          billingPeriod,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (error: any) {
+      console.error("Checkout error:", error);
+      toast({
+        title: "Erro no checkout",
+        description: error.message || "Não foi possível iniciar o checkout.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const proAgents = [
@@ -107,7 +133,7 @@ export default function Pricing() {
                   <div className="text-3xl md:text-4xl lg:text-5xl font-bold">R$ 0</div>
                   <div className="text-xs md:text-sm text-muted-foreground">/sempre</div>
                 </div>
-                <Button variant="outline" size="lg" onClick={() => setShowComingSoonDialog(true)} className="w-full md:w-auto h-11 md:h-12 text-sm md:text-base">
+                <Button variant="outline" size="lg" onClick={() => navigate('/auth')} className="w-full md:w-auto h-11 md:h-12 text-sm md:text-base">
                   Criar Conta Grátis
                 </Button>
                 <p className="text-[10px] md:text-xs text-muted-foreground text-center">
@@ -131,10 +157,9 @@ export default function Pricing() {
               MedStation AI Pro
             </h2>
 
-            {/* Pricing display with "Em breve" overlay */}
-            <div className="flex flex-col items-center gap-2 my-6 md:my-8 relative min-h-[180px] md:min-h-[200px]">
-              {/* Preço original (coberto pela tarja) */}
-              <div className="relative z-10 text-center">
+            {/* Pricing display */}
+            <div className="flex flex-col items-center gap-2 my-6 md:my-8">
+              <div className="text-center">
                 <div className="flex items-baseline justify-center gap-2 mb-2">
                   <span className="text-5xl md:text-6xl lg:text-7xl font-black bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
                     R$ 19,90
@@ -147,45 +172,16 @@ export default function Pricing() {
                   ou R$ 199,90/ano (16% de desconto)
                 </p>
               </div>
-
-              {/* Tarja "Em breve" sobreposta - ENHANCED */}
-              <div className="absolute inset-0 z-20 flex items-center justify-center bg-gradient-to-br from-background/99 via-background/98 to-background/97 backdrop-blur-3xl rounded-2xl border-2 border-primary/30">
-                <div className="relative group cursor-pointer">
-                  {/* Glow on hover only */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary via-purple-500 to-pink-500 blur-3xl opacity-0 group-hover:opacity-30 transition-opacity duration-700"></div>
-                  
-                  {/* Decorative sparkles - subtle */}
-                  <div className="absolute -top-4 -left-4 w-1.5 h-1.5 bg-primary/60 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping transition-opacity"></div>
-                  <div className="absolute -bottom-4 -right-4 w-1.5 h-1.5 bg-purple-500/60 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping transition-opacity" style={{ animationDelay: '0.3s' }}></div>
-                  
-                  {/* Main badge with enhanced styling */}
-                  <div className="relative bg-gradient-to-br from-primary via-purple-600 to-pink-600 px-8 py-4 md:px-14 md:py-7 rounded-2xl border-2 border-primary-foreground/30 shadow-[0_0_60px_-10px_rgba(168,85,247,0.7)] rotate-[-3deg] group-hover:rotate-0 group-hover:scale-110 transition-all duration-700 ease-out">
-                    {/* Inner glow */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/10 to-white/20 rounded-2xl"></div>
-                    
-                    {/* Text with enhanced effects */}
-                    <div className="relative flex flex-col items-center gap-1">
-                      <span className="text-3xl md:text-5xl lg:text-6xl font-black text-primary-foreground tracking-wider drop-shadow-[0_5px_15px_rgba(0,0,0,0.5)]">
-                        EM BREVE!
-                      </span>
-                      <div className="flex items-center gap-1.5 text-primary-foreground/90 text-xs md:text-sm font-medium">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground/80"></div>
-                        <span>Aguarde o lançamento</span>
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground/80"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
             
             <p className="text-muted-foreground text-lg">
               Acesso completo a todos os assistentes e recursos premium
             </p>
           </div>
-          {/* Lista dos 6 assistentes */}
+
+          {/* Lista dos 10 assistentes */}
           <div className="relative mb-8 z-10">
-            <h3 className="font-semibold text-lg mb-4 text-center">9 Assistentes Especializados:</h3>
+            <h3 className="font-semibold text-lg mb-4 text-center">10 Assistentes Especializados:</h3>
             <div className="grid md:grid-cols-2 gap-3">
               {proAgents.map((agent, index) => (
                 <div key={index} className="flex items-start gap-2">
@@ -311,42 +307,6 @@ export default function Pricing() {
           </div>
         </div>
       </div>
-
-      {/* Coming Soon Dialog */}
-      <Dialog open={showComingSoonDialog} onOpenChange={setShowComingSoonDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-              Assinatura em Breve! 🚀
-            </DialogTitle>
-            <DialogDescription className="text-base pt-4 space-y-4">
-              <p className="text-foreground/90">
-                A assinatura da plataforma MedStation AI estará disponível em breve!
-              </p>
-              <p className="text-foreground/90">
-                Seja um dos primeiros a ter acesso exclusivo falando diretamente com{" "}
-                <span className="font-semibold text-primary">Artur Batista</span>, 
-                médico desenvolvedor da plataforma.
-              </p>
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-3 mt-4">
-            <Button
-              onClick={() => window.open("https://w.app/medstationai", "_blank")}
-              className="w-full h-12 text-base font-semibold"
-            >
-              💬 Falar com Artur no WhatsApp
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setShowComingSoonDialog(false)}
-              className="w-full"
-            >
-              Fechar
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
