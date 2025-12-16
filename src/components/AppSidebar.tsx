@@ -19,6 +19,7 @@ import {
   Wind,
   FileCheck,
   BookOpen,
+  Compass,
 } from "lucide-react";
 import {
   Sidebar,
@@ -56,6 +57,7 @@ const agentModules = [
   { title: "Prescriptus", url: "/prescriptus", icon: Pill },
   { title: "Atestus", url: "/atestus", icon: FileCheck },
   { title: "Protocolus", url: "/protocolus", icon: BookOpen },
+  { title: "Orientus", url: "/orientus", icon: Compass },
   { title: "CODexus", url: "/codexus", icon: FileText },
 ];
 

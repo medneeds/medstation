@@ -20,6 +20,7 @@ import {
   Wind,
   FileCheck,
   BookOpen,
+  Compass,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSubscription } from "@/contexts/SubscriptionContext";
@@ -137,6 +138,14 @@ const agentModules = [
     icon: BookOpen,
     url: "/protocolus",
     color: "text-amber-500",
+    isPremium: true,
+  },
+  {
+    title: "Orientus",
+    description: "Orientações ao paciente e instruções de alta",
+    icon: Compass,
+    url: "/orientus",
+    color: "text-orange-500",
     isPremium: true,
   },
 ];
