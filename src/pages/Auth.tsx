@@ -276,7 +276,7 @@ export default function Auth() {
             {/* Feature highlights */}
             <div className="space-y-3 pt-4">
               {[
-                "6 assistentes especializados",
+                "7 assistentes especializados",
                 "Interpretação inteligente de exames",
                 "Documentação automatizada",
                 "Scores clínicos em segundos"
