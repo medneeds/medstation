@@ -194,7 +194,7 @@ Seu objetivo é gerar, organizar e atualizar dinamicamente registros clínicos n
 ⚠️ MODO DE OPERAÇÃO: ${directAHEMode ? "AHE DIRETO" : "DISCUSSÃO"}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-${directAHEMode ? `**MODO AHE ATIVADO**
+${directAHEMode ? `MODO AHE ATIVADO
 
 Neste modo, você deve GERAR DIRETAMENTE a Anamnese Hospitalar Estruturada (AHE) com base nas informações fornecidas pelo usuário, SEM fazer perguntas adicionais.
 
@@ -204,7 +204,7 @@ Regras do Modo AHE:
 • Campos sem informação: marque como "Não disponível" ou "Em investigação"
 • NÃO faça perguntas complementares
 • NÃO sugira exames ou condutas adicionais
-• Apenas estruture o que foi fornecido` : `**MODO DISCUSSÃO ATIVADO**
+• Apenas estruture o que foi fornecido` : `MODO DISCUSSÃO ATIVADO
 
 Neste modo, você deve INTERAGIR com o médico para construir o caso juntos.
 
