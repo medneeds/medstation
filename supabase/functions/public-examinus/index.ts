@@ -25,33 +25,28 @@ serve(async (req) => {
 
     console.log(`Public Examinus request from IP: ${clientIp}`);
 
-    // Rate limiting check (10 messages per hour per IP)
+    // Rate limiting check (10 total messages per IP - permanent limit)
     const RATE_LIMIT = 10;
-    const WINDOW_MINUTES = 60;
-    const now = new Date();
-    const windowStart = new Date(now.getTime() - WINDOW_MINUTES * 60 * 1000);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check rate limit for this IP
+    // Check total usage for this IP (no time window - permanent limit)
     const { data: rateLimitData } = await supabase
       .from("rate_limits")
       .select("*")
       .eq("user_id", `public_${clientIp}`)
       .eq("function_name", "public-examinus")
-      .gte("window_start", windowStart.toISOString())
-      .order("window_start", { ascending: false })
-      .limit(1)
       .maybeSingle();
 
-    if (rateLimitData && rateLimitData.request_count >= RATE_LIMIT) {
-      const resetTime = new Date(new Date(rateLimitData.window_start).getTime() + WINDOW_MINUTES * 60 * 1000);
+    const currentCount = rateLimitData?.request_count || 0;
+
+    if (currentCount >= RATE_LIMIT) {
       return new Response(
         JSON.stringify({ 
-          error: "Limite de mensagens gratuitas atingido. Crie uma conta para continuar!",
-          resetAt: resetTime.toISOString()
+          error: "Você atingiu o limite de 10 extrações gratuitas! Crie sua conta grátis para continuar usando o Examinus sem limites.",
+          limitReached: true
         }),
         { 
           status: 429, 
@@ -60,7 +55,8 @@ serve(async (req) => {
       );
     }
 
-    // Update or create rate limit record
+    // Update or create rate limit record (permanent counter)
+    const now = new Date();
     if (rateLimitData) {
       await supabase
         .from("rate_limits")
@@ -261,7 +257,7 @@ VERSÃO DEMO: Esta é versão gratuita limitada. Crie conta para acesso completo
     return new Response(
       JSON.stringify({ 
         response: data.choices[0].message.content,
-        remainingMessages: RATE_LIMIT - ((rateLimitData?.request_count || 0) + 1)
+        remainingMessages: RATE_LIMIT - (currentCount + 1)
       }),
       { 
         status: 200, 
