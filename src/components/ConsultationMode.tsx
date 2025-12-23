@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   ArrowLeft, 
   Mic, 
@@ -12,6 +13,8 @@ import {
   Copy,
   Download,
   Save,
+  MessageSquare,
+  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useContinuousRecording } from "@/hooks/useContinuousRecording";
@@ -20,6 +23,7 @@ import { AudioVisualizer } from "@/components/consultation/AudioVisualizer";
 import { TranscriptionPane } from "@/components/consultation/TranscriptionPane";
 import { StructuredPane } from "@/components/consultation/StructuredPane";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ConsultationModeProps {
   caseId?: string;
@@ -27,8 +31,10 @@ interface ConsultationModeProps {
 }
 
 export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
+  const isMobile = useIsMobile();
   const [audioLevel, setAudioLevel] = useState(0);
   const [showFinishDialog, setShowFinishDialog] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("transcription");
 
   const {
     segments,
@@ -123,30 +129,30 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <header className="flex items-center justify-between px-4 py-3 border-b bg-card">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={handleExit}>
-            <ArrowLeft className="h-5 w-5" />
+      <header className="flex items-center justify-between px-3 md:px-4 py-2 md:py-3 border-b bg-card">
+        <div className="flex items-center gap-2 md:gap-3">
+          <Button variant="ghost" size="icon" onClick={handleExit} className="h-8 w-8 md:h-10 md:w-10">
+            <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
           </Button>
           <div>
-            <h1 className="font-semibold">Modo Consultório</h1>
-            <p className="text-xs text-muted-foreground">Clínicus</p>
+            <h1 className="font-semibold text-sm md:text-base">Modo Consultório</h1>
+            <p className="text-[10px] md:text-xs text-muted-foreground">Clínicus</p>
           </div>
         </div>
         
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-sm">
-            <Clock className="h-4 w-4 text-muted-foreground" />
+        <div className="flex items-center gap-2 md:gap-4">
+          <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
+            <Clock className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
             <span className="font-mono">{formattedTime}</span>
           </div>
           
           {isRecording && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 md:gap-2">
               <div className={cn(
                 "w-2 h-2 rounded-full",
                 isPaused ? "bg-yellow-500" : "bg-red-500 animate-pulse"
               )} />
-              <span className="text-xs text-muted-foreground">
+              <span className="text-[10px] md:text-xs text-muted-foreground hidden sm:inline">
                 {isPaused ? 'Pausado' : 'Gravando'}
               </span>
             </div>
@@ -155,99 +161,129 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
       </header>
 
       {/* Audio Control Bar */}
-      <div className="flex items-center justify-center gap-4 px-4 py-4 border-b bg-muted/30">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-2 md:gap-4 px-3 md:px-4 py-3 md:py-4 border-b bg-muted/30">
         <AudioVisualizer 
           level={audioLevel} 
           isActive={isRecording && !isPaused}
-          className="w-48"
+          className="w-32 md:w-48"
         />
         
         <div className="flex items-center gap-2">
           {!isRecording ? (
-            <Button onClick={handleStart} size="lg" className="gap-2">
-              <Mic className="h-5 w-5" />
-              Iniciar Consulta
+            <Button onClick={handleStart} size={isMobile ? "default" : "lg"} className="gap-2">
+              <Mic className="h-4 w-4 md:h-5 md:w-5" />
+              <span className="text-sm md:text-base">Iniciar</span>
             </Button>
           ) : (
             <>
               {isPaused ? (
-                <Button onClick={handleResume} variant="outline" size="lg" className="gap-2">
-                  <Play className="h-5 w-5" />
-                  Continuar
+                <Button onClick={handleResume} variant="outline" size={isMobile ? "default" : "lg"} className="gap-2">
+                  <Play className="h-4 w-4 md:h-5 md:w-5" />
+                  <span className="hidden sm:inline text-sm md:text-base">Continuar</span>
                 </Button>
               ) : (
-                <Button onClick={handlePause} variant="outline" size="lg" className="gap-2">
-                  <Pause className="h-5 w-5" />
-                  Pausar
+                <Button onClick={handlePause} variant="outline" size={isMobile ? "default" : "lg"} className="gap-2">
+                  <Pause className="h-4 w-4 md:h-5 md:w-5" />
+                  <span className="hidden sm:inline text-sm md:text-base">Pausar</span>
                 </Button>
               )}
-              <Button onClick={handleFinish} variant="default" size="lg" className="gap-2">
-                <CheckCircle2 className="h-5 w-5" />
-                Finalizar
+              <Button onClick={handleFinish} variant="default" size={isMobile ? "default" : "lg"} className="gap-2">
+                <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5" />
+                <span className="text-sm md:text-base">Finalizar</span>
               </Button>
             </>
           )}
         </div>
       </div>
 
-      {/* Main Content - Split View */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-0 overflow-hidden">
-        {/* Left - Transcription */}
-        <Card className="rounded-none border-0 border-r h-full overflow-hidden">
-          <TranscriptionPane
-            segments={segments}
-            isTranscribing={isTranscribing}
-            onChangeSpeaker={changeSpeaker}
-            onDeleteSegment={deleteSegment}
-          />
-        </Card>
+      {/* Main Content - Split View on desktop, Tabs on mobile */}
+      {isMobile ? (
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+          <TabsList className="grid w-full grid-cols-2 mx-0 rounded-none border-b">
+            <TabsTrigger value="transcription" className="gap-2 data-[state=active]:bg-muted">
+              <MessageSquare className="h-4 w-4" />
+              Transcrição
+            </TabsTrigger>
+            <TabsTrigger value="structure" className="gap-2 data-[state=active]:bg-muted">
+              <FileText className="h-4 w-4" />
+              Estrutura
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="transcription" className="flex-1 m-0 overflow-hidden">
+            <TranscriptionPane
+              segments={segments}
+              isTranscribing={isTranscribing}
+              onChangeSpeaker={changeSpeaker}
+              onDeleteSegment={deleteSegment}
+            />
+          </TabsContent>
+          <TabsContent value="structure" className="flex-1 m-0 overflow-hidden">
+            <StructuredPane
+              structure={structure}
+              isStructuring={isStructuring}
+              onUpdateField={updateStructureField}
+            />
+          </TabsContent>
+        </Tabs>
+      ) : (
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-0 overflow-hidden">
+          {/* Left - Transcription */}
+          <Card className="rounded-none border-0 border-r h-full overflow-hidden">
+            <TranscriptionPane
+              segments={segments}
+              isTranscribing={isTranscribing}
+              onChangeSpeaker={changeSpeaker}
+              onDeleteSegment={deleteSegment}
+            />
+          </Card>
 
-        {/* Right - Structure */}
-        <Card className="rounded-none border-0 h-full overflow-hidden">
-          <StructuredPane
-            structure={structure}
-            isStructuring={isStructuring}
-            onUpdateField={updateStructureField}
-          />
-        </Card>
-      </div>
+          {/* Right - Structure */}
+          <Card className="rounded-none border-0 h-full overflow-hidden">
+            <StructuredPane
+              structure={structure}
+              isStructuring={isStructuring}
+              onUpdateField={updateStructureField}
+            />
+          </Card>
+        </div>
+      )}
 
       {/* Finish Dialog */}
       {showFinishDialog && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <Card className="max-w-lg w-full p-6 space-y-4">
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 md:p-4">
+          <Card className="max-w-lg w-full p-4 md:p-6 space-y-3 md:space-y-4">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-full bg-green-100 dark:bg-green-900/30">
-                <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
+                <CheckCircle2 className="h-5 w-5 md:h-6 md:w-6 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <h2 className="font-semibold text-lg">Consulta Finalizada</h2>
-                <p className="text-sm text-muted-foreground">
-                  Duração: {formattedTime} • {segments.length} falas registradas
+                <h2 className="font-semibold text-base md:text-lg">Consulta Finalizada</h2>
+                <p className="text-xs md:text-sm text-muted-foreground">
+                  Duração: {formattedTime} • {segments.length} falas
                 </p>
               </div>
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" className="gap-2" onClick={handleCopyToClipboard}>
+              <Button variant="outline" size="sm" className="gap-2 flex-1 sm:flex-none" onClick={handleCopyToClipboard}>
                 <Copy className="h-4 w-4" />
-                Copiar Texto
+                <span className="text-xs md:text-sm">Copiar</span>
               </Button>
-              <Button variant="outline" className="gap-2" disabled>
+              <Button variant="outline" size="sm" className="gap-2 flex-1 sm:flex-none" disabled>
                 <Download className="h-4 w-4" />
-                Exportar PDF
+                <span className="text-xs md:text-sm">PDF</span>
               </Button>
-              <Button variant="outline" className="gap-2" disabled>
+              <Button variant="outline" size="sm" className="gap-2 flex-1 sm:flex-none" disabled>
                 <Save className="h-4 w-4" />
-                Salvar no Caso
+                <span className="text-xs md:text-sm">Salvar</span>
               </Button>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t">
-              <Button variant="ghost" onClick={() => setShowFinishDialog(false)}>
+            <div className="flex flex-col sm:flex-row justify-end gap-2 pt-2 border-t">
+              <Button variant="ghost" size="sm" onClick={() => setShowFinishDialog(false)} className="w-full sm:w-auto">
                 Continuar Editando
               </Button>
-              <Button onClick={handleExit}>
+              <Button size="sm" onClick={handleExit} className="w-full sm:w-auto">
                 Fechar
               </Button>
             </div>
