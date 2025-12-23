@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import NotificationBell from "@/components/NotificationBell";
 import { SupportChat } from "@/components/SupportChat";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -30,6 +31,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 </div>
               </div>
               <div className="flex items-center gap-1 md:gap-2">
+                <ThemeToggle />
                 <NotificationBell />
               </div>
             </header>
