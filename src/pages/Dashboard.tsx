@@ -81,7 +81,7 @@ const agentModules = [
     description: "Extração e formatação de exames laboratoriais e de imagem",
     icon: FlaskConical,
     url: "/examinus",
-    color: "text-secondary",
+    color: "text-examinus",
     isPremium: false,
   },
   {

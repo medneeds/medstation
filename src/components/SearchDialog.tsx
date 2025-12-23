@@ -45,7 +45,7 @@ interface SearchDialogProps {
 }
 
 const agents = [
-  { name: "Examinus", path: "/examinus", icon: FlaskConical, color: "text-purple-500", description: "Extração e formatação de exames laboratoriais e de imagem" },
+  { name: "Examinus", path: "/examinus", icon: FlaskConical, color: "text-examinus", description: "Extração e formatação de exames laboratoriais e de imagem" },
   { name: "Clínicus", path: "/clinicus", icon: Stethoscope, color: "text-blue-500", description: "Anamneses hospitalares estruturadas e passagem de plantão" },
   { name: "Scorius", path: "/scorius", icon: Calculator, color: "text-red-500", description: "Cálculo e interpretação de scores clínicos e escalas prognósticas" },
   { name: "Numerus", path: "/numerus", icon: Sigma, color: "text-green-500", description: "Calculadoras médicas e conversão de unidades" },
