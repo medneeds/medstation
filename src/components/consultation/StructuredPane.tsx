@@ -147,17 +147,17 @@ export function StructuredPane({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/30">
-        <h3 className="font-semibold text-sm">Estruturação</h3>
+      <div className="flex items-center justify-between px-3 md:px-4 py-2 border-b bg-muted/30">
+        <h3 className="font-semibold text-xs md:text-sm">Estruturação</h3>
         {isStructuring && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs text-muted-foreground">
             <Loader2 className="h-3 w-3 animate-spin" />
             <span>Estruturando...</span>
           </div>
         )}
       </div>
       
-      <ScrollArea className="flex-1 p-2">
+      <ScrollArea className="flex-1 p-1.5 md:p-2">
         <div className="space-y-1">
           {/* Filled sections first */}
           {filledSections.map((section) => {
@@ -175,42 +175,43 @@ export function StructuredPane({
                 <CollapsibleTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="w-full justify-start h-auto py-2 px-3"
+                    className="w-full justify-start h-auto py-1.5 md:py-2 px-2 md:px-3"
                   >
                     {isExpanded ? (
-                      <ChevronDown className="h-4 w-4 mr-2 shrink-0" />
+                      <ChevronDown className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 shrink-0" />
                     ) : (
-                      <ChevronRight className="h-4 w-4 mr-2 shrink-0" />
+                      <ChevronRight className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 shrink-0" />
                     )}
-                    <Icon className="h-4 w-4 mr-2 shrink-0 text-primary" />
-                    <span className="font-medium text-sm">{section.shortLabel}</span>
-                    <span className="text-xs text-muted-foreground ml-2 truncate flex-1 text-left">
+                    <Icon className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 shrink-0 text-primary" />
+                    <span className="font-medium text-xs md:text-sm">{section.shortLabel}</span>
+                    <span className="text-[10px] md:text-xs text-muted-foreground ml-1.5 md:ml-2 truncate flex-1 text-left">
                       {!isExpanded && value}
                     </span>
                   </Button>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <div className="pl-10 pr-3 pb-2">
+                  <div className="pl-7 md:pl-10 pr-2 md:pr-3 pb-2">
                     {isEditing ? (
                       <div className="space-y-2">
                         <Textarea
                           value={value}
                           onChange={(e) => onUpdateField(section.key, e.target.value)}
                           placeholder={section.placeholder}
-                          className="min-h-[80px] text-sm"
+                          className="min-h-[60px] md:min-h-[80px] text-xs md:text-sm"
                           autoFocus
                         />
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => setEditingSection(null)}
+                          className="text-xs"
                         >
                           Concluir
                         </Button>
                       </div>
                     ) : (
                       <div 
-                        className="text-sm p-2 rounded bg-muted/50 cursor-pointer hover:bg-muted transition-colors"
+                        className="text-xs md:text-sm p-2 rounded bg-muted/50 cursor-pointer hover:bg-muted transition-colors"
                         onClick={() => setEditingSection(section.key)}
                       >
                         {value || <span className="text-muted-foreground italic">{section.placeholder}</span>}
@@ -225,21 +226,23 @@ export function StructuredPane({
           {/* Empty sections collapsed */}
           {emptySections.length > 0 && (
             <div className="pt-2 border-t mt-2">
-              <p className="text-xs text-muted-foreground px-3 py-1">
-                Aguardando dados ({emptySections.length} seções)
+              <p className="text-[10px] md:text-xs text-muted-foreground px-2 md:px-3 py-1">
+                Aguardando ({emptySections.length})
               </p>
-              {emptySections.map((section) => {
-                const Icon = section.icon;
-                return (
-                  <div 
-                    key={section.key}
-                    className="flex items-center gap-2 px-3 py-1.5 text-muted-foreground"
-                  >
-                    <Icon className="h-3 w-3" />
-                    <span className="text-xs">{section.shortLabel}</span>
-                  </div>
-                );
-              })}
+              <div className="flex flex-wrap gap-1 px-2 md:px-3">
+                {emptySections.map((section) => {
+                  const Icon = section.icon;
+                  return (
+                    <div 
+                      key={section.key}
+                      className="flex items-center gap-1 px-2 py-1 text-muted-foreground bg-muted/30 rounded"
+                    >
+                      <Icon className="h-3 w-3" />
+                      <span className="text-[10px] md:text-xs">{section.shortLabel}</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>

@@ -70,12 +70,12 @@ export function SpeakerIndicator({
 
   if (!isEditable) {
     return (
-      <div className={cn("flex items-center gap-2 px-2 py-1 rounded-lg", config.bg)}>
-        <Icon className={cn("h-4 w-4", config.color)} />
-        <span className={cn("text-sm font-medium", config.color)}>{config.label}</span>
-        <span className="text-xs text-muted-foreground">({timeStr})</span>
+      <div className={cn("flex items-center gap-1.5 md:gap-2 px-1.5 md:px-2 py-1 rounded-lg", config.bg)}>
+        <Icon className={cn("h-3 w-3 md:h-4 md:w-4", config.color)} />
+        <span className={cn("text-xs md:text-sm font-medium", config.color)}>{config.label}</span>
+        <span className="text-[10px] md:text-xs text-muted-foreground">({timeStr})</span>
         <div 
-          className={cn("w-2 h-2 rounded-full", confConfig.color)}
+          className={cn("w-1.5 h-1.5 md:w-2 md:h-2 rounded-full", confConfig.color)}
           title={confConfig.label}
         />
       </div>
@@ -88,13 +88,13 @@ export function SpeakerIndicator({
         <Button 
           variant="ghost" 
           size="sm"
-          className={cn("h-auto py-1 px-2 gap-2", config.bg, "hover:opacity-80")}
+          className={cn("h-auto py-1 px-1.5 md:px-2 gap-1 md:gap-2", config.bg, "hover:opacity-80")}
         >
-          <Icon className={cn("h-4 w-4", config.color)} />
-          <span className={cn("text-sm font-medium", config.color)}>{config.label}</span>
-          <span className="text-xs text-muted-foreground">({timeStr})</span>
+          <Icon className={cn("h-3 w-3 md:h-4 md:w-4", config.color)} />
+          <span className={cn("text-xs md:text-sm font-medium", config.color)}>{config.label}</span>
+          <span className="text-[10px] md:text-xs text-muted-foreground hidden sm:inline">({timeStr})</span>
           <div 
-            className={cn("w-2 h-2 rounded-full", confConfig.color)}
+            className={cn("w-1.5 h-1.5 md:w-2 md:h-2 rounded-full", confConfig.color)}
             title={confConfig.label}
           />
         </Button>
