@@ -36,7 +36,7 @@ const features = [
     icon: FileText,
     path: "/studius/articles",
     gradient: "from-violet-500 to-purple-600",
-    available: false,
+    available: true,
   },
   {
     id: "flashcards",
@@ -45,7 +45,7 @@ const features = [
     icon: Layers,
     path: "/studius/flashcards",
     gradient: "from-emerald-500 to-teal-600",
-    available: false,
+    available: true,
   },
   {
     id: "quizzes",
@@ -54,7 +54,7 @@ const features = [
     icon: Brain,
     path: "/studius/quizzes",
     gradient: "from-orange-500 to-amber-600",
-    available: false,
+    available: true,
   },
 ];
 
