@@ -30,8 +30,7 @@ import {
   Trash2,
   Trophy,
   Clock,
-  Target,
-  ArrowLeft
+  Target
 } from 'lucide-react';
 import { useQuizzes } from '@/hooks/useQuizzes';
 import { useStudiusPreferences } from '@/hooks/useStudius';
@@ -162,20 +161,15 @@ export default function StudiusQuizzes() {
     <StudiusLayout>
       <div className="p-6 max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => window.location.href = "/studius"}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                <Brain className="h-7 w-7 text-studius-primary" />
-                Quizzes
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                Teste seus conhecimentos com questões geradas por IA
-              </p>
-            </div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-3">
+              <Brain className="h-7 w-7 text-studius-primary" />
+              Quizzes
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Teste seus conhecimentos com questões geradas por IA
+            </p>
           </div>
 
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
