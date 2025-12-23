@@ -46,6 +46,10 @@ All colors MUST be HSL.
     --input: 270 15% 92%;
     --ring: 270 55% 60%;
 
+    /* Agent-specific colors */
+    --examinus: 280 70% 50%;
+    --examinus-foreground: 0 0% 100%;
+
     --radius: 0.75rem;
 
     /* Sidebar - clean with lilac accent */
@@ -105,6 +109,10 @@ All colors MUST be HSL.
     --border: 270 18% 18%;
     --input: 270 18% 18%;
     --ring: 270 50% 65%;
+
+    /* Agent-specific colors */
+    --examinus: 280 65% 65%;
+    --examinus-foreground: 0 0% 100%;
 
     --sidebar-background: 270 20% 6%;
     --sidebar-foreground: 270 10% 90%;
