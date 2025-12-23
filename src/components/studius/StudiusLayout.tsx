@@ -8,7 +8,8 @@ import {
   TrendingUp,
   Sparkles,
   ArrowLeft,
-  Settings
+  Settings,
+  FileText
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ const navItems = [
   { path: "/studius/chat", label: "Chat IA", icon: MessageSquare },
   { path: "/studius/flashcards", label: "Flashcards", icon: Layers },
   { path: "/studius/quizzes", label: "Quizzes", icon: Brain },
+  { path: "/studius/articles", label: "Artigos", icon: FileText },
   { path: "/studius/progress", label: "Progresso", icon: TrendingUp },
 ];
 
