@@ -684,6 +684,45 @@ export type Database = {
         }
         Relationships: []
       }
+      studius_achievements: {
+        Row: {
+          category: string
+          code: string
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          name: string
+          requirement_type: string
+          requirement_value: number
+          xp_reward: number
+        }
+        Insert: {
+          category?: string
+          code: string
+          created_at?: string
+          description: string
+          icon: string
+          id?: string
+          name: string
+          requirement_type: string
+          requirement_value: number
+          xp_reward?: number
+        }
+        Update: {
+          category?: string
+          code?: string
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          name?: string
+          requirement_type?: string
+          requirement_value?: number
+          xp_reward?: number
+        }
+        Relationships: []
+      }
       studius_conversations: {
         Row: {
           created_at: string
@@ -782,31 +821,111 @@ export type Database = {
           created_at: string
           flashcards_reviewed: number | null
           id: string
+          last_streak_date: string | null
           messages_sent: number | null
+          streak_days: number | null
           study_date: string
           study_time_minutes: number | null
           updated_at: string
           user_id: string
+          xp_earned: number | null
         }
         Insert: {
           articles_read?: number | null
           created_at?: string
           flashcards_reviewed?: number | null
           id?: string
+          last_streak_date?: string | null
           messages_sent?: number | null
+          streak_days?: number | null
           study_date?: string
           study_time_minutes?: number | null
           updated_at?: string
           user_id: string
+          xp_earned?: number | null
         }
         Update: {
           articles_read?: number | null
           created_at?: string
           flashcards_reviewed?: number | null
           id?: string
+          last_streak_date?: string | null
           messages_sent?: number | null
+          streak_days?: number | null
           study_date?: string
           study_time_minutes?: number | null
+          updated_at?: string
+          user_id?: string
+          xp_earned?: number | null
+        }
+        Relationships: []
+      }
+      studius_user_achievements: {
+        Row: {
+          achievement_id: string
+          id: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          id?: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          id?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studius_user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "studius_achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      studius_user_progress: {
+        Row: {
+          created_at: string
+          current_level: number
+          current_streak: number
+          display_name: string | null
+          id: string
+          is_public: boolean
+          last_activity_date: string | null
+          longest_streak: number
+          total_xp: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_level?: number
+          current_streak?: number
+          display_name?: string | null
+          id?: string
+          is_public?: boolean
+          last_activity_date?: string | null
+          longest_streak?: number
+          total_xp?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_level?: number
+          current_streak?: number
+          display_name?: string | null
+          id?: string
+          is_public?: boolean
+          last_activity_date?: string | null
+          longest_streak?: number
+          total_xp?: number
           updated_at?: string
           user_id?: string
         }
@@ -838,6 +957,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_level: { Args: { xp: number }; Returns: number }
       cleanup_old_rate_limits: { Args: never; Returns: undefined }
       create_notification: {
         Args: {
