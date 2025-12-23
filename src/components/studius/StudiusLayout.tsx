@@ -1,15 +1,23 @@
 import { ReactNode } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { 
   LayoutDashboard, 
   MessageSquare, 
-  FileText, 
   Layers, 
   Brain, 
   TrendingUp,
-  Sparkles
+  Sparkles,
+  ArrowLeft,
+  Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface StudiusLayoutProps {
   children: ReactNode;
@@ -25,10 +33,19 @@ const navItems = [
 
 export default function StudiusLayout({ children }: StudiusLayoutProps) {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isActive = (path: string, exact?: boolean) => {
     if (exact) return location.pathname === path;
     return location.pathname.startsWith(path);
+  };
+
+  const handleBackToMedStation = () => {
+    navigate("/dashboard");
+  };
+
+  const handleReconfigurePreferences = () => {
+    navigate("/studius/onboarding");
   };
 
   return (
@@ -37,8 +54,17 @@ export default function StudiusLayout({ children }: StudiusLayoutProps) {
       <div className="sticky top-0 z-40 w-full bg-background/80 backdrop-blur-xl border-b border-studius-border">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
+            {/* Back Button + Logo */}
             <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleBackToMedStation}
+                className="text-muted-foreground hover:text-foreground hover:bg-studius-muted"
+                title="Voltar para MedStation"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
               <div className="p-2 rounded-xl bg-gradient-to-br from-studius-primary via-studius-secondary to-studius-accent shadow-lg">
                 <Sparkles className="h-5 w-5 text-white" />
               </div>
@@ -71,6 +97,29 @@ export default function StudiusLayout({ children }: StudiusLayoutProps) {
                 </NavLink>
               ))}
             </nav>
+
+            {/* Settings Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:text-foreground hover:bg-studius-muted"
+                >
+                  <Settings className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={handleReconfigurePreferences}>
+                  <Settings className="h-4 w-4 mr-2" />
+                  Reconfigurar Preferências
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleBackToMedStation}>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Voltar para MedStation
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
