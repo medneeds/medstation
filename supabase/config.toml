@@ -50,3 +50,12 @@ verify_jwt = true
 
 [functions.structure-anamnesis]
 verify_jwt = true
+
+[functions.studius-chat]
+verify_jwt = true
+
+[functions.generate-flashcards]
+verify_jwt = true
+
+[functions.generate-quiz]
+verify_jwt = true
