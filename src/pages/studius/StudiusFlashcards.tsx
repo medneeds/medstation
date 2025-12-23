@@ -365,17 +365,16 @@ export default function StudiusFlashcards() {
   // Decks list view
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => window.location.href = "/studius"}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Flashcards</h1>
-            <p className="text-muted-foreground">
-              Crie e revise flashcards com repetição espaçada
-            </p>
-          </div>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
+            <Layers className="h-7 w-7 text-studius-primary" />
+            Flashcards
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Crie e revise flashcards com repetição espaçada
+          </p>
         </div>
 
         <Dialog open={newDeckOpen} onOpenChange={setNewDeckOpen}>

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { ArrowLeft, Send, Sparkles, User, Loader2, BookOpen, Plus, History, Trash2 } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Send, Sparkles, User, Loader2, BookOpen, Plus, History, Trash2 } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -32,7 +32,6 @@ const suggestedQuestions = [
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/studius-chat`;
 
 export default function StudiusChat() {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const conversationId = searchParams.get("id");
   
@@ -278,26 +277,16 @@ export default function StudiusChat() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] animate-fade-in">
+    <div className="flex flex-col h-[calc(100vh-8rem)] lg:h-[calc(100vh-4rem)] animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-studius-border">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/studius")}
-            className="hover:bg-studius-muted"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg">
-              <BookOpen className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h1 className="font-semibold text-foreground">Chat IA Médico</h1>
-              <p className="text-xs text-muted-foreground">Assistente especializado em medicina</p>
-            </div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-studius-border">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg">
+            <BookOpen className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold text-foreground">Chat IA Médico</h1>
+            <p className="text-xs text-muted-foreground">Assistente especializado em medicina</p>
           </div>
         </div>
 
