@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import PublicExaminusChat from "@/components/PublicExaminusChat";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 // Definição centralizada dos agentes com descrições precisas
 const agents = [
@@ -97,6 +98,7 @@ export default function Home() {
             >
               Plataforma
             </Button>
+            <ThemeToggle />
             <Button 
               variant="ghost" 
               size="sm"
