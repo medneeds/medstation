@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useStudiusPreferences, useStudiusStats } from "@/hooks/useStudius";
+import { XPProgress } from "@/components/studius/XPProgress";
 
 const features = [
   {
@@ -104,6 +105,9 @@ export default function StudiusDashboard() {
           )}
         </div>
       </div>
+
+      {/* XP Progress */}
+      <XPProgress />
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

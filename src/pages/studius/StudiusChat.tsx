@@ -13,6 +13,8 @@ import {
   useStudiusStats,
   StudiusMessage 
 } from "@/hooks/useStudius";
+import { useGamification } from "@/hooks/useGamification";
+import { XPProgress } from "@/components/studius/XPProgress";
 import {
   Sheet,
   SheetContent,
@@ -41,7 +43,8 @@ export default function StudiusChat() {
   } = useStudiusConversations();
   
   const { messages, addMessage, setMessages } = useStudiusMessages(conversationId);
-  const { incrementStat } = useStudiusStats();
+  const { incrementStat, stats } = useStudiusStats();
+  const { addXpAsync, checkAchievements, XP_REWARDS } = useGamification();
   
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -129,8 +132,13 @@ export default function StudiusChat() {
         content: userMessageContent,
       });
 
-      // Increment stats
+      // Increment stats and add XP
       await incrementStat("messages_sent");
+      await addXpAsync({ amount: XP_REWARDS.MESSAGE_SENT, reason: "Mensagem enviada" });
+      
+      // Check achievements based on updated stats
+      const currentMessagesCount = (stats?.messages_sent || 0) + 1;
+      checkAchievements({ messages_sent: currentMessagesCount });
 
       // Call AI
       const response = await supabase.functions.invoke("studius-chat", {
