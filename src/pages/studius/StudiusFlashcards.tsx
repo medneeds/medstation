@@ -366,11 +366,16 @@ export default function StudiusFlashcards() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Flashcards</h1>
-          <p className="text-muted-foreground">
-            Crie e revise flashcards com repetição espaçada
-          </p>
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => window.location.href = "/studius"}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">Flashcards</h1>
+            <p className="text-muted-foreground">
+              Crie e revise flashcards com repetição espaçada
+            </p>
+          </div>
         </div>
 
         <Dialog open={newDeckOpen} onOpenChange={setNewDeckOpen}>
