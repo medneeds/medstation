@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { 
   ArrowLeft, Plus, Layers, Sparkles, MoreVertical, Trash2, 
-  Edit, PlayCircle, BookOpen, Loader2
+  PlayCircle, BookOpen, Loader2
 } from "lucide-react";
 import StudiusLayout from "@/components/studius/StudiusLayout";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,6 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 
 export default function StudiusFlashcards() {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const deckId = searchParams.get("deck");
   const mode = searchParams.get("mode"); // "review" | "create" | null
