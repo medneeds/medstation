@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Send, Sparkles, User, Loader2, BookOpen, Plus, History, Trash2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
+import StudiusLayout from "@/components/studius/StudiusLayout";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -277,7 +278,8 @@ export default function StudiusChat() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] lg:h-[calc(100vh-4rem)] animate-fade-in">
+    <StudiusLayout>
+      <div className="flex flex-col h-[calc(100vh-8rem)] lg:h-[calc(100vh-4rem)] animate-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-studius-border">
         <div className="flex items-center gap-3">
@@ -479,6 +481,7 @@ export default function StudiusChat() {
           </Button>
         </div>
       </div>
-    </div>
+      </div>
+    </StudiusLayout>
   );
 }

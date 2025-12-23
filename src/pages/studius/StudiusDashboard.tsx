@@ -7,17 +7,16 @@ import {
   TrendingUp,
   Sparkles,
   Target,
-  Clock,
   Flame,
   ChevronRight,
   BookOpen
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useStudiusPreferences, useStudiusStats } from "@/hooks/useStudius";
 import { XPProgress } from "@/components/studius/XPProgress";
+import StudiusLayout from "@/components/studius/StudiusLayout";
 
 const features = [
   {
@@ -77,7 +76,8 @@ export default function StudiusDashboard() {
   ];
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <StudiusLayout>
+      <div className="space-y-8 animate-fade-in">
       {/* Welcome Header */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-studius-primary via-studius-secondary to-studius-accent p-8">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iNCIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
@@ -195,6 +195,7 @@ export default function StudiusDashboard() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </StudiusLayout>
   );
 }

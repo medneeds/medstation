@@ -140,7 +140,7 @@ export default function StudiusFlashcards() {
   // Review mode
   if (mode === "review" && deckId && cardsToReview.length > 0) {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <StudiusLayout>
         <div className="max-w-xl mx-auto">
           <Button
             variant="ghost"
@@ -159,14 +159,15 @@ export default function StudiusFlashcards() {
             onComplete={handleReviewComplete}
           />
         </div>
-      </div>
+      </StudiusLayout>
     );
   }
 
   // Deck detail view
   if (deckId && currentDeck) {
     return (
-      <div className="space-y-6 animate-fade-in">
+      <StudiusLayout>
+        <div className="space-y-6 animate-fade-in">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => setSearchParams({})}>
@@ -358,13 +359,15 @@ export default function StudiusFlashcards() {
             ))}
           </div>
         )}
-      </div>
+        </div>
+      </StudiusLayout>
     );
   }
 
   // Decks list view
   return (
-    <div className="space-y-6 animate-fade-in">
+    <StudiusLayout>
+      <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -509,6 +512,7 @@ export default function StudiusFlashcards() {
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </StudiusLayout>
   );
 }
