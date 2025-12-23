@@ -18,8 +18,8 @@ interface StudiusLayoutProps {
 const navItems = [
   { path: "/studius", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { path: "/studius/chat", label: "Chat IA", icon: MessageSquare },
+  { path: "/studius/flashcards", label: "Flashcards", icon: Layers },
   { path: "/studius/progress", label: "Progresso", icon: TrendingUp },
-  { path: "/studius/flashcards", label: "Flashcards", icon: Layers, disabled: true },
   { path: "/studius/quizzes", label: "Quizzes", icon: Brain, disabled: true },
 ];
 
