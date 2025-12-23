@@ -62,15 +62,25 @@ All colors MUST be HSL.
     --sidebar-border: 270 15% 92%;
     --sidebar-ring: 270 55% 60%;
 
+    /* Studius Premium Colors */
+    --studius-primary: 190 85% 50%;
+    --studius-secondary: 260 70% 60%;
+    --studius-accent: 280 65% 55%;
+    --studius-bg: 220 25% 98%;
+    --studius-muted: 220 20% 96%;
+    --studius-border: 220 15% 90%;
+
     /* Subtle lilac gradients */
     --gradient-primary: linear-gradient(135deg, hsl(270 55% 60%), hsl(280 50% 70%));
     --gradient-clinical: linear-gradient(135deg, hsl(270 40% 95%), hsl(280 35% 98%));
     --gradient-hero: linear-gradient(135deg, hsl(0 0% 100%), hsl(270 30% 98%));
+    --gradient-studius: linear-gradient(135deg, hsl(190 85% 50%), hsl(260 70% 60%), hsl(280 65% 55%));
 
     /* Soft shadows */
     --shadow-medical: 0 2px 8px hsl(270 30% 50% / 0.06);
     --shadow-elevated: 0 4px 16px hsl(270 30% 50% / 0.08);
     --shadow-critical: 0 8px 24px hsl(0 72% 51% / 0.12);
+    --shadow-studius: 0 8px 32px hsl(260 70% 50% / 0.15);
 
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -123,13 +133,23 @@ All colors MUST be HSL.
     --sidebar-border: 270 18% 15%;
     --sidebar-ring: 270 50% 65%;
 
+    /* Studius Premium Colors - Dark Mode */
+    --studius-primary: 190 80% 55%;
+    --studius-secondary: 260 65% 65%;
+    --studius-accent: 280 60% 60%;
+    --studius-bg: 220 20% 10%;
+    --studius-muted: 220 18% 15%;
+    --studius-border: 220 15% 20%;
+
     --gradient-primary: linear-gradient(135deg, hsl(270 50% 65%), hsl(280 45% 72%));
     --gradient-clinical: linear-gradient(135deg, hsl(270 18% 14%), hsl(280 15% 18%));
     --gradient-hero: linear-gradient(135deg, hsl(270 20% 8%), hsl(270 35% 20%));
+    --gradient-studius: linear-gradient(135deg, hsl(190 80% 55%), hsl(260 65% 65%), hsl(280 60% 60%));
 
     --shadow-medical: 0 2px 8px hsl(0 0% 0% / 0.25);
     --shadow-elevated: 0 4px 16px hsl(0 0% 0% / 0.35);
     --shadow-critical: 0 8px 24px hsl(0 72% 58% / 0.25);
+    --shadow-studius: 0 8px 32px hsl(260 65% 50% / 0.25);
   }
 }
 

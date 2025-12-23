@@ -35,6 +35,7 @@ import NewExamRequest from "@/pages/NewExamRequest";
 import ExamRequestDetail from "@/pages/ExamRequestDetail";
 import MedicalDocuments from "@/pages/MedicalDocuments";
 import MedicalDocumentDetail from "@/pages/MedicalDocumentDetail";
+import StudiusIndex from "@/pages/studius/StudiusIndex";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -209,6 +210,14 @@ const App = () => (
                   <DashboardLayout>
                     <Orientus />
                   </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/studius/*"
+              element={
+                <ProtectedRoute>
+                  <StudiusIndex />
                 </ProtectedRoute>
               }
             />

@@ -66,16 +66,26 @@ export default {
           DEFAULT: "hsl(var(--examinus))",
           foreground: "hsl(var(--examinus-foreground))",
         },
+        studius: {
+          primary: "hsl(var(--studius-primary))",
+          secondary: "hsl(var(--studius-secondary))",
+          accent: "hsl(var(--studius-accent))",
+          bg: "hsl(var(--studius-bg))",
+          muted: "hsl(var(--studius-muted))",
+          border: "hsl(var(--studius-border))",
+        },
       },
       backgroundImage: {
         "gradient-primary": "var(--gradient-primary)",
         "gradient-clinical": "var(--gradient-clinical)",
         "gradient-hero": "var(--gradient-hero)",
+        "gradient-studius": "var(--gradient-studius)",
       },
       boxShadow: {
         medical: "var(--shadow-medical)",
         elevated: "var(--shadow-elevated)",
         critical: "var(--shadow-critical)",
+        studius: "var(--shadow-studius)",
       },
       transitionProperty: {
         smooth: "var(--transition-smooth)",
