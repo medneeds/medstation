@@ -7,6 +7,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Limite total de extrações gratuitas
+const RATE_LIMIT = 5;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -18,35 +21,57 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY not configured");
     }
 
+    // Parse request body first to get fingerprint
+    const { messages, fileContent, usePipeSeparator, includeTime = true, fingerprint } = await req.json();
+
     // Get client IP for rate limiting
     const clientIp = req.headers.get("x-forwarded-for") || 
                      req.headers.get("x-real-ip") || 
                      "unknown";
 
-    console.log(`Public Examinus request from IP: ${clientIp}`);
+    // Criar identificador composto: IP + fingerprint (mais difícil de burlar)
+    const identifier = fingerprint 
+      ? `${clientIp}_${fingerprint}` 
+      : clientIp;
 
-    // Rate limiting check (10 total messages per IP - permanent limit)
-    const RATE_LIMIT = 10;
+    console.log(`Public Examinus request - IP: ${clientIp}, Fingerprint: ${fingerprint ? 'provided' : 'none'}`);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check total usage for this IP (no time window - permanent limit)
-    const { data: rateLimitData } = await supabase
+    // Buscar TODOS os registros que correspondem ao IP OU fingerprint
+    // Isso previne bypass por troca de IP ou limpeza de dados
+    const { data: rateLimitRecords } = await supabase
       .from("rate_limits")
       .select("*")
-      .eq("user_id", `public_${clientIp}`)
       .eq("function_name", "public-examinus")
-      .maybeSingle();
+      .or(`user_id.eq.public_${clientIp},fingerprint.eq.${fingerprint || 'none'}`);
 
-    const currentCount = rateLimitData?.request_count || 0;
+    // Calcular total de requisições considerando TODOS os registros relacionados
+    let totalCount = 0;
+    let existingRecord = null;
 
-    if (currentCount >= RATE_LIMIT) {
+    if (rateLimitRecords && rateLimitRecords.length > 0) {
+      // Somar todas as requisições de registros relacionados
+      totalCount = rateLimitRecords.reduce((sum, record) => sum + (record.request_count || 0), 0);
+      
+      // Encontrar o registro que corresponde exatamente ao identificador atual
+      existingRecord = rateLimitRecords.find(
+        r => r.user_id === `public_${identifier}` || 
+             (fingerprint && r.fingerprint === fingerprint)
+      );
+    }
+
+    console.log(`Rate limit check - Total count: ${totalCount}, Limit: ${RATE_LIMIT}`);
+
+    if (totalCount >= RATE_LIMIT) {
       return new Response(
         JSON.stringify({ 
-          error: "Você atingiu o limite de 10 extrações gratuitas! Crie sua conta grátis para continuar usando o Examinus sem limites.",
-          limitReached: true
+          error: "Você usou suas extrações gratuitas! Crie sua conta grátis para continuar usando o Examinus sem limites.",
+          limitReached: true,
+          usedCount: totalCount,
+          limit: RATE_LIMIT
         }),
         { 
           status: 429, 
@@ -55,33 +80,7 @@ serve(async (req) => {
       );
     }
 
-    // Update or create rate limit record (permanent counter)
-    const now = new Date();
-    if (rateLimitData) {
-      await supabase
-        .from("rate_limits")
-        .update({ 
-          request_count: rateLimitData.request_count + 1,
-          updated_at: now.toISOString()
-        })
-        .eq("id", rateLimitData.id);
-    } else {
-      await supabase
-        .from("rate_limits")
-        .insert({
-          user_id: `public_${clientIp}`,
-          function_name: "public-examinus",
-          window_start: now.toISOString(),
-          request_count: 1,
-          updated_at: now.toISOString()
-        });
-    }
-
-    // Parse request body
-    const { messages, fileContent, usePipeSeparator, includeTime = true } = await req.json();
-
-    console.log("Public Examinus formatting options:", { usePipeSeparator, includeTime });
-
+    // Validar mensagens
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(
         JSON.stringify({ error: "Formato de mensagens inválido" }),
@@ -89,8 +88,32 @@ serve(async (req) => {
       );
     }
 
+    // Update or create rate limit record
+    const now = new Date();
+    if (existingRecord) {
+      await supabase
+        .from("rate_limits")
+        .update({ 
+          request_count: existingRecord.request_count + 1,
+          updated_at: now.toISOString(),
+          fingerprint: fingerprint || existingRecord.fingerprint
+        })
+        .eq("id", existingRecord.id);
+    } else {
+      await supabase
+        .from("rate_limits")
+        .insert({
+          user_id: `public_${identifier}`,
+          function_name: "public-examinus",
+          window_start: now.toISOString(),
+          request_count: 1,
+          updated_at: now.toISOString(),
+          fingerprint: fingerprint || null
+        });
+    }
+
     // System prompt for public Examinus demo
-      const systemPrompt = `EXAMINUS AI - EXTRATOR DE EXAMES MÉDICOS
+    const systemPrompt = `EXAMINUS AI - EXTRATOR DE EXAMES MÉDICOS
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚠️ REGRA ABSOLUTA DE COMPORTAMENTO
@@ -180,7 +203,7 @@ COMPORTAMENTO:
 
 SE NÃO FOR EXAME: "Envie um laudo de exame."
 
-VERSÃO DEMO: Esta é versão gratuita limitada. Crie conta para acesso completo aos 6 assistentes médicos.`;
+VERSÃO DEMO: Esta é versão gratuita limitada. Crie conta para acesso completo aos 10 assistentes médicos.`;
 
     // Se houver arquivo PDF/imagem, processa com visão
     let userMessages = messages;
@@ -254,10 +277,15 @@ VERSÃO DEMO: Esta é versão gratuita limitada. Crie conta para acesso completo
     const data = await response.json();
     console.log("AI response received");
 
+    const newUsedCount = totalCount + 1;
+    const remaining = RATE_LIMIT - newUsedCount;
+
     return new Response(
       JSON.stringify({ 
         response: data.choices[0].message.content,
-        remainingMessages: RATE_LIMIT - (currentCount + 1)
+        remainingMessages: remaining,
+        usedCount: newUsedCount,
+        limit: RATE_LIMIT
       }),
       { 
         status: 200, 
