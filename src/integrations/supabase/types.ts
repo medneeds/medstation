@@ -684,6 +684,134 @@ export type Database = {
         }
         Relationships: []
       }
+      studius_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          last_message: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message?: string | null
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      studius_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          role: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          role: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studius_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "studius_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      studius_preferences: {
+        Row: {
+          created_at: string
+          goals: string[] | null
+          id: string
+          onboarding_completed: boolean | null
+          specialty: string | null
+          study_level: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          goals?: string[] | null
+          id?: string
+          onboarding_completed?: boolean | null
+          specialty?: string | null
+          study_level?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          goals?: string[] | null
+          id?: string
+          onboarding_completed?: boolean | null
+          specialty?: string | null
+          study_level?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      studius_stats: {
+        Row: {
+          articles_read: number | null
+          created_at: string
+          flashcards_reviewed: number | null
+          id: string
+          messages_sent: number | null
+          study_date: string
+          study_time_minutes: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          articles_read?: number | null
+          created_at?: string
+          flashcards_reviewed?: number | null
+          id?: string
+          messages_sent?: number | null
+          study_date?: string
+          study_time_minutes?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          articles_read?: number | null
+          created_at?: string
+          flashcards_reviewed?: number | null
+          id?: string
+          messages_sent?: number | null
+          study_date?: string
+          study_time_minutes?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null

@@ -1,6 +1,4 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { 
   MessageSquare, 
   FileText, 
@@ -18,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { useStudiusPreferences, useStudiusStats } from "@/hooks/useStudius";
 
 const features = [
   {
@@ -58,31 +57,23 @@ const features = [
   },
 ];
 
-const quickStats = [
-  { label: "Streak de estudos", value: "0 dias", icon: Flame, color: "text-orange-500" },
-  { label: "Flashcards revisados", value: "0", icon: Layers, color: "text-emerald-500" },
-  { label: "Artigos lidos", value: "0", icon: BookOpen, color: "text-violet-500" },
-  { label: "Tempo de estudo", value: "0h", icon: Clock, color: "text-blue-500" },
-];
-
 export default function StudiusDashboard() {
   const navigate = useNavigate();
-  const [specialty, setSpecialty] = useState<string>("");
-  const [goals, setGoals] = useState<string[]>([]);
+  const { preferences } = useStudiusPreferences();
+  const { stats, weeklyStats, calculateStreak } = useStudiusStats();
 
-  useEffect(() => {
-    loadUserPreferences();
-  }, []);
+  const streak = calculateStreak();
+  const totalMessages = weeklyStats.reduce((acc, s) => acc + (s.messages_sent || 0), 0);
+  const totalFlashcards = weeklyStats.reduce((acc, s) => acc + (s.flashcards_reviewed || 0), 0);
+  const totalArticles = weeklyStats.reduce((acc, s) => acc + (s.articles_read || 0), 0);
+  const studySessions = weeklyStats.filter((s) => s.messages_sent > 0 || s.flashcards_reviewed > 0).length;
 
-  const loadUserPreferences = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const savedSpecialty = localStorage.getItem(`studius_specialty_${user.id}`);
-      const savedGoals = localStorage.getItem(`studius_goals_${user.id}`);
-      if (savedSpecialty) setSpecialty(savedSpecialty);
-      if (savedGoals) setGoals(JSON.parse(savedGoals));
-    }
-  };
+  const quickStats = [
+    { label: "Streak de estudos", value: `${streak} ${streak === 1 ? "dia" : "dias"}`, icon: Flame, color: "text-orange-500" },
+    { label: "Mensagens enviadas", value: totalMessages.toString(), icon: MessageSquare, color: "text-cyan-500" },
+    { label: "Flashcards revisados", value: totalFlashcards.toString(), icon: Layers, color: "text-emerald-500" },
+    { label: "Artigos lidos", value: totalArticles.toString(), icon: BookOpen, color: "text-violet-500" },
+  ];
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -98,11 +89,12 @@ export default function StudiusDashboard() {
             Bem-vindo ao Studius
           </h1>
           <p className="text-white/80 max-w-xl">
-            Seu assistente de estudos médicos com IA. {specialty && `Especialização: ${specialty}.`}
+            Seu assistente de estudos médicos com IA.
+            {preferences?.specialty && ` Especialização: ${preferences.specialty}.`}
           </p>
-          {goals.length > 0 && (
+          {preferences?.goals && preferences.goals.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-4">
-              {goals.slice(0, 3).map((goal, index) => (
+              {preferences.goals.slice(0, 3).map((goal, index) => (
                 <Badge key={index} variant="secondary" className="bg-white/20 text-white border-white/30 backdrop-blur-sm">
                   <Target className="h-3 w-3 mr-1" />
                   {goal}
@@ -170,7 +162,7 @@ export default function StudiusDashboard() {
         </div>
       </div>
 
-      {/* Study Progress (Placeholder) */}
+      {/* Study Progress */}
       <Card className="bg-card/50 backdrop-blur-sm border-studius-border">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
@@ -183,13 +175,19 @@ export default function StudiusDashboard() {
             <div>
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-muted-foreground">Meta semanal</span>
-                <span className="font-medium text-foreground">0/5 sessões</span>
+                <span className="font-medium text-foreground">{studySessions}/5 sessões</span>
               </div>
-              <Progress value={0} className="h-2 bg-studius-muted" />
+              <Progress value={(studySessions / 5) * 100} className="h-2 bg-studius-muted" />
             </div>
-            <p className="text-sm text-muted-foreground text-center py-4">
-              Comece a usar o Studius para acompanhar seu progresso!
-            </p>
+            {studySessions === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                Comece a usar o Studius para acompanhar seu progresso!
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                Continue assim! Você está indo muito bem.
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
