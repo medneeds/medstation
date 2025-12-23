@@ -8,31 +8,31 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Purple Medical Professional Color Palette */
-    --background: 270 20% 98%;
-    --foreground: 270 25% 15%;
+    /* Clean White & Lilac Elegant Palette */
+    --background: 0 0% 100%;
+    --foreground: 270 15% 20%;
 
     --card: 0 0% 100%;
-    --card-foreground: 270 25% 15%;
+    --card-foreground: 270 15% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 270 25% 15%;
+    --popover-foreground: 270 15% 20%;
 
-    /* Medical Purple - trustworthy and innovative */
-    --primary: 270 70% 50%;
+    /* Elegant Lilac Primary */
+    --primary: 270 55% 60%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 270 70% 42%;
+    --primary-hover: 270 55% 52%;
 
-    /* Accent Purple - complementary */
-    --secondary: 280 65% 55%;
-    --secondary-foreground: 0 0% 100%;
+    /* Soft Lilac Secondary */
+    --secondary: 270 30% 96%;
+    --secondary-foreground: 270 40% 45%;
 
-    /* Neutral purple tones */
-    --muted: 270 15% 94%;
-    --muted-foreground: 270 15% 45%;
+    /* Clean neutral tones */
+    --muted: 270 10% 96%;
+    --muted-foreground: 270 10% 50%;
 
-    --accent: 270 70% 96%;
-    --accent-foreground: 270 70% 50%;
+    --accent: 270 40% 97%;
+    --accent-foreground: 270 55% 55%;
 
     /* Medical alert red */
     --destructive: 0 72% 51%;
@@ -42,31 +42,31 @@ All colors MUST be HSL.
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 270 15% 88%;
-    --input: 270 15% 88%;
-    --ring: 270 70% 50%;
+    --border: 270 15% 92%;
+    --input: 270 15% 92%;
+    --ring: 270 55% 60%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    /* Sidebar - professional purple interface */
-    --sidebar-background: 270 25% 15%;
-    --sidebar-foreground: 270 20% 92%;
-    --sidebar-primary: 270 70% 50%;
+    /* Sidebar - clean with lilac accent */
+    --sidebar-background: 0 0% 99%;
+    --sidebar-foreground: 270 15% 25%;
+    --sidebar-primary: 270 55% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 270 25% 20%;
-    --sidebar-accent-foreground: 270 20% 92%;
-    --sidebar-border: 270 25% 22%;
-    --sidebar-ring: 270 70% 50%;
+    --sidebar-accent: 270 30% 96%;
+    --sidebar-accent-foreground: 270 40% 45%;
+    --sidebar-border: 270 15% 92%;
+    --sidebar-ring: 270 55% 60%;
 
-    /* Purple gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(270 70% 50%), hsl(280 70% 58%));
-    --gradient-clinical: linear-gradient(135deg, hsl(280 65% 55%), hsl(290 65% 65%));
-    --gradient-hero: linear-gradient(135deg, hsl(270 25% 15%), hsl(270 70% 50%));
+    /* Subtle lilac gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(270 55% 60%), hsl(280 50% 70%));
+    --gradient-clinical: linear-gradient(135deg, hsl(270 40% 95%), hsl(280 35% 98%));
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 100%), hsl(270 30% 98%));
 
-    /* Shadows */
-    --shadow-medical: 0 4px 12px hsl(270 70% 50% / 0.08);
-    --shadow-elevated: 0 8px 24px hsl(270 70% 50% / 0.12);
-    --shadow-critical: 0 8px 24px hsl(0 72% 51% / 0.15);
+    /* Soft shadows */
+    --shadow-medical: 0 2px 8px hsl(270 30% 50% / 0.06);
+    --shadow-elevated: 0 4px 16px hsl(270 30% 50% / 0.08);
+    --shadow-critical: 0 8px 24px hsl(0 72% 51% / 0.12);
 
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -74,27 +74,27 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 270 28% 12%;
-    --foreground: 270 20% 95%;
+    --background: 270 20% 8%;
+    --foreground: 270 10% 95%;
 
-    --card: 270 25% 15%;
-    --card-foreground: 270 20% 95%;
+    --card: 270 18% 12%;
+    --card-foreground: 270 10% 95%;
 
-    --popover: 270 25% 15%;
-    --popover-foreground: 270 20% 95%;
+    --popover: 270 18% 12%;
+    --popover-foreground: 270 10% 95%;
 
-    --primary: 270 70% 58%;
-    --primary-foreground: 270 28% 12%;
-    --primary-hover: 270 70% 50%;
+    --primary: 270 50% 65%;
+    --primary-foreground: 270 20% 8%;
+    --primary-hover: 270 50% 58%;
 
-    --secondary: 280 65% 60%;
-    --secondary-foreground: 270 28% 12%;
+    --secondary: 270 20% 18%;
+    --secondary-foreground: 270 20% 80%;
 
-    --muted: 270 25% 18%;
-    --muted-foreground: 270 15% 65%;
+    --muted: 270 18% 15%;
+    --muted-foreground: 270 10% 60%;
 
-    --accent: 270 25% 20%;
-    --accent-foreground: 270 70% 58%;
+    --accent: 270 20% 16%;
+    --accent-foreground: 270 50% 70%;
 
     --destructive: 0 72% 58%;
     --destructive-foreground: 0 0% 100%;
@@ -102,26 +102,26 @@ All colors MUST be HSL.
     --warning: 38 92% 58%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 270 25% 22%;
-    --input: 270 25% 22%;
-    --ring: 270 70% 58%;
+    --border: 270 18% 18%;
+    --input: 270 18% 18%;
+    --ring: 270 50% 65%;
 
-    --sidebar-background: 270 30% 10%;
-    --sidebar-foreground: 270 20% 92%;
-    --sidebar-primary: 270 70% 58%;
-    --sidebar-primary-foreground: 270 30% 10%;
-    --sidebar-accent: 270 25% 16%;
-    --sidebar-accent-foreground: 270 20% 92%;
-    --sidebar-border: 270 25% 18%;
-    --sidebar-ring: 270 70% 58%;
+    --sidebar-background: 270 20% 6%;
+    --sidebar-foreground: 270 10% 90%;
+    --sidebar-primary: 270 50% 65%;
+    --sidebar-primary-foreground: 270 20% 6%;
+    --sidebar-accent: 270 18% 12%;
+    --sidebar-accent-foreground: 270 10% 90%;
+    --sidebar-border: 270 18% 15%;
+    --sidebar-ring: 270 50% 65%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(270 70% 58%), hsl(280 70% 68%));
-    --gradient-clinical: linear-gradient(135deg, hsl(280 65% 60%), hsl(290 65% 70%));
-    --gradient-hero: linear-gradient(135deg, hsl(270 30% 10%), hsl(270 70% 58%));
+    --gradient-primary: linear-gradient(135deg, hsl(270 50% 65%), hsl(280 45% 72%));
+    --gradient-clinical: linear-gradient(135deg, hsl(270 18% 14%), hsl(280 15% 18%));
+    --gradient-hero: linear-gradient(135deg, hsl(270 20% 8%), hsl(270 35% 20%));
 
-    --shadow-medical: 0 4px 12px hsl(0 0% 0% / 0.3);
-    --shadow-elevated: 0 8px 24px hsl(0 0% 0% / 0.4);
-    --shadow-critical: 0 8px 24px hsl(0 72% 58% / 0.3);
+    --shadow-medical: 0 2px 8px hsl(0 0% 0% / 0.25);
+    --shadow-elevated: 0 4px 16px hsl(0 0% 0% / 0.35);
+    --shadow-critical: 0 8px 24px hsl(0 72% 58% / 0.25);
   }
 }
 
