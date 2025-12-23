@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.examinus-chat]
 verify_jwt = true
+
+[functions.agent-transcribe]
+verify_jwt = true

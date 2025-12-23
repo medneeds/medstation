@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Loader2 } from "lucide-react";
 import { exportAgentConversationToPDF } from "@/utils/pdfExport";
+import { AgentVoiceInput } from "@/components/AgentVoiceInput";
 import { 
   Send, 
   Paperclip, 
@@ -17,7 +18,6 @@ import {
   FolderOpen,
   Edit2,
   Trash2,
-  Mic,
   Copy,
   Check,
   FileDown,
@@ -113,8 +113,6 @@ export function AgentChat({
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [editingConversationId, setEditingConversationId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [cases, setCases] = useState<CaseOption[]>([]);
@@ -513,51 +511,9 @@ export function AgentChat({
     setHistoryOpen(false); // Close the history sidebar after loading
   };
 
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      const chunks: Blob[] = [];
-
-      mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: "audio/webm" });
-        const audioUrl = URL.createObjectURL(blob);
-        stream.getTracks().forEach((track) => track.stop());
-        
-        // Auto-send audio message with blob
-        const newMessage: Message = {
-          id: Date.now().toString(),
-          role: "user",
-          content: "[Mensagem de áudio]",
-          created_at: new Date().toISOString(),
-          audioBlob: blob,
-          audioUrl: audioUrl,
-        };
-
-        if (currentConversation) {
-          const updatedMessages = [...currentConversation.messages, newMessage];
-          setCurrentConversation({ ...currentConversation, messages: updatedMessages });
-        }
-        setAudioBlob(null);
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-
-      // Store recorder to stop it later
-      (window as any).activeRecorder = mediaRecorder;
-    } catch (error) {
-      console.error("Erro ao gravar áudio:", error);
-    }
-  };
-
-  const stopRecording = () => {
-    const recorder = (window as any).activeRecorder;
-    if (recorder && recorder.state === "recording") {
-      recorder.stop();
-      setIsRecording(false);
-    }
+  // Handle voice transcription
+  const handleVoiceTranscription = (transcription: string) => {
+    setMessage(transcription);
   };
 
   const copyToClipboard = async (text: string, messageId: string) => {
@@ -1093,52 +1049,30 @@ export function AgentChat({
             }}
             placeholder={isMobile ? "Mensagem..." : placeholder}
             className="flex-1 text-sm md:text-base"
-            disabled={isRecording || isLoading}
+            disabled={isLoading}
           />
-          {isRecording ? (
-            <Button 
-              onClick={stopRecording}
-              variant="destructive"
-              size={isMobile ? "sm" : "default"}
-              className="shrink-0"
-            >
-              <div className="flex items-center gap-1.5 md:gap-2">
-                <div className="h-2 w-2 bg-white rounded-full animate-pulse" />
-                <span className="text-sm">Parar</span>
-              </div>
-            </Button>
-          ) : (
-            <>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={startRecording}
-                className="shrink-0"
-                title="Gravar áudio"
-              >
-                <Mic className="h-4 w-4" />
-              </Button>
-              <Button 
-                onClick={sendMessage}
-                disabled={!message.trim() || isLoading}
-                size="icon"
-                className="shrink-0"
-                title="Enviar mensagem"
-              >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-              </Button>
-            </>
-          )}
+          <AgentVoiceInput 
+            onTranscription={handleVoiceTranscription}
+            disabled={isLoading}
+            context={agentType}
+          />
+          <Button 
+            onClick={sendMessage}
+            disabled={!message.trim() || isLoading}
+            size="icon"
+            className="shrink-0"
+            title="Enviar mensagem"
+          >
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </Button>
         </div>
         {!isMobile && (
           <p className="text-xs text-muted-foreground mt-2">
-            {isRecording 
-              ? "Gravando áudio... Clique em 'Parar' quando terminar"
-              : "Pressione Enter para enviar, Shift+Enter para quebrar linha"}
+            Pressione Enter para enviar, Shift+Enter para quebrar linha
           </p>
         )}
       </div>
