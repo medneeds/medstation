@@ -1,19 +1,25 @@
 import { useState, useRef, useEffect } from "react";
-import { ArrowLeft, Send, Sparkles, User, Loader2, BookOpen } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Send, Sparkles, User, Loader2, BookOpen, Plus, History, Trash2 } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: Date;
-}
+import { 
+  useStudiusConversations, 
+  useStudiusMessages, 
+  useStudiusStats,
+  StudiusMessage 
+} from "@/hooks/useStudius";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 const suggestedQuestions = [
   "Explique a fisiopatologia da insuficiência cardíaca",
@@ -24,36 +30,112 @@ const suggestedQuestions = [
 
 export default function StudiusChat() {
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const conversationId = searchParams.get("id");
+  
+  const { 
+    conversations, 
+    createConversation, 
+    updateConversation, 
+    deleteConversation 
+  } = useStudiusConversations();
+  
+  const { messages, addMessage, setMessages } = useStudiusMessages(conversationId);
+  const { incrementStat } = useStudiusStats();
+  
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [localMessages, setLocalMessages] = useState<StudiusMessage[]>([]);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Sync local messages with DB messages
+  useEffect(() => {
+    setLocalMessages(messages);
+  }, [messages]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [localMessages]);
+
+  const startNewConversation = async () => {
+    try {
+      const newConv = await createConversation();
+      setSearchParams({ id: newConv.id });
+      setLocalMessages([]);
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+      toast.error("Erro ao criar conversa");
+    }
+  };
+
+  const selectConversation = (id: string) => {
+    setSearchParams({ id });
+  };
+
+  const handleDeleteConversation = async (id: string) => {
+    try {
+      await deleteConversation(id);
+      if (conversationId === id) {
+        setSearchParams({});
+        setLocalMessages([]);
+      }
+      toast.success("Conversa excluída");
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+      toast.error("Erro ao excluir conversa");
+    }
+  };
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = {
-      id: crypto.randomUUID(),
-      role: "user",
-      content: input.trim(),
-      timestamp: new Date(),
-    };
+    let currentConversationId = conversationId;
 
-    setMessages((prev) => [...prev, userMessage]);
+    // Create conversation if none exists
+    if (!currentConversationId) {
+      try {
+        const newConv = await createConversation(input.trim().slice(0, 50));
+        currentConversationId = newConv.id;
+        setSearchParams({ id: newConv.id });
+      } catch (error) {
+        console.error("Error creating conversation:", error);
+        toast.error("Erro ao criar conversa");
+        return;
+      }
+    }
+
+    const userMessageContent = input.trim();
     setInput("");
     setIsLoading(true);
 
+    // Add user message to local state immediately
+    const tempUserMessage: StudiusMessage = {
+      id: crypto.randomUUID(),
+      conversation_id: currentConversationId,
+      role: "user",
+      content: userMessageContent,
+      created_at: new Date().toISOString(),
+    };
+    setLocalMessages((prev) => [...prev, tempUserMessage]);
+
     try {
+      // Save user message to DB
+      await supabase.from("studius_messages").insert({
+        conversation_id: currentConversationId,
+        role: "user",
+        content: userMessageContent,
+      });
+
+      // Increment stats
+      await incrementStat("messages_sent");
+
+      // Call AI
       const response = await supabase.functions.invoke("studius-chat", {
         body: {
-          messages: [...messages, userMessage].map((m) => ({
+          messages: [...localMessages, tempUserMessage].map((m) => ({
             role: m.role,
             content: m.content,
           })),
@@ -62,14 +144,32 @@ export default function StudiusChat() {
 
       if (response.error) throw response.error;
 
-      const assistantMessage: Message = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: response.data?.content || "Desculpe, não consegui processar sua pergunta.",
-        timestamp: new Date(),
+      const assistantContent = response.data?.content || "Desculpe, não consegui processar sua pergunta.";
+
+      // Save assistant message to DB
+      const { data: savedMessage, error: saveError } = await supabase
+        .from("studius_messages")
+        .insert({
+          conversation_id: currentConversationId,
+          role: "assistant",
+          content: assistantContent,
+        })
+        .select()
+        .single();
+
+      if (saveError) throw saveError;
+
+      const assistantMessage: StudiusMessage = {
+        ...savedMessage,
+        role: savedMessage.role as "user" | "assistant",
       };
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      setLocalMessages((prev) => [...prev, assistantMessage]);
+
+      // Update conversation with last message
+      await updateConversation(currentConversationId, {
+        last_message: assistantContent.slice(0, 100),
+      });
     } catch (error) {
       console.error("Chat error:", error);
       toast.error("Erro ao enviar mensagem. Tente novamente.");
@@ -93,29 +193,101 @@ export default function StudiusChat() {
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] animate-fade-in">
       {/* Header */}
-      <div className="flex items-center gap-4 pb-4 border-b border-studius-border">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate("/studius")}
-          className="hover:bg-studius-muted"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg">
-            <BookOpen className="h-5 w-5 text-white" />
+      <div className="flex items-center justify-between pb-4 border-b border-studius-border">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/studius")}
+            className="hover:bg-studius-muted"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg">
+              <BookOpen className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h1 className="font-semibold text-foreground">Chat IA Médico</h1>
+              <p className="text-xs text-muted-foreground">Assistente especializado em medicina</p>
+            </div>
           </div>
-          <div>
-            <h1 className="font-semibold text-foreground">Chat IA Médico</h1>
-            <p className="text-xs text-muted-foreground">Assistente especializado em medicina</p>
-          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={startNewConversation}
+            className="border-studius-border hover:bg-studius-muted"
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Nova
+          </Button>
+          
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="border-studius-border hover:bg-studius-muted"
+              >
+                <History className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="border-studius-border">
+              <SheetHeader>
+                <SheetTitle>Histórico de Conversas</SheetTitle>
+              </SheetHeader>
+              <div className="mt-4 space-y-2">
+                {conversations.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    Nenhuma conversa ainda
+                  </p>
+                ) : (
+                  conversations.map((conv) => (
+                    <div
+                      key={conv.id}
+                      className={`p-3 rounded-lg border cursor-pointer transition-all group ${
+                        conversationId === conv.id
+                          ? "border-studius-primary bg-studius-primary/10"
+                          : "border-studius-border hover:border-studius-primary/50"
+                      }`}
+                      onClick={() => selectConversation(conv.id)}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{conv.title}</p>
+                          {conv.last_message && (
+                            <p className="text-xs text-muted-foreground truncate mt-1">
+                              {conv.last_message}
+                            </p>
+                          )}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteConversation(conv.id);
+                          }}
+                        >
+                          <Trash2 className="h-3 w-3 text-destructive" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
 
       {/* Messages Area */}
       <ScrollArea className="flex-1 py-4" ref={scrollAreaRef}>
-        {messages.length === 0 ? (
+        {localMessages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
             <div className="p-4 rounded-2xl bg-gradient-to-br from-studius-primary to-studius-secondary mb-6">
               <Sparkles className="h-10 w-10 text-white" />
@@ -143,7 +315,7 @@ export default function StudiusChat() {
           </div>
         ) : (
           <div className="space-y-6 px-2">
-            {messages.map((message) => (
+            {localMessages.map((message) => (
               <div
                 key={message.id}
                 className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
