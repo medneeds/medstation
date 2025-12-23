@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { ArrowLeft, Send, Sparkles, User, Loader2, BookOpen, Plus, History, Trash2 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,6 @@ import {
   StudiusMessage 
 } from "@/hooks/useStudius";
 import { useGamification } from "@/hooks/useGamification";
-import { XPProgress } from "@/components/studius/XPProgress";
 import {
   Sheet,
   SheetContent,
@@ -30,6 +29,8 @@ const suggestedQuestions = [
   "Qual o mecanismo de ação dos inibidores de SGLT2?",
 ];
 
+const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/studius-chat`;
+
 export default function StudiusChat() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -42,13 +43,14 @@ export default function StudiusChat() {
     deleteConversation 
   } = useStudiusConversations();
   
-  const { messages, addMessage, setMessages } = useStudiusMessages(conversationId);
+  const { messages, setMessages } = useStudiusMessages(conversationId);
   const { incrementStat, stats } = useStudiusStats();
   const { addXpAsync, checkAchievements, XP_REWARDS } = useGamification();
   
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [localMessages, setLocalMessages] = useState<StudiusMessage[]>([]);
+  const [streamingContent, setStreamingContent] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -61,7 +63,7 @@ export default function StudiusChat() {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
     }
-  }, [localMessages]);
+  }, [localMessages, streamingContent]);
 
   const startNewConversation = async () => {
     try {
@@ -92,12 +94,86 @@ export default function StudiusChat() {
     }
   };
 
+  const streamChat = useCallback(async (
+    messagesToSend: { role: string; content: string }[],
+    onDelta: (deltaText: string) => void,
+    onDone: () => void
+  ) => {
+    const resp = await fetch(CHAT_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+      body: JSON.stringify({ messages: messagesToSend }),
+    });
+
+    if (!resp.ok || !resp.body) {
+      const errorData = await resp.json().catch(() => ({}));
+      throw new Error(errorData.error || "Erro ao conectar com o chat");
+    }
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let textBuffer = "";
+    let streamDone = false;
+
+    while (!streamDone) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      textBuffer += decoder.decode(value, { stream: true });
+
+      let newlineIndex: number;
+      while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+        let line = textBuffer.slice(0, newlineIndex);
+        textBuffer = textBuffer.slice(newlineIndex + 1);
+
+        if (line.endsWith("\r")) line = line.slice(0, -1);
+        if (line.startsWith(":") || line.trim() === "") continue;
+        if (!line.startsWith("data: ")) continue;
+
+        const jsonStr = line.slice(6).trim();
+        if (jsonStr === "[DONE]") {
+          streamDone = true;
+          break;
+        }
+
+        try {
+          const parsed = JSON.parse(jsonStr);
+          const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+          if (content) onDelta(content);
+        } catch {
+          textBuffer = line + "\n" + textBuffer;
+          break;
+        }
+      }
+    }
+
+    // Final flush
+    if (textBuffer.trim()) {
+      for (let raw of textBuffer.split("\n")) {
+        if (!raw) continue;
+        if (raw.endsWith("\r")) raw = raw.slice(0, -1);
+        if (raw.startsWith(":") || raw.trim() === "") continue;
+        if (!raw.startsWith("data: ")) continue;
+        const jsonStr = raw.slice(6).trim();
+        if (jsonStr === "[DONE]") continue;
+        try {
+          const parsed = JSON.parse(jsonStr);
+          const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+          if (content) onDelta(content);
+        } catch { /* ignore */ }
+      }
+    }
+
+    onDone();
+  }, []);
+
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
     let currentConversationId = conversationId;
 
-    // Create conversation if none exists
     if (!currentConversationId) {
       try {
         const newConv = await createConversation(input.trim().slice(0, 50));
@@ -113,8 +189,8 @@ export default function StudiusChat() {
     const userMessageContent = input.trim();
     setInput("");
     setIsLoading(true);
+    setStreamingContent("");
 
-    // Add user message to local state immediately
     const tempUserMessage: StudiusMessage = {
       id: crypto.randomUUID(),
       conversation_id: currentConversationId,
@@ -136,23 +212,25 @@ export default function StudiusChat() {
       await incrementStat("messages_sent");
       await addXpAsync({ amount: XP_REWARDS.MESSAGE_SENT, reason: "Mensagem enviada" });
       
-      // Check achievements based on updated stats
       const currentMessagesCount = (stats?.messages_sent || 0) + 1;
       checkAchievements({ messages_sent: currentMessagesCount });
 
-      // Call AI
-      const response = await supabase.functions.invoke("studius-chat", {
-        body: {
-          messages: [...localMessages, tempUserMessage].map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
+      // Stream AI response
+      let assistantContent = "";
+      
+      await streamChat(
+        [...localMessages, tempUserMessage].map((m) => ({
+          role: m.role,
+          content: m.content,
+        })),
+        (chunk) => {
+          assistantContent += chunk;
+          setStreamingContent(assistantContent);
         },
-      });
-
-      if (response.error) throw response.error;
-
-      const assistantContent = response.data?.content || "Desculpe, não consegui processar sua pergunta.";
+        () => {
+          setIsLoading(false);
+        }
+      );
 
       // Save assistant message to DB
       const { data: savedMessage, error: saveError } = await supabase
@@ -173,6 +251,7 @@ export default function StudiusChat() {
       };
 
       setLocalMessages((prev) => [...prev, assistantMessage]);
+      setStreamingContent("");
 
       // Update conversation with last message
       await updateConversation(currentConversationId, {
@@ -181,7 +260,7 @@ export default function StudiusChat() {
     } catch (error) {
       console.error("Chat error:", error);
       toast.error("Erro ao enviar mensagem. Tente novamente.");
-    } finally {
+      setStreamingContent("");
       setIsLoading(false);
     }
   };
@@ -295,7 +374,7 @@ export default function StudiusChat() {
 
       {/* Messages Area */}
       <ScrollArea className="flex-1 py-4" ref={scrollAreaRef}>
-        {localMessages.length === 0 ? (
+        {localMessages.length === 0 && !streamingContent ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
             <div className="p-4 rounded-2xl bg-gradient-to-br from-studius-primary to-studius-secondary mb-6">
               <Sparkles className="h-10 w-10 text-white" />
@@ -353,7 +432,24 @@ export default function StudiusChat() {
                 )}
               </div>
             ))}
-            {isLoading && (
+            
+            {/* Streaming message */}
+            {streamingContent && (
+              <div className="flex gap-3 justify-start">
+                <Avatar className="h-8 w-8 shrink-0">
+                  <AvatarFallback className="bg-gradient-to-br from-studius-primary to-studius-secondary text-white">
+                    <Sparkles className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
+                <div className="max-w-[80%] rounded-2xl px-4 py-3 bg-studius-muted text-foreground">
+                  <p className="text-sm whitespace-pre-wrap">{streamingContent}</p>
+                  <span className="inline-block w-2 h-4 bg-studius-primary animate-pulse ml-1" />
+                </div>
+              </div>
+            )}
+            
+            {/* Loading indicator (only when not streaming yet) */}
+            {isLoading && !streamingContent && (
               <div className="flex gap-3 justify-start">
                 <Avatar className="h-8 w-8 shrink-0">
                   <AvatarFallback className="bg-gradient-to-br from-studius-primary to-studius-secondary text-white">
