@@ -4,6 +4,7 @@ import StudiusDashboard from "./StudiusDashboard";
 import StudiusChat from "./StudiusChat";
 import StudiusOnboarding from "./StudiusOnboarding";
 import StudiusGamification from "./StudiusGamification";
+import StudiusFlashcards from "./StudiusFlashcards";
 import { useStudiusPreferences } from "@/hooks/useStudius";
 import { Loader2 } from "lucide-react";
 
@@ -40,6 +41,7 @@ export default function StudiusIndex() {
       <Routes>
         <Route path="/" element={<StudiusDashboard />} />
         <Route path="/chat" element={<StudiusChat />} />
+        <Route path="/flashcards" element={<StudiusFlashcards />} />
         <Route path="/progress" element={<StudiusGamification />} />
         <Route path="/onboarding" element={<StudiusOnboarding onComplete={handleOnboardingComplete} />} />
         <Route path="*" element={<Navigate to="/studius" replace />} />
