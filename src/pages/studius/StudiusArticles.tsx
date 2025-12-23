@@ -23,7 +23,8 @@ import {
   BookOpen,
   Globe,
   Lightbulb,
-  Download
+  Download,
+  ArrowLeft
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -125,14 +126,19 @@ export default function StudiusArticles() {
     <StudiusLayout>
       <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <FileText className="h-7 w-7 text-studius-primary" />
-            Artigos & Traduções
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Resuma, traduza e extraia pontos-chave de artigos médicos
-          </p>
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => window.location.href = "/studius"}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <FileText className="h-7 w-7 text-studius-primary" />
+              Artigos & Traduções
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Resuma, traduza e extraia pontos-chave de artigos médicos
+            </p>
+          </div>
         </div>
 
         {/* Input Section */}
