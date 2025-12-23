@@ -27,8 +27,8 @@ const navItems = [
   { path: "/studius", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { path: "/studius/chat", label: "Chat IA", icon: MessageSquare },
   { path: "/studius/flashcards", label: "Flashcards", icon: Layers },
+  { path: "/studius/quizzes", label: "Quizzes", icon: Brain },
   { path: "/studius/progress", label: "Progresso", icon: TrendingUp },
-  { path: "/studius/quizzes", label: "Quizzes", icon: Brain, disabled: true },
 ];
 
 export default function StudiusLayout({ children }: StudiusLayoutProps) {
@@ -81,14 +81,11 @@ export default function StudiusLayout({ children }: StudiusLayoutProps) {
               {navItems.map((item) => (
                 <NavLink
                   key={item.path}
-                  to={item.disabled ? "#" : item.path}
-                  onClick={(e) => item.disabled && e.preventDefault()}
+                  to={item.path}
                   className={cn(
                     "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
                     isActive(item.path, item.exact)
                       ? "bg-studius-primary/10 text-studius-primary"
-                      : item.disabled
-                      ? "text-muted-foreground/50 cursor-not-allowed"
                       : "text-muted-foreground hover:text-foreground hover:bg-studius-muted"
                   )}
                 >
@@ -130,14 +127,11 @@ export default function StudiusLayout({ children }: StudiusLayoutProps) {
           {navItems.slice(0, 5).map((item) => (
             <NavLink
               key={item.path}
-              to={item.disabled ? "#" : item.path}
-              onClick={(e) => item.disabled && e.preventDefault()}
+              to={item.path}
               className={cn(
                 "flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200 min-w-[56px]",
                 isActive(item.path, item.exact)
                   ? "text-studius-primary"
-                  : item.disabled
-                  ? "text-muted-foreground/50"
                   : "text-muted-foreground"
               )}
             >
