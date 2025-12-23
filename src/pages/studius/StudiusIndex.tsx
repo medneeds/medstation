@@ -1,10 +1,10 @@
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import StudiusLayout from "@/components/studius/StudiusLayout";
 import StudiusDashboard from "./StudiusDashboard";
 import StudiusChat from "./StudiusChat";
 import StudiusOnboarding from "./StudiusOnboarding";
 import StudiusGamification from "./StudiusGamification";
 import StudiusFlashcards from "./StudiusFlashcards";
+import StudiusQuizzes from "./StudiusQuizzes";
 import { useStudiusPreferences } from "@/hooks/useStudius";
 import { Loader2 } from "lucide-react";
 
@@ -31,21 +31,19 @@ export default function StudiusIndex() {
     );
   }
 
-  // Show onboarding if not completed and not already on onboarding page
   if (!preferences?.onboarding_completed && !location.pathname.includes("/onboarding")) {
     return <StudiusOnboarding onComplete={handleOnboardingComplete} />;
   }
 
   return (
-    <StudiusLayout>
-      <Routes>
-        <Route path="/" element={<StudiusDashboard />} />
-        <Route path="/chat" element={<StudiusChat />} />
-        <Route path="/flashcards" element={<StudiusFlashcards />} />
-        <Route path="/progress" element={<StudiusGamification />} />
-        <Route path="/onboarding" element={<StudiusOnboarding onComplete={handleOnboardingComplete} />} />
-        <Route path="*" element={<Navigate to="/studius" replace />} />
-      </Routes>
-    </StudiusLayout>
+    <Routes>
+      <Route path="/" element={<StudiusDashboard />} />
+      <Route path="/chat" element={<StudiusChat />} />
+      <Route path="/flashcards" element={<StudiusFlashcards />} />
+      <Route path="/quizzes" element={<StudiusQuizzes />} />
+      <Route path="/progress" element={<StudiusGamification />} />
+      <Route path="/onboarding" element={<StudiusOnboarding onComplete={handleOnboardingComplete} />} />
+      <Route path="*" element={<Navigate to="/studius" replace />} />
+    </Routes>
   );
 }

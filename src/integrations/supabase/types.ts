@@ -933,6 +933,139 @@ export type Database = {
         }
         Relationships: []
       }
+      studius_quiz_attempts: {
+        Row: {
+          answers: Json
+          completed_at: string | null
+          correct_answers: number
+          created_at: string
+          id: string
+          quiz_id: string
+          score: number
+          started_at: string
+          time_spent_seconds: number | null
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          completed_at?: string | null
+          correct_answers?: number
+          created_at?: string
+          id?: string
+          quiz_id: string
+          score?: number
+          started_at?: string
+          time_spent_seconds?: number | null
+          total_questions: number
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          completed_at?: string | null
+          correct_answers?: number
+          created_at?: string
+          id?: string
+          quiz_id?: string
+          score?: number
+          started_at?: string
+          time_spent_seconds?: number | null
+          total_questions?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studius_quiz_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "studius_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      studius_quiz_questions: {
+        Row: {
+          correct_answer: number
+          created_at: string
+          difficulty: string
+          explanation: string | null
+          id: string
+          options: Json
+          question_order: number
+          question_text: string
+          quiz_id: string
+        }
+        Insert: {
+          correct_answer: number
+          created_at?: string
+          difficulty?: string
+          explanation?: string | null
+          id?: string
+          options?: Json
+          question_order?: number
+          question_text: string
+          quiz_id: string
+        }
+        Update: {
+          correct_answer?: number
+          created_at?: string
+          difficulty?: string
+          explanation?: string | null
+          id?: string
+          options?: Json
+          question_order?: number
+          question_text?: string
+          quiz_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studius_quiz_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "studius_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      studius_quizzes: {
+        Row: {
+          created_at: string
+          description: string | null
+          difficulty: string
+          id: string
+          question_count: number
+          time_limit_minutes: number | null
+          title: string
+          topic: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          difficulty?: string
+          id?: string
+          question_count?: number
+          time_limit_minutes?: number | null
+          title: string
+          topic: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          difficulty?: string
+          id?: string
+          question_count?: number
+          time_limit_minutes?: number | null
+          title?: string
+          topic?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       studius_stats: {
         Row: {
           articles_read: number | null
