@@ -8,13 +8,6 @@ import { Loader2, Send, Sparkles, ArrowRight, Copy, Check, FileUp, Upload, X, Im
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Toggle } from "@/components/ui/toggle";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -24,25 +17,138 @@ interface Message {
   content: string;
 }
 
+// Gera fingerprint do navegador (combinação de características únicas)
+const generateFingerprint = (): string => {
+  const components: string[] = [];
+  
+  // User Agent
+  components.push(navigator.userAgent);
+  
+  // Língua
+  components.push(navigator.language);
+  
+  // Timezone
+  components.push(Intl.DateTimeFormat().resolvedOptions().timeZone);
+  
+  // Resolução de tela
+  components.push(`${screen.width}x${screen.height}x${screen.colorDepth}`);
+  
+  // Plataforma
+  components.push(navigator.platform);
+  
+  // Número de cores
+  components.push(String(screen.colorDepth));
+  
+  // Memória do dispositivo (se disponível)
+  if ('deviceMemory' in navigator) {
+    components.push(String((navigator as any).deviceMemory));
+  }
+  
+  // Número de núcleos (se disponível)
+  if ('hardwareConcurrency' in navigator) {
+    components.push(String(navigator.hardwareConcurrency));
+  }
+  
+  // Canvas fingerprint (muito único)
+  try {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.textBaseline = 'top';
+      ctx.font = '14px Arial';
+      ctx.fillText('MedStation AI', 2, 2);
+      components.push(canvas.toDataURL().slice(-50));
+    }
+  } catch (e) {
+    // Ignora se falhar
+  }
+  
+  // Criar hash simples
+  const fingerprint = components.join('|');
+  let hash = 0;
+  for (let i = 0; i < fingerprint.length; i++) {
+    const char = fingerprint.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  
+  return Math.abs(hash).toString(36);
+};
+
+// Gerenciar fingerprint persistente
+const getStoredFingerprint = (): string => {
+  const storageKey = 'ms_fp';
+  let stored = localStorage.getItem(storageKey);
+  
+  if (!stored) {
+    stored = generateFingerprint();
+    try {
+      localStorage.setItem(storageKey, stored);
+    } catch (e) {
+      // Ignora se localStorage não disponível
+    }
+  }
+  
+  // Também salvar em cookie como backup
+  try {
+    document.cookie = `${storageKey}=${stored};max-age=31536000;path=/;SameSite=Lax`;
+  } catch (e) {
+    // Ignora
+  }
+  
+  return stored;
+};
+
+// Recuperar fingerprint de cookie se localStorage foi limpo
+const recoverFingerprint = (): string => {
+  const storageKey = 'ms_fp';
+  
+  // Tenta localStorage primeiro
+  let stored = localStorage.getItem(storageKey);
+  if (stored) return stored;
+  
+  // Tenta cookie
+  const cookies = document.cookie.split(';');
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === storageKey && value) {
+      // Restaura no localStorage
+      try {
+        localStorage.setItem(storageKey, value);
+      } catch (e) {}
+      return value;
+    }
+  }
+  
+  // Se não encontrou, gera novo
+  return getStoredFingerprint();
+};
+
 export default function PublicExaminusChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [remainingMessages, setRemainingMessages] = useState<number | null>(null);
+  const [usedCount, setUsedCount] = useState<number>(0);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
-  const [showComingSoonDialog, setShowComingSoonDialog] = useState(false);
   const [usePipeSeparator, setUsePipeSeparator] = useState(false);
   const [includeTime, setIncludeTime] = useState(true);
+  const [fingerprint, setFingerprint] = useState<string>("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Inicializar fingerprint
+  useEffect(() => {
+    const fp = recoverFingerprint();
+    setFingerprint(fp);
+  }, []);
+
   useEffect(() => {
     if (scrollRef.current) {
-      // ScrollArea do shadcn tem um viewport interno que precisa ser acessado
       const viewport = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
       if (viewport) {
         viewport.scrollTop = viewport.scrollHeight;
@@ -63,7 +169,6 @@ export default function PublicExaminusChat() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Verificar tamanho (máximo 20MB)
     if (file.size > 20 * 1024 * 1024) {
       toast({
         title: "Arquivo muito grande",
@@ -73,7 +178,6 @@ export default function PublicExaminusChat() {
       return;
     }
 
-    // Verificar tipo
     const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
     if (!validTypes.includes(file.type)) {
       toast({
@@ -86,7 +190,6 @@ export default function PublicExaminusChat() {
 
     setSelectedFile(file);
     
-    // Criar preview
     if (file.type.startsWith('image/')) {
       const preview = await convertFileToBase64(file);
       setFilePreview(preview);
@@ -129,22 +232,27 @@ export default function PublicExaminusChat() {
           messages: [...messages, userMessage],
           fileContent,
           usePipeSeparator,
-          includeTime
+          includeTime,
+          fingerprint
         }
       });
 
       if (error) throw error;
 
-      if (data.error) {
-        // Limit reached - show signup CTA
+      if (data.error || data.limitReached) {
         setMessages(prev => [...prev, {
           role: "assistant",
-          content: "🎯 Você usou suas 10 extrações gratuitas!\n\n✨ Crie sua conta grátis agora e continue usando o Examinus sem limites — é rápido, sem cartão de crédito.\n\nAlém disso, você terá acesso aos outros 9 assistentes médicos especializados!"
+          content: "🎯 Você usou suas extrações gratuitas!\n\n✨ Crie sua conta grátis agora e continue usando o Examinus sem limites — é rápido e sem cartão de crédito.\n\nAlém disso, você terá acesso aos outros 9 assistentes médicos especializados:\n\n• Clínicus — Anamneses estruturadas\n• Scorius — Cálculo de scores clínicos\n• Prescriptus — Prescrições inteligentes\n• E muito mais!"
         }]);
         
         toast({
           title: "Limite atingido",
           description: "Crie sua conta grátis para continuar!",
+          action: (
+            <Button size="sm" onClick={() => navigate('/auth')} className="ml-2">
+              Criar Conta
+            </Button>
+          ),
         });
         return;
       }
@@ -156,13 +264,21 @@ export default function PublicExaminusChat() {
 
       setMessages(prev => [...prev, assistantMessage]);
       setRemainingMessages(data.remainingMessages);
+      setUsedCount(data.usedCount || 0);
 
-      // Show upgrade prompt when 3 or fewer messages remaining
-      if (data.remainingMessages <= 3 && data.remainingMessages > 0) {
+      // CTAs progressivos baseados no uso
+      if (data.remainingMessages === 2) {
         setTimeout(() => {
           toast({
-            title: `${data.remainingMessages} extrações restantes`,
-            description: "Crie sua conta grátis para uso ilimitado!",
+            title: "2 extrações restantes",
+            description: "Está gostando? Crie sua conta grátis para uso ilimitado!",
+          });
+        }, 1500);
+      } else if (data.remainingMessages === 1) {
+        setTimeout(() => {
+          toast({
+            title: "Última extração!",
+            description: "Crie sua conta grátis agora para não perder acesso.",
             action: (
               <Button size="sm" onClick={() => navigate('/auth')} className="ml-2">
                 Criar Conta
@@ -211,6 +327,7 @@ export default function PublicExaminusChat() {
 
   const hasMessages = messages.length > 0;
   const messagesHeight = hasMessages ? Math.min(500, Math.max(200, messages.length * 80)) : 0;
+  const LIMIT = 5;
 
   return (
     <div className="w-full max-w-5xl mx-auto px-2 md:px-4">
@@ -263,8 +380,17 @@ export default function PublicExaminusChat() {
                 <span className="font-semibold text-sm md:text-base text-primary-foreground">Examinus</span>
               </div>
               {remainingMessages !== null && (
-                <Badge variant="secondary" className="text-[10px] md:text-xs bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30 px-2 py-0.5">
-                  {remainingMessages} restantes
+                <Badge 
+                  variant="secondary" 
+                  className={`text-[10px] md:text-xs px-2 py-0.5 ${
+                    remainingMessages <= 1 
+                      ? 'bg-red-500/30 text-red-100 border-red-400/50' 
+                      : remainingMessages <= 2 
+                        ? 'bg-yellow-500/30 text-yellow-100 border-yellow-400/50'
+                        : 'bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30'
+                  }`}
+                >
+                  {remainingMessages} de {LIMIT} restantes
                 </Badge>
               )}
             </div>
@@ -428,143 +554,124 @@ export default function PublicExaminusChat() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder={hasMessages ? "Cole exames..." : "Cole exames aqui"}
-                className="min-h-[44px] max-h-[100px] resize-none text-base bg-background border-border placeholder:text-muted-foreground/70 focus:border-primary/50 focus:ring-primary/20 transition-all rounded-2xl px-4 py-2.5 flex-1"
+                className="min-h-[44px] max-h-32 resize-none flex-1 rounded-2xl border-border/50 focus:border-primary/50 text-sm py-3"
                 disabled={isLoading}
               />
               <Button
                 onClick={handleSend}
                 disabled={isLoading || (!input.trim() && !selectedFile)}
                 size="icon"
-                className="h-10 w-10 shrink-0 rounded-full shadow-md hover:shadow-lg transition-all"
+                className="h-10 w-10 rounded-full bg-gradient-primary hover:opacity-90 transition-all shrink-0 shadow-md"
               >
                 {isLoading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <Send className="w-5 h-5" />
+                  <Send className="w-4 h-4" />
                 )}
               </Button>
             </div>
           </div>
 
-          {/* Desktop: Original layout */}
-          <div className="hidden md:flex gap-3">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp,application/pdf"
-              onChange={handleFileSelect}
-              className="hidden"
-            />
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isLoading}
-              className="self-end h-[70px] w-[70px] border-dashed hover:border-primary hover:bg-primary/5 transition-all group shrink-0"
-              title="Fazer upload de imagem ou PDF"
-            >
-              <Upload className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            </Button>
-            <Toggle
-              pressed={usePipeSeparator}
-              onPressedChange={setUsePipeSeparator}
-              size="lg"
-              className="self-end h-[70px] w-[70px] data-[state=on]:bg-primary/10 data-[state=on]:border-primary transition-all"
-              title="Separar exames com barra vertical |"
-            >
-              <div className="flex flex-col items-center gap-1">
-                <SeparatorVertical className="w-5 h-5" />
-                <span className="text-[10px]">Separar</span>
-              </div>
-            </Toggle>
-            <div className="self-end flex flex-col items-center gap-2 p-3 border rounded-lg bg-muted/30 h-[70px] w-[70px] justify-center">
-              <Switch
-                id="include-time-mobile"
-                checked={includeTime}
-                onCheckedChange={setIncludeTime}
-                className="data-[state=checked]:bg-primary scale-75"
-              />
-              <Label htmlFor="include-time-mobile" className="text-[10px] cursor-pointer flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                Horário
-              </Label>
-            </div>
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder={hasMessages ? "Cole mais exames aqui..." : "Cole resultados de exames - hemograma, bioquímica, imagens, PDFs... Literalmente qualquer um! 😎"}
-              className="min-h-[70px] max-h-[180px] resize-none text-sm bg-background border-border placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20 transition-all flex-1"
-              disabled={isLoading}
-            />
-            <Button
-              onClick={handleSend}
-              disabled={isLoading || (!input.trim() && !selectedFile)}
-              size="lg"
-              className="self-end h-[70px] w-[70px] shadow-medical hover:shadow-elevated hover:scale-105 transition-all shrink-0"
-            >
-              {isLoading ? (
-                <Loader2 className="w-6 h-6 animate-spin" />
-              ) : (
-                <Send className="w-6 h-6" />
-              )}
-            </Button>
-          </div>
-          
-          {/* CTA Footer */}
-          {!hasMessages && (
-            <div className="mt-3 md:mt-4 flex items-center justify-between text-xs flex-wrap gap-2 md:gap-3 bg-primary/5 border border-primary/20 rounded-xl px-3 md:px-4 py-2.5 md:py-3">
-              <p className="text-muted-foreground flex items-center gap-2 text-[11px] md:text-xs">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-                10 extrações grátis • Sem cadastro
-              </p>
-              <Button
-                variant="ghost"
+          {/* Desktop: Original layout with all options */}
+          <div className="hidden md:flex flex-col gap-4">
+            {/* Formatting Options Row */}
+            <div className="flex items-center gap-4 px-1">
+              <Toggle
+                pressed={usePipeSeparator}
+                onPressedChange={setUsePipeSeparator}
                 size="sm"
-                onClick={() => navigate('/auth')}
-                className="text-primary hover:text-primary hover:bg-primary/10 h-7 md:h-8 text-[11px] md:text-xs font-semibold group px-2 md:px-3"
+                className="h-8 px-3 rounded-full data-[state=on]:bg-primary/20 data-[state=on]:text-primary"
+                title="Separar exames com barra vertical |"
               >
-                Uso ilimitado grátis
-                <ArrowRight className="ml-1 md:ml-1.5 h-3 md:h-3.5 w-3 md:w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                <SeparatorVertical className="w-4 h-4 mr-2" />
+                <span className="text-xs">Separar com |</span>
+              </Toggle>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-full">
+                <Switch
+                  id="include-time"
+                  checked={includeTime}
+                  onCheckedChange={setIncludeTime}
+                  className="data-[state=checked]:bg-primary"
+                />
+                <Label htmlFor="include-time" className="text-xs cursor-pointer flex items-center gap-1.5">
+                  <Clock className="w-3 h-3" />
+                  Incluir horário
+                </Label>
+              </div>
+            </div>
+
+            {/* Input Row */}
+            <div className="flex gap-3 items-end">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isLoading}
+                className="h-12 w-12 shrink-0 rounded-xl hover:bg-primary/10 hover:border-primary/50 transition-all"
+                title="Upload de imagem ou PDF"
+              >
+                <Upload className="w-5 h-5 text-primary" />
+              </Button>
+              <Textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={hasMessages ? "Cole mais exames aqui..." : "Cole os resultados de exames aqui (texto, imagem ou PDF)"}
+                className="min-h-[48px] max-h-40 resize-none flex-1 rounded-xl border-border/50 focus:border-primary/50 transition-colors text-sm py-3"
+                disabled={isLoading}
+              />
+              <Button
+                onClick={handleSend}
+                disabled={isLoading || (!input.trim() && !selectedFile)}
+                size="lg"
+                className="h-12 px-6 rounded-xl bg-gradient-primary hover:opacity-90 transition-all shadow-medical hover:shadow-elevated"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    <Send className="w-4 h-4 mr-2" />
+                    Enviar
+                  </>
+                )}
               </Button>
             </div>
-          )}
+          </div>
         </div>
       </Card>
 
-      {/* Signup Dialog */}
-      <Dialog open={showComingSoonDialog} onOpenChange={setShowComingSoonDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-              Continue usando grátis! ✨
-            </DialogTitle>
-            <DialogDescription className="text-base pt-4 space-y-4">
-              <p className="text-foreground/90">
-                Crie sua conta gratuita e continue usando o <span className="font-semibold text-primary">Examinus</span> sem limites!
+      {/* CTA Banner - shown after first extraction */}
+      {hasMessages && remainingMessages !== null && remainingMessages <= 3 && remainingMessages > 0 && (
+        <div className="mt-4 mx-2 md:mx-0 p-4 bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20 rounded-xl animate-in fade-in slide-in-from-bottom-2">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+            <div className="text-center md:text-left">
+              <p className="font-medium text-sm">
+                Gostando do Examinus? 
+                <span className="text-muted-foreground ml-1">
+                  Você tem {remainingMessages} {remainingMessages === 1 ? 'extração restante' : 'extrações restantes'}
+                </span>
               </p>
-              <p className="text-foreground/90">
-                Além disso, você terá acesso aos outros <span className="font-semibold">9 assistentes médicos</span> especializados do MedStation AI.
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Crie sua conta grátis para uso ilimitado + acesso aos outros 9 agentes
               </p>
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-3 mt-4">
-            <Button
+            </div>
+            <Button 
               onClick={() => navigate('/auth')}
-              className="w-full h-12 text-base font-semibold"
+              className="shrink-0 bg-gradient-primary hover:opacity-90"
             >
               Criar Conta Grátis
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setShowComingSoonDialog(false)}
-              className="w-full"
-            >
-              Continuar testando
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </div>
   );
 }
