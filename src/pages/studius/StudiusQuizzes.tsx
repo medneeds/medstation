@@ -34,6 +34,8 @@ import {
 } from 'lucide-react';
 import { useQuizzes } from '@/hooks/useQuizzes';
 import { useStudiusPreferences } from '@/hooks/useStudius';
+import { StudiusUpgradeBanner } from '@/components/studius/StudiusUpgradePrompt';
+import { useStudiusLimits } from '@/hooks/useStudiusLimits';
 import QuizPlayer from '@/components/studius/QuizPlayer';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -50,7 +52,8 @@ export default function StudiusQuizzes() {
     deleteQuiz 
   } = useQuizzes();
   const { preferences } = useStudiusPreferences();
-
+  const { isPremium, getUsageLimits } = useStudiusLimits();
+  const usageLimits = getUsageLimits();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [topic, setTopic] = useState('');
   const [difficulty, setDifficulty] = useState('medium');
@@ -160,6 +163,14 @@ export default function StudiusQuizzes() {
   return (
     <StudiusLayout>
       <div className="p-6 max-w-6xl mx-auto">
+        {/* Upgrade Banner */}
+        {!isPremium && (
+          <StudiusUpgradeBanner 
+            type="quizzes" 
+            used={usageLimits.quizzes.used} 
+            className="mb-6"
+          />
+        )}
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>

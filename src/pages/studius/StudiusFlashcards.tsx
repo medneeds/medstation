@@ -27,6 +27,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useFlashcardDecks, useFlashcards, useAllCardsToReview } from "@/hooks/useFlashcards";
 import { FlashcardReview } from "@/components/studius/FlashcardReview";
+import { StudiusUpgradeBanner } from "@/components/studius/StudiusUpgradePrompt";
+import { useStudiusLimits } from "@/hooks/useStudiusLimits";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -39,6 +41,8 @@ export default function StudiusFlashcards() {
   const { decks, loading: loadingDecks, createDeck, deleteDeck } = useFlashcardDecks();
   const { flashcards, loading: loadingCards, createFlashcard, deleteFlashcard, reviewFlashcard } = useFlashcards(deckId);
   const { cards: allCardsToReview, refetch: refetchAllCards } = useAllCardsToReview();
+  const { isPremium, getUsageLimits } = useStudiusLimits();
+  const usageLimits = getUsageLimits();
 
   const [newDeckOpen, setNewDeckOpen] = useState(false);
   const [newDeckTitle, setNewDeckTitle] = useState("");
@@ -368,6 +372,13 @@ export default function StudiusFlashcards() {
   return (
     <StudiusLayout>
       <div className="space-y-6 animate-fade-in">
+      {/* Upgrade Banner */}
+      {!isPremium && (
+        <StudiusUpgradeBanner 
+          type="flashcards" 
+          used={usageLimits.flashcards.used} 
+        />
+      )}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
