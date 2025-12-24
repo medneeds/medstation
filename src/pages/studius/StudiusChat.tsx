@@ -15,6 +15,8 @@ import {
   StudiusMessage 
 } from "@/hooks/useStudius";
 import { useGamification } from "@/hooks/useGamification";
+import { StudiusUpgradeBanner } from "@/components/studius/StudiusUpgradePrompt";
+import { useStudiusLimits } from "@/hooks/useStudiusLimits";
 import {
   Sheet,
   SheetContent,
@@ -46,6 +48,8 @@ export default function StudiusChat() {
   const { messages, setMessages } = useStudiusMessages(conversationId);
   const { incrementStat, stats } = useStudiusStats();
   const { addXpAsync, checkAchievements, XP_REWARDS } = useGamification();
+  const { isPremium, getUsageLimits } = useStudiusLimits();
+  const usageLimits = getUsageLimits();
   
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -280,6 +284,14 @@ export default function StudiusChat() {
   return (
     <StudiusLayout>
       <div className="flex flex-col h-[calc(100vh-8rem)] lg:h-[calc(100vh-4rem)] animate-fade-in">
+      {/* Upgrade Banner */}
+      {!isPremium && (
+        <StudiusUpgradeBanner 
+          type="chatMessages" 
+          used={usageLimits.chatMessages.used} 
+          className="mb-4"
+        />
+      )}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-studius-border">
         <div className="flex items-center gap-3">
