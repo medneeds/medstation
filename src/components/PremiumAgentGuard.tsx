@@ -13,7 +13,7 @@ interface PremiumAgentGuardProps {
 }
 
 export function PremiumAgentGuard({ children, agentName }: PremiumAgentGuardProps) {
-  const { subscribed, loading } = useSubscription();
+  const { subscribed, hasAgents, loading } = useSubscription();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -33,7 +33,7 @@ export function PremiumAgentGuard({ children, agentName }: PremiumAgentGuardProp
       }
 
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { billingPeriod: "monthly" },
+        body: { billingPeriod: "monthly", product: "agents" },
       });
 
       if (error) throw error;
@@ -61,7 +61,7 @@ export function PremiumAgentGuard({ children, agentName }: PremiumAgentGuardProp
     );
   }
 
-  if (!subscribed) {
+  if (!subscribed || !hasAgents) {
     return (
       <div className="h-full flex items-center justify-center p-6">
         <Card className="max-w-2xl w-full border-2 border-primary/20">

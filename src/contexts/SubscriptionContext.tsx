@@ -1,11 +1,13 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 
 interface SubscriptionContextType {
   subscribed: boolean;
   productId: string | null;
+  productIds: string[];
   subscriptionEnd: string | null;
+  hasAgents: boolean;
+  hasStudius: boolean;
   loading: boolean;
   checkSubscription: () => Promise<void>;
 }
@@ -15,9 +17,11 @@ const SubscriptionContext = createContext<SubscriptionContextType | undefined>(u
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [subscribed, setSubscribed] = useState(false);
   const [productId, setProductId] = useState<string | null>(null);
+  const [productIds, setProductIds] = useState<string[]>([]);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
+  const [hasAgents, setHasAgents] = useState(false);
+  const [hasStudius, setHasStudius] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
 
   const checkSubscription = async () => {
     try {
@@ -25,7 +29,10 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       if (!session) {
         setSubscribed(false);
         setProductId(null);
+        setProductIds([]);
         setSubscriptionEnd(null);
+        setHasAgents(false);
+        setHasStudius(false);
         setLoading(false);
         return;
       }
@@ -36,10 +43,15 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
       setSubscribed(data.subscribed || false);
       setProductId(data.product_id || null);
+      setProductIds(data.product_ids || []);
       setSubscriptionEnd(data.subscription_end || null);
+      setHasAgents(data.has_agents || false);
+      setHasStudius(data.has_studius || false);
     } catch (error) {
       console.error("Error checking subscription:", error);
       setSubscribed(false);
+      setHasAgents(false);
+      setHasStudius(false);
     } finally {
       setLoading(false);
     }
@@ -54,7 +66,10 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       } else {
         setSubscribed(false);
         setProductId(null);
+        setProductIds([]);
         setSubscriptionEnd(null);
+        setHasAgents(false);
+        setHasStudius(false);
         setLoading(false);
       }
     });
@@ -69,7 +84,16 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <SubscriptionContext.Provider value={{ subscribed, productId, subscriptionEnd, loading, checkSubscription }}>
+    <SubscriptionContext.Provider value={{ 
+      subscribed, 
+      productId, 
+      productIds,
+      subscriptionEnd, 
+      hasAgents,
+      hasStudius,
+      loading, 
+      checkSubscription 
+    }}>
       {children}
     </SubscriptionContext.Provider>
   );

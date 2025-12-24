@@ -12,6 +12,14 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
+// Price IDs
+const PRICES = {
+  agents_monthly: "price_1SVf3KArMslBEVDuydWkh06x",
+  agents_yearly: "price_1SVf3KArMslBEVDur219MGI8",
+  studius_standalone: "price_1ShpkPArMslBEVDunZrz3tZO",
+  studius_addon: "price_1ShpkiArMslBEVDu0Qsz2E1k",
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -33,11 +41,12 @@ serve(async (req) => {
     
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Get coupon code and billing period from request body if provided
+    // Get parameters from request body
     const body = await req.json().catch(() => ({}));
     const couponCode = body.couponCode?.trim();
     const billingPeriod = body.billingPeriod || "monthly";
-    logStep("Request parameters", { couponCode: couponCode || "none", billingPeriod });
+    const product = body.product || "agents"; // agents, studius, studius_addon
+    logStep("Request parameters", { couponCode: couponCode || "none", billingPeriod, product });
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
       apiVersion: "2025-08-27.basil" 
@@ -52,12 +61,24 @@ serve(async (req) => {
       logStep("No customer found, will create one in checkout");
     }
 
-    // Determine which price to use based on billing period
-    const priceId = billingPeriod === "yearly" 
-      ? "price_1SVf3KArMslBEVDur219MGI8"  // R$ 199,90/year
-      : "price_1SVf3KArMslBEVDuydWkh06x";  // R$ 19,90/month
+    // Determine which price to use
+    let priceId: string;
+    switch (product) {
+      case "studius":
+        priceId = PRICES.studius_standalone;
+        break;
+      case "studius_addon":
+        priceId = PRICES.studius_addon;
+        break;
+      case "agents":
+      default:
+        priceId = billingPeriod === "yearly" 
+          ? PRICES.agents_yearly 
+          : PRICES.agents_monthly;
+        break;
+    }
     
-    logStep("Price selected", { priceId, billingPeriod });
+    logStep("Price selected", { priceId, product, billingPeriod });
 
     const sessionConfig: any = {
       customer: customerId,
