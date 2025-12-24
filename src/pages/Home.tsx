@@ -5,9 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Sparkles, Activity, Brain, Calculator, Pill, FileCode, TestTube2, Wind, FileCheck, BookOpen, Compass, Stethoscope, Sigma } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PublicExaminusChat from "@/components/PublicExaminusChat";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { InlineCheckout } from "@/components/QuickCheckout";
 
 // Definição centralizada dos agentes com descrições precisas
 const agents = [
@@ -25,46 +24,9 @@ const agents = [
 
 export default function Home() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const handleSubscribe = async () => {
-    setLoading(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast({
-          title: "Login necessário",
-          description: "Faça login para assinar o plano Pro.",
-        });
-        navigate("/auth");
-        return;
-      }
-
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { billingPeriod: "monthly" },
-      });
-
-      if (error) throw error;
-
-      if (data?.url) {
-        window.open(data.url, "_blank");
-      }
-    } catch (error: any) {
-      console.error("Checkout error:", error);
-      toast({
-        title: "Erro no checkout",
-        description: error.message || "Não foi possível iniciar o checkout.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
@@ -351,17 +313,16 @@ export default function Home() {
                   </div>
                 </div>
                 
-                <Button 
-                  className="w-full h-11 md:h-12 shadow-medical hover:shadow-elevated transition-all hover:scale-105 text-sm md:text-base"
-                  onClick={handleSubscribe}
-                  disabled={loading}
-                >
-                  {loading ? "Processando..." : "Assinar agora"}
-                  {!loading && <ArrowRight className="ml-2 h-3.5 md:h-4 w-3.5 md:w-4" />}
-                </Button>
+                <InlineCheckout 
+                  product="agents" 
+                  billingPeriod="monthly"
+                  buttonText="Assinar agora"
+                  placeholder="Seu email para começar"
+                  className="flex-col sm:flex-row"
+                />
                 
                 <p className="text-[10px] md:text-xs text-center text-muted-foreground">
-                  Cancele quando quiser • Sem multa
+                  Cancele quando quiser • Sem multa • Crie sua senha no checkout
                 </p>
               </div>
             </Card>

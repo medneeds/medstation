@@ -59,3 +59,12 @@ verify_jwt = true
 
 [functions.generate-quiz]
 verify_jwt = true
+
+[functions.guest-checkout]
+verify_jwt = false
+
+[functions.complete-checkout]
+verify_jwt = false
+
+[functions.process-article]
+verify_jwt = true
