@@ -53,8 +53,10 @@ serve(async (req) => {
       logStep("User is admin, granting full access");
       return new Response(JSON.stringify({
         subscribed: true,
-        product_id: 'admin',
-        subscription_end: null
+        product_ids: ['admin'],
+        subscription_end: null,
+        has_agents: true,
+        has_studius: true,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -66,7 +68,12 @@ serve(async (req) => {
     
     if (customers.data.length === 0) {
       logStep("No customer found, updating unsubscribed state");
-      return new Response(JSON.stringify({ subscribed: false }), {
+      return new Response(JSON.stringify({ 
+        subscribed: false,
+        product_ids: [],
+        has_agents: false,
+        has_studius: false,
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
@@ -75,29 +82,56 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
+    // Get ALL active subscriptions (user can have multiple)
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "active",
-      limit: 1,
+      limit: 10,
     });
+    
     const hasActiveSub = subscriptions.data.length > 0;
-    let productId = null;
-    let subscriptionEnd = null;
+    const productIds: string[] = [];
+    let subscriptionEnd: string | null = null;
+
+    // Product IDs for reference
+    const AGENTS_PRODUCT_ID = "prod_SNBNOVmNgdl91k";
+    const STUDIUS_PRODUCT_ID = "prod_TfA4LZsza2MSIa";
+    const STUDIUS_ADDON_PRODUCT_ID = "prod_TfA4jhJqGKI5Gn";
 
     if (hasActiveSub) {
-      const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
-      productId = subscription.items.data[0].price.product as string;
-      logStep("Determined subscription tier", { productId });
+      // Collect all product IDs from all active subscriptions
+      for (const subscription of subscriptions.data) {
+        for (const item of subscription.items.data) {
+          const productId = item.price.product as string;
+          if (!productIds.includes(productId)) {
+            productIds.push(productId);
+          }
+        }
+        // Get the latest subscription end date
+        const endDate = new Date(subscription.current_period_end * 1000).toISOString();
+        if (!subscriptionEnd || endDate > subscriptionEnd) {
+          subscriptionEnd = endDate;
+        }
+      }
+      logStep("Active subscriptions found", { productIds, subscriptionEnd });
     } else {
       logStep("No active subscription found");
     }
 
+    // Determine access levels
+    const hasAgents = productIds.includes(AGENTS_PRODUCT_ID);
+    const hasStudius = productIds.includes(STUDIUS_PRODUCT_ID) || 
+                       productIds.includes(STUDIUS_ADDON_PRODUCT_ID);
+
+    logStep("Access levels determined", { hasAgents, hasStudius });
+
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
-      product_id: productId,
-      subscription_end: subscriptionEnd
+      product_ids: productIds,
+      product_id: productIds[0] || null, // Backwards compatibility
+      subscription_end: subscriptionEnd,
+      has_agents: hasAgents,
+      has_studius: hasStudius,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

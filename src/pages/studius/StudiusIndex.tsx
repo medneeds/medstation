@@ -6,6 +6,7 @@ import StudiusGamification from "./StudiusGamification";
 import StudiusFlashcards from "./StudiusFlashcards";
 import StudiusQuizzes from "./StudiusQuizzes";
 import StudiusArticles from "./StudiusArticles";
+import StudiusLanding from "./StudiusLanding";
 import { useStudiusPreferences } from "@/hooks/useStudius";
 import { Loader2 } from "lucide-react";
 
@@ -32,6 +33,11 @@ export default function StudiusIndex() {
     );
   }
 
+  // Show landing page for the /studius/landing route
+  if (location.pathname === "/studius/landing") {
+    return <StudiusLanding />;
+  }
+
   if (!preferences?.onboarding_completed && !location.pathname.includes("/onboarding")) {
     return <StudiusOnboarding onComplete={handleOnboardingComplete} />;
   }
@@ -44,6 +50,7 @@ export default function StudiusIndex() {
       <Route path="/quizzes" element={<StudiusQuizzes />} />
       <Route path="/articles" element={<StudiusArticles />} />
       <Route path="/progress" element={<StudiusGamification />} />
+      <Route path="/landing" element={<StudiusLanding />} />
       <Route path="/onboarding" element={<StudiusOnboarding onComplete={handleOnboardingComplete} />} />
       <Route path="*" element={<Navigate to="/studius" replace />} />
     </Routes>
