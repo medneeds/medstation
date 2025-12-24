@@ -17,6 +17,8 @@ import NoteDetail from "./pages/NoteDetail";
 import Auth from "./pages/Auth";
 import Home from "./pages/Home";
 import Pricing from "./pages/Pricing";
+import Welcome from "./pages/Welcome";
+import Onboarding from "./pages/Onboarding";
 import Clinicus from "./pages/Clinicus";
 import Examinus from "./pages/Examinus";
 import Scorius from "./pages/Scorius";
@@ -53,6 +55,8 @@ const App = () => (
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/welcome" element={<Welcome />} />
+            <Route path="/onboarding" element={<Onboarding />} />
             <Route
               path="/dashboard"
               element={
