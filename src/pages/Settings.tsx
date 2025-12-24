@@ -5,7 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, MapPin, Stethoscope, Upload, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { User, MapPin, Stethoscope, Upload, X, CreditCard, Sparkles, Loader2, ExternalLink } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -13,6 +14,10 @@ import { profileSchema } from "@/lib/validations";
 import { z } from "zod";
 import { useProfile } from "@/contexts/ProfileContext";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
+import { useSubscription } from "@/contexts/SubscriptionContext";
+import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const BRAZILIAN_STATES = [
   "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG",
@@ -30,10 +35,13 @@ const MEDICAL_SPECIALTIES = [
 export default function Settings() {
   const { toast } = useToast();
   const { refreshProfile } = useProfile();
+  const { subscribed, productId, subscriptionEnd, loading: subscriptionLoading, checkSubscription } = useSubscription();
+  const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
   const [userId, setUserId] = useState<string>("");
   const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
@@ -329,6 +337,28 @@ export default function Settings() {
     return profile.gender === "M" ? "Dr." : profile.gender === "F" ? "Dra." : "Dr(a)";
   };
 
+  const handleManageSubscription = async () => {
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("customer-portal");
+      
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (error: any) {
+      console.error("Portal error:", error);
+      toast({
+        title: "Erro",
+        description: error.message || "Não foi possível abrir o portal de assinatura.",
+        variant: "destructive",
+      });
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -340,9 +370,87 @@ export default function Settings() {
   return (
     <div className="space-y-6 max-w-5xl pb-8">
       <div>
-        <h1 className="text-3xl font-bold">Meu Perfil</h1>
-        <p className="text-muted-foreground">Gerencie suas informações profissionais</p>
+        <h1 className="text-3xl font-bold">Configurações</h1>
+        <p className="text-muted-foreground">Gerencie seu perfil e assinatura</p>
       </div>
+
+      {/* Assinatura */}
+      <Card className={subscribed ? "border-primary/30 bg-gradient-to-br from-primary/5 to-accent/5" : ""}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5" />
+            Assinatura
+            {subscribed && (
+              <Badge className="ml-2 bg-primary/20 text-primary border-primary/30">
+                <Sparkles className="w-3 h-3 mr-1" />
+                Pro
+              </Badge>
+            )}
+          </CardTitle>
+          <CardDescription>
+            {subscribed ? "Você tem acesso a todos os recursos" : "Gerencie sua assinatura"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {subscriptionLoading ? (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Verificando assinatura...
+            </div>
+          ) : subscribed ? (
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="flex-1">
+                  <p className="font-medium text-foreground">Plano MedStation AI Pro</p>
+                  {subscriptionEnd && (
+                    <p className="text-sm text-muted-foreground">
+                      Próxima cobrança: {format(new Date(subscriptionEnd), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                    </p>
+                  )}
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={handleManageSubscription}
+                  disabled={portalLoading}
+                >
+                  {portalLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Abrindo...
+                    </>
+                  ) : (
+                    <>
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Gerenciar Assinatura
+                    </>
+                  )}
+                </Button>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Altere método de pagamento, cancele ou gerencie sua assinatura pelo portal seguro.
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="flex-1">
+                  <p className="font-medium text-foreground">Plano Gratuito</p>
+                  <p className="text-sm text-muted-foreground">
+                    Acesso limitado ao Examinus
+                  </p>
+                </div>
+                <Button onClick={() => navigate("/pricing")}>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Assinar Pro
+                </Button>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Desbloqueie todos os 10 assistentes de IA por apenas R$ 19,90/mês.
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Foto de Perfil */}
       <Card>

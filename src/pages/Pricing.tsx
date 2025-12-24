@@ -168,6 +168,33 @@ export default function Pricing() {
               MedStation AI Pro
             </h2>
 
+            {/* Billing Period Toggle */}
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <button
+                onClick={() => setBillingPeriod("monthly")}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  billingPeriod === "monthly"
+                    ? "bg-primary text-primary-foreground shadow-lg"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                Mensal
+              </button>
+              <button
+                onClick={() => setBillingPeriod("yearly")}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all relative ${
+                  billingPeriod === "yearly"
+                    ? "bg-primary text-primary-foreground shadow-lg"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                Anual
+                <span className="absolute -top-2 -right-2 bg-green-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">
+                  -17%
+                </span>
+              </button>
+            </div>
+
             {/* Pricing display */}
             <div className="flex flex-col items-center gap-2 my-4 md:my-6 lg:my-8">
               <div className="inline-flex items-center gap-2 px-2.5 md:px-3 py-1 md:py-1.5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-full mb-2 md:mb-3">
@@ -175,19 +202,28 @@ export default function Pricing() {
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-1 md:mb-2">
-                  <span className="text-sm md:text-lg text-muted-foreground line-through">R$ 59,90</span>
+                  <span className="text-sm md:text-lg text-muted-foreground line-through">
+                    {billingPeriod === "monthly" ? "R$ 59,90" : "R$ 239,90"}
+                  </span>
                 </div>
                 <div className="flex items-baseline justify-center gap-2 mb-1 md:mb-2">
                   <span className="text-4xl md:text-5xl lg:text-7xl font-black bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                    R$ 19,90
+                    {billingPeriod === "monthly" ? "R$ 19,90" : "R$ 199,90"}
                   </span>
                 </div>
                 <p className="text-xs md:text-sm lg:text-base text-muted-foreground">
-                  /mês
+                  {billingPeriod === "monthly" ? "/mês" : "/ano"}
                 </p>
-                <p className="text-[10px] md:text-xs lg:text-sm text-muted-foreground mt-1 md:mt-2">
-                  ou R$ 199,90/ano — economize 2 meses
-                </p>
+                {billingPeriod === "yearly" && (
+                  <p className="text-[10px] md:text-xs lg:text-sm text-green-600 dark:text-green-400 mt-1 md:mt-2 font-medium">
+                    Equivale a R$ 16,66/mês — economize 2 meses!
+                  </p>
+                )}
+                {billingPeriod === "monthly" && (
+                  <p className="text-[10px] md:text-xs lg:text-sm text-muted-foreground mt-1 md:mt-2">
+                    ou R$ 199,90/ano — economize 2 meses
+                  </p>
+                )}
               </div>
             </div>
             

@@ -2,15 +2,10 @@ import { ReactNode, useState } from "react";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Lock, Sparkles } from "lucide-react";
+import { Lock, Sparkles, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface PremiumAgentGuardProps {
   children: ReactNode;
@@ -20,7 +15,43 @@ interface PremiumAgentGuardProps {
 export function PremiumAgentGuard({ children, agentName }: PremiumAgentGuardProps) {
   const { subscribed, loading } = useSubscription();
   const navigate = useNavigate();
-  const [showComingSoonDialog, setShowComingSoonDialog] = useState(false);
+  const { toast } = useToast();
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  const handleSubscribe = async () => {
+    setCheckoutLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: "Login necessário",
+          description: "Faça login para assinar o plano Pro.",
+        });
+        navigate("/auth");
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { billingPeriod: "monthly" },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (error: any) {
+      console.error("Checkout error:", error);
+      toast({
+        title: "Erro no checkout",
+        description: error.message || "Não foi possível iniciar o checkout.",
+        variant: "destructive",
+      });
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -52,7 +83,7 @@ export function PremiumAgentGuard({ children, agentName }: PremiumAgentGuardProp
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-0.5">✓</span>
-                  <span>Acesso completo a todos os 6 assistentes de IA especializados</span>
+                  <span>Acesso completo a todos os 10 assistentes de IA especializados</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-0.5">✓</span>
@@ -65,6 +96,10 @@ export function PremiumAgentGuard({ children, agentName }: PremiumAgentGuardProp
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-0.5">✓</span>
                   <span>Upload de documentos e transcrição de áudio</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-0.5">✓</span>
+                  <span>Garantia de 7 dias ou seu dinheiro de volta</span>
                 </li>
               </ul>
             </div>
@@ -79,52 +114,31 @@ export function PremiumAgentGuard({ children, agentName }: PremiumAgentGuardProp
                   <span className="text-4xl font-black bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">R$ 19,90</span>
                 </div>
                 <span className="text-muted-foreground">/mês</span>
+                <p className="text-xs text-muted-foreground mt-1">
+                  ou R$ 199,90/ano — economize 2 meses
+                </p>
               </div>
-              <Button size="lg" className="w-full mb-3" onClick={() => setShowComingSoonDialog(true)}>
-                Assinar Agora
+              <Button 
+                size="lg" 
+                className="w-full mb-3" 
+                onClick={handleSubscribe}
+                disabled={checkoutLoading}
+              >
+                {checkoutLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Processando...
+                  </>
+                ) : (
+                  "Assinar Agora"
+                )}
               </Button>
-              <Button variant="outline" className="w-full" onClick={() => navigate("/dashboard")}>
-                Voltar ao Dashboard
+              <Button variant="outline" className="w-full" onClick={() => navigate("/pricing")}>
+                Ver Detalhes do Plano
               </Button>
             </div>
           </CardContent>
         </Card>
-
-        {/* Coming Soon Dialog */}
-        <Dialog open={showComingSoonDialog} onOpenChange={setShowComingSoonDialog}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                Assinatura em Breve! 🚀
-              </DialogTitle>
-              <DialogDescription className="text-base pt-4 space-y-4">
-                <p className="text-foreground/90">
-                  A assinatura da plataforma MedStation AI estará disponível em breve!
-                </p>
-                <p className="text-foreground/90">
-                  Seja um dos primeiros a ter acesso exclusivo falando diretamente com{" "}
-                  <span className="font-semibold text-primary">Artur Batista</span>, 
-                  médico desenvolvedor da plataforma.
-                </p>
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex flex-col gap-3 mt-4">
-              <Button
-                onClick={() => window.open("https://w.app/medstationai", "_blank")}
-                className="w-full h-12 text-base font-semibold"
-              >
-                💬 Falar com Artur no WhatsApp
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowComingSoonDialog(false)}
-                className="w-full"
-              >
-                Fechar
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
     );
   }
