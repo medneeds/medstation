@@ -30,7 +30,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted">
+    <div className="min-h-screen bg-gradient-to-b from-background via-muted/30 to-muted/50">
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/50">
         <div className="container mx-auto px-4 md:px-6 py-3 md:py-4 flex justify-between items-center">
@@ -83,7 +83,7 @@ export default function Home() {
 
       {/* Seção 1: Examinus por MedStation AI */}
       <section id="demo" className="py-6 md:py-8 px-4 md:px-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-30"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10"></div>
         <div className="container mx-auto max-w-4xl relative">
           <div className="space-y-6 md:space-y-8 animate-in fade-in duration-700 text-center">
 
@@ -115,8 +115,8 @@ export default function Home() {
       </section>
 
       {/* Seção 2: MedStation AI - Plataforma Completa */}
-      <section id="plataforma" className="py-12 md:py-16 lg:py-20 px-4 md:px-6 bg-gradient-to-br from-muted/50 via-background to-muted/30 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent"></div>
+      <section id="plataforma" className="py-12 md:py-16 lg:py-20 px-4 md:px-6 bg-gradient-to-br from-muted/40 via-muted/20 to-muted/40 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-primary/5 to-transparent"></div>
         
         <div className="container mx-auto max-w-6xl relative">
           <div className="text-center mb-10 md:mb-14 lg:mb-16 space-y-4 md:space-y-5">
@@ -187,7 +187,7 @@ export default function Home() {
       </section>
 
       {/* Planos */}
-      <section id="planos" className="py-12 md:py-20 lg:py-24 px-4 md:px-6 border-y border-border/50 bg-muted/30">
+      <section id="planos" className="py-12 md:py-20 lg:py-24 px-4 md:px-6 border-y border-border/50 bg-gradient-to-b from-muted/30 via-muted/40 to-muted/30">
         <div className="container mx-auto text-center max-w-5xl">
           <div className="mb-8 md:mb-10 lg:mb-12 space-y-3 md:space-y-4 px-4">
             <Badge variant="secondary" className="backdrop-blur-sm text-xs md:text-sm">
