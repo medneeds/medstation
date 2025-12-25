@@ -1,15 +1,15 @@
-// Stripe Product and Price IDs
+// Stripe Product and Price IDs - Sincronizado com Stripe Dashboard
 export const SUBSCRIPTION_TIERS = {
-  // Plano Base - Agentes Médicos
+  // Plano Base - Agentes Médicos (MedStation AI Pro)
   AGENTS: {
     MONTHLY: {
       priceId: "price_1SVf3KArMslBEVDuydWkh06x",
-      productId: "prod_SNBNOVmNgdl91k",
+      productId: "prod_TICcLVsZgxl5bT",
       price: 19.90,
     },
     YEARLY: {
       priceId: "price_1SVf3KArMslBEVDur219MGI8",
-      productId: "prod_SNBNOVmNgdl91k",
+      productId: "prod_TICcLVsZgxl5bT",
       price: 199.90,
     },
   },

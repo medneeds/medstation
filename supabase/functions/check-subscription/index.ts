@@ -93,8 +93,8 @@ serve(async (req) => {
     const productIds: string[] = [];
     let subscriptionEnd: string | null = null;
 
-    // Product IDs for reference
-    const AGENTS_PRODUCT_ID = "prod_SNBNOVmNgdl91k";
+    // Product IDs - Sincronizado com Stripe Dashboard
+    const AGENTS_PRODUCT_ID = "prod_TICcLVsZgxl5bT"; // MedStation AI Pro
     const STUDIUS_PRODUCT_ID = "prod_TfA4LZsza2MSIa";
     const STUDIUS_ADDON_PRODUCT_ID = "prod_TfA4jhJqGKI5Gn";
 
