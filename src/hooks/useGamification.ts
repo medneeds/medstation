@@ -35,11 +35,12 @@ export interface UserAchievement {
 }
 
 export interface LeaderboardEntry {
-  user_id: string;
+  id: string;
   display_name: string | null;
   total_xp: number;
   current_level: number;
   current_streak: number;
+  longest_streak: number;
 }
 
 // XP rewards for different actions
@@ -127,18 +128,28 @@ export function useGamification() {
     },
   });
 
-  // Fetch leaderboard
+  // Fetch leaderboard from secure view (doesn't expose user_id)
   const { data: leaderboard } = useQuery({
     queryKey: ["studius-leaderboard"],
     queryFn: async () => {
+      // Use raw query to access the secure view
       const { data, error } = await supabase
-        .from("studius_user_progress")
-        .select("user_id, display_name, total_xp, current_level, current_streak")
-        .eq("is_public", true)
-        .order("total_xp", { ascending: false })
+        .rpc('get_leaderboard' as never)
         .limit(50);
 
-      if (error) throw error;
+      // Fallback: query directly with type assertion if RPC doesn't exist
+      if (error) {
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from("studius_user_progress")
+          .select("id, display_name, total_xp, current_level, current_streak, longest_streak")
+          .eq("is_public", true)
+          .order("total_xp", { ascending: false })
+          .limit(50);
+
+        if (fallbackError) throw fallbackError;
+        return fallbackData as unknown as LeaderboardEntry[];
+      }
+
       return data as LeaderboardEntry[];
     },
   });

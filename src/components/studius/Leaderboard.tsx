@@ -45,7 +45,7 @@ export function Leaderboard({ className }: LeaderboardProps) {
     setDialogOpen(false);
   };
 
-  const userRank = leaderboard?.findIndex((entry) => entry.user_id === userProgress?.user_id);
+  const userRank = leaderboard?.findIndex((entry) => entry.id === userProgress?.id);
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -128,11 +128,11 @@ export function Leaderboard({ className }: LeaderboardProps) {
 
       <div className="space-y-2">
         {leaderboard?.slice(0, 20).map((entry, index) => {
-          const isCurrentUser = entry.user_id === userProgress?.user_id;
+          const isCurrentUser = entry.id === userProgress?.id;
           
           return (
             <motion.div
-              key={entry.user_id}
+              key={entry.id}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.03 }}
