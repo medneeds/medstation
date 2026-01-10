@@ -63,14 +63,14 @@ export function QuickCheckout({
   };
 
   const prices = {
-    agents: { monthly: 19.90, yearly: 199.90 },
-    studius: { monthly: 19.90 },
+    agents: { monthly: 29.90, yearly: 199.90 },
+    studius: { monthly: 29.90 },
     studius_addon: { monthly: 9.90 },
   };
 
   const price = billingPeriod === "yearly" 
     ? prices.agents.yearly 
-    : prices[product]?.monthly || 19.90;
+    : prices[product]?.monthly || 29.90;
 
   return (
     <Card className={`p-6 border-2 border-primary/50 bg-card/80 backdrop-blur-sm relative overflow-hidden ${className}`}>

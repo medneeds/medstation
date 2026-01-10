@@ -54,7 +54,7 @@ export function StudiusUpgradePrompt({ type, used, onClose }: StudiusUpgradeProm
   const config = typeConfig[type];
   const limit = STUDIUS_LIMITS.FREE[type];
   const progress = Math.min(100, (used / limit) * 100);
-  const price = hasAgents ? 9.90 : 19.90;
+  const price = hasAgents ? 9.90 : 29.90;
   const product = hasAgents ? "studius_addon" : "studius";
 
   const handleUpgrade = async () => {
@@ -160,7 +160,7 @@ export function StudiusUpgradeBanner({ type, used, className }: StudiusUpgradeBa
   const config = typeConfig[type];
   const limit = STUDIUS_LIMITS.FREE[type];
   const remaining = Math.max(0, limit - used);
-  const price = hasAgents ? 9.90 : 19.90;
+  const price = hasAgents ? 9.90 : 29.90;
 
   if (remaining > 2) return null;
 

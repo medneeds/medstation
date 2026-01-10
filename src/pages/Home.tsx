@@ -273,7 +273,7 @@ export default function Home() {
                         <span className="text-sm md:text-base lg:text-lg text-muted-foreground line-through decoration-2">De R$ 59,90</span>
                       </div>
                       <div className="flex items-baseline gap-1 md:gap-2">
-                        <span className="text-3xl md:text-4xl lg:text-5xl font-black bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">R$ 19,90</span>
+                        <span className="text-3xl md:text-4xl lg:text-5xl font-black bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">R$ 29,90</span>
                         <span className="text-base md:text-lg lg:text-xl text-muted-foreground font-medium">/mês</span>
                       </div>
                     </div>
@@ -362,7 +362,7 @@ export default function Home() {
           </div>
           <p className="text-[10px] md:text-xs text-muted-foreground flex flex-wrap items-center justify-center gap-1.5 md:gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-            <span>Examinus grátis • Pro a partir de R$ 19,90/mês</span>
+            <span>Examinus grátis • Pro a partir de R$ 29,90/mês</span>
           </p>
         </div>
       </section>
