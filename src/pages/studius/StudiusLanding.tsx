@@ -281,7 +281,7 @@ export default function StudiusLanding() {
       {/* Footer */}
       <footer className="border-t border-border/50 py-8">
         <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>© 2024 Studius. Parte da plataforma Medicus.</p>
+          <p>© 2025 Studius. Parte da plataforma MedStation AI.</p>
         </div>
       </footer>
     </div>
