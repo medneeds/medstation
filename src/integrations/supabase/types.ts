@@ -1205,7 +1205,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      studius_leaderboard: {
+        Row: {
+          current_level: number | null
+          current_streak: number | null
+          display_name: string | null
+          id: string | null
+          longest_streak: number | null
+          total_xp: number | null
+        }
+        Insert: {
+          current_level?: number | null
+          current_streak?: number | null
+          display_name?: string | null
+          id?: string | null
+          longest_streak?: number | null
+          total_xp?: number | null
+        }
+        Update: {
+          current_level?: number | null
+          current_streak?: number | null
+          display_name?: string | null
+          id?: string | null
+          longest_streak?: number | null
+          total_xp?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_level: { Args: { xp: number }; Returns: number }
