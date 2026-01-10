@@ -1,35 +1,51 @@
-// Stripe Product and Price IDs - Sincronizado com Stripe Dashboard
+// Stripe Product and Price IDs - LIVE MODE (Produção)
 export const SUBSCRIPTION_TIERS = {
-  // Plano Base - Agentes Médicos (MedStation AI Pro)
+  // Plano Base - MedStation AI
   AGENTS: {
     MONTHLY: {
-      priceId: "price_1SVf3KArMslBEVDuydWkh06x",
-      productId: "prod_TICcLVsZgxl5bT",
-      price: 19.90,
+      priceId: "price_1Sj4FbACiwQRloW42xp6WqYH",
+      productId: "prod_TgR7u5urUle7om",
+      price: 29.90,
     },
     YEARLY: {
-      priceId: "price_1SVf3KArMslBEVDur219MGI8",
-      productId: "prod_TICcLVsZgxl5bT",
+      priceId: "price_1Sj4GKACiwQRloW4QCtEvley",
+      productId: "prod_TgR7u5urUle7om",
       price: 199.90,
     },
   },
-  // Studius Standalone
+  // Studius AI - Standalone
   STUDIUS: {
     MONTHLY: {
-      priceId: "price_1ShpkPArMslBEVDunZrz3tZO",
-      productId: "prod_TfA4LZsza2MSIa",
-      price: 19.90,
+      priceId: "price_1Sj4CcACiwQRloW4CnXg7srB",
+      productId: "prod_TgR45WSvugMwLt",
+      price: 29.90,
+    },
+    YEARLY: {
+      priceId: "price_1Sj4EnACiwQRloW4DnrpE1Xg",
+      productId: "prod_TgR45WSvugMwLt",
+      price: 199.90,
     },
   },
-  // Studius Add-on (50% off para quem já tem plano base)
+  // Studius Add-on (50% off para quem já tem MedStation AI)
   STUDIUS_ADDON: {
     MONTHLY: {
-      priceId: "price_1ShpkiArMslBEVDu0Qsz2E1k",
-      productId: "prod_TfA4jhJqGKI5Gn",
+      priceId: "price_1Sj4CcACiwQRloW4CnXg7srB",
+      productId: "prod_TgR45WSvugMwLt",
       price: 9.90,
+    },
+    YEARLY: {
+      priceId: "price_1Sj4EnACiwQRloW4DnrpE1Xg",
+      productId: "prod_TgR45WSvugMwLt",
+      price: 99.90,
     },
   },
 } as const;
+
+// Product IDs for subscription checks
+export const PRODUCT_IDS = {
+  AGENTS: "prod_TgR7u5urUle7om",
+  STUDIUS: "prod_TgR45WSvugMwLt",
+};
 
 // Limites Freemium do Studius
 export const STUDIUS_LIMITS = {
@@ -47,16 +63,12 @@ export const STUDIUS_LIMITS = {
 
 // Helper para verificar se o usuário tem acesso ao Studius
 export function hasStudiusAccess(productIds: string[]): boolean {
-  const studiusProducts: string[] = [
-    SUBSCRIPTION_TIERS.STUDIUS.MONTHLY.productId,
-    SUBSCRIPTION_TIERS.STUDIUS_ADDON.MONTHLY.productId,
-  ];
-  return productIds.some(id => studiusProducts.includes(id));
+  return productIds.includes(PRODUCT_IDS.STUDIUS);
 }
 
 // Helper para verificar se o usuário tem o plano base
 export function hasAgentsAccess(productIds: string[]): boolean {
-  return productIds.includes(SUBSCRIPTION_TIERS.AGENTS.MONTHLY.productId);
+  return productIds.includes(PRODUCT_IDS.AGENTS);
 }
 
 // Helper para obter o preço do Studius baseado no status
