@@ -123,6 +123,17 @@ serve(async (req) => {
       );
     }
 
+    // Validate individual message content size (max 10,000 characters per message)
+    const MAX_MESSAGE_LENGTH = 10000;
+    for (const message of messages) {
+      if (message.content && typeof message.content === 'string' && message.content.length > MAX_MESSAGE_LENGTH) {
+        return new Response(
+          JSON.stringify({ error: `Mensagem muito longa. Máximo de ${MAX_MESSAGE_LENGTH} caracteres por mensagem.` }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     const validAgentTypes = ["clinicus", "examinus", "scorius", "numerus", "prescriptus", "codexus", "gasometrus", "atestus", "protocolus", "orientus"];
     if (agentType && !validAgentTypes.includes(agentType)) {
       return new Response(
