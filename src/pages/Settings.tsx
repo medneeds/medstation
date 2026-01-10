@@ -445,7 +445,7 @@ export default function Settings() {
                 </Button>
               </div>
               <div className="text-xs text-muted-foreground">
-                Desbloqueie todos os 10 assistentes de IA por apenas R$ 19,90/mês.
+                Desbloqueie todos os 10 assistentes de IA por apenas R$ 29,90/mês.
               </div>
             </div>
           )}

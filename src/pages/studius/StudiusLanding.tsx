@@ -59,7 +59,7 @@ export default function StudiusLanding() {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   // Determine price based on subscription status
-  const price = hasAgents ? 9.90 : 19.90;
+  const price = hasAgents ? 9.90 : 29.90;
   const product = hasAgents ? "studius_addon" : "studius";
   const discount = hasAgents ? 50 : 0;
 
@@ -252,7 +252,7 @@ export default function StudiusLanding() {
             <div className="flex items-baseline justify-center gap-2 mb-4">
               {discount > 0 && (
                 <span className="text-xl text-muted-foreground line-through">
-                  R$ 19,90
+                  R$ 29,90
                 </span>
               )}
               <span className="text-5xl font-bold text-primary">

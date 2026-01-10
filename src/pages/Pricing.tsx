@@ -208,7 +208,7 @@ export default function Pricing() {
                 </div>
                 <div className="flex items-baseline justify-center gap-2 mb-1 md:mb-2">
                   <span className="text-4xl md:text-5xl lg:text-7xl font-black bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                    {billingPeriod === "monthly" ? "R$ 19,90" : "R$ 199,90"}
+                    {billingPeriod === "monthly" ? "R$ 29,90" : "R$ 199,90"}
                   </span>
                 </div>
                 <p className="text-xs md:text-sm lg:text-base text-muted-foreground">
