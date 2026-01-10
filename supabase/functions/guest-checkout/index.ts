@@ -11,12 +11,12 @@ const logStep = (step: string, details?: any) => {
   console.log(`[GUEST-CHECKOUT] ${step}${detailsStr}`);
 };
 
-// Price IDs
+// Price IDs - LIVE MODE (Produção)
 const PRICES = {
-  agents_monthly: "price_1SVf3KArMslBEVDuydWkh06x",
-  agents_yearly: "price_1SVf3KArMslBEVDur219MGI8",
-  studius_standalone: "price_1ShpkPArMslBEVDunZrz3tZO",
-  studius_addon: "price_1ShpkiArMslBEVDu0Qsz2E1k",
+  agents_monthly: "price_1Sj4FbACiwQRloW42xp6WqYH",
+  agents_yearly: "price_1Sj4GKACiwQRloW4QCtEvley",
+  studius_monthly: "price_1Sj4CcACiwQRloW4CnXg7srB",
+  studius_yearly: "price_1Sj4EnACiwQRloW4DnrpE1Xg",
 };
 
 serve(async (req) => {
@@ -53,14 +53,14 @@ serve(async (req) => {
       logStep("New customer, will create in checkout");
     }
 
-    // Determine price
+    // Determine price based on product and billing period
     let priceId: string;
     switch (product) {
       case "studius":
-        priceId = PRICES.studius_standalone;
-        break;
       case "studius_addon":
-        priceId = PRICES.studius_addon;
+        priceId = billingPeriod === "yearly" 
+          ? PRICES.studius_yearly 
+          : PRICES.studius_monthly;
         break;
       case "agents":
       default:

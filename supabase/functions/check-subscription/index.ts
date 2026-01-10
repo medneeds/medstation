@@ -93,10 +93,9 @@ serve(async (req) => {
     const productIds: string[] = [];
     let subscriptionEnd: string | null = null;
 
-    // Product IDs - Sincronizado com Stripe Dashboard
-    const AGENTS_PRODUCT_ID = "prod_TICcLVsZgxl5bT"; // MedStation AI Pro
-    const STUDIUS_PRODUCT_ID = "prod_TfA4LZsza2MSIa";
-    const STUDIUS_ADDON_PRODUCT_ID = "prod_TfA4jhJqGKI5Gn";
+    // Product IDs - LIVE MODE (Produção)
+    const AGENTS_PRODUCT_ID = "prod_TgR7u5urUle7om"; // MedStation AI
+    const STUDIUS_PRODUCT_ID = "prod_TgR45WSvugMwLt"; // Studius AI
 
     if (hasActiveSub) {
       // Collect all product IDs from all active subscriptions
@@ -120,8 +119,7 @@ serve(async (req) => {
 
     // Determine access levels
     const hasAgents = productIds.includes(AGENTS_PRODUCT_ID);
-    const hasStudius = productIds.includes(STUDIUS_PRODUCT_ID) || 
-                       productIds.includes(STUDIUS_ADDON_PRODUCT_ID);
+    const hasStudius = productIds.includes(STUDIUS_PRODUCT_ID);
 
     logStep("Access levels determined", { hasAgents, hasStudius });
 
