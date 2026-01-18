@@ -82,12 +82,12 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    // Get ALL active subscriptions (user can have multiple) - expand price data to get product
+    // Get ALL active subscriptions (user can have multiple)
+    // Note: Cannot use deep expand (>4 levels), so product will be a string ID
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "active",
       limit: 10,
-      expand: ["data.items.data.price.product"],
     });
     
     const hasActiveSub = subscriptions.data.length > 0;
@@ -106,20 +106,12 @@ serve(async (req) => {
         logStep("Processing subscription", { subscriptionId: subscription.id, itemsCount: subscription.items.data.length });
         
         for (const item of subscription.items.data) {
-          // Handle both expanded product object and string ID
-          let productId: string;
-          if (typeof item.price.product === 'string') {
-            productId = item.price.product;
-          } else if (item.price.product && typeof item.price.product === 'object' && 'id' in item.price.product) {
-            productId = item.price.product.id;
-          } else {
-            logStep("Unknown product format, skipping", { product: item.price.product });
-            continue;
-          }
+          // item.price.product is always a string ID when not using expand
+          const productId = item.price.product as string;
           
           logStep("Found product in subscription", { productId, priceId: item.price.id });
           
-          if (!productIds.includes(productId)) {
+          if (productId && !productIds.includes(productId)) {
             productIds.push(productId);
           }
         }
