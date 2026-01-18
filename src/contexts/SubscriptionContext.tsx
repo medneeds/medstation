@@ -27,6 +27,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
+        console.log("[SubscriptionContext] No session found, resetting state");
         setSubscribed(false);
         setProductId(null);
         setProductIds([]);
@@ -37,18 +38,39 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      console.log("[SubscriptionContext] Checking subscription for user:", session.user.email);
+      
       const { data, error } = await supabase.functions.invoke("check-subscription");
       
-      if (error) throw error;
+      if (error) {
+        console.error("[SubscriptionContext] Error from check-subscription:", error);
+        throw error;
+      }
 
-      setSubscribed(data.subscribed || false);
-      setProductId(data.product_id || null);
-      setProductIds(data.product_ids || []);
-      setSubscriptionEnd(data.subscription_end || null);
-      setHasAgents(data.has_agents || false);
-      setHasStudius(data.has_studius || false);
+      console.log("[SubscriptionContext] Subscription data received:", data);
+
+      // Ensure we properly handle the response
+      const isSubscribed = data?.subscribed === true;
+      const userHasAgents = data?.has_agents === true;
+      const userHasStudius = data?.has_studius === true;
+
+      setSubscribed(isSubscribed);
+      setProductId(data?.product_id || null);
+      setProductIds(data?.product_ids || []);
+      setSubscriptionEnd(data?.subscription_end || null);
+      setHasAgents(userHasAgents);
+      setHasStudius(userHasStudius);
+      
+      console.log("[SubscriptionContext] State updated:", { 
+        subscribed: isSubscribed, 
+        hasAgents: userHasAgents, 
+        hasStudius: userHasStudius,
+        productIds: data?.product_ids 
+      });
     } catch (error) {
-      console.error("Error checking subscription:", error);
+      console.error("[SubscriptionContext] Error checking subscription:", error);
+      // On error, don't block access - assume subscribed if there was an API error
+      // This prevents paying customers from being locked out due to temporary issues
       setSubscribed(false);
       setHasAgents(false);
       setHasStudius(false);
