@@ -106,10 +106,16 @@ serve(async (req) => {
             productIds.push(productId);
           }
         }
-        // Get the latest subscription end date
-        const endDate = new Date(subscription.current_period_end * 1000).toISOString();
-        if (!subscriptionEnd || endDate > subscriptionEnd) {
-          subscriptionEnd = endDate;
+        // Get the latest subscription end date (handle potential undefined/null)
+        if (subscription.current_period_end) {
+          try {
+            const endDate = new Date(subscription.current_period_end * 1000).toISOString();
+            if (!subscriptionEnd || endDate > subscriptionEnd) {
+              subscriptionEnd = endDate;
+            }
+          } catch (dateError) {
+            logStep("Date parsing error, skipping", { current_period_end: subscription.current_period_end });
+          }
         }
       }
       logStep("Active subscriptions found", { productIds, subscriptionEnd });
