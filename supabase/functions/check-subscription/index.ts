@@ -82,11 +82,12 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    // Get ALL active subscriptions (user can have multiple)
+    // Get ALL active subscriptions (user can have multiple) - expand price data to get product
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "active",
       limit: 10,
+      expand: ["data.items.data.price.product"],
     });
     
     const hasActiveSub = subscriptions.data.length > 0;
@@ -98,14 +99,31 @@ serve(async (req) => {
     const STUDIUS_PRODUCT_ID = "prod_TgR45WSvugMwLt"; // Studius AI
 
     if (hasActiveSub) {
+      logStep("Processing active subscriptions", { count: subscriptions.data.length });
+      
       // Collect all product IDs from all active subscriptions
       for (const subscription of subscriptions.data) {
+        logStep("Processing subscription", { subscriptionId: subscription.id, itemsCount: subscription.items.data.length });
+        
         for (const item of subscription.items.data) {
-          const productId = item.price.product as string;
+          // Handle both expanded product object and string ID
+          let productId: string;
+          if (typeof item.price.product === 'string') {
+            productId = item.price.product;
+          } else if (item.price.product && typeof item.price.product === 'object' && 'id' in item.price.product) {
+            productId = item.price.product.id;
+          } else {
+            logStep("Unknown product format, skipping", { product: item.price.product });
+            continue;
+          }
+          
+          logStep("Found product in subscription", { productId, priceId: item.price.id });
+          
           if (!productIds.includes(productId)) {
             productIds.push(productId);
           }
         }
+        
         // Get the latest subscription end date (handle potential undefined/null)
         if (subscription.current_period_end) {
           try {
@@ -118,7 +136,7 @@ serve(async (req) => {
           }
         }
       }
-      logStep("Active subscriptions found", { productIds, subscriptionEnd });
+      logStep("Active subscriptions processed", { productIds, subscriptionEnd });
     } else {
       logStep("No active subscription found");
     }
