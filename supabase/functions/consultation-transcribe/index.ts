@@ -68,13 +68,21 @@ serve(async (req) => {
 
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
+      console.error('[CONSULTATION-TRANSCRIBE] OPENAI_API_KEY not found in environment');
       throw new Error('OPENAI_API_KEY não configurada');
     }
 
-    console.log('Processing audio chunk for consultation transcription...');
+    // Log key format for debugging (only first/last chars)
+    const keyPreview = openAIApiKey.length > 10 
+      ? `${openAIApiKey.substring(0, 3)}...${openAIApiKey.substring(openAIApiKey.length - 4)}`
+      : 'too short';
+    console.log(`[CONSULTATION-TRANSCRIBE] Using OpenAI key: ${keyPreview}, length: ${openAIApiKey.length}`);
+
+    console.log('[CONSULTATION-TRANSCRIBE] Processing audio chunk...');
     
     // Convert base64 to binary
     const binaryAudio = processBase64Chunks(audio);
+    console.log(`[CONSULTATION-TRANSCRIBE] Audio size: ${binaryAudio.length} bytes`);
     
     // Prepare form data for Whisper API
     const formData = new FormData();
