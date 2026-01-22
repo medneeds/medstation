@@ -225,26 +225,41 @@ export function useContinuousRecording({
     onAudioLevelRef.current(0);
   }, [clearChunkTimer]);
 
-  // Pause recording
+  // Pause recording - stop current recorder and don't start a new one
   const pauseRecording = useCallback(() => {
+    clearChunkTimer();
+    isPausedRef.current = true;
+    setIsPaused(true);
+    
+    // Stop current recorder to flush its data, but don't trigger a new chunk
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      mediaRecorderRef.current.pause();
-      isPausedRef.current = true;
-      setIsPaused(true);
-      clearChunkTimer();
-      onAudioLevelRef.current(0);
+      try {
+        mediaRecorderRef.current.stop();
+      } catch (e) {
+        console.warn('[ContinuousRecording] Error stopping recorder on pause:', e);
+      }
     }
+    
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    onAudioLevelRef.current(0);
   }, [clearChunkTimer]);
 
-  // Resume recording
+  // Resume recording - start a fresh chunk recorder
   const resumeRecording = useCallback(() => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'paused') {
-      mediaRecorderRef.current.resume();
-      isPausedRef.current = false;
-      setIsPaused(false);
-      animationFrameRef.current = requestAnimationFrame(updateAudioLevel);
-    }
-  }, [updateAudioLevel]);
+    if (!isRecordingRef.current || !streamRef.current) return;
+    
+    isPausedRef.current = false;
+    setIsPaused(false);
+    
+    // Restart chunking cycle
+    startNewChunkRecorder();
+    
+    // Restart audio level monitoring
+    animationFrameRef.current = requestAnimationFrame(updateAudioLevel);
+  }, [startNewChunkRecorder, updateAudioLevel]);
 
   // Cleanup on unmount
   useEffect(() => {
