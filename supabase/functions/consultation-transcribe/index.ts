@@ -7,45 +7,19 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Process base64 in chunks to prevent memory issues
-function processBase64Chunks(base64String: string, chunkSize = 32768): Uint8Array {
-  const chunks: Uint8Array[] = [];
-  let position = 0;
-  
-  while (position < base64String.length) {
-    const chunk = base64String.slice(position, position + chunkSize);
-    const binaryChunk = atob(chunk);
-    const bytes = new Uint8Array(binaryChunk.length);
-    
-    for (let i = 0; i < binaryChunk.length; i++) {
-      bytes[i] = binaryChunk.charCodeAt(i);
-    }
-    
-    chunks.push(bytes);
-    position += chunkSize;
-  }
-
-  const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
-  const result = new Uint8Array(totalLength);
-  let offset = 0;
-
-  for (const chunk of chunks) {
-    result.set(chunk, offset);
-    offset += chunk.length;
-  }
-
-  return result;
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const startTime = Date.now();
+  console.log('[CONSULTATION-TRANSCRIBE] Function started');
+
   try {
     // Auth check
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
+      console.error('[CONSULTATION-TRANSCRIBE] No authorization header');
       throw new Error('Não autorizado');
     }
 
@@ -57,73 +31,117 @@ serve(async (req) => {
 
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
+      console.error('[CONSULTATION-TRANSCRIBE] User auth failed:', userError);
       throw new Error('Usuário não autenticado');
     }
 
-    const { audio } = await req.json();
+    console.log(`[CONSULTATION-TRANSCRIBE] User authenticated: ${user.id}`);
+
+    const { audio, mimeType: clientMimeType } = await req.json();
 
     if (!audio) {
       throw new Error('Dados de áudio não fornecidos');
     }
 
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAIApiKey) {
-      console.error('[CONSULTATION-TRANSCRIBE] OPENAI_API_KEY not found in environment');
-      throw new Error('OPENAI_API_KEY não configurada');
+    // Use Lovable AI Gateway - no external API key needed!
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    if (!lovableApiKey) {
+      console.error('[CONSULTATION-TRANSCRIBE] LOVABLE_API_KEY not found');
+      throw new Error('Serviço de IA não configurado');
     }
 
-    // Log key format for debugging (only first/last chars)
-    const keyPreview = openAIApiKey.length > 10 
-      ? `${openAIApiKey.substring(0, 3)}...${openAIApiKey.substring(openAIApiKey.length - 4)}`
-      : 'too short';
-    console.log(`[CONSULTATION-TRANSCRIBE] Using OpenAI key: ${keyPreview}, length: ${openAIApiKey.length}`);
+    console.log('[CONSULTATION-TRANSCRIBE] Processing audio with Lovable AI (Gemini)...');
+    console.log(`[CONSULTATION-TRANSCRIBE] Audio base64 length: ${audio.length}, mimeType: ${clientMimeType || 'not specified'}`);
 
-    console.log('[CONSULTATION-TRANSCRIBE] Processing audio chunk...');
-    
-    // Convert base64 to binary
-    const binaryAudio = processBase64Chunks(audio);
-    console.log(`[CONSULTATION-TRANSCRIBE] Audio size: ${binaryAudio.length} bytes`);
-    
-    // Prepare form data for Whisper API
-    const formData = new FormData();
-    const audioBlob = new Blob([binaryAudio.buffer as ArrayBuffer], { type: 'audio/webm' });
-    formData.append('file', audioBlob, 'audio.webm');
-    formData.append('model', 'whisper-1');
-    formData.append('language', 'pt');
-    formData.append('prompt', `Transcrição de consulta médica em português brasileiro. 
-Vocabulário médico comum: anamnese, queixa principal, história patológica pregressa, 
-hipótese diagnóstica, conduta, prescrição, exame físico, ausculta, palpação, 
-inspeção, percussão, sinais vitais, pressão arterial, frequência cardíaca, 
-saturação, temperatura, glicemia, hemograma, radiografia, ultrassonografia, 
-tomografia, ressonância magnética, eletrocardiograma.
-Medicamentos comuns: omeprazol, losartana, metformina, sinvastatina, AAS, 
-dipirona, paracetamol, ibuprofeno, amoxicilina, azitromicina.`);
+    // Determine MIME type
+    const getMimeType = (mime: string | undefined): string => {
+      if (!mime) return 'audio/webm';
+      if (mime.includes('mp4') || mime.includes('m4a')) return 'audio/mp4';
+      if (mime.includes('ogg')) return 'audio/ogg';
+      if (mime.includes('wav')) return 'audio/wav';
+      if (mime.includes('mpeg') || mime.includes('mp3')) return 'audio/mpeg';
+      return 'audio/webm';
+    };
 
-    // Call OpenAI Whisper API
-    const whisperResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    const audioMimeType = getMimeType(clientMimeType);
+    console.log(`[CONSULTATION-TRANSCRIBE] Using MIME type: ${audioMimeType}`);
+
+    // Build data URL for Gemini multimodal input
+    const audioDataUrl = `data:${audioMimeType};base64,${audio}`;
+
+    // Use Gemini for audio transcription via Lovable AI Gateway
+    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${lovableApiKey}`,
+        'Content-Type': 'application/json',
       },
-      body: formData,
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          {
+            role: 'system',
+            content: `Você é um assistente médico especializado em transcrever áudios de consultas médicas em português brasileiro.
+
+INSTRUÇÕES CRÍTICAS:
+1. Transcreva o áudio EXATAMENTE como foi falado, sem adicionar ou remover palavras
+2. Preserve todos os termos médicos e técnicos com precisão
+3. Mantenha nomes de medicamentos, dosagens e valores exatos
+4. Se houver múltiplos falantes, indique com [Médico:] ou [Paciente:] quando possível identificar
+5. Use pontuação adequada para refletir pausas e entonações
+6. NÃO adicione interpretações, resumos ou comentários
+
+Vocabulário médico comum que pode aparecer:
+- Anamnese, queixa principal, história patológica pregressa, hipótese diagnóstica
+- Exame físico: ausculta, palpação, inspeção, percussão
+- Sinais vitais: pressão arterial, frequência cardíaca, saturação, temperatura
+- Exames: hemograma, glicemia, colesterol, creatinina, ureia, TGO, TGP
+- Medicamentos: omeprazol, losartana, metformina, sinvastatina, dipirona, paracetamol`
+          },
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: 'Transcreva o áudio a seguir com precisão médica. Retorne APENAS a transcrição, sem comentários adicionais:'
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: audioDataUrl
+                }
+              }
+            ]
+          }
+        ],
+        temperature: 0.1, // Low temperature for accuracy
+        max_tokens: 4000,
+      }),
     });
 
-    if (!whisperResponse.ok) {
-      const errorText = await whisperResponse.text();
-      console.error('Whisper API error:', errorText);
-      throw new Error(`Erro na transcrição: ${whisperResponse.status}`);
+    if (!aiResponse.ok) {
+      const errorText = await aiResponse.text();
+      console.error('[CONSULTATION-TRANSCRIBE] Lovable AI error:', aiResponse.status, errorText);
+      throw new Error(`Erro na transcrição: ${aiResponse.status}`);
     }
 
-    const result = await whisperResponse.json();
-    console.log('Transcription completed:', result.text?.substring(0, 50) + '...');
+    const aiResult = await aiResponse.json();
+    const transcription = aiResult.choices?.[0]?.message?.content?.trim() || '';
+
+    const processingTime = Date.now() - startTime;
+    console.log(`[CONSULTATION-TRANSCRIBE] Transcription complete in ${processingTime}ms`);
+    console.log(`[CONSULTATION-TRANSCRIBE] Result preview: ${transcription.substring(0, 100)}...`);
 
     return new Response(
-      JSON.stringify({ text: result.text }),
+      JSON.stringify({ 
+        text: transcription,
+        processingTime 
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error: unknown) {
-    console.error('Error in consultation-transcribe:', error);
+    console.error('[CONSULTATION-TRANSCRIBE] Error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
     return new Response(
       JSON.stringify({ error: errorMessage }),
