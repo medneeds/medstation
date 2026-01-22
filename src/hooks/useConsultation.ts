@@ -53,6 +53,7 @@ export function useConsultation({ caseId }: UseConsultationOptions = {}) {
   const [isStructuring, setIsStructuring] = useState(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [currentSpeaker, setCurrentSpeaker] = useState<SpeakerType>('doctor');
   
   const lastSpeakerRef = useRef<SpeakerType>('doctor');
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -188,6 +189,9 @@ export function useConsultation({ caseId }: UseConsultationOptions = {}) {
         const text = data.text.trim();
         const { speaker, confidence } = inferSpeaker(text);
         
+        // Update current speaker for visualizer
+        setCurrentSpeaker(speaker);
+        
         const newSegment: TranscriptionSegment = {
           id: crypto.randomUUID(),
           speaker,
@@ -309,6 +313,7 @@ export function useConsultation({ caseId }: UseConsultationOptions = {}) {
     startTime,
     elapsedTime,
     formattedTime: formatElapsedTime(),
+    currentSpeaker,
     
     // Actions
     processAudioChunk,
