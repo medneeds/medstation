@@ -77,7 +77,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'google/gemini-3-flash-preview',
         messages: [
           {
             role: 'system',
@@ -90,6 +90,7 @@ INSTRUÇÕES CRÍTICAS:
 4. Se houver múltiplos falantes, indique com [Médico:] ou [Paciente:] quando possível identificar
 5. Use pontuação adequada para refletir pausas e entonações
 6. NÃO adicione interpretações, resumos ou comentários
+7. Se o áudio estiver inaudível/silêncio, retorne string vazia.
 
 Vocabulário médico comum que pode aparecer:
 - Anamnese, queixa principal, história patológica pregressa, hipótese diagnóstica
@@ -103,18 +104,18 @@ Vocabulário médico comum que pode aparecer:
             content: [
               {
                 type: 'text',
-                text: 'Transcreva o áudio a seguir com precisão médica. Retorne APENAS a transcrição, sem comentários adicionais:'
+                text: 'Transcreva o áudio a seguir com precisão médica. Retorne APENAS a transcrição (ou vazio se não der para entender):'
               },
               {
-                type: 'image_url',
-                image_url: {
+                type: 'audio_url',
+                audio_url: {
                   url: audioDataUrl
                 }
               }
             ]
           }
         ],
-        temperature: 0.1, // Low temperature for accuracy
+        temperature: 0, // minimize hallucinations
         max_tokens: 4000,
       }),
     });

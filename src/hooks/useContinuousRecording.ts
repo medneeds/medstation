@@ -46,7 +46,11 @@ export function useContinuousRecording({
 
   const processChunk = useCallback(() => {
     if (chunksRef.current.length > 0 && !isPaused) {
-      const blob = new Blob(chunksRef.current, { type: 'audio/webm;codecs=opus' });
+      // Preserve the actual mimeType coming from MediaRecorder to avoid mismatches
+      // (important for Safari/iOS where the mimeType may be audio/mp4)
+      const inferredType =
+        chunksRef.current[0]?.type || mediaRecorderRef.current?.mimeType || '';
+      const blob = new Blob(chunksRef.current, { type: inferredType });
       if (blob.size > 0) {
         onAudioChunk(blob);
       }

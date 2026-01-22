@@ -43,6 +43,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     isStructuring,
     formattedTime,
     processAudioChunk,
+    updateStructure,
     changeSpeaker,
     deleteSegment,
     updateStructureField,
@@ -87,6 +88,17 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     await finalize();
     setShowFinishDialog(true);
   }, [stopRecording, finalize]);
+
+  const handleGenerateStructure = useCallback(async () => {
+    try {
+      await updateStructure();
+      toast.success('Estruturação gerada a partir da transcrição completa');
+      setActiveTab('structure');
+      setShowFinishDialog(false);
+    } catch {
+      toast.error('Não foi possível gerar a estruturação agora');
+    }
+  }, [updateStructure]);
 
   const handleExit = useCallback(() => {
     if (isRecording) {
@@ -265,6 +277,18 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
             </div>
 
             <div className="flex flex-wrap gap-2">
+              <Button
+                variant="default"
+                size="sm"
+                className="gap-2 flex-1 sm:flex-none"
+                onClick={handleGenerateStructure}
+                disabled={segments.length === 0 || isStructuring || isTranscribing}
+              >
+                <FileText className="h-4 w-4" />
+                <span className="text-xs md:text-sm">
+                  {isStructuring ? 'Estruturando...' : 'Gerar estruturação'}
+                </span>
+              </Button>
               <Button variant="outline" size="sm" className="gap-2 flex-1 sm:flex-none" onClick={handleCopyToClipboard}>
                 <Copy className="h-4 w-4" />
                 <span className="text-xs md:text-sm">Copiar</span>
