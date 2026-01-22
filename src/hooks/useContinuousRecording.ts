@@ -60,8 +60,6 @@ export function useContinuousRecording({
       
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          sampleRate: 16000,
-          channelCount: 1,
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
@@ -71,16 +69,37 @@ export function useContinuousRecording({
       streamRef.current = stream;
 
       // Setup audio analysis
-      audioContextRef.current = new AudioContext({ sampleRate: 16000 });
+      audioContextRef.current = new AudioContext();
       const source = audioContextRef.current.createMediaStreamSource(stream);
       analyserRef.current = audioContextRef.current.createAnalyser();
       analyserRef.current.fftSize = 256;
       source.connect(analyserRef.current);
 
+      // Determine supported mimeType with fallback for Safari/iOS
+      const getSupportedMimeType = () => {
+        const types = [
+          'audio/webm;codecs=opus',
+          'audio/webm',
+          'audio/mp4',
+          'audio/ogg;codecs=opus',
+          'audio/ogg',
+          ''
+        ];
+        for (const type of types) {
+          if (type === '' || MediaRecorder.isTypeSupported(type)) {
+            console.log(`[ContinuousRecording] Using mimeType: ${type || 'default'}`);
+            return type;
+          }
+        }
+        return '';
+      };
+
+      const mimeType = getSupportedMimeType();
+      const recorderOptions: MediaRecorderOptions = mimeType ? { mimeType } : {};
+      
       // Setup MediaRecorder
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus',
-      });
+      const mediaRecorder = new MediaRecorder(stream, recorderOptions);
+      console.log(`[ContinuousRecording] MediaRecorder created with mimeType: ${mediaRecorder.mimeType}`);
       
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0 && !isPaused) {

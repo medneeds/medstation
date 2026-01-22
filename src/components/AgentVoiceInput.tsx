@@ -89,7 +89,6 @@ export function AgentVoiceInput({ onTranscription, disabled = false, context }: 
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
-          sampleRate: 16000,
         } 
       });
       
@@ -102,10 +101,32 @@ export function AgentVoiceInput({ onTranscription, disabled = false, context }: 
       analyserRef.current.fftSize = 256;
       source.connect(analyserRef.current);
 
+      // Determine supported mimeType with fallback for Safari/iOS
+      const getSupportedMimeType = () => {
+        const types = [
+          'audio/webm;codecs=opus',
+          'audio/webm',
+          'audio/mp4',
+          'audio/ogg;codecs=opus',
+          'audio/ogg',
+          ''  // Empty string = browser default
+        ];
+        for (const type of types) {
+          if (type === '' || MediaRecorder.isTypeSupported(type)) {
+            console.log(`[VoiceInput] Using mimeType: ${type || 'default'}`);
+            return type;
+          }
+        }
+        return '';
+      };
+
+      const mimeType = getSupportedMimeType();
+      const recorderOptions: MediaRecorderOptions = mimeType ? { mimeType } : {};
+      
       // Setup MediaRecorder
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus',
-      });
+      const mediaRecorder = new MediaRecorder(stream, recorderOptions);
+      const actualMimeType = mediaRecorder.mimeType || 'audio/webm';
+      console.log(`[VoiceInput] MediaRecorder created with mimeType: ${actualMimeType}`);
 
       chunksRef.current = [];
 
@@ -116,7 +137,8 @@ export function AgentVoiceInput({ onTranscription, disabled = false, context }: 
       };
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        const audioBlob = new Blob(chunksRef.current, { type: actualMimeType });
+        console.log(`[VoiceInput] Recording stopped. Blob size: ${audioBlob.size}, type: ${audioBlob.type}`);
         await processAudio(audioBlob);
         
         // Cleanup
@@ -197,14 +219,21 @@ export function AgentVoiceInput({ onTranscription, disabled = false, context }: 
         reader.readAsDataURL(audioBlob);
       });
 
-      console.log(`[VoiceInput] Audio size: ${audioBlob.size} bytes, Duration: ${recordingTime}s`);
+      console.log(`[VoiceInput] Audio size: ${audioBlob.size} bytes, type: ${audioBlob.type}, Duration: ${recordingTime}s`);
 
+      // Get session token for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      
       const { data, error } = await supabase.functions.invoke('agent-transcribe', {
         body: { 
           audio: base64Audio,
           language: 'pt',
-          context
-        }
+          context,
+          mimeType: audioBlob.type // Send the actual mimeType to backend
+        },
+        headers: session?.access_token ? {
+          Authorization: `Bearer ${session.access_token}`
+        } : undefined
       });
 
       if (error) {
