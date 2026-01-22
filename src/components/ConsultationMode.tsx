@@ -173,12 +173,19 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
       </header>
 
       {/* Audio Control Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-2 md:gap-4 px-3 md:px-4 py-3 md:py-4 border-b bg-muted/30">
-        <AudioVisualizer 
-          level={audioLevel} 
-          isActive={isRecording && !isPaused}
-          className="w-32 md:w-48"
-        />
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-6 px-3 md:px-4 py-4 md:py-6 border-b bg-gradient-to-b from-muted/50 to-background relative overflow-hidden">
+        {/* Background pulse when recording */}
+        {isRecording && !isPaused && (
+          <div className="absolute inset-0 bg-primary/5 animate-pulse pointer-events-none" />
+        )}
+        
+        <div className="relative">
+          <AudioVisualizer 
+            level={audioLevel} 
+            isActive={isRecording && !isPaused}
+            className="w-40 md:w-56 h-14 md:h-16"
+          />
+        </div>
         
         <div className="flex items-center gap-2">
           {!isRecording ? (
