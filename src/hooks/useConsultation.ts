@@ -55,8 +55,18 @@ export function useConsultation({ caseId }: UseConsultationOptions = {}) {
   const [elapsedTime, setElapsedTime] = useState(0);
   
   const lastSpeakerRef = useRef<SpeakerType>('doctor');
-  const structureTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Track pending transcription jobs so we can safely "finalize" only after all chunks are processed
+  const pendingTranscriptionsRef = useRef(0);
+  const pendingResolversRef = useRef<Array<() => void>>([]);
+
+  const awaitPendingTranscriptions = useCallback(() => {
+    if (pendingTranscriptionsRef.current === 0) return Promise.resolve();
+    return new Promise<void>((resolve) => {
+      pendingResolversRef.current.push(resolve);
+    });
+  }, []);
 
   const startTimer = useCallback(() => {
     setStartTime(new Date());
@@ -152,6 +162,7 @@ export function useConsultation({ caseId }: UseConsultationOptions = {}) {
     if (audioBlob.size < 1000) return; // Skip very small chunks
     
     setIsTranscribing(true);
+    pendingTranscriptionsRef.current += 1;
     
     try {
       // Convert blob to base64
@@ -168,7 +179,7 @@ export function useConsultation({ caseId }: UseConsultationOptions = {}) {
       const base64Audio = await base64Promise;
       
       const { data, error } = await supabase.functions.invoke('consultation-transcribe', {
-        body: { audio: base64Audio },
+        body: { audio: base64Audio, mimeType: audioBlob.type },
       });
       
       if (error) throw error;
@@ -188,19 +199,19 @@ export function useConsultation({ caseId }: UseConsultationOptions = {}) {
         
         setSegments(prev => [...prev, newSegment]);
         setCurrentTranscription('');
-        
-        // Schedule structure update
-        if (structureTimeoutRef.current) {
-          clearTimeout(structureTimeoutRef.current);
-        }
-        structureTimeoutRef.current = setTimeout(() => {
-          updateStructure();
-        }, 5000);
       }
     } catch (err) {
       console.error('Error transcribing audio:', err);
     } finally {
       setIsTranscribing(false);
+
+      pendingTranscriptionsRef.current -= 1;
+      if (pendingTranscriptionsRef.current <= 0) {
+        pendingTranscriptionsRef.current = 0;
+        const resolvers = pendingResolversRef.current;
+        pendingResolversRef.current = [];
+        resolvers.forEach((r) => r());
+      }
     }
   }, [inferSpeaker]);
 
@@ -268,19 +279,14 @@ export function useConsultation({ caseId }: UseConsultationOptions = {}) {
     setElapsedTime(0);
     stopTimer();
     lastSpeakerRef.current = 'doctor';
-    
-    if (structureTimeoutRef.current) {
-      clearTimeout(structureTimeoutRef.current);
-      structureTimeoutRef.current = null;
-    }
   }, [stopTimer]);
 
   const finalize = useCallback(async () => {
-    // Force structure update
-    await updateStructure();
+    // Wait for the last chunk(s) to be transcribed before allowing structuring
+    await awaitPendingTranscriptions();
     stopTimer();
-    toast.success('Consulta finalizada com sucesso!');
-  }, [updateStructure, stopTimer]);
+    toast.success('Transcrição finalizada. Clique em “Gerar estruturação” para validar a estrutura.');
+  }, [awaitPendingTranscriptions, stopTimer]);
 
   const formatElapsedTime = useCallback(() => {
     const hours = Math.floor(elapsedTime / 3600);
@@ -307,6 +313,7 @@ export function useConsultation({ caseId }: UseConsultationOptions = {}) {
     // Actions
     processAudioChunk,
     updateStructure,
+    awaitPendingTranscriptions,
     changeSpeaker,
     editSegmentText,
     deleteSegment,

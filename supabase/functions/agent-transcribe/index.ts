@@ -153,7 +153,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3-flash-preview",
         messages: [
           {
             role: "system",
@@ -165,7 +165,8 @@ INSTRUÇÕES CRÍTICAS:
 3. Mantenha nomes de medicamentos, dosagens e valores exatos
 4. Use pontuação adequada para refletir pausas e entonações
 5. NÃO adicione interpretações, resumos ou comentários
-6. Retorne APENAS a transcrição
+6. Se o áudio estiver inaudível/silêncio, retorne string vazia.
+7. Retorne APENAS a transcrição
 
 Vocabulário médico comum:
 - Sinais vitais: pressão arterial, frequência cardíaca, saturação, temperatura, glicemia
@@ -178,18 +179,18 @@ Vocabulário médico comum:
             content: [
               {
                 type: "text",
-                text: "Transcreva o áudio a seguir com precisão médica. Retorne APENAS a transcrição, sem comentários:"
+                text: "Transcreva o áudio a seguir com precisão médica. Retorne APENAS a transcrição (ou vazio se não der para entender):"
               },
               {
-                type: "image_url",
-                image_url: {
+                type: "audio_url",
+                audio_url: {
                   url: audioDataUrl
                 }
               }
             ]
           }
         ],
-        temperature: 0.1, // Low temperature for accuracy
+        temperature: 0, // minimize hallucinations
         max_tokens: 4000,
       }),
     });
@@ -202,6 +203,13 @@ Vocabulário médico comum:
         return new Response(
           JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns segundos." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (aiResponse.status === 402) {
+        return new Response(
+          JSON.stringify({ error: "Créditos de IA esgotados. Adicione créditos para continuar." }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       
