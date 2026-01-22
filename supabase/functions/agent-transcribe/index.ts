@@ -146,7 +146,7 @@ serve(async (req) => {
     }
 
     // Parse request
-    const { audio, language = "pt", context } = await req.json();
+    const { audio, language = "pt", context, mimeType: clientMimeType } = await req.json();
 
     if (!audio) {
       return new Response(
@@ -155,16 +155,36 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[AGENT-TRANSCRIBE] Processing audio, context: ${context || 'none'}`);
+    console.log(`[AGENT-TRANSCRIBE] Processing audio, context: ${context || 'none'}, clientMimeType: ${clientMimeType || 'not specified'}`);
 
     // Process audio from base64
     const binaryAudio = processBase64Chunks(audio);
     console.log(`[AGENT-TRANSCRIBE] Audio size: ${binaryAudio.length} bytes`);
 
+    // Determine file extension based on mime type
+    const getMimeTypeInfo = (mime: string | undefined) => {
+      if (!mime) return { type: 'audio/webm', ext: 'webm' };
+      
+      if (mime.includes('mp4') || mime.includes('m4a')) {
+        return { type: 'audio/mp4', ext: 'm4a' };
+      }
+      if (mime.includes('ogg')) {
+        return { type: 'audio/ogg', ext: 'ogg' };
+      }
+      if (mime.includes('wav')) {
+        return { type: 'audio/wav', ext: 'wav' };
+      }
+      // Default to webm
+      return { type: 'audio/webm', ext: 'webm' };
+    };
+
+    const { type: audioType, ext: audioExt } = getMimeTypeInfo(clientMimeType);
+    console.log(`[AGENT-TRANSCRIBE] Using audio type: ${audioType}, extension: ${audioExt}`);
+
     // Prepare form data for OpenAI Whisper
     const formData = new FormData();
-    const blob = new Blob([new Uint8Array(binaryAudio).buffer as ArrayBuffer], { type: "audio/webm" });
-    formData.append("file", blob, "audio.webm");
+    const blob = new Blob([new Uint8Array(binaryAudio).buffer as ArrayBuffer], { type: audioType });
+    formData.append("file", blob, `audio.${audioExt}`);
     formData.append("model", "whisper-1");
     formData.append("language", language);
     formData.append("response_format", "verbose_json");
