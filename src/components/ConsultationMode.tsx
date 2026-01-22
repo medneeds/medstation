@@ -2,8 +2,9 @@ import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  ArrowLeft, 
+import { motion } from "framer-motion";
+import {
+  ArrowLeft,
   Mic, 
   MicOff, 
   Pause, 
@@ -174,47 +175,67 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
       </header>
 
       {/* Audio Control Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-6 px-3 md:px-4 py-4 md:py-6 border-b bg-gradient-to-b from-muted/50 to-background relative overflow-hidden">
+      <div className="flex flex-col items-center gap-4 md:gap-6 px-3 md:px-4 py-6 md:py-8 border-b bg-gradient-to-b from-muted/50 to-background relative overflow-hidden">
         {/* Background pulse when recording */}
         {isRecording && !isPaused && (
           <div className="absolute inset-0 bg-primary/5 animate-pulse pointer-events-none" />
         )}
         
-        <div className="relative">
-          <AudioVisualizer 
-            level={audioLevel} 
-            isActive={isRecording && !isPaused}
-            currentSpeaker={isRecording && !isPaused ? currentSpeaker : undefined}
-            className="w-48 md:w-64"
-          />
-        </div>
+        {/* Audio Visualizer */}
+        <AudioVisualizer 
+          level={audioLevel} 
+          isActive={isRecording && !isPaused}
+          currentSpeaker={isRecording && !isPaused ? currentSpeaker : undefined}
+          className="w-full max-w-sm"
+        />
         
-        <div className="flex items-center gap-2">
+        {/* Control Buttons */}
+        <div className="flex items-center gap-3">
           {!isRecording ? (
-            <Button onClick={handleStart} size={isMobile ? "default" : "lg"} className="gap-2">
+            <Button onClick={handleStart} size={isMobile ? "default" : "lg"} className="gap-2 px-6">
               <Mic className="h-4 w-4 md:h-5 md:w-5" />
-              <span className="text-sm md:text-base">Iniciar</span>
+              <span className="text-sm md:text-base">Iniciar Gravação</span>
             </Button>
           ) : (
             <>
               {isPaused ? (
                 <Button onClick={handleResume} variant="outline" size={isMobile ? "default" : "lg"} className="gap-2">
                   <Play className="h-4 w-4 md:h-5 md:w-5" />
-                  <span className="hidden sm:inline text-sm md:text-base">Continuar</span>
+                  <span className="text-sm md:text-base">Continuar</span>
                 </Button>
               ) : (
                 <Button onClick={handlePause} variant="outline" size={isMobile ? "default" : "lg"} className="gap-2">
                   <Pause className="h-4 w-4 md:h-5 md:w-5" />
-                  <span className="hidden sm:inline text-sm md:text-base">Pausar</span>
+                  <span className="text-sm md:text-base">Pausar</span>
                 </Button>
               )}
-              <Button onClick={handleFinish} variant="default" size={isMobile ? "default" : "lg"} className="gap-2">
+              <Button onClick={handleFinish} variant="default" size={isMobile ? "default" : "lg"} className="gap-2 px-6">
                 <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5" />
                 <span className="text-sm md:text-base">Finalizar</span>
               </Button>
             </>
           )}
         </div>
+
+        {/* Structure Generation Button - Always visible when there are segments */}
+        {segments.length > 0 && !isRecording && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3"
+          >
+            <Button
+              onClick={handleGenerateStructure}
+              disabled={isStructuring || isTranscribing}
+              size="lg"
+              variant="secondary"
+              className="gap-2 px-6 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20"
+            >
+              <FileText className="h-5 w-5" />
+              <span>{isStructuring ? 'Estruturando...' : 'Gerar Estruturação Clínica'}</span>
+            </Button>
+          </motion.div>
+        )}
       </div>
 
       {/* Main Content - Split View on desktop, Tabs on mobile */}

@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   const startTime = Date.now();
-  console.log('[CONSULTATION-TRANSCRIBE] Function started');
+  console.log('[CONSULTATION-TRANSCRIBE] Function started - Using OpenAI Whisper');
 
   try {
     // Auth check
@@ -43,100 +43,94 @@ serve(async (req) => {
       throw new Error('Dados de áudio não fornecidos');
     }
 
-    // Use Lovable AI Gateway - no external API key needed!
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
-    if (!lovableApiKey) {
-      console.error('[CONSULTATION-TRANSCRIBE] LOVABLE_API_KEY not found');
-      throw new Error('Serviço de IA não configurado');
+    // Use OpenAI Whisper API for maximum transcription fidelity
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openaiApiKey) {
+      console.error('[CONSULTATION-TRANSCRIBE] OPENAI_API_KEY not found');
+      throw new Error('Serviço de transcrição não configurado');
     }
 
-    console.log('[CONSULTATION-TRANSCRIBE] Processing audio with Lovable AI (Gemini)...');
+    console.log('[CONSULTATION-TRANSCRIBE] Processing audio with OpenAI Whisper...');
     console.log(`[CONSULTATION-TRANSCRIBE] Audio base64 length: ${audio.length}, mimeType: ${clientMimeType || 'not specified'}`);
 
-    // Determine MIME type
-    const getMimeType = (mime: string | undefined): string => {
-      if (!mime) return 'audio/webm';
-      if (mime.includes('mp4') || mime.includes('m4a')) return 'audio/mp4';
-      if (mime.includes('ogg')) return 'audio/ogg';
-      if (mime.includes('wav')) return 'audio/wav';
-      if (mime.includes('mpeg') || mime.includes('mp3')) return 'audio/mpeg';
-      return 'audio/webm';
+    // Determine file extension based on MIME type
+    const getFileExtension = (mime: string | undefined): string => {
+      if (!mime) return 'webm';
+      if (mime.includes('mp4') || mime.includes('m4a')) return 'mp4';
+      if (mime.includes('ogg')) return 'ogg';
+      if (mime.includes('wav')) return 'wav';
+      if (mime.includes('mpeg') || mime.includes('mp3')) return 'mp3';
+      if (mime.includes('webm')) return 'webm';
+      return 'webm';
     };
 
-    const audioMimeType = getMimeType(clientMimeType);
-    console.log(`[CONSULTATION-TRANSCRIBE] Using MIME type: ${audioMimeType}`);
+    const fileExtension = getFileExtension(clientMimeType);
+    const mimeType = clientMimeType || 'audio/webm';
+    console.log(`[CONSULTATION-TRANSCRIBE] Using file extension: ${fileExtension}, MIME: ${mimeType}`);
 
-    // Build data URL for Gemini multimodal input
-    const audioDataUrl = `data:${audioMimeType};base64,${audio}`;
-
-    // Use Gemini for audio transcription via Lovable AI Gateway
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
-        messages: [
-          {
-            role: 'system',
-            content: `Você é um assistente médico especializado em transcrever áudios de consultas médicas em português brasileiro.
-
-INSTRUÇÕES CRÍTICAS:
-1. Transcreva o áudio EXATAMENTE como foi falado, sem adicionar ou remover palavras
-2. Preserve todos os termos médicos e técnicos com precisão
-3. Mantenha nomes de medicamentos, dosagens e valores exatos
-4. Se houver múltiplos falantes, indique com [Médico:] ou [Paciente:] quando possível identificar
-5. Use pontuação adequada para refletir pausas e entonações
-6. NÃO adicione interpretações, resumos ou comentários
-7. Se o áudio estiver inaudível/silêncio, retorne string vazia.
-
-Vocabulário médico comum que pode aparecer:
-- Anamnese, queixa principal, história patológica pregressa, hipótese diagnóstica
-- Exame físico: ausculta, palpação, inspeção, percussão
-- Sinais vitais: pressão arterial, frequência cardíaca, saturação, temperatura
-- Exames: hemograma, glicemia, colesterol, creatinina, ureia, TGO, TGP
-- Medicamentos: omeprazol, losartana, metformina, sinvastatina, dipirona, paracetamol`
-          },
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: 'Transcreva o áudio a seguir com precisão médica. Retorne APENAS a transcrição (ou vazio se não der para entender):'
-              },
-              {
-                type: 'audio_url',
-                audio_url: {
-                  url: audioDataUrl
-                }
-              }
-            ]
-          }
-        ],
-        temperature: 0, // minimize hallucinations
-        max_tokens: 4000,
-      }),
-    });
-
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error('[CONSULTATION-TRANSCRIBE] Lovable AI error:', aiResponse.status, errorText);
-      throw new Error(`Erro na transcrição: ${aiResponse.status}`);
+    // Convert base64 to binary
+    const binaryString = atob(audio);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
     }
 
-    const aiResult = await aiResponse.json();
-    const transcription = aiResult.choices?.[0]?.message?.content?.trim() || '';
+    // Create a File object for the Whisper API
+    const audioFile = new File([bytes], `audio.${fileExtension}`, { type: mimeType });
+
+    // Prepare FormData for Whisper API
+    const formData = new FormData();
+    formData.append('file', audioFile);
+    formData.append('model', 'whisper-1');
+    formData.append('language', 'pt'); // Portuguese
+    formData.append('response_format', 'json');
+    // Medical vocabulary prompt to improve recognition accuracy
+    formData.append('prompt', 
+      'Transcrição de consulta médica em português brasileiro. ' +
+      'Termos comuns: anamnese, queixa principal, história patológica pregressa, hipótese diagnóstica, ' +
+      'exame físico, ausculta, palpação, inspeção, percussão, ' +
+      'pressão arterial, frequência cardíaca, saturação, temperatura, ' +
+      'hemograma, glicemia, colesterol, creatinina, ureia, TGO, TGP, ' +
+      'omeprazol, losartana, metformina, sinvastatina, dipirona, paracetamol, ' +
+      'amoxicilina, azitromicina, prednisona, hidroclorotiazida, atenolol.'
+    );
+
+    // Call OpenAI Whisper API
+    const whisperResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
+      },
+      body: formData,
+    });
+
+    if (!whisperResponse.ok) {
+      const errorText = await whisperResponse.text();
+      console.error('[CONSULTATION-TRANSCRIBE] Whisper API error:', whisperResponse.status, errorText);
+      
+      // Handle specific error cases
+      if (whisperResponse.status === 401) {
+        throw new Error('Chave de API inválida');
+      }
+      if (whisperResponse.status === 429) {
+        throw new Error('Limite de requisições excedido. Tente novamente em alguns segundos.');
+      }
+      
+      throw new Error(`Erro na transcrição: ${whisperResponse.status}`);
+    }
+
+    const whisperResult = await whisperResponse.json();
+    const transcription = whisperResult.text?.trim() || '';
 
     const processingTime = Date.now() - startTime;
     console.log(`[CONSULTATION-TRANSCRIBE] Transcription complete in ${processingTime}ms`);
-    console.log(`[CONSULTATION-TRANSCRIBE] Result preview: ${transcription.substring(0, 100)}...`);
+    console.log(`[CONSULTATION-TRANSCRIBE] Result: "${transcription.substring(0, 150)}${transcription.length > 150 ? '...' : ''}"`);
 
     return new Response(
       JSON.stringify({ 
         text: transcription,
-        processingTime 
+        processingTime,
+        model: 'whisper-1'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
