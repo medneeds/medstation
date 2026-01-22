@@ -42,6 +42,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     isTranscribing,
     isStructuring,
     formattedTime,
+    currentSpeaker,
     processAudioChunk,
     updateStructure,
     changeSpeaker,
@@ -183,7 +184,8 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           <AudioVisualizer 
             level={audioLevel} 
             isActive={isRecording && !isPaused}
-            className="w-40 md:w-56 h-14 md:h-16"
+            currentSpeaker={isRecording && !isPaused ? currentSpeaker : undefined}
+            className="w-48 md:w-64"
           />
         </div>
         
@@ -232,6 +234,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
             <TranscriptionPane
               segments={segments}
               isTranscribing={isTranscribing}
+              isRecording={isRecording && !isPaused}
               onChangeSpeaker={changeSpeaker}
               onDeleteSegment={deleteSegment}
             />
@@ -251,6 +254,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
             <TranscriptionPane
               segments={segments}
               isTranscribing={isTranscribing}
+              isRecording={isRecording && !isPaused}
               onChangeSpeaker={changeSpeaker}
               onDeleteSegment={deleteSegment}
             />
