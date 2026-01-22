@@ -1,15 +1,17 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 
 interface UseContinuousRecordingOptions {
-  onAudioChunk: (audioBlob: Blob) => void;
+  onAudioChunk: (audioBlob: Blob, avgLevel: number) => void;
   onAudioLevel: (level: number) => void;
   chunkIntervalMs?: number;
+  silenceThreshold?: number; // Minimum average level to consider as speech
 }
 
 export function useContinuousRecording({
   onAudioChunk,
   onAudioLevel,
   chunkIntervalMs = 3000,
+  silenceThreshold = 0.02, // ~2% of max level - very sensitive
 }: UseContinuousRecordingOptions) {
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -30,6 +32,10 @@ export function useContinuousRecording({
   const mimeTypeRef = useRef<string>('');
   const recorderOptionsRef = useRef<MediaRecorderOptions>({});
 
+  // Audio level tracking for silence detection
+  const levelSamplesRef = useRef<number[]>([]);
+  const peakLevelRef = useRef<number>(0);
+
   // Stable refs for callbacks to avoid re-creating functions
   const onAudioChunkRef = useRef(onAudioChunk);
   const onAudioLevelRef = useRef(onAudioLevel);
@@ -42,7 +48,7 @@ export function useContinuousRecording({
     onAudioLevelRef.current = onAudioLevel;
   }, [onAudioLevel]);
 
-  // Audio level monitoring
+  // Audio level monitoring with sampling for silence detection
   const updateAudioLevel = useCallback(() => {
     if (!analyserRef.current || isPausedRef.current) {
       onAudioLevelRef.current(0);
@@ -54,6 +60,14 @@ export function useContinuousRecording({
     
     const average = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
     const normalizedLevel = average / 255;
+    
+    // Track samples for averaging over the chunk period
+    levelSamplesRef.current.push(normalizedLevel);
+    
+    // Track peak level
+    if (normalizedLevel > peakLevelRef.current) {
+      peakLevelRef.current = normalizedLevel;
+    }
     
     onAudioLevelRef.current(normalizedLevel);
     
@@ -79,6 +93,9 @@ export function useContinuousRecording({
     }
 
     chunksRef.current = [];
+    // Reset level tracking for this chunk
+    levelSamplesRef.current = [];
+    peakLevelRef.current = 0;
 
     try {
       const recorder = new MediaRecorder(streamRef.current, recorderOptionsRef.current);
@@ -97,9 +114,25 @@ export function useContinuousRecording({
         const blob = new Blob(chunksRef.current, { type: inferredType });
         chunksRef.current = [];
 
-        if (!isPausedRef.current && blob.size > 1000) {
-          console.log(`[ContinuousRecording] Sending chunk: ${blob.size} bytes, type: ${inferredType}`);
-          onAudioChunkRef.current(blob);
+        // Calculate average audio level during this chunk
+        const samples = levelSamplesRef.current;
+        const avgLevel = samples.length > 0 
+          ? samples.reduce((a, b) => a + b, 0) / samples.length 
+          : 0;
+        const peak = peakLevelRef.current;
+        
+        // Reset for next chunk
+        levelSamplesRef.current = [];
+        peakLevelRef.current = 0;
+
+        // Only send if not paused, has minimum size, AND has audio activity
+        const hasSpeech = avgLevel >= silenceThreshold || peak >= silenceThreshold * 2;
+        
+        if (!isPausedRef.current && blob.size > 1000 && hasSpeech) {
+          console.log(`[ContinuousRecording] Sending chunk: ${blob.size} bytes, avgLevel: ${avgLevel.toFixed(3)}, peak: ${peak.toFixed(3)}`);
+          onAudioChunkRef.current(blob, avgLevel);
+        } else if (!isPausedRef.current && blob.size > 1000) {
+          console.log(`[ContinuousRecording] Skipping silent chunk: avgLevel: ${avgLevel.toFixed(3)}, peak: ${peak.toFixed(3)}, threshold: ${silenceThreshold}`);
         }
 
         // Continue with next chunk if still recording

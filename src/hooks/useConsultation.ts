@@ -159,8 +159,41 @@ export function useConsultation({ caseId }: UseConsultationOptions = {}) {
     return { speaker, confidence };
   }, []);
 
-  const processAudioChunk = useCallback(async (audioBlob: Blob) => {
+  // Known Whisper hallucination patterns - these appear when given silence/noise
+  const HALLUCINATION_PATTERNS = [
+    /^\.+$/,                                    // Just dots
+    /^,+$/,                                     // Just commas
+    /^\s*$/,                                    // Empty or whitespace
+    /^(obrigad[oa]|obrigado por assistir)/i,   // "Thanks for watching"
+    /^tchau+\.?$/i,                             // "Bye"
+    /^até\s*(mais|logo|a próxima)/i,           // "See you"
+    /^(legendas|transcrição|tradução)/i,       // Subtitle artifacts
+    /^(música|♪|🎵)/i,                         // Music markers
+    /^inscreva-se/i,                           // "Subscribe"
+    /^(continue|não se esqueça)/i,             // YouTube phrases
+    /^www\./i,                                  // URLs
+    /^@/,                                       // Social handles
+    /^[!?.]{2,}$/,                             // Multiple punctuation only
+    /^(silêncio|\.{3,}|…+)$/i,                 // Silence markers
+    /^(hum+|uhm+|ah+|eh+|mm+)\.?$/i,           // Just filler sounds
+  ];
+
+  const isHallucination = useCallback((text: string): boolean => {
+    const trimmed = text.trim();
+    if (trimmed.length < 3) return true; // Too short to be meaningful
+    if (trimmed.length > 500) return true; // Suspiciously long for 3s chunk
+    
+    return HALLUCINATION_PATTERNS.some(pattern => pattern.test(trimmed));
+  }, []);
+
+  const processAudioChunk = useCallback(async (audioBlob: Blob, avgLevel: number) => {
     if (audioBlob.size < 1000) return; // Skip very small chunks
+    
+    // Extra silence check based on audio level
+    if (avgLevel < 0.01) {
+      console.log('[Consultation] Skipping chunk with very low audio level:', avgLevel);
+      return;
+    }
     
     setIsTranscribing(true);
     pendingTranscriptionsRef.current += 1;
@@ -187,6 +220,13 @@ export function useConsultation({ caseId }: UseConsultationOptions = {}) {
       
       if (data?.text && data.text.trim()) {
         const text = data.text.trim();
+        
+        // Filter out hallucinations
+        if (isHallucination(text)) {
+          console.log('[Consultation] Filtered hallucination:', text);
+          return;
+        }
+        
         const { speaker, confidence } = inferSpeaker(text);
         
         // Update current speaker for visualizer
@@ -217,7 +257,7 @@ export function useConsultation({ caseId }: UseConsultationOptions = {}) {
         resolvers.forEach((r) => r());
       }
     }
-  }, [inferSpeaker]);
+  }, [inferSpeaker, isHallucination]);
 
   const updateStructure = useCallback(async () => {
     if (segments.length === 0) return;
