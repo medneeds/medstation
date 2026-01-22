@@ -10,14 +10,6 @@ interface AudioVisualizerProps {
   className?: string;
 }
 
-// Convert audio level (0-1) to approximate decibels (-60 to 0 dB range)
-function levelToDecibels(level: number): number {
-  if (level <= 0) return -60;
-  // Map 0-1 to -60 to 0 dB (logarithmic scale approximation)
-  const dB = 20 * Math.log10(Math.max(level, 0.001));
-  return Math.max(-60, Math.min(0, dB));
-}
-
 // Get color based on speaker
 function getSpeakerColor(speaker?: SpeakerType) {
   switch (speaker) {
@@ -53,16 +45,15 @@ function getSpeakerColor(speaker?: SpeakerType) {
 }
 
 export function AudioVisualizer({ level, isActive, currentSpeaker, className }: AudioVisualizerProps) {
-  const bars = 20;
-  const decibels = levelToDecibels(level);
+  const bars = 24;
   const speakerColors = getSpeakerColor(currentSpeaker);
   
   // Memoize bar calculations for performance
   const barData = useMemo(() => {
     return Array.from({ length: bars }).map((_, i) => {
       const waveOffset = Math.sin((i / bars) * Math.PI);
-      const secondaryWave = Math.sin((i / bars) * Math.PI * 2) * 0.25;
-      const tertiaryWave = Math.sin((i / bars) * Math.PI * 3) * 0.1;
+      const secondaryWave = Math.sin((i / bars) * Math.PI * 2) * 0.3;
+      const tertiaryWave = Math.sin((i / bars) * Math.PI * 3) * 0.15;
       const combinedOffset = (waveOffset + secondaryWave + tertiaryWave) * 0.5 + 0.5;
       return { combinedOffset, index: i };
     });
@@ -70,132 +61,128 @@ export function AudioVisualizer({ level, isActive, currentSpeaker, className }: 
 
   return (
     <div className={cn(
-      "flex flex-col items-center gap-3",
+      "flex flex-col items-center gap-4",
       className
     )}>
       {/* Main visualizer container */}
       <div className={cn(
-        "relative flex items-center justify-center gap-[2px] h-16 px-6 py-3 rounded-2xl transition-all duration-300",
+        "relative flex items-center justify-center gap-[3px] h-20 px-8 py-4 rounded-2xl transition-all duration-300",
         isActive ? speakerColors.bg : "bg-muted/30",
         isActive && `ring-2 ${speakerColors.ring}`,
-        isActive && level > 0.2 && `shadow-lg ${speakerColors.glow}`
+        isActive && level > 0.15 && `shadow-xl ${speakerColors.glow}`
       )}>
-        {/* Animated bars */}
+        {/* Animated sound wave bars */}
         {barData.map(({ combinedOffset, index }) => {
-          const randomPhase = Math.sin(Date.now() / 80 + index * 0.7) * 0.1;
+          // Create organic wave motion using time-based animation
+          const randomPhase = Math.sin(Date.now() / 60 + index * 0.8) * 0.15;
+          const secondPhase = Math.cos(Date.now() / 100 + index * 0.5) * 0.1;
           const barHeight = isActive 
-            ? Math.max(0.08, (level * 2 * combinedOffset) + randomPhase)
-            : 0.06;
+            ? Math.max(0.1, (level * 2.5 * combinedOffset) + randomPhase + secondPhase)
+            : 0.08 + Math.sin(index * 0.3) * 0.02;
           
           return (
             <motion.div
               key={index}
               animate={{ 
                 scaleY: barHeight,
-                opacity: isActive ? 0.7 + level * 0.3 : 0.3,
+                opacity: isActive ? 0.6 + level * 0.4 : 0.25,
               }}
               transition={{
                 scaleY: {
                   type: "spring",
-                  stiffness: 400,
-                  damping: 20,
+                  stiffness: 350,
+                  damping: 15,
                 },
-                opacity: { duration: 0.15 }
+                opacity: { duration: 0.1 }
               }}
-              className="w-1.5 rounded-full origin-center"
+              className="w-1.5 md:w-2 rounded-full origin-center"
               style={{
                 height: "100%",
-                backgroundColor: isActive ? speakerColors.primary : 'hsl(var(--muted-foreground) / 0.3)',
+                backgroundColor: isActive ? speakerColors.primary : 'hsl(var(--muted-foreground) / 0.25)',
               }}
             />
           );
         })}
         
-        {/* Active indicator pulse */}
+        {/* Pulsing ring indicator when active */}
         <AnimatePresence>
           {isActive && (
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ 
-                scale: [1, 1.05, 1],
-                opacity: [0.3, 0.15, 0.3]
+                scale: [1, 1.03, 1],
+                opacity: [0.4, 0.2, 0.4]
               }}
               exit={{ scale: 0.95, opacity: 0 }}
               transition={{
-                duration: 2,
+                duration: 1.5,
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
               className={cn(
                 "absolute inset-0 rounded-2xl border-2 pointer-events-none",
-                currentSpeaker === 'doctor' && "border-primary/40",
-                currentSpeaker === 'patient' && "border-blue-500/40",
-                currentSpeaker === 'companion' && "border-amber-500/40",
-                !currentSpeaker && "border-primary/40"
+                currentSpeaker === 'doctor' && "border-primary/50",
+                currentSpeaker === 'patient' && "border-blue-500/50",
+                currentSpeaker === 'companion' && "border-amber-500/50",
+                !currentSpeaker && "border-primary/50"
+              )}
+            />
+          )}
+        </AnimatePresence>
+        
+        {/* Glow effect when speaking loudly */}
+        <AnimatePresence>
+          {isActive && level > 0.3 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: level * 0.5 }}
+              exit={{ opacity: 0 }}
+              className={cn(
+                "absolute inset-0 rounded-2xl blur-xl pointer-events-none -z-10",
+                currentSpeaker === 'doctor' && "bg-primary/30",
+                currentSpeaker === 'patient' && "bg-blue-500/30",
+                currentSpeaker === 'companion' && "bg-amber-500/30",
+                !currentSpeaker && "bg-primary/30"
               )}
             />
           )}
         </AnimatePresence>
       </div>
 
-      {/* Decibel indicator */}
-      <div className="flex items-center gap-3">
-        {/* dB meter bar */}
-        <div className="relative w-32 h-2 bg-muted rounded-full overflow-hidden">
-          <motion.div
-            animate={{
-              width: `${Math.max(0, ((decibels + 60) / 60) * 100)}%`
-            }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className={cn(
-              "absolute inset-y-0 left-0 rounded-full",
-              decibels > -10 ? "bg-red-500" :
-              decibels > -25 ? "bg-yellow-500" :
-              "bg-green-500"
-            )}
-          />
-          {/* Peak markers */}
-          <div className="absolute top-0 bottom-0 left-[83%] w-px bg-yellow-500/50" />
-          <div className="absolute top-0 bottom-0 left-[92%] w-px bg-red-500/50" />
-        </div>
-
-        {/* dB value */}
-        <motion.div
-          animate={{ 
-            scale: isActive && level > 0.3 ? [1, 1.05, 1] : 1 
-          }}
-          transition={{ duration: 0.2 }}
-          className={cn(
-            "min-w-[4rem] px-2 py-1 rounded-lg text-center font-mono text-sm font-medium transition-colors",
-            isActive ? speakerColors.bg : "bg-muted/50",
-            decibels > -10 ? "text-red-500" :
-            decibels > -25 ? "text-yellow-600 dark:text-yellow-400" :
-            "text-green-600 dark:text-green-400"
-          )}
-        >
-          {isActive ? `${Math.round(decibels)} dB` : "-- dB"}
-        </motion.div>
-      </div>
-
       {/* Speaker indicator label */}
       <AnimatePresence mode="wait">
-        {isActive && currentSpeaker && (
+        {isActive && (
           <motion.div
-            key={currentSpeaker}
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 5 }}
+            key={currentSpeaker || 'listening'}
+            initial={{ opacity: 0, y: -8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.95 }}
             transition={{ duration: 0.2 }}
             className={cn(
-              "px-3 py-1 rounded-full text-xs font-medium",
-              currentSpeaker === 'doctor' && "bg-primary/20 text-primary",
-              currentSpeaker === 'patient' && "bg-blue-500/20 text-blue-600 dark:text-blue-400",
-              currentSpeaker === 'companion' && "bg-amber-500/20 text-amber-600 dark:text-amber-400"
+              "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium",
+              currentSpeaker === 'doctor' && "bg-primary/15 text-primary",
+              currentSpeaker === 'patient' && "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+              currentSpeaker === 'companion' && "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+              !currentSpeaker && "bg-muted text-muted-foreground"
             )}
           >
-            {currentSpeaker === 'doctor' ? '🩺 Médico falando' :
-             currentSpeaker === 'patient' ? '👤 Paciente falando' :
-             '👥 Acompanhante falando'}
+            <motion.div
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 1, repeat: Infinity }}
+              className={cn(
+                "w-2 h-2 rounded-full",
+                currentSpeaker === 'doctor' && "bg-primary",
+                currentSpeaker === 'patient' && "bg-blue-500",
+                currentSpeaker === 'companion' && "bg-amber-500",
+                !currentSpeaker && "bg-muted-foreground"
+              )}
+            />
+            <span>
+              {currentSpeaker === 'doctor' ? 'Médico falando' :
+               currentSpeaker === 'patient' ? 'Paciente falando' :
+               currentSpeaker === 'companion' ? 'Acompanhante falando' :
+               'Ouvindo...'}
+            </span>
           </motion.div>
         )}
       </AnimatePresence>
