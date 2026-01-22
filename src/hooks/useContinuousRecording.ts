@@ -249,17 +249,75 @@ export function useContinuousRecording({
 
   // Resume recording - start a fresh chunk recorder
   const resumeRecording = useCallback(() => {
-    if (!isRecordingRef.current || !streamRef.current) return;
-    
-    isPausedRef.current = false;
-    setIsPaused(false);
-    
-    // Restart chunking cycle
-    startNewChunkRecorder();
-    
-    // Restart audio level monitoring
-    animationFrameRef.current = requestAnimationFrame(updateAudioLevel);
-  }, [startNewChunkRecorder, updateAudioLevel]);
+    void (async () => {
+      if (!isRecordingRef.current) return;
+
+      // Ensure we don't end up with parallel recorders if the user clicks fast
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        try {
+          mediaRecorderRef.current.stop();
+        } catch {
+          // ignore
+        }
+      }
+
+      isPausedRef.current = false;
+      setIsPaused(false);
+
+      // Some browsers may end the audio track while paused/backgrounded.
+      // If that happens, reacquire the mic stream to keep continuous transcription.
+      const hasLiveTrack = !!streamRef.current?.getAudioTracks().some((t) => t.readyState === 'live');
+
+      if (!hasLiveTrack) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true,
+            },
+          });
+
+          streamRef.current = stream;
+
+          // Recreate / resume audio analysis pipeline
+          if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
+            audioContextRef.current = new AudioContext();
+          }
+
+          if (audioContextRef.current.state === 'suspended') {
+            try {
+              await audioContextRef.current.resume();
+            } catch {
+              // ignore
+            }
+          }
+
+          const source = audioContextRef.current.createMediaStreamSource(stream);
+          analyserRef.current = audioContextRef.current.createAnalyser();
+          analyserRef.current.fftSize = 256;
+          source.connect(analyserRef.current);
+        } catch (err) {
+          console.error('[ContinuousRecording] Error reacquiring mic on resume:', err);
+          setError('Não foi possível retomar o microfone. Verifique as permissões.');
+          stopRecording();
+          return;
+        }
+      } else if (audioContextRef.current?.state === 'suspended') {
+        try {
+          await audioContextRef.current.resume();
+        } catch {
+          // ignore
+        }
+      }
+
+      // Restart chunking cycle
+      startNewChunkRecorder();
+
+      // Restart audio level monitoring
+      animationFrameRef.current = requestAnimationFrame(updateAudioLevel);
+    })();
+  }, [startNewChunkRecorder, stopRecording, updateAudioLevel]);
 
   // Cleanup on unmount
   useEffect(() => {
