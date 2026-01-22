@@ -53,19 +53,33 @@ serve(async (req) => {
     console.log('[CONSULTATION-TRANSCRIBE] Processing audio with OpenAI Whisper...');
     console.log(`[CONSULTATION-TRANSCRIBE] Audio base64 length: ${audio.length}, mimeType: ${clientMimeType || 'not specified'}`);
 
-    // Determine file extension based on MIME type
-    const getFileExtension = (mime: string | undefined): string => {
-      if (!mime) return 'webm';
-      if (mime.includes('mp4') || mime.includes('m4a')) return 'mp4';
-      if (mime.includes('ogg')) return 'ogg';
-      if (mime.includes('wav')) return 'wav';
-      if (mime.includes('mpeg') || mime.includes('mp3')) return 'mp3';
-      if (mime.includes('webm')) return 'webm';
-      return 'webm';
+    // Determine file extension and clean MIME type for Whisper API
+    // Whisper doesn't accept codecs in MIME type (e.g., audio/webm;codecs=opus)
+    const getFileInfo = (mime: string | undefined): { extension: string; cleanMime: string } => {
+      if (!mime) return { extension: 'webm', cleanMime: 'audio/webm' };
+      
+      const lowerMime = mime.toLowerCase();
+      
+      if (lowerMime.includes('mp4') || lowerMime.includes('m4a')) {
+        return { extension: 'mp4', cleanMime: 'audio/mp4' };
+      }
+      if (lowerMime.includes('ogg') || lowerMime.includes('oga')) {
+        return { extension: 'ogg', cleanMime: 'audio/ogg' };
+      }
+      if (lowerMime.includes('wav')) {
+        return { extension: 'wav', cleanMime: 'audio/wav' };
+      }
+      if (lowerMime.includes('mpeg') || lowerMime.includes('mp3') || lowerMime.includes('mpga')) {
+        return { extension: 'mp3', cleanMime: 'audio/mpeg' };
+      }
+      if (lowerMime.includes('flac')) {
+        return { extension: 'flac', cleanMime: 'audio/flac' };
+      }
+      // Default to webm (most common from browsers)
+      return { extension: 'webm', cleanMime: 'audio/webm' };
     };
 
-    const fileExtension = getFileExtension(clientMimeType);
-    const mimeType = clientMimeType || 'audio/webm';
+    const { extension: fileExtension, cleanMime: mimeType } = getFileInfo(clientMimeType);
     console.log(`[CONSULTATION-TRANSCRIBE] Using file extension: ${fileExtension}, MIME: ${mimeType}`);
 
     // Convert base64 to binary
