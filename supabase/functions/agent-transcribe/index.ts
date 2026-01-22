@@ -7,36 +7,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Process base64 in chunks to prevent memory issues
-function processBase64Chunks(base64String: string, chunkSize = 32768): Uint8Array {
-  const chunks: Uint8Array[] = [];
-  let position = 0;
-  
-  while (position < base64String.length) {
-    const chunk = base64String.slice(position, position + chunkSize);
-    const binaryChunk = atob(chunk);
-    const bytes = new Uint8Array(binaryChunk.length);
-    
-    for (let i = 0; i < binaryChunk.length; i++) {
-      bytes[i] = binaryChunk.charCodeAt(i);
-    }
-    
-    chunks.push(bytes);
-    position += chunkSize;
-  }
-
-  const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
-  const result = new Uint8Array(totalLength);
-  let offset = 0;
-
-  for (const chunk of chunks) {
-    result.set(chunk, offset);
-    offset += chunk.length;
-  }
-
-  return result;
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -60,12 +30,13 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const openaiKey = Deno.env.get("OPENAI_API_KEY");
-
-    if (!openaiKey) {
-      console.error("[AGENT-TRANSCRIBE] OPENAI_API_KEY not configured");
+    
+    // Use Lovable AI Gateway - no external API key needed!
+    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
+    if (!lovableApiKey) {
+      console.error("[AGENT-TRANSCRIBE] LOVABLE_API_KEY not configured");
       return new Response(
-        JSON.stringify({ error: "Serviço de transcrição não configurado" }),
+        JSON.stringify({ error: "Serviço de IA não configurado" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -155,65 +126,79 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[AGENT-TRANSCRIBE] Processing audio, context: ${context || 'none'}, clientMimeType: ${clientMimeType || 'not specified'}`);
+    console.log(`[AGENT-TRANSCRIBE] Processing audio with Lovable AI (Gemini), context: ${context || 'none'}, mimeType: ${clientMimeType || 'not specified'}`);
+    console.log(`[AGENT-TRANSCRIBE] Audio base64 length: ${audio.length}`);
 
-    // Process audio from base64
-    const binaryAudio = processBase64Chunks(audio);
-    console.log(`[AGENT-TRANSCRIBE] Audio size: ${binaryAudio.length} bytes`);
-
-    // Determine file extension based on mime type
-    const getMimeTypeInfo = (mime: string | undefined) => {
-      if (!mime) return { type: 'audio/webm', ext: 'webm' };
-      
-      if (mime.includes('mp4') || mime.includes('m4a')) {
-        return { type: 'audio/mp4', ext: 'm4a' };
-      }
-      if (mime.includes('ogg')) {
-        return { type: 'audio/ogg', ext: 'ogg' };
-      }
-      if (mime.includes('wav')) {
-        return { type: 'audio/wav', ext: 'wav' };
-      }
-      // Default to webm
-      return { type: 'audio/webm', ext: 'webm' };
+    // Determine MIME type
+    const getMimeType = (mime: string | undefined): string => {
+      if (!mime) return 'audio/webm';
+      if (mime.includes('mp4') || mime.includes('m4a')) return 'audio/mp4';
+      if (mime.includes('ogg')) return 'audio/ogg';
+      if (mime.includes('wav')) return 'audio/wav';
+      if (mime.includes('mpeg') || mime.includes('mp3')) return 'audio/mpeg';
+      return 'audio/webm';
     };
 
-    const { type: audioType, ext: audioExt } = getMimeTypeInfo(clientMimeType);
-    console.log(`[AGENT-TRANSCRIBE] Using audio type: ${audioType}, extension: ${audioExt}`);
+    const audioMimeType = getMimeType(clientMimeType);
+    console.log(`[AGENT-TRANSCRIBE] Using MIME type: ${audioMimeType}`);
 
-    // Prepare form data for OpenAI Whisper
-    const formData = new FormData();
-    const blob = new Blob([new Uint8Array(binaryAudio).buffer as ArrayBuffer], { type: audioType });
-    formData.append("file", blob, `audio.${audioExt}`);
-    formData.append("model", "whisper-1");
-    formData.append("language", language);
-    formData.append("response_format", "verbose_json");
-    
-    // Add medical prompt for better accuracy
-    const medicalPrompt = `Transcrição médica em português brasileiro. Termos comuns: 
-hemoglobina, hematócrito, leucócitos, plaquetas, creatinina, ureia, sódio, potássio, 
-magnésio, cálcio, PCR, VHS, TGO, TGP, bilirrubina, albumina, glicemia, colesterol, 
-triglicérides, TSH, T4 livre, gasometria arterial, pH, pCO2, pO2, bicarbonato, 
-lactato, saturação, frequência cardíaca, pressão arterial, temperatura.`;
-    
-    formData.append("prompt", medicalPrompt);
+    // Build data URL for Gemini multimodal input
+    const audioDataUrl = `data:${audioMimeType};base64,${audio}`;
 
-    console.log("[AGENT-TRANSCRIBE] Sending to OpenAI Whisper...");
-
-    // Call OpenAI Whisper API
-    const whisperResponse = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+    // Use Gemini for audio transcription via Lovable AI Gateway
+    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${openaiKey}`,
+        "Authorization": `Bearer ${lovableApiKey}`,
+        "Content-Type": "application/json",
       },
-      body: formData,
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          {
+            role: "system",
+            content: `Você é um assistente médico especializado em transcrever áudios clínicos em português brasileiro.
+
+INSTRUÇÕES CRÍTICAS:
+1. Transcreva o áudio EXATAMENTE como foi falado
+2. Preserve todos os termos médicos e técnicos com precisão
+3. Mantenha nomes de medicamentos, dosagens e valores exatos
+4. Use pontuação adequada para refletir pausas e entonações
+5. NÃO adicione interpretações, resumos ou comentários
+6. Retorne APENAS a transcrição
+
+Vocabulário médico comum:
+- Sinais vitais: pressão arterial, frequência cardíaca, saturação, temperatura, glicemia
+- Exames: hemograma, creatinina, ureia, sódio, potássio, TGO, TGP, bilirrubina, TSH, gasometria
+- Medicamentos: omeprazol, losartana, metformina, sinvastatina, AAS, dipirona, paracetamol, ibuprofeno
+- Termos: anamnese, hipótese diagnóstica, conduta, prescrição, evolução, prognóstico`
+          },
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: "Transcreva o áudio a seguir com precisão médica. Retorne APENAS a transcrição, sem comentários:"
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: audioDataUrl
+                }
+              }
+            ]
+          }
+        ],
+        temperature: 0.1, // Low temperature for accuracy
+        max_tokens: 4000,
+      }),
     });
 
-    if (!whisperResponse.ok) {
-      const errorText = await whisperResponse.text();
-      console.error("[AGENT-TRANSCRIBE] Whisper API error:", whisperResponse.status, errorText);
+    if (!aiResponse.ok) {
+      const errorText = await aiResponse.text();
+      console.error("[AGENT-TRANSCRIBE] Lovable AI error:", aiResponse.status, errorText);
       
-      if (whisperResponse.status === 429) {
+      if (aiResponse.status === 429) {
         return new Response(
           JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns segundos." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -226,20 +211,19 @@ lactato, saturação, frequência cardíaca, pressão arterial, temperatura.`;
       );
     }
 
-    const result = await whisperResponse.json();
-    const transcription = result.text || "";
-    const duration = result.duration || 0;
+    const aiResult = await aiResponse.json();
+    const transcription = aiResult.choices?.[0]?.message?.content?.trim() || "";
 
     const processingTime = Date.now() - startTime;
     console.log(`[AGENT-TRANSCRIBE] Transcription complete in ${processingTime}ms`);
-    console.log(`[AGENT-TRANSCRIBE] Duration: ${duration}s, Characters: ${transcription.length}`);
+    console.log(`[AGENT-TRANSCRIBE] Result preview: ${transcription.substring(0, 100)}...`);
 
     return new Response(
       JSON.stringify({
         success: true,
         transcription,
-        duration,
-        language: result.language || language,
+        duration: 0, // Gemini doesn't provide duration
+        language: language,
         processingTime,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
