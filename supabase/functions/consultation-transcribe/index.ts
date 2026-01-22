@@ -97,16 +97,18 @@ serve(async (req) => {
     formData.append('file', audioFile);
     formData.append('model', 'whisper-1');
     formData.append('language', 'pt'); // Portuguese
-    formData.append('response_format', 'json');
-    // Medical vocabulary prompt to improve recognition accuracy
+    formData.append('response_format', 'verbose_json'); // Get more details including no_speech_prob
+    // Temperature 0 = more deterministic, less hallucination
+    formData.append('temperature', '0');
+    // Medical vocabulary prompt - explicit instruction to only transcribe what is said
     formData.append('prompt', 
-      'Transcrição de consulta médica em português brasileiro. ' +
-      'Termos comuns: anamnese, queixa principal, história patológica pregressa, hipótese diagnóstica, ' +
-      'exame físico, ausculta, palpação, inspeção, percussão, ' +
-      'pressão arterial, frequência cardíaca, saturação, temperatura, ' +
-      'hemograma, glicemia, colesterol, creatinina, ureia, TGO, TGP, ' +
-      'omeprazol, losartana, metformina, sinvastatina, dipirona, paracetamol, ' +
-      'amoxicilina, azitromicina, prednisona, hidroclorotiazida, atenolol.'
+      'Transcrição fiel de consulta médica em português brasileiro. ' +
+      'REGRA: transcreva APENAS o que foi dito. Se houver silêncio, não invente texto. ' +
+      'Termos médicos comuns: anamnese, queixa principal, história patológica pregressa, ' +
+      'hipótese diagnóstica, exame físico, ausculta, palpação, inspeção, percussão, ' +
+      'pressão arterial, frequência cardíaca, saturação, temperatura, hemograma, ' +
+      'glicemia, colesterol, creatinina, ureia, TGO, TGP, omeprazol, losartana, ' +
+      'metformina, sinvastatina, dipirona, paracetamol, amoxicilina, azitromicina.'
     );
 
     // Call OpenAI Whisper API
@@ -135,6 +137,24 @@ serve(async (req) => {
 
     const whisperResult = await whisperResponse.json();
     const transcription = whisperResult.text?.trim() || '';
+    
+    // Check for silence probability - Whisper returns this in verbose_json
+    const noSpeechProb = whisperResult.segments?.[0]?.no_speech_prob ?? 0;
+    console.log(`[CONSULTATION-TRANSCRIBE] no_speech_prob: ${noSpeechProb}`);
+    
+    // If high probability of no speech, return empty to avoid hallucinations
+    if (noSpeechProb > 0.7) {
+      console.log('[CONSULTATION-TRANSCRIBE] High no_speech_prob, returning empty');
+      return new Response(
+        JSON.stringify({ 
+          text: '',
+          processingTime: Date.now() - startTime,
+          model: 'whisper-1',
+          noSpeechProb
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const processingTime = Date.now() - startTime;
     console.log(`[CONSULTATION-TRANSCRIBE] Transcription complete in ${processingTime}ms`);
