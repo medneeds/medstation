@@ -23,6 +23,15 @@ export function useContinuousRecording({
   const analyserRef = useRef<AnalyserNode | null>(null);
   const animationFrameRef = useRef<number | null>(null);
 
+  // Chunking strategy
+  // We MUST produce standalone, valid container files per chunk.
+  // Using MediaRecorder timeslice or concatenating small fragments can generate
+  // non-seekable / headerless fragments that Whisper rejects with 400.
+  const chunksRef = useRef<Blob[]>([]);
+  const chunkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isRecordingRef = useRef(false);
+  const isPausedRef = useRef(false);
+
   const updateAudioLevel = useCallback(() => {
     if (!analyserRef.current || isPaused) {
       onAudioLevel(0);
@@ -84,25 +93,66 @@ export function useContinuousRecording({
 
       const mimeType = getSupportedMimeType();
       const recorderOptions: MediaRecorderOptions = mimeType ? { mimeType } : {};
-      
-      // Setup MediaRecorder
-      const mediaRecorder = new MediaRecorder(stream, recorderOptions);
-      console.log(`[ContinuousRecording] MediaRecorder created with mimeType: ${mediaRecorder.mimeType}`);
-      
-      mediaRecorder.ondataavailable = (event) => {
-        // IMPORTANT:
-        // Send each chunk as a standalone Blob directly.
-        // Concatenating many small MediaRecorder fragments can create invalid containers
-        // (e.g., only the first fragment contains headers), which breaks Whisper with 400.
-        if (event.data.size > 0 && !isPaused) onAudioChunk(event.data);
+
+      const clearChunkTimer = () => {
+        if (chunkTimerRef.current) {
+          clearTimeout(chunkTimerRef.current);
+          chunkTimerRef.current = null;
+        }
       };
 
-      mediaRecorderRef.current = mediaRecorder;
-      // Emit a full chunk periodically; this yields a valid container per chunk.
-      mediaRecorder.start(chunkIntervalMs);
+      const startNewRecorder = () => {
+        clearChunkTimer();
+
+        if (!isRecordingRef.current) return;
+        if (isPausedRef.current) return;
+
+        chunksRef.current = [];
+
+        const recorder = new MediaRecorder(stream, recorderOptions);
+        mediaRecorderRef.current = recorder;
+        console.log(`[ContinuousRecording] MediaRecorder started (mimeType: ${recorder.mimeType || 'default'})`);
+
+        recorder.ondataavailable = (event) => {
+          if (event.data.size > 0) chunksRef.current.push(event.data);
+        };
+
+        recorder.onstop = () => {
+          // Build a real file (with container) for Whisper
+          const inferredType =
+            chunksRef.current[0]?.type || recorder.mimeType || mimeType || '';
+          const blob = new Blob(chunksRef.current, { type: inferredType });
+          chunksRef.current = [];
+
+          if (!isPausedRef.current && blob.size > 0) {
+            onAudioChunk(blob);
+          }
+
+          // Continue recording next chunk
+          if (isRecordingRef.current && !isPausedRef.current) {
+            startNewRecorder();
+          }
+        };
+
+        recorder.start();
+
+        // Force-close this chunk after chunkIntervalMs to guarantee headers per chunk.
+        chunkTimerRef.current = setTimeout(() => {
+          try {
+            if (recorder.state === 'recording') recorder.stop();
+          } catch (e) {
+            console.warn('[ContinuousRecording] Failed to stop recorder for chunk boundary', e);
+          }
+        }, chunkIntervalMs);
+      };
       
+      isRecordingRef.current = true;
+      isPausedRef.current = false;
       setIsRecording(true);
       setIsPaused(false);
+
+      // Start first chunk recorder
+      startNewRecorder();
 
       // Start audio level monitoring
       animationFrameRef.current = requestAnimationFrame(updateAudioLevel);
@@ -111,9 +161,16 @@ export function useContinuousRecording({
       console.error('Error starting recording:', err);
       setError('Não foi possível acessar o microfone. Verifique as permissões.');
     }
-  }, [chunkIntervalMs, updateAudioLevel, isPaused, onAudioChunk]);
+  }, [chunkIntervalMs, updateAudioLevel, onAudioChunk]);
 
   const stopRecording = useCallback(() => {
+    isRecordingRef.current = false;
+    isPausedRef.current = false;
+    if (chunkTimerRef.current) {
+      clearTimeout(chunkTimerRef.current);
+      chunkTimerRef.current = null;
+    }
+
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
     }
@@ -144,7 +201,12 @@ export function useContinuousRecording({
   const pauseRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.pause();
+      isPausedRef.current = true;
       setIsPaused(true);
+      if (chunkTimerRef.current) {
+        clearTimeout(chunkTimerRef.current);
+        chunkTimerRef.current = null;
+      }
       onAudioLevel(0);
     }
   }, [onAudioLevel]);
@@ -152,6 +214,7 @@ export function useContinuousRecording({
   const resumeRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'paused') {
       mediaRecorderRef.current.resume();
+      isPausedRef.current = false;
       setIsPaused(false);
       animationFrameRef.current = requestAnimationFrame(updateAudioLevel);
     }
