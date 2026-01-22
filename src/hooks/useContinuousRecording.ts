@@ -21,8 +21,6 @@ export function useContinuousRecording({
   const streamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const chunkIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const animationFrameRef = useRef<number | null>(null);
 
   const updateAudioLevel = useCallback(() => {
@@ -43,20 +41,6 @@ export function useContinuousRecording({
       animationFrameRef.current = requestAnimationFrame(updateAudioLevel);
     }
   }, [isRecording, isPaused, onAudioLevel]);
-
-  const processChunk = useCallback(() => {
-    if (chunksRef.current.length > 0 && !isPaused) {
-      // Preserve the actual mimeType coming from MediaRecorder to avoid mismatches
-      // (important for Safari/iOS where the mimeType may be audio/mp4)
-      const inferredType =
-        chunksRef.current[0]?.type || mediaRecorderRef.current?.mimeType || '';
-      const blob = new Blob(chunksRef.current, { type: inferredType });
-      if (blob.size > 0) {
-        onAudioChunk(blob);
-      }
-      chunksRef.current = [];
-    }
-  }, [onAudioChunk, isPaused]);
 
   const startRecording = useCallback(async () => {
     try {
@@ -106,20 +90,20 @@ export function useContinuousRecording({
       console.log(`[ContinuousRecording] MediaRecorder created with mimeType: ${mediaRecorder.mimeType}`);
       
       mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0 && !isPaused) {
-          chunksRef.current.push(event.data);
-        }
+        // IMPORTANT:
+        // Send each chunk as a standalone Blob directly.
+        // Concatenating many small MediaRecorder fragments can create invalid containers
+        // (e.g., only the first fragment contains headers), which breaks Whisper with 400.
+        if (event.data.size > 0 && !isPaused) onAudioChunk(event.data);
       };
 
       mediaRecorderRef.current = mediaRecorder;
-      mediaRecorder.start(100); // Collect data every 100ms
+      // Emit a full chunk periodically; this yields a valid container per chunk.
+      mediaRecorder.start(chunkIntervalMs);
       
       setIsRecording(true);
       setIsPaused(false);
 
-      // Start chunk interval
-      chunkIntervalRef.current = setInterval(processChunk, chunkIntervalMs);
-      
       // Start audio level monitoring
       animationFrameRef.current = requestAnimationFrame(updateAudioLevel);
 
@@ -127,12 +111,9 @@ export function useContinuousRecording({
       console.error('Error starting recording:', err);
       setError('Não foi possível acessar o microfone. Verifique as permissões.');
     }
-  }, [chunkIntervalMs, processChunk, updateAudioLevel, isPaused]);
+  }, [chunkIntervalMs, updateAudioLevel, isPaused, onAudioChunk]);
 
   const stopRecording = useCallback(() => {
-    // Process any remaining chunks
-    processChunk();
-
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
     }
@@ -147,24 +128,18 @@ export function useContinuousRecording({
       audioContextRef.current = null;
     }
 
-    if (chunkIntervalRef.current) {
-      clearInterval(chunkIntervalRef.current);
-      chunkIntervalRef.current = null;
-    }
-
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
     }
 
-    chunksRef.current = [];
     mediaRecorderRef.current = null;
     analyserRef.current = null;
     
     setIsRecording(false);
     setIsPaused(false);
     onAudioLevel(0);
-  }, [processChunk, onAudioLevel]);
+  }, [onAudioLevel]);
 
   const pauseRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
