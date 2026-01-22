@@ -22,6 +22,7 @@ All colors MUST be HSL.
     --primary: 158 45% 52%;
     --primary-foreground: 0 0% 100%;
     --primary-hover: 158 50% 45%;
+    --primary-rgb: 74, 182, 156;
 
     /* Soft Green Secondary */
     --secondary: 150 25% 96%;
@@ -102,6 +103,7 @@ All colors MUST be HSL.
     --primary: 158 40% 58%;
     --primary-foreground: 160 15% 8%;
     --primary-hover: 158 45% 52%;
+    --primary-rgb: 100, 192, 168;
 
     --secondary: 160 12% 15%;
     --secondary-foreground: 150 15% 75%;

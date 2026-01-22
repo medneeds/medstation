@@ -30,7 +30,13 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-muted/30 to-muted/50">
+    <div className="min-h-screen relative">
+      {/* Full-page gradient background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-primary/8 via-background to-secondary/8 pointer-events-none" />
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(var(--primary-rgb),0.15),transparent)] pointer-events-none" />
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_60%_40%_at_50%_100%,rgba(var(--primary-rgb),0.1),transparent)] pointer-events-none" />
+      
+      <div className="relative z-10">
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/50">
         <div className="container mx-auto px-4 md:px-6 py-3 md:py-4 flex justify-between items-center">
@@ -83,7 +89,6 @@ export default function Home() {
 
       {/* Seção 1: Examinus por MedStation AI */}
       <section id="demo" className="py-6 md:py-8 px-4 md:px-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10"></div>
         <div className="container mx-auto max-w-4xl relative">
           <div className="space-y-6 md:space-y-8 animate-in fade-in duration-700 text-center">
 
@@ -115,8 +120,8 @@ export default function Home() {
       </section>
 
       {/* Seção 2: MedStation AI - Plataforma Completa */}
-      <section id="plataforma" className="py-12 md:py-16 lg:py-20 px-4 md:px-6 bg-gradient-to-br from-muted/40 via-muted/20 to-muted/40 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-primary/5 to-transparent"></div>
+      <section id="plataforma" className="py-12 md:py-16 lg:py-20 px-4 md:px-6 relative overflow-hidden">
+        <div className="absolute inset-0 bg-muted/20 backdrop-blur-3xl"></div>
         
         <div className="container mx-auto max-w-6xl relative">
           <div className="text-center mb-10 md:mb-14 lg:mb-16 space-y-4 md:space-y-5">
@@ -187,7 +192,8 @@ export default function Home() {
       </section>
 
       {/* Planos */}
-      <section id="planos" className="py-12 md:py-20 lg:py-24 px-4 md:px-6 border-y border-border/50 bg-gradient-to-b from-muted/30 via-muted/40 to-muted/30">
+      <section id="planos" className="py-12 md:py-20 lg:py-24 px-4 md:px-6 relative overflow-hidden">
+        <div className="absolute inset-0 bg-muted/30 backdrop-blur-3xl"></div>
         <div className="container mx-auto text-center max-w-5xl">
           <div className="mb-8 md:mb-10 lg:mb-12 space-y-3 md:space-y-4 px-4">
             <Badge variant="secondary" className="backdrop-blur-sm text-xs md:text-sm">
@@ -332,7 +338,6 @@ export default function Home() {
 
       {/* CTA Final */}
       <section id="cadastro" className="py-12 md:py-20 lg:py-24 px-4 md:px-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10"></div>
         <div className="container mx-auto max-w-2xl text-center relative space-y-6 md:space-y-8">
           <div className="space-y-3 md:space-y-4">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight">
@@ -368,7 +373,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 py-6 md:py-8 px-4 md:px-6">
+      <footer className="border-t border-border/50 py-6 md:py-8 px-4 md:px-6 relative">
         <div className="container mx-auto flex flex-col md:flex-row flex-wrap justify-between gap-3 md:gap-4 items-center text-[10px] md:text-xs text-muted-foreground">
           <p>© 2025 MedStation AI</p>
           <p className="flex items-center gap-3 md:gap-4">
@@ -378,6 +383,7 @@ export default function Home() {
           </p>
         </div>
       </footer>
+      </div>
     </div>
   );
 }
