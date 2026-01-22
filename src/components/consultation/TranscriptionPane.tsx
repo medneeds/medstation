@@ -114,13 +114,13 @@ export function TranscriptionPane({
         <AnimatePresence>
           {isTranscribing && (
             <motion.div
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 10 }}
-              className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs text-primary"
+              initial={{ opacity: 0, x: 10, scale: 0.9 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 10, scale: 0.9 }}
+              className="flex items-center gap-1.5 md:gap-2 px-2 py-1 rounded-full bg-primary/10 border border-primary/20"
             >
-              <Sparkles className="h-3 w-3 animate-pulse" />
-              <span>Processando áudio...</span>
+              <Loader2 className="h-3 w-3 animate-spin text-primary" />
+              <span className="text-[10px] md:text-xs font-medium text-primary">Transcrevendo...</span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -203,6 +203,40 @@ export function TranscriptionPane({
                   </motion.div>
                 );
               })}
+              
+              {/* Floating transcribing indicator at bottom */}
+              <AnimatePresence>
+                {isTranscribing && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                    className="flex items-center justify-center gap-2 py-3 px-4 mt-2 rounded-lg bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20"
+                  >
+                    <div className="flex gap-1">
+                      {[0, 1, 2].map((i) => (
+                        <motion.div
+                          key={i}
+                          animate={{ 
+                            scaleY: [1, 1.8, 1],
+                            opacity: [0.5, 1, 0.5]
+                          }}
+                          transition={{ 
+                            duration: 0.6, 
+                            repeat: Infinity,
+                            delay: i * 0.15
+                          }}
+                          className="w-1 h-3 bg-primary rounded-full"
+                        />
+                      ))}
+                    </div>
+                    <span className="text-xs font-medium text-primary">
+                      Transcrevendo áudio...
+                    </span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              
               <div ref={endRef} />
             </div>
           )}
