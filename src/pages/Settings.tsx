@@ -18,6 +18,7 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { AdminUserManagement } from "@/components/AdminUserManagement";
 
 const BRAZILIAN_STATES = [
   "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG",
@@ -42,6 +43,7 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [userId, setUserId] = useState<string>("");
   const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
@@ -67,6 +69,7 @@ export default function Settings() {
 
   useEffect(() => {
     fetchProfile();
+    checkAdminRole();
   }, []);
 
   const fetchProfile = async () => {
@@ -116,6 +119,24 @@ export default function Settings() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkAdminRole = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase.rpc("has_role", {
+        _user_id: user.id,
+        _role: "admin",
+      });
+
+      if (!error && data) {
+        setIsAdmin(true);
+      }
+    } catch (error) {
+      console.error("Error checking admin role:", error);
     }
   };
 
@@ -451,6 +472,9 @@ export default function Settings() {
           )}
         </CardContent>
       </Card>
+
+      {/* Administração - Somente para admins */}
+      {isAdmin && <AdminUserManagement />}
 
       {/* Foto de Perfil */}
       <Card>
