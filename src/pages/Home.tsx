@@ -31,10 +31,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen relative">
-      {/* Full-page gradient background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-primary/8 via-background to-secondary/8 pointer-events-none" />
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(var(--primary-rgb),0.15),transparent)] pointer-events-none" />
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_60%_40%_at_50%_100%,rgba(var(--primary-rgb),0.1),transparent)] pointer-events-none" />
+      {/* Full-page gradient background - amplo e intenso */}
+      <div className="fixed inset-0 bg-gradient-to-br from-primary/12 via-background to-primary/8 pointer-events-none" />
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_120%_80%_at_50%_-10%,rgba(var(--primary-rgb),0.25),transparent)] pointer-events-none" />
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_100%_60%_at_50%_0%,rgba(var(--primary-rgb),0.18),transparent)] pointer-events-none" />
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_100%,rgba(var(--primary-rgb),0.12),transparent)] pointer-events-none" />
       
       <div className="relative z-10">
       {/* Header */}
