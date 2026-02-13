@@ -962,7 +962,116 @@ export function AgentChat({
 
       {/* Input area */}
       <div className="border-t pt-3 md:pt-4">
-        <div className="flex gap-1.5 md:gap-2">
+        {/* Mobile: Examinus toggles row above input */}
+        {isMobile && agentType === "examinus" && (
+          <div className="flex items-center gap-1.5 mb-2 overflow-x-auto pb-1 -mx-1 px-1">
+            <Toggle
+              pressed={usePipeSeparator}
+              onPressedChange={setUsePipeSeparator}
+              size="sm"
+              className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-primary/20"
+              title="Separar com |"
+            >
+              <SeparatorVertical className="w-3 h-3 mr-1" />
+              <span>|</span>
+            </Toggle>
+            <div className="flex items-center gap-1 px-2 py-0.5 bg-muted/50 rounded-full h-7 shrink-0">
+              <Switch
+                id="include-time-mobile-agent"
+                checked={includeTime}
+                onCheckedChange={setIncludeTime}
+                className="data-[state=checked]:bg-primary scale-75"
+              />
+              <Label htmlFor="include-time-mobile-agent" className="text-[10px] cursor-pointer flex items-center gap-0.5">
+                <Clock className="w-2.5 h-2.5" />
+                Hora
+              </Label>
+            </div>
+            <Toggle
+              pressed={onlyAltered}
+              onPressedChange={setOnlyAltered}
+              size="sm"
+              className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-amber-500/20 data-[state=on]:text-amber-600 dark:data-[state=on]:text-amber-400"
+              title="Só alterados"
+            >
+              <AlertTriangle className="w-3 h-3 mr-1" />
+              <span>Alterados</span>
+            </Toggle>
+            <Toggle
+              pressed={clinicalImpression}
+              onPressedChange={setClinicalImpression}
+              size="sm"
+              className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-blue-500/20 data-[state=on]:text-blue-600 dark:data-[state=on]:text-blue-400"
+              title="Impressão clínica"
+            >
+              <Stethoscope className="w-3 h-3 mr-1" />
+              <span>Impressão</span>
+            </Toggle>
+          </div>
+        )}
+
+        {/* Mobile: Other agent toggles row */}
+        {isMobile && agentType === "clinicus" && (
+          <div className="flex items-center gap-1.5 mb-2">
+            <Toggle
+              pressed={directAHEMode}
+              onPressedChange={setDirectAHEMode}
+              size="sm"
+              className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-primary/20 gap-1"
+              title="Modo AHE"
+            >
+              <FileDown className="h-3 w-3" />
+              <span>AHE</span>
+            </Toggle>
+          </div>
+        )}
+        {isMobile && agentType === "prescriptus" && (
+          <div className="flex items-center gap-1.5 mb-2">
+            <Toggle
+              pressed={bulaInteligenteMode}
+              onPressedChange={setBulaInteligenteMode}
+              size="sm"
+              className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-primary/20 gap-1"
+              title="Modo B.I."
+            >
+              <Pill className="h-3 w-3" />
+              <span>B.I.</span>
+            </Toggle>
+          </div>
+        )}
+        {isMobile && agentType === "gasometrus" && (
+          <div className="flex items-center gap-1.5 mb-2">
+            <Toggle
+              pressed={directLIMode}
+              onPressedChange={setDirectLIMode}
+              size="sm"
+              className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-primary/20 gap-1"
+              title="Modo L.I."
+            >
+              <ListChecks className="h-3 w-3" />
+              <span>L.I.</span>
+            </Toggle>
+          </div>
+        )}
+
+        {/* Input row */}
+        <div className="flex gap-1.5 md:gap-2 items-center">
+          {isMobile && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="shrink-0 h-9 w-9 rounded-full hover:bg-primary/10"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingFile}
+              title="Anexar arquivo"
+            >
+              {uploadingFile ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Paperclip className="h-4 w-4 text-primary" />
+              )}
+            </Button>
+          )}
           {!isMobile && (
             <Button 
               variant="outline" 
@@ -979,7 +1088,8 @@ export function AgentChat({
               )}
             </Button>
           )}
-          {agentType === "clinicus" && (
+          {/* Desktop-only agent toggles inline */}
+          {!isMobile && agentType === "clinicus" && (
             <Toggle
               pressed={directAHEMode}
               onPressedChange={setDirectAHEMode}
@@ -988,10 +1098,10 @@ export function AgentChat({
               title="Modo AHE: gerar anamnese hospitalar estruturada diretamente"
             >
               <FileDown className="h-4 w-4" />
-              <span className="text-xs hidden sm:inline">AHE</span>
+              <span className="text-xs">AHE</span>
             </Toggle>
           )}
-          {agentType === "prescriptus" && (
+          {!isMobile && agentType === "prescriptus" && (
             <Toggle
               pressed={bulaInteligenteMode}
               onPressedChange={setBulaInteligenteMode}
@@ -1000,10 +1110,10 @@ export function AgentChat({
               title="Modo B.I.: Bula Inteligente - resposta estruturada sobre medicamento"
             >
               <Pill className="h-4 w-4" />
-              <span className="text-xs hidden sm:inline">B.I.</span>
+              <span className="text-xs">B.I.</span>
             </Toggle>
           )}
-          {agentType === "gasometrus" && (
+          {!isMobile && agentType === "gasometrus" && (
             <Toggle
               pressed={directLIMode}
               onPressedChange={setDirectLIMode}
@@ -1012,10 +1122,10 @@ export function AgentChat({
               title="Modo L.I.: Leitura Sistemática - análise objetiva focada"
             >
               <ListChecks className="h-4 w-4" />
-              <span className="text-xs hidden sm:inline">L.I.</span>
+              <span className="text-xs">L.I.</span>
             </Toggle>
           )}
-          {agentType === "examinus" && (
+          {!isMobile && agentType === "examinus" && (
             <>
               <Toggle
                 pressed={usePipeSeparator}
@@ -1046,7 +1156,7 @@ export function AgentChat({
                 title="Mostrar apenas resultados alterados/críticos"
               >
                 <AlertTriangle className="h-4 w-4" />
-                <span className="text-xs hidden sm:inline ml-1">Alterados</span>
+                <span className="text-xs ml-1">Alterados</span>
               </Toggle>
               <Toggle
                 pressed={clinicalImpression}
@@ -1056,7 +1166,7 @@ export function AgentChat({
                 title="Impressão clínica: análise das alterações laboratoriais"
               >
                 <Stethoscope className="h-4 w-4" />
-                <span className="text-xs hidden sm:inline ml-1">Impressão</span>
+                <span className="text-xs ml-1">Impressão</span>
               </Toggle>
             </>
           )}
@@ -1082,7 +1192,7 @@ export function AgentChat({
             onClick={sendMessage}
             disabled={!message.trim() || isLoading}
             size="icon"
-            className="shrink-0"
+            className="shrink-0 h-9 w-9 md:h-10 md:w-10 rounded-full md:rounded-md"
             title="Enviar mensagem"
           >
             {isLoading ? (
