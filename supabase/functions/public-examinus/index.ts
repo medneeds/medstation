@@ -154,7 +154,7 @@ ${includeTime ? 'DD/MM HH:MM' : 'DD/MM'}: [exames na ordem abaixo, separados por
 ORDEM DE APRESENTAÇÃO (prioridade clínica, incluir somente os presentes no texto):
 1. Data${includeTime ? ' e hora' : ''}
 2. Hemograma: Hb, Ht, Leuco (com diferencial se disponível: Seg, Bast, Linf, Mon, Eos, Baso), Pqt
-3. Função renal: Cr, Ur, TFG
+3. Função renal: Ur, Cr, TFG
 4. Eletrólitos: Na, K, Cl, Ca, Cai (cálcio iônico), Mg, P
 5. Glicemia, Lactato
 6. Inflamatórios/infecciosos: PCR, PCT (procalcitonina), VHS, Ferritina, DHL
@@ -187,8 +187,8 @@ REGRA CRÍTICA: Se um exame está no texto mas NÃO aparece na lista acima, incl
 
 EXEMPLO COMPLETO:
 ${usePipeSeparator 
-  ? `${includeTime ? '20/11 14:30' : '20/11'}: Hb 12,5 | Ht 37,2 | Leuco 14.320 | Pqt 180.000 | Cr 1,23 | Ur 45 | Na 138 | K 4,2 | Cl 102 | Ca 9,1 | Mg 1,8 | P 3,5 | Glicemia 126 | Lactato 2,1 | PCR 58,3 | TP 14,2 (RNI 1,15) | TTPa 28,5 | Troponina 0,04 | TGO 28 | TGP 32 | Albumina 3,2\n(Gaso): pH 7,35 | PCO₂ 38 | PO₂ 92 | HCO₃ 22 | BE -2,1 | SatO₂ 96% | Lactato 1,8`
-  : `${includeTime ? '20/11 14:30' : '20/11'}: Hb 12,5 Ht 37,2 Leuco 14.320 Pqt 180.000 Cr 1,23 Ur 45 Na 138 K 4,2 Cl 102 Ca 9,1 Mg 1,8 P 3,5 Glicemia 126 Lactato 2,1 PCR 58,3 TP 14,2 (RNI 1,15) TTPa 28,5 Troponina 0,04 TGO 28 TGP 32 Albumina 3,2\n(Gaso): pH 7,35 PCO₂ 38 PO₂ 92 HCO₃ 22 BE -2,1 SatO₂ 96% Lactato 1,8`}
+  ? `${includeTime ? '20/11 14:30' : '20/11'}: Hb 12,5 | Ht 37,2 | Leuco 14.320 | Pqt 180.000 | Ur 45 | Cr 1,23 | TFG 85 | Na 138 | K 4,2 | Cl 102 | Ca 9,1 | Mg 1,8 | P 3,5 | Glicemia 126 | Lactato 2,1 | PCR 58,3 | TP 14,2 (RNI 1,15) | TTPa 28,5 | Troponina 0,04 | TGO 28 | TGP 32 | Albumina 3,2\n(Gaso): pH 7,35 | PCO₂ 38 | PO₂ 92 | HCO₃ 22 | BE -2,1 | SatO₂ 96% | Lactato 1,8`
+  : `${includeTime ? '20/11 14:30' : '20/11'}: Hb 12,5 Ht 37,2 Leuco 14.320 Pqt 180.000 Ur 45 Cr 1,23 TFG 85 Na 138 K 4,2 Cl 102 Ca 9,1 Mg 1,8 P 3,5 Glicemia 126 Lactato 2,1 PCR 58,3 TP 14,2 (RNI 1,15) TTPa 28,5 Troponina 0,04 TGO 28 TGP 32 Albumina 3,2\n(Gaso): pH 7,35 PCO₂ 38 PO₂ 92 HCO₃ 22 BE -2,1 SatO₂ 96% Lactato 1,8`}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🖼 LSI - IMAGEM
