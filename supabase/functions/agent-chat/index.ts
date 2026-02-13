@@ -106,7 +106,7 @@ serve(async (req) => {
 
     console.log(`Rate limit check passed for user ${user.id}`);
 
-    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, bulaInteligenteMode, directLIMode } = await req.json();
+    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, bulaInteligenteMode, directLIMode, onlyAltered } = await req.json();
 
     // Validate input
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -444,6 +444,20 @@ EXEMPLO:
 19/11 10:45 (TC Crânio): Hipodensidade em território de ACM esquerda compatível com AVCi recente
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${onlyAltered ? `⚠️ MODO ALTERADOS ATIVADO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+REGRA: Exibir SOMENTE resultados FORA dos valores de referência normais.
+• Omitir completamente qualquer exame dentro da normalidade
+• Marcar com ↑ valores acima do normal e ↓ valores abaixo do normal
+• Manter a mesma ordem e formatação dos exames
+• Se TODOS os resultados forem normais, responder: "Todos os resultados dentro dos valores de referência."
+• Para gasometria: incluir apenas parâmetros alterados
+• Para exames de imagem: comportamento não muda (já exibe só anormais)
+
+Exemplo: 20/11 14:30: Hb 9,2↓ Leuco 18.500↑ Cr 2,45↑ K 5,8↑ PCR 120,3↑ Lactato 4,2↑
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━` : ''}
 
 COMPORTAMENTO:
 • Identifico automaticamente LSL ou LSI

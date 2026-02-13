@@ -7,7 +7,7 @@ import { AudioPlayer } from "@/components/AudioPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
 import { exportAgentConversationToPDF } from "@/utils/pdfExport";
 import { AgentVoiceInput } from "@/components/AgentVoiceInput";
 import { 
@@ -122,6 +122,7 @@ export function AgentChat({
   const [uploadingFile, setUploadingFile] = useState(false);
   const [usePipeSeparator, setUsePipeSeparator] = useState(false);
   const [includeTime, setIncludeTime] = useState(true);
+  const [onlyAltered, setOnlyAltered] = useState(false);
   const [directAHEMode, setDirectAHEMode] = useState(false);
   const [bulaInteligenteMode, setBulaInteligenteMode] = useState(false);
   const [directLIMode, setDirectLIMode] = useState(false);
@@ -357,7 +358,7 @@ export function AgentChat({
           })),
           agentType,
           caseId: selectedCaseId,
-          ...(agentType === "examinus" && { usePipeSeparator, includeTime }),
+          ...(agentType === "examinus" && { usePipeSeparator, includeTime, onlyAltered }),
           ...(agentType === "clinicus" && { directAHEMode }),
           ...(agentType === "prescriptus" && { bulaInteligenteMode }),
           ...(agentType === "gasometrus" && { directLIMode })
@@ -1036,6 +1037,16 @@ export function AgentChat({
                   Horário
                 </Label>
               </div>
+              <Toggle
+                pressed={onlyAltered}
+                onPressedChange={setOnlyAltered}
+                size="sm"
+                className="shrink-0 data-[state=on]:bg-amber-500/20 data-[state=on]:text-amber-600 dark:data-[state=on]:text-amber-400"
+                title="Mostrar apenas resultados alterados/críticos"
+              >
+                <AlertTriangle className="h-4 w-4" />
+                <span className="text-xs hidden sm:inline ml-1">Alterados</span>
+              </Toggle>
             </>
           )}
           <Input
