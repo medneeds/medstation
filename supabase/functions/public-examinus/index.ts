@@ -22,7 +22,7 @@ serve(async (req) => {
     }
 
     // Parse request body first to get fingerprint
-    const { messages, fileContent, usePipeSeparator, includeTime = true, fingerprint, onlyAltered } = await req.json();
+    const { messages, fileContent, usePipeSeparator, includeTime = true, fingerprint, onlyAltered, clinicalImpression } = await req.json();
 
     // Get client IP for rate limiting
     const clientIp = req.headers.get("x-forwarded-for") || 
@@ -219,6 +219,31 @@ REGRA: Exibir SOMENTE resultados FORA dos valores de referência normais.
 • Para exames de imagem: comportamento não muda (já exibe só anormais)
 
 Exemplo: ${includeTime ? '20/11 14:30' : '20/11'}: Hb 9,2↓ ${usePipeSeparator ? '| ' : ''}Leuco 18.500↑ ${usePipeSeparator ? '| ' : ''}Cr 2,45↑ ${usePipeSeparator ? '| ' : ''}K 5,8↑ ${usePipeSeparator ? '| ' : ''}PCR 120,3↑ ${usePipeSeparator ? '| ' : ''}Lactato 4,2↑
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━` : ''}
+${clinicalImpression ? `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🩺 MODO IMPRESSÃO CLÍNICA ATIVADO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+REGRA: Após apresentar os exames formatados normalmente, adicione uma seção "IMPRESSÃO CLÍNICA" com análise objetiva.
+
+ESTRUTURA DA IMPRESSÃO:
+1. Primeiro: apresente os exames formatados normalmente (com todas as regras de formatação LSL/LSI)
+2. Depois, em nova linha, adicione:
+
+IMPRESSÃO CLÍNICA
+
+• Liste APENAS as alterações encontradas, agrupadas por sistema/relevância
+• Para cada alteração: cite o exame, o valor, a direção (↑/↓) e a possível significância clínica
+• Correlacione achados quando pertinente (ex: Cr elevada + K elevado = possível IRA)
+• Sugira diagnósticos diferenciais baseados no conjunto de alterações
+• Indique exames complementares que possam ser úteis
+• NÃO repita valores normais na impressão
+• Mantenha linguagem técnica, objetiva e concisa
+• Se todos os exames forem normais: "Exames dentro dos parâmetros de normalidade. Sem alterações que demandem intervenção imediata."
+
+FORMATAÇÃO: Sem asteriscos, sem markdown. Títulos em CAIXA ALTA. Bullet points com •
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━` : ''}
 
