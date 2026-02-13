@@ -146,18 +146,26 @@ Exemplo: ${usePipeSeparator
 🧪 LSL - LABORATORIAIS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-ESTRUTURA (linha única):
-${usePipeSeparator 
-  ? `${includeTime ? 'DD/MM HH:MM' : 'DD/MM'}: Hb X,X | Ht X,X | Leuco X.XXX | Pqt XXX.XXX | Cr X,XX | Ur XX | Na XXX | K X,X | Ca X,X | PCR XX | TP XX,X (RNI X,XX) | TTPa XX` 
-  : `${includeTime ? 'DD/MM HH:MM' : 'DD/MM'}: Hb X,X Ht X,X Leuco X.XXX Pqt XXX.XXX Cr X,XX Ur XX Na XXX K X,X Ca X,X PCR XX TP XX,X (RNI X,XX) TTPa XX`}
+REGRA FUNDAMENTAL: Extraia TODOS os exames laboratoriais presentes no texto, sem exceção. Se o exame existe no texto, ele DEVE aparecer na saída formatada.
 
-ORDEM OBRIGATÓRIA:
+ESTRUTURA (linha única, incluir APENAS exames presentes):
+${includeTime ? 'DD/MM HH:MM' : 'DD/MM'}: [exames na ordem abaixo, separados por ${usePipeSeparator ? '" | "' : 'espaço'}]
+
+ORDEM DE APRESENTAÇÃO (incluir somente os presentes no texto):
 1. Data${includeTime ? ' e hora' : ''}
-2. Hemograma (Hb, Ht, Leuco, Pqt)
-3. Função renal (Cr, Ur)
-4. Eletrólitos (Na, K, Ca)
-5. Inflamatórios (PCR)
-6. Coagulação (TP com RNI, TTPa)
+2. Hemograma: Hb, Ht, Leuco (com diferencial se disponível: Seg, Bast, Linf, Mon, Eos, Baso), Pqt
+3. Função renal: Cr, Ur, TFG
+4. Eletrólitos: Na, K, Ca, Cai (cálcio iônico), Mg, P, Cl
+5. Função hepática: TGO, TGP, GGT, FA, BT (BD, BI), Albumina, Proteínas totais
+6. Perfil lipídico: CT, HDL, LDL, TG
+7. Glicemia e metabolismo: Glicemia, HbA1c, Insulina, Lactato, Ácido úrico
+8. Inflamatórios/infecciosos: PCR, VHS, PCT (procalcitonina), Ferritina, DHL
+9. Coagulação: TP (RNI), TTPa, Fibrinogênio, D-dímero
+10. Função tireoidiana: TSH, T4L, T3
+11. Cardíacos: Troponina, BNP, NT-proBNP, CK, CK-MB
+12. Função pancreática: Amilase, Lipase
+13. Gasometria: pH, PCO2, PO2, HCO3, BE, SatO2, Lactato
+14. Outros: Ferro sérico, Transferrina, Sat. transferrina, Vitamina B12, Ácido fólico, 25-OH-vitamina D, PTH, Cortisol, LDH, Haptoglobina, Reticulócitos, Coombs, Beta-HCG, PSA, CEA, CA-125, AFP, e QUALQUER outro exame laboratorial presente
 
 FORMATAÇÃO NUMÉRICA:
 • Vírgula decimal (NUNCA ponto)
@@ -169,12 +177,17 @@ ${usePipeSeparator ? '• SEPARADOR: Use " | " (espaço barra espaço) entre cad
 
 EXAMES ESPECIAIS (nova linha):
 (EAS): SÓ ANORMAIS - Leucócitos 50-100/campo, Hemácias 10-20/campo
+(Urocultura): Agente isolado e antibiograma resumido
+(Hemocultura): Agente isolado e antibiograma resumido
+(Líquor): Cel, Prot, Glic, Cultura
 (Gaso): pH 7,35 PCO₂ 38 PO₂ 92 HCO₃ 22 BE -2,1 SatO₂ 96% Lactato 1,8
+
+REGRA CRÍTICA: Se um exame está no texto mas NÃO aparece na lista acima, inclua-o mesmo assim ao final da linha, usando a abreviatura mais comum. NUNCA omita um resultado presente no texto original.
 
 EXEMPLO COMPLETO:
 ${usePipeSeparator 
-  ? `${includeTime ? '20/11 14:30' : '20/11'}: Hb 12,5 | Ht 37,2 | Leuco 14.320 | Pqt 180.000 | Cr 1,23 | Ur 45 | Na 138 | K 4,2 | PCR 58,3 | TP 14,2 (RNI 1,15) | TTPa 28,5\n(Gaso): pH 7,35 | PCO₂ 38 | PO₂ 92 | HCO₃ 22 | BE -2,1 | SatO₂ 96% | Lactato 1,8`
-  : `${includeTime ? '20/11 14:30' : '20/11'}: Hb 12,5 Ht 37,2 Leuco 14.320 Pqt 180.000 Cr 1,23 Ur 45 Na 138 K 4,2 PCR 58,3 TP 14,2 (RNI 1,15) TTPa 28,5\n(Gaso): pH 7,35 PCO₂ 38 PO₂ 92 HCO₃ 22 BE -2,1 SatO₂ 96% Lactato 1,8`}
+  ? `${includeTime ? '20/11 14:30' : '20/11'}: Hb 12,5 | Ht 37,2 | Leuco 14.320 | Pqt 180.000 | Cr 1,23 | Ur 45 | Na 138 | K 4,2 | Ca 9,1 | Mg 1,8 | P 3,5 | TGO 28 | TGP 32 | Albumina 3,2 | PCR 58,3 | TP 14,2 (RNI 1,15) | TTPa 28,5\n(Gaso): pH 7,35 | PCO₂ 38 | PO₂ 92 | HCO₃ 22 | BE -2,1 | SatO₂ 96% | Lactato 1,8`
+  : `${includeTime ? '20/11 14:30' : '20/11'}: Hb 12,5 Ht 37,2 Leuco 14.320 Pqt 180.000 Cr 1,23 Ur 45 Na 138 K 4,2 Ca 9,1 Mg 1,8 P 3,5 TGO 28 TGP 32 Albumina 3,2 PCR 58,3 TP 14,2 (RNI 1,15) TTPa 28,5\n(Gaso): pH 7,35 PCO₂ 38 PO₂ 92 HCO₃ 22 BE -2,1 SatO₂ 96% Lactato 1,8`}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🖼 LSI - IMAGEM
