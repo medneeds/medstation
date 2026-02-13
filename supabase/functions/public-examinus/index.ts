@@ -22,7 +22,7 @@ serve(async (req) => {
     }
 
     // Parse request body first to get fingerprint
-    const { messages, fileContent, usePipeSeparator, includeTime = true, fingerprint } = await req.json();
+    const { messages, fileContent, usePipeSeparator, includeTime = true, fingerprint, onlyAltered } = await req.json();
 
     // Get client IP for rate limiting
     const clientIp = req.headers.get("x-forwarded-for") || 
@@ -207,6 +207,20 @@ EXEMPLO:
 ${includeTime ? '19/11 10:45' : '19/11'} (TC Crânio): Hipodensidade em território de ACM esquerda compatível com AVCi recente
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${onlyAltered ? `⚠️ MODO ALTERADOS ATIVADO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+REGRA: Exibir SOMENTE resultados FORA dos valores de referência normais.
+• Omitir completamente qualquer exame dentro da normalidade
+• Marcar com ↑ valores acima do normal e ↓ valores abaixo do normal
+• Manter a mesma ordem e formatação dos exames
+• Se TODOS os resultados forem normais, responder: "Todos os resultados dentro dos valores de referência."
+• Para gasometria: incluir apenas parâmetros alterados
+• Para exames de imagem: comportamento não muda (já exibe só anormais)
+
+Exemplo: ${includeTime ? '20/11 14:30' : '20/11'}: Hb 9,2↓ ${usePipeSeparator ? '| ' : ''}Leuco 18.500↑ ${usePipeSeparator ? '| ' : ''}Cr 2,45↑ ${usePipeSeparator ? '| ' : ''}K 5,8↑ ${usePipeSeparator ? '| ' : ''}PCR 120,3↑ ${usePipeSeparator ? '| ' : ''}Lactato 4,2↑
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━` : ''}
 
 COMPORTAMENTO:
 • Identifico automaticamente LSL ou LSI

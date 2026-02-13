@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Sparkles, ArrowRight, Copy, Check, FileUp, Upload, X, Image as ImageIcon, SeparatorVertical, Clock } from "lucide-react";
+import { Loader2, Send, Sparkles, ArrowRight, Copy, Check, FileUp, Upload, X, Image as ImageIcon, SeparatorVertical, Clock, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -135,6 +135,7 @@ export default function PublicExaminusChat() {
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [usePipeSeparator, setUsePipeSeparator] = useState(false);
   const [includeTime, setIncludeTime] = useState(true);
+  const [onlyAltered, setOnlyAltered] = useState(false);
   const [fingerprint, setFingerprint] = useState<string>("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -233,6 +234,7 @@ export default function PublicExaminusChat() {
           fileContent,
           usePipeSeparator,
           includeTime,
+          onlyAltered,
           fingerprint
         }
       });
@@ -529,6 +531,16 @@ export default function PublicExaminusChat() {
                   Horário
                 </Label>
               </div>
+              <Toggle
+                pressed={onlyAltered}
+                onPressedChange={setOnlyAltered}
+                size="sm"
+                className="h-7 px-2 text-xs rounded-full data-[state=on]:bg-amber-500/20 data-[state=on]:text-amber-600 dark:data-[state=on]:text-amber-400"
+                title="Apenas alterados"
+              >
+                <AlertTriangle className="w-3 h-3 mr-1" />
+                <span>Alterados</span>
+              </Toggle>
             </div>
             {/* Input row */}
             <div className="flex gap-2 items-end">
@@ -598,6 +610,16 @@ export default function PublicExaminusChat() {
                   Incluir horário
                 </Label>
               </div>
+              <Toggle
+                pressed={onlyAltered}
+                onPressedChange={setOnlyAltered}
+                size="sm"
+                className="h-8 px-3 rounded-full data-[state=on]:bg-amber-500/20 data-[state=on]:text-amber-600 dark:data-[state=on]:text-amber-400"
+                title="Mostrar apenas resultados alterados/críticos"
+              >
+                <AlertTriangle className="w-4 h-4 mr-2" />
+                <span className="text-xs">Só alterados</span>
+              </Toggle>
             </div>
 
             {/* Input Row */}
