@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Sparkles, ArrowRight, Copy, Check, FileUp, Upload, X, Image as ImageIcon, SeparatorVertical, Clock, AlertTriangle } from "lucide-react";
+import { Loader2, Send, Sparkles, ArrowRight, Copy, Check, FileUp, Upload, X, Image as ImageIcon, SeparatorVertical, Clock, AlertTriangle, Stethoscope } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -136,6 +136,7 @@ export default function PublicExaminusChat() {
   const [usePipeSeparator, setUsePipeSeparator] = useState(false);
   const [includeTime, setIncludeTime] = useState(true);
   const [onlyAltered, setOnlyAltered] = useState(false);
+  const [clinicalImpression, setClinicalImpression] = useState(false);
   const [fingerprint, setFingerprint] = useState<string>("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -235,6 +236,7 @@ export default function PublicExaminusChat() {
           usePipeSeparator,
           includeTime,
           onlyAltered,
+          clinicalImpression,
           fingerprint
         }
       });
@@ -541,6 +543,16 @@ export default function PublicExaminusChat() {
                 <AlertTriangle className="w-3 h-3 mr-1" />
                 <span>Alterados</span>
               </Toggle>
+              <Toggle
+                pressed={clinicalImpression}
+                onPressedChange={setClinicalImpression}
+                size="sm"
+                className="h-7 px-2 text-xs rounded-full data-[state=on]:bg-blue-500/20 data-[state=on]:text-blue-600 dark:data-[state=on]:text-blue-400"
+                title="Impressão clínica"
+              >
+                <Stethoscope className="w-3 h-3 mr-1" />
+                <span>Impressão</span>
+              </Toggle>
             </div>
             {/* Input row */}
             <div className="flex gap-2 items-end">
@@ -619,6 +631,16 @@ export default function PublicExaminusChat() {
               >
                 <AlertTriangle className="w-4 h-4 mr-2" />
                 <span className="text-xs">Só alterados</span>
+              </Toggle>
+              <Toggle
+                pressed={clinicalImpression}
+                onPressedChange={setClinicalImpression}
+                size="sm"
+                className="h-8 px-3 rounded-full data-[state=on]:bg-blue-500/20 data-[state=on]:text-blue-600 dark:data-[state=on]:text-blue-400"
+                title="Impressão clínica: análise das alterações laboratoriais"
+              >
+                <Stethoscope className="w-4 h-4 mr-2" />
+                <span className="text-xs">Impressão clínica</span>
               </Toggle>
             </div>
 
