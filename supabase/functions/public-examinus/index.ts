@@ -22,7 +22,7 @@ serve(async (req) => {
     }
 
     // Parse request body first to get fingerprint
-    const { messages, fileContent, usePipeSeparator, includeTime = true, fingerprint, onlyAltered, clinicalImpression } = await req.json();
+    const { messages, fileContent, usePipeSeparator, includeTime = true, fingerprint, onlyAltered, clinicalImpression, compactMode } = await req.json();
 
     // Get client IP for rate limiting
     const clientIp = req.headers.get("x-forwarded-for") || 
@@ -153,7 +153,9 @@ ${includeTime ? 'DD/MM HH:MM' : 'DD/MM'}: [exames na ordem abaixo, separados por
 
 ORDEM DE APRESENTAÇÃO (prioridade clínica, incluir somente os presentes no texto):
 1. Data${includeTime ? ' e hora' : ''}
-2. Hemograma: Hb, Ht, Leuco (com diferencial se disponível: Seg, Bast, Linf, Mon, Eos, Baso), Pqt
+${compactMode 
+  ? '2. Hemograma: APENAS Hb, Ht, Leuco (total, SEM diferencial), Pqt — OMITIR COMPLETAMENTE: VCM, HCM, CHCM, RDW, eritrócitos, reticulócitos e qualquer outro índice hematimétrico'
+  : '2. Hemograma: Hb, Ht, Leuco (com diferencial se disponível: Seg, Bast, Linf, Mon, Eos, Baso), Pqt'}
 3. Função renal: Ur, Cr, TFG
 4. Eletrólitos: Na, K, Cl, Ca, Cai (cálcio iônico), Mg, P
 5. Glicemia, Lactato
