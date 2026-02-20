@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Sparkles, ArrowRight, Copy, Check, FileUp, Upload, X, Image as ImageIcon, SeparatorVertical, Clock, AlertTriangle, Stethoscope } from "lucide-react";
+import { Loader2, Send, Sparkles, ArrowRight, Copy, Check, FileUp, Upload, X, Image as ImageIcon, SeparatorVertical, Clock, AlertTriangle, Stethoscope, Minimize2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -137,6 +137,7 @@ export default function PublicExaminusChat() {
   const [includeTime, setIncludeTime] = useState(true);
   const [onlyAltered, setOnlyAltered] = useState(false);
   const [clinicalImpression, setClinicalImpression] = useState(false);
+  const [compactMode, setCompactMode] = useState(false);
   const [fingerprint, setFingerprint] = useState<string>("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -237,6 +238,7 @@ export default function PublicExaminusChat() {
           includeTime,
           onlyAltered,
           clinicalImpression,
+          compactMode,
           fingerprint
         }
       });
@@ -553,6 +555,16 @@ export default function PublicExaminusChat() {
                 <Stethoscope className="w-3 h-3 mr-0.5" />
                 <span>Impressão</span>
               </Toggle>
+              <Toggle
+                pressed={compactMode}
+                onPressedChange={setCompactMode}
+                size="sm"
+                className="h-7 px-2 text-[11px] rounded-full shrink-0 data-[state=on]:bg-green-500/20 data-[state=on]:text-green-600 dark:data-[state=on]:text-green-400"
+                title="Versão compacta: sem índices hematimétricos"
+              >
+                <Minimize2 className="w-3 h-3 mr-0.5" />
+                <span>Compacto</span>
+              </Toggle>
             </div>
             {/* Input row */}
             <div className="flex gap-2 items-end">
@@ -641,6 +653,16 @@ export default function PublicExaminusChat() {
               >
                 <Stethoscope className="w-4 h-4 mr-2" />
                 <span className="text-xs">Impressão clínica</span>
+              </Toggle>
+              <Toggle
+                pressed={compactMode}
+                onPressedChange={setCompactMode}
+                size="sm"
+                className="h-8 px-3 rounded-full data-[state=on]:bg-green-500/20 data-[state=on]:text-green-600 dark:data-[state=on]:text-green-400"
+                title="Versão compacta: omite índices hematimétricos (VCM, HCM, CHCM, RDW)"
+              >
+                <Minimize2 className="w-4 h-4 mr-2" />
+                <span className="text-xs">Compacto</span>
               </Toggle>
             </div>
 
