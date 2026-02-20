@@ -394,10 +394,10 @@ ORDEM DE APRESENTAÇÃO (prioridade clínica, incluir somente os presentes no te
 1. Data e hora
 2. Hemograma: Hb, Ht, Leuco (com diferencial se disponível: Seg, Bast, Linf, Mon, Eos, Baso), Pqt
 3. Função renal: Ur, Cr, TFG
-4. Eletrólitos: Na, K, Cl, Ca, Cai (cálcio iônico), Mg, P
-5. Glicemia, Lactato
-6. Inflamatórios/infecciosos: PCR, PCT (procalcitonina), VHS, Ferritina, DHL
-7. Coagulação: TP (RNI), TTPa, Fibrinogênio, D-dímero
+4. Eletrólitos: Na, K, Ca, Cai (cálcio iônico), Mg, P, Cl
+5. Coagulação: TP (RNI), TTPa, Fibrinogênio, D-dímero
+6. Glicemia, Lactato
+7. Inflamatórios/infecciosos: PCR, PCT (procalcitonina), VHS, Ferritina, DHL
 8. Marcadores cardíacos: Troponina, BNP, NT-proBNP, CK, CK-MB
 9. Função hepática: TGO, TGP, GGT, FA, BT (BD, BI), Albumina, Proteínas totais
 10. Função pancreática: Amilase, Lipase
