@@ -112,6 +112,75 @@ serve(async (req) => {
         });
     }
 
+    // Pre-build dynamic sections to avoid nested template literal issues
+    const sep = usePipeSeparator ? ' | ' : ' ';
+    const datePrefix = includeTime ? '16/02 08:00' : '16/02';
+    const datePrefixFull = includeTime ? '20/11 14:30' : '20/11';
+    const structureLine = includeTime ? 'DD/MM HH:MM' : 'DD/MM';
+    const directStart1 = includeTime ? '20/11 14:30: Hb 12,5...' : '20/11: Hb 12,5...';
+    const directStart2 = includeTime ? '19/11 10:45 (TC Crânio): Hipodensidade...' : '19/11 (TC Crânio): Hipodensidade...';
+    const separatorRule = usePipeSeparator ? 'Use barra vertical " | " (com espaços) para separar cada parâmetro do exame.' : 'Separe parâmetros apenas com espaço.';
+    const separatorExample = usePipeSeparator 
+      ? (includeTime ? '20/11 14:30: Hb 12,5 | Ht 37,2' : '20/11: Hb 12,5 | Ht 37,2')
+      : (includeTime ? '20/11 14:30: Hb 12,5 Ht 37,2' : '20/11: Hb 12,5 Ht 37,2');
+    const timeRule = includeTime 
+      ? 'SEMPRE incluir horário no formato HH:MM após a data'
+      : '⛔ NUNCA incluir horário (HH:MM). Use APENAS a data DD/MM seguida de dois pontos. Exemplo: 27/11: (e NÃO 27/11 08:36:)';
+
+    const hemogramaLine = compactMode
+      ? '2. Hemograma: APENAS Hb, Ht, Leuco (total, SEM diferencial), Pqt — OMITIR COMPLETAMENTE: VCM, HCM, CHCM, RDW, eritrócitos, reticulócitos e qualquer outro índice hematimétrico'
+      : '2. Hemograma: Hb, Ht, Leuco (com diferencial se disponível: Seg, Bast, Linf, Mon, Eos, Baso), Pqt';
+
+    const compactExample = [datePrefix + ':', 'Hb 10,80', 'Ht 32,70', 'Leuco 17.800', 'Pqt 163.000', 'Ur 36,51', 'Cr 0,48', 'Na 139', 'K 2,68', 'Ca 7,87', 'Mg 1,78', 'P 1,43', 'TP 16,1 (RNI 1,31)', 'TTPa 25,0'].join(sep);
+    const fullExample = [datePrefixFull + ':', 'Hb 12,5', 'Ht 37,2', 'Leuco 14.320', 'Pqt 180.000', 'Ur 45', 'Cr 1,23', 'TFG 85', 'Na 138', 'K 4,2', 'Ca 9,1', 'Mg 1,8', 'P 3,5', 'Cl 102', 'TP 14,2 (RNI 1,15)', 'TTPa 28,5', 'Glicemia 126', 'Lactato 2,1', 'PCR 58,3', 'Troponina 0,04', 'TGO 28', 'TGP 32', 'Albumina 3,2'].join(sep) + '\n(Gaso): ' + ['pH 7,35', 'PCO₂ 38', 'PO₂ 92', 'HCO₃ 22', 'BE -2,1', 'SatO₂ 96%', 'Lactato 1,8'].join(sep);
+
+    const exampleSection = compactMode 
+      ? 'MODO COMPACTO ATIVADO — REGRAS OBRIGATÓRIAS:\n• Do hemograma, incluir SOMENTE: Hb, Ht, Leuco (total), Pqt\n• PROIBIDO incluir: VCM, HCM, CHCM, RDW, eritrócitos, reticulócitos, diferencial leucocitário (Seg, Bast, Linf, Mon, Eos, Baso)\n• A ordem EXATA da linha deve ser: Hb → Ht → Leuco → Pqt → Ur → Cr → Na → K → Ca → Mg → P → TP (RNI) → TTPa → [demais presentes]\n• EXEMPLO COMPACTO:\n' + compactExample
+      : 'EXEMPLO COMPLETO:\n' + fullExample;
+
+    const lsiExample = includeTime ? '19/11 10:45' : '19/11';
+
+    const alteredSection = onlyAltered ? `⚠️ MODO ALTERADOS ATIVADO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+REGRA: Exibir SOMENTE resultados FORA dos valores de referência normais.
+• Omitir completamente qualquer exame dentro da normalidade
+• Marcar com ↑ valores acima do normal e ↓ valores abaixo do normal
+• Manter a mesma ordem e formatação dos exames
+• Se TODOS os resultados forem normais, responder: "Todos os resultados dentro dos valores de referência."
+• Para gasometria: incluir apenas parâmetros alterados
+• Para exames de imagem: comportamento não muda (já exibe só anormais)
+
+Exemplo: ${datePrefixFull}: Hb 9,2↓ ${usePipeSeparator ? '| ' : ''}Leuco 18.500↑ ${usePipeSeparator ? '| ' : ''}Cr 2,45↑ ${usePipeSeparator ? '| ' : ''}K 5,8↑ ${usePipeSeparator ? '| ' : ''}PCR 120,3↑ ${usePipeSeparator ? '| ' : ''}Lactato 4,2↑
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━` : '';
+
+    const impressionSection = clinicalImpression ? `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🩺 MODO IMPRESSÃO CLÍNICA ATIVADO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+REGRA: Após apresentar os exames formatados normalmente, adicione uma seção "IMPRESSÃO CLÍNICA" com análise objetiva.
+
+ESTRUTURA DA IMPRESSÃO:
+1. Primeiro: apresente os exames formatados normalmente (com todas as regras de formatação LSL/LSI)
+2. Depois, em nova linha, adicione:
+
+IMPRESSÃO CLÍNICA
+
+• Liste APENAS as alterações encontradas, agrupadas por sistema/relevância
+• Para cada alteração: cite o exame, o valor, a direção (↑/↓) e a possível significância clínica
+• Correlacione achados quando pertinente (ex: Cr elevada + K elevado = possível IRA)
+• Sugira diagnósticos diferenciais baseados no conjunto de alterações
+• Indique exames complementares que possam ser úteis
+• NÃO repita valores normais na impressão
+• Mantenha linguagem técnica, objetiva e concisa
+• Se todos os exames forem normais: "Exames dentro dos parâmetros de normalidade. Sem alterações que demandem intervenção imediata."
+
+FORMATAÇÃO: Sem asteriscos, sem markdown. Títulos em CAIXA ALTA. Bullet points com •
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━` : '';
+
     // System prompt for public Examinus demo
     const systemPrompt = `EXAMINUS AI - EXTRATOR DE EXAMES MÉDICOS
 
@@ -128,19 +197,15 @@ NUNCA ESCREVER INTRODUÇÕES
 Qualquer texto explicativo
 
 ✅ SEMPRE começar DIRETO com:
-${includeTime ? '20/11 14:30: Hb 12,5...' : '20/11: Hb 12,5...'} (para LSL)
-${includeTime ? '19/11 10:45 (TC Crânio): Hipodensidade...' : '19/11 (TC Crânio): Hipodensidade...'} (para LSI)
+${directStart1} (para LSL)
+${directStart2} (para LSI)
 
 ⚠️ REGRA CRÍTICA DE HORÁRIO:
-${includeTime 
-  ? 'SEMPRE incluir horário no formato HH:MM após a data'
-  : '⛔ NUNCA incluir horário (HH:MM). Use APENAS a data DD/MM seguida de dois pontos. Exemplo: 27/11: (e NÃO 27/11 08:36:)'}
+${timeRule}
 
 💡 OPÇÃO DE ORGANIZAÇÃO:
-${usePipeSeparator ? 'Use barra vertical " | " (com espaços) para separar cada parâmetro do exame.' : 'Separe parâmetros apenas com espaço.'}
-Exemplo: ${usePipeSeparator 
-  ? (includeTime ? '20/11 14:30: Hb 12,5 | Ht 37,2' : '20/11: Hb 12,5 | Ht 37,2')
-  : (includeTime ? '20/11 14:30: Hb 12,5 Ht 37,2' : '20/11: Hb 12,5 Ht 37,2')}
+${separatorRule}
+Exemplo: ${separatorExample}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🧪 LSL - LABORATORIAIS
@@ -149,13 +214,11 @@ Exemplo: ${usePipeSeparator
 REGRA FUNDAMENTAL: Extraia TODOS os exames laboratoriais presentes no texto, sem exceção. Se o exame existe no texto, ele DEVE aparecer na saída formatada.
 
 ESTRUTURA (linha única, incluir APENAS exames presentes):
-${includeTime ? 'DD/MM HH:MM' : 'DD/MM'}: [exames na ordem abaixo, separados por ${usePipeSeparator ? '" | "' : 'espaço'}]
+${structureLine}: [exames na ordem abaixo, separados por ${usePipeSeparator ? '" | "' : 'espaço'}]
 
 ORDEM DE APRESENTAÇÃO (prioridade clínica, incluir somente os presentes no texto):
 1. Data${includeTime ? ' e hora' : ''}
-${compactMode 
-  ? '2. Hemograma: APENAS Hb, Ht, Leuco (total, SEM diferencial), Pqt — OMITIR COMPLETAMENTE: VCM, HCM, CHCM, RDW, eritrócitos, reticulócitos e qualquer outro índice hematimétrico'
-  : '2. Hemograma: Hb, Ht, Leuco (com diferencial se disponível: Seg, Bast, Linf, Mon, Eos, Baso), Pqt'}
+${hemogramaLine}
 3. Função renal: Ur, Cr, TFG
 4. Eletrólitos: Na, K, Ca, Cai (cálcio iônico), Mg, P, Cl
 5. Coagulação: TP (RNI), TTPa, Fibrinogênio, D-dímero
@@ -187,17 +250,14 @@ EXAMES ESPECIAIS (nova linha, na ordem de relevância clínica):
 
 REGRA CRÍTICA: Se um exame está no texto mas NÃO aparece na lista acima, inclua-o mesmo assim ao final da linha, usando a abreviatura mais comum. NUNCA omita um resultado presente no texto original.
 
-EXEMPLO COMPLETO:
-${usePipeSeparator 
-  ? `${includeTime ? '20/11 14:30' : '20/11'}: Hb 12,5 | Ht 37,2 | Leuco 14.320 | Pqt 180.000 | Ur 45 | Cr 1,23 | TFG 85 | Na 138 | K 4,2 | Cl 102 | Ca 9,1 | Mg 1,8 | P 3,5 | Glicemia 126 | Lactato 2,1 | PCR 58,3 | TP 14,2 (RNI 1,15) | TTPa 28,5 | Troponina 0,04 | TGO 28 | TGP 32 | Albumina 3,2\n(Gaso): pH 7,35 | PCO₂ 38 | PO₂ 92 | HCO₃ 22 | BE -2,1 | SatO₂ 96% | Lactato 1,8`
-  : `${includeTime ? '20/11 14:30' : '20/11'}: Hb 12,5 Ht 37,2 Leuco 14.320 Pqt 180.000 Ur 45 Cr 1,23 TFG 85 Na 138 K 4,2 Cl 102 Ca 9,1 Mg 1,8 P 3,5 Glicemia 126 Lactato 2,1 PCR 58,3 TP 14,2 (RNI 1,15) TTPa 28,5 Troponina 0,04 TGO 28 TGP 32 Albumina 3,2\n(Gaso): pH 7,35 PCO₂ 38 PO₂ 92 HCO₃ 22 BE -2,1 SatO₂ 96% Lactato 1,8`}
+${exampleSection}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🖼 LSI - IMAGEM
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ESTRUTURA:
-${includeTime ? 'DD/MM HH:MM' : 'DD/MM'} (TIPO DE EXAME): ACHADOS ANORMAIS
+${structureLine} (TIPO DE EXAME): ACHADOS ANORMAIS
 
 REGRAS:
 ✅ SÓ relatar anormais (ignorar normalidade)
@@ -206,48 +266,11 @@ REGRAS:
 ❌ Condensar em descrição objetiva
 
 EXEMPLO:
-${includeTime ? '19/11 10:45' : '19/11'} (TC Crânio): Hipodensidade em território de ACM esquerda compatível com AVCi recente
+${lsiExample} (TC Crânio): Hipodensidade em território de ACM esquerda compatível com AVCi recente
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${onlyAltered ? `⚠️ MODO ALTERADOS ATIVADO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-REGRA: Exibir SOMENTE resultados FORA dos valores de referência normais.
-• Omitir completamente qualquer exame dentro da normalidade
-• Marcar com ↑ valores acima do normal e ↓ valores abaixo do normal
-• Manter a mesma ordem e formatação dos exames
-• Se TODOS os resultados forem normais, responder: "Todos os resultados dentro dos valores de referência."
-• Para gasometria: incluir apenas parâmetros alterados
-• Para exames de imagem: comportamento não muda (já exibe só anormais)
-
-Exemplo: ${includeTime ? '20/11 14:30' : '20/11'}: Hb 9,2↓ ${usePipeSeparator ? '| ' : ''}Leuco 18.500↑ ${usePipeSeparator ? '| ' : ''}Cr 2,45↑ ${usePipeSeparator ? '| ' : ''}K 5,8↑ ${usePipeSeparator ? '| ' : ''}PCR 120,3↑ ${usePipeSeparator ? '| ' : ''}Lactato 4,2↑
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━` : ''}
-${clinicalImpression ? `
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🩺 MODO IMPRESSÃO CLÍNICA ATIVADO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-REGRA: Após apresentar os exames formatados normalmente, adicione uma seção "IMPRESSÃO CLÍNICA" com análise objetiva.
-
-ESTRUTURA DA IMPRESSÃO:
-1. Primeiro: apresente os exames formatados normalmente (com todas as regras de formatação LSL/LSI)
-2. Depois, em nova linha, adicione:
-
-IMPRESSÃO CLÍNICA
-
-• Liste APENAS as alterações encontradas, agrupadas por sistema/relevância
-• Para cada alteração: cite o exame, o valor, a direção (↑/↓) e a possível significância clínica
-• Correlacione achados quando pertinente (ex: Cr elevada + K elevado = possível IRA)
-• Sugira diagnósticos diferenciais baseados no conjunto de alterações
-• Indique exames complementares que possam ser úteis
-• NÃO repita valores normais na impressão
-• Mantenha linguagem técnica, objetiva e concisa
-• Se todos os exames forem normais: "Exames dentro dos parâmetros de normalidade. Sem alterações que demandem intervenção imediata."
-
-FORMATAÇÃO: Sem asteriscos, sem markdown. Títulos em CAIXA ALTA. Bullet points com •
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━` : ''}
+${alteredSection}
+${impressionSection}
 
 COMPORTAMENTO:
 • Identifico automaticamente LSL ou LSI
