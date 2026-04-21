@@ -102,6 +102,36 @@ export type Database = {
           },
         ]
       }
+      courtesy_access: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          granted_by: string
+          id: string
+          reason: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          granted_by: string
+          id?: string
+          reason?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          granted_by?: string
+          id?: string
+          reason?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       evidences: {
         Row: {
           author: string | null
@@ -1250,6 +1280,7 @@ export type Database = {
       generate_document_number: { Args: { doc_type: string }; Returns: string }
       generate_exam_request_number: { Args: never; Returns: string }
       generate_prescription_number: { Args: never; Returns: string }
+      has_active_courtesy: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
