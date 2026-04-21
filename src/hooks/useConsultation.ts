@@ -56,7 +56,7 @@ export function useConsultation({ caseId }: UseConsultationOptions = {}) {
   const [currentSpeaker, setCurrentSpeaker] = useState<SpeakerType>('doctor');
   
   const lastSpeakerRef = useRef<SpeakerType>('doctor');
-  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Track pending transcription jobs so we can safely "finalize" only after all chunks are processed
   const pendingTranscriptionsRef = useRef(0);
