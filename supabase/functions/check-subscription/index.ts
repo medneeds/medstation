@@ -63,6 +63,32 @@ serve(async (req) => {
       });
     }
 
+    // Check for active courtesy access (manual grant by admin)
+    const { data: hasCourtesy } = await supabaseClient.rpc('has_active_courtesy', {
+      _user_id: user.id,
+    });
+
+    if (hasCourtesy) {
+      logStep("User has active courtesy access, granting full access");
+      // Get expiration date if any
+      const { data: courtesyData } = await supabaseClient
+        .from('courtesy_access')
+        .select('expires_at')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      return new Response(JSON.stringify({
+        subscribed: true,
+        product_ids: ['courtesy'],
+        subscription_end: courtesyData?.expires_at || null,
+        has_agents: true,
+        has_studius: true,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     
