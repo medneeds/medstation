@@ -69,11 +69,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       });
     } catch (error) {
       console.error("[SubscriptionContext] Error checking subscription:", error);
-      // On error, don't block access - assume subscribed if there was an API error
-      // This prevents paying customers from being locked out due to temporary issues
-      setSubscribed(false);
-      setHasAgents(false);
-      setHasStudius(false);
+      // On transient error, do NOT downgrade an already-granted access state.
+      // This prevents paying customers from being temporarily locked out due to network/API hiccups.
+      // Access state will be re-evaluated on next successful check (auto-refresh every 60s).
     } finally {
       setLoading(false);
     }
