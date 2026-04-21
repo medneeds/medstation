@@ -39,6 +39,7 @@ import MedicalDocuments from "@/pages/MedicalDocuments";
 import MedicalDocumentDetail from "@/pages/MedicalDocumentDetail";
 import StudiusIndex from "@/pages/studius/StudiusIndex";
 import Settings from "./pages/Settings";
+import AdminSubscribers from "./pages/AdminSubscribers";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
