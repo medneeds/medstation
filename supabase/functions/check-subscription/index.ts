@@ -82,15 +82,19 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    // Get ALL active subscriptions (user can have multiple)
-    // Note: Cannot use deep expand (>4 levels), so product will be a string ID
+    // Get ALL subscriptions (active, trialing, past_due) to be more lenient
+    // past_due users are typically given a grace period to update payment
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
-      status: "active",
-      limit: 10,
+      status: "all",
+      limit: 20,
     });
     
-    const hasActiveSub = subscriptions.data.length > 0;
+    // Consider these statuses as "subscribed" (with grace for payment issues)
+    const validStatuses = ["active", "trialing", "past_due"];
+    const validSubs = subscriptions.data.filter((s) => validStatuses.includes(s.status));
+    
+    const hasActiveSub = validSubs.length > 0;
     const productIds: string[] = [];
     let subscriptionEnd: string | null = null;
 
@@ -99,11 +103,18 @@ serve(async (req) => {
     const STUDIUS_PRODUCT_ID = "prod_TgR45WSvugMwLt"; // Studius AI
 
     if (hasActiveSub) {
-      logStep("Processing active subscriptions", { count: subscriptions.data.length });
+      logStep("Processing valid subscriptions", { 
+        count: validSubs.length,
+        statuses: validSubs.map(s => s.status)
+      });
       
-      // Collect all product IDs from all active subscriptions
-      for (const subscription of subscriptions.data) {
-        logStep("Processing subscription", { subscriptionId: subscription.id, itemsCount: subscription.items.data.length });
+      // Collect all product IDs from all valid subscriptions
+      for (const subscription of validSubs) {
+        logStep("Processing subscription", { 
+          subscriptionId: subscription.id, 
+          status: subscription.status,
+          itemsCount: subscription.items.data.length 
+        });
         
         for (const item of subscription.items.data) {
           // item.price.product is always a string ID when not using expand
@@ -128,9 +139,12 @@ serve(async (req) => {
           }
         }
       }
-      logStep("Active subscriptions processed", { productIds, subscriptionEnd });
+      logStep("Valid subscriptions processed", { productIds, subscriptionEnd });
     } else {
-      logStep("No active subscription found");
+      logStep("No valid subscription found", { 
+        totalSubs: subscriptions.data.length,
+        allStatuses: subscriptions.data.map(s => s.status)
+      });
     }
 
     // Determine access levels
