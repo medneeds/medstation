@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Loader2, AlertTriangle, Stethoscope } from "lucide-react";
 import { exportAgentConversationToPDF } from "@/utils/pdfExport";
+import { pdfToImages } from "@/utils/pdfToImages";
 import { AgentVoiceInput } from "@/components/AgentVoiceInput";
 import { 
   Send, 
