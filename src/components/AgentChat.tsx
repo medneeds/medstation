@@ -1103,7 +1103,7 @@ export function AgentChat({
               className="shrink-0"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadingFile}
-              title="Anexar arquivo (PDF, DOCX, PPTX, XLSX, TXT, MD)"
+              title="Anexar foto, PDF ou documento (imagem, PDF, DOCX, PPTX, XLSX, TXT, MD)"
             >
               {uploadingFile ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
