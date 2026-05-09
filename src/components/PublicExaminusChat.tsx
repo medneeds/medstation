@@ -132,8 +132,10 @@ export default function PublicExaminusChat() {
   const [remainingMessages, setRemainingMessages] = useState<number | null>(null);
   const [usedCount, setUsedCount] = useState<number>(0);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [filePreviews, setFilePreviews] = useState<string[]>([]);
+  const [extractedText, setExtractedText] = useState<string>("");
+  const [isExtracting, setIsExtracting] = useState(false);
   const [usePipeSeparator, setUsePipeSeparator] = useState(false);
   const [includeTime, setIncludeTime] = useState(true);
   const [onlyAltered, setOnlyAltered] = useState(false);
