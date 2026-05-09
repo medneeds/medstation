@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Loader2, AlertTriangle, Stethoscope } from "lucide-react";
 import { exportAgentConversationToPDF } from "@/utils/pdfExport";
+import { pdfToImages } from "@/utils/pdfToImages";
 import { AgentVoiceInput } from "@/components/AgentVoiceInput";
 import { 
   Send, 
@@ -585,90 +586,158 @@ export function AgentChat({
     }
   };
 
+  const ocrImage = async (
+    base64: string,
+    mimeType: string,
+    fileName: string
+  ): Promise<string> => {
+    const { data, error } = await supabase.functions.invoke('extract-file-text', {
+      body: { file: base64, fileName, mimeType },
+    });
+    if (error || !data?.text) {
+      throw new Error(error?.message || `Erro ao extrair ${fileName}`);
+    }
+    return data.text as string;
+  };
+
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
   const processFiles = async (files: File[]) => {
     setUploadingFile(true);
-    
+
     try {
+      const sections: string[] = [];
+      const imageFiles: File[] = [];
+
+      // First pass: separate images for parallel batch OCR; handle PDFs/docs/text sequentially
       for (const file of files) {
         const fileExtension = file.name.split('.').pop()?.toLowerCase();
-        const supportedDocFormats = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'];
         const isImage = file.type.startsWith('image/');
         const isPdf = file.type === 'application/pdf' || fileExtension === 'pdf';
+        const supportedDocFormats = ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'];
 
-        let fileContent = '';
+        if (isImage) {
+          imageFiles.push(file);
+          continue;
+        }
 
-        if (isImage || isPdf) {
-          // Image or PDF: OCR via extract-file-text
+        if (isPdf) {
           toast({
-            title: isImage ? "Lendo imagem" : "Processando PDF",
-            description: `Extraindo conteúdo de ${file.name}...`,
+            title: "Processando PDF",
+            description: `Renderizando páginas de ${file.name}...`,
           });
 
-          const base64 = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
+          const pages = await pdfToImages(file, { scale: 2, maxPages: 30 });
+
+          toast({
+            title: "Lendo páginas",
+            description: `OCR em ${pages.length} página${pages.length > 1 ? 's' : ''} de ${file.name}...`,
           });
 
-          const { data, error } = await supabase.functions.invoke('extract-file-text', {
-            body: {
-              file: base64,
-              fileName: file.name,
-              mimeType: file.type || (isPdf ? 'application/pdf' : 'image/jpeg'),
-            },
+          // Parallel OCR per page (limit concurrency to 4)
+          const results: string[] = new Array(pages.length).fill('');
+          const concurrency = 4;
+          let cursor = 0;
+          const workers = Array.from({ length: Math.min(concurrency, pages.length) }, async () => {
+            while (cursor < pages.length) {
+              const idx = cursor++;
+              const p = pages[idx];
+              try {
+                results[idx] = await ocrImage(p.base64, p.mimeType, `${file.name}-p${p.pageNumber}.jpg`);
+              } catch (err: any) {
+                console.error(`OCR page ${p.pageNumber} failed:`, err);
+                results[idx] = `[Erro ao processar página ${p.pageNumber}]`;
+              }
+            }
           });
+          await Promise.all(workers);
 
-          if (error || !data?.text) {
-            throw new Error(error?.message || 'Erro ao extrair conteúdo');
-          }
+          const pdfText = pages
+            .map((p, i) => `===== PÁGINA ${p.pageNumber} =====\n${results[i].trim()}`)
+            .join('\n\n');
 
-          fileContent = data.text;
-        } else if (supportedDocFormats.includes(fileExtension || '')) {
+          sections.push(`📎 ${file.name} (${pages.length} página${pages.length > 1 ? 's' : ''})\n\n${pdfText}`);
+          continue;
+        }
+
+        if (supportedDocFormats.includes(fileExtension || '')) {
           toast({
             title: "Processando documento",
             description: `Extraindo conteúdo de ${file.name}...`,
           });
-
-          const base64 = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-          });
-
+          const base64 = await fileToBase64(file);
           const { data, error } = await supabase.functions.invoke('process-document', {
-            body: {
-              file: base64,
-              fileName: file.name,
-              mimeType: file.type,
-            },
+            body: { file: base64, fileName: file.name, mimeType: file.type },
           });
-
-          if (error || !data?.text) {
-            throw new Error('Erro ao processar documento');
-          }
-
-          fileContent = data.text;
-        } else if (fileExtension === 'txt' || fileExtension === 'md') {
-          fileContent = await file.text();
-        } else {
-          toast({
-            title: "Formato não suportado",
-            description: `O formato .${fileExtension} não é suportado. Use imagens, PDF, DOCX, PPTX, XLSX, TXT ou MD.`,
-            variant: "destructive",
-          });
+          if (error || !data?.text) throw new Error('Erro ao processar documento');
+          sections.push(`📎 ${file.name}\n\n${data.text}`);
           continue;
         }
-        
-        // Add file content as a message
-        const fileMessage = `📎 Arquivo anexado: ${file.name}\n\n${fileContent.slice(0, 5000)}${fileContent.length > 5000 ? '...\n\n[Conteúdo truncado para brevidade]' : ''}`;
-        
-        setMessage(fileMessage);
-        
+
+        if (fileExtension === 'txt' || fileExtension === 'md') {
+          const text = await file.text();
+          sections.push(`📎 ${file.name}\n\n${text}`);
+          continue;
+        }
+
         toast({
-          title: "✓ Arquivo processado",
-          description: `${file.name} foi extraído com sucesso. Clique em enviar.`,
+          title: "Formato não suportado",
+          description: `.${fileExtension} não é suportado. Use imagens, PDF, DOCX, PPTX, XLSX, TXT ou MD.`,
+          variant: "destructive",
+        });
+      }
+
+      // Parallel batch OCR for all images
+      if (imageFiles.length > 0) {
+        toast({
+          title: "Lendo imagens",
+          description: `OCR em ${imageFiles.length} imagem${imageFiles.length > 1 ? 'ns' : ''}...`,
+        });
+        const concurrency = 4;
+        const results: string[] = new Array(imageFiles.length).fill('');
+        let cursor = 0;
+        const workers = Array.from({ length: Math.min(concurrency, imageFiles.length) }, async () => {
+          while (cursor < imageFiles.length) {
+            const idx = cursor++;
+            const f = imageFiles[idx];
+            try {
+              const base64 = await fileToBase64(f);
+              results[idx] = await ocrImage(base64, f.type || 'image/jpeg', f.name);
+            } catch (err: any) {
+              console.error(`OCR image ${f.name} failed:`, err);
+              results[idx] = `[Erro ao processar ${f.name}]`;
+            }
+          }
+        });
+        await Promise.all(workers);
+
+        imageFiles.forEach((f, i) => {
+          const label = imageFiles.length > 1
+            ? `===== IMAGEM ${i + 1}: ${f.name} =====`
+            : `📎 ${f.name}`;
+          sections.push(`${label}\n\n${results[i].trim()}`);
+        });
+      }
+
+      if (sections.length > 0) {
+        const combined = sections.join('\n\n---\n\n');
+        // Soft cap to keep within 10k input limit
+        const MAX = 9500;
+        const fileMessage = combined.length > MAX
+          ? `${combined.slice(0, MAX)}\n\n[Conteúdo truncado para brevidade]`
+          : combined;
+
+        setMessage(fileMessage);
+
+        toast({
+          title: "✓ Arquivos processados",
+          description: `${files.length} arquivo${files.length > 1 ? 's' : ''} extraído${files.length > 1 ? 's' : ''}. Clique em enviar.`,
         });
       }
     } catch (error: any) {
