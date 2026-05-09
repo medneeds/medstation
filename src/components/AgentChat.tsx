@@ -679,7 +679,7 @@ export function AgentChat({
       <input
         ref={fileInputRef}
         type="file"
-        accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.md"
+        accept="image/*,application/pdf,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.md"
         multiple
         onChange={handleFileSelect}
         className="hidden"
