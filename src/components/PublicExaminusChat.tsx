@@ -629,30 +629,43 @@ export default function PublicExaminusChat() {
 
         {/* Input Area */}
         <div className={`p-3 md:p-5 bg-muted/20 backdrop-blur ${hasMessages ? 'border-t border-border/50 rounded-b-2xl' : 'rounded-2xl'}`}>
-          {/* File Preview */}
-          {selectedFile && (
-            <div className="mb-3 flex items-center gap-3 bg-muted/50 border border-border rounded-lg p-3">
-              {filePreview ? (
-                <img src={filePreview} alt="Preview" className="w-12 h-12 object-cover rounded" />
-              ) : (
-                <div className="w-12 h-12 bg-primary/10 rounded flex items-center justify-center">
-                  <ImageIcon className="w-6 h-6 text-primary" />
+          {/* Files Preview */}
+          {(selectedFiles.length > 0 || isExtracting) && (
+            <div className="mb-3 space-y-2">
+              {isExtracting && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground bg-primary/5 border border-primary/20 rounded-lg px-3 py-2">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                  <span>Extraindo texto dos arquivos…</span>
                 </div>
               )}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{selectedFile.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={removeFile}
-                className="h-8 w-8 p-0"
-              >
-                <X className="h-4 w-4" />
-              </Button>
+              {selectedFiles.length > 0 && (
+                <div className="flex items-center gap-2 flex-wrap bg-muted/50 border border-border rounded-lg p-2">
+                  {selectedFiles.slice(0, 6).map((f, i) => (
+                    <div key={i} className="flex items-center gap-2 bg-background/60 rounded-md px-2 py-1 max-w-[200px]">
+                      {filePreviews[i] ? (
+                        <img src={filePreviews[i]} alt={f.name} className="w-8 h-8 object-cover rounded" />
+                      ) : (
+                        <div className="w-8 h-8 bg-primary/10 rounded flex items-center justify-center">
+                          <FileText className="w-4 h-4 text-primary" />
+                        </div>
+                      )}
+                      <span className="text-xs truncate">{f.name}</span>
+                    </div>
+                  ))}
+                  {selectedFiles.length > 6 && (
+                    <span className="text-xs text-muted-foreground">+{selectedFiles.length - 6}</span>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={removeFile}
+                    className="h-7 w-7 p-0 ml-auto"
+                    title="Remover todos"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </div>
           )}
 
