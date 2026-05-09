@@ -731,7 +731,8 @@ export default function PublicExaminusChat() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/jpeg,image/png,image/webp,application/pdf"
+                accept="image/*,application/pdf,.pdf"
+                multiple
                 onChange={handleFileSelect}
                 className="hidden"
               />
@@ -739,11 +740,15 @@ export default function PublicExaminusChat() {
                 variant="ghost"
                 size="icon"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isLoading}
+                disabled={isLoading || isExtracting}
                 className="h-10 w-10 shrink-0 rounded-full hover:bg-primary/10 transition-all"
-                title="Upload"
+                title="Upload de imagens ou PDF"
               >
-                <Upload className="w-5 h-5 text-primary" />
+                {isExtracting ? (
+                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                ) : (
+                  <Upload className="w-5 h-5 text-primary" />
+                )}
               </Button>
               <Textarea
                 value={input}
@@ -755,7 +760,7 @@ export default function PublicExaminusChat() {
               />
               <Button
                 onClick={handleSend}
-                disabled={isLoading || (!input.trim() && !selectedFile)}
+                disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0)}
                 size="icon"
                 className="h-10 w-10 rounded-full bg-gradient-primary hover:opacity-90 transition-all shrink-0 shadow-md"
               >
