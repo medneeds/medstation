@@ -592,46 +592,70 @@ export function AgentChat({
       for (const file of files) {
         const fileExtension = file.name.split('.').pop()?.toLowerCase();
         const supportedDocFormats = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'];
-        
+        const isImage = file.type.startsWith('image/');
+        const isPdf = file.type === 'application/pdf' || fileExtension === 'pdf';
+
         let fileContent = '';
-        
-        if (supportedDocFormats.includes(fileExtension || '')) {
-          // Parse document using Lovable's document parser
+
+        if (isImage || isPdf) {
+          // Image or PDF: OCR via extract-file-text
           toast({
-            title: "Processando documento",
+            title: isImage ? "Lendo imagem" : "Processando PDF",
             description: `Extraindo conteúdo de ${file.name}...`,
           });
-          
-          // Convert to base64
+
           const base64 = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
             reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
             reader.onerror = reject;
             reader.readAsDataURL(file);
           });
-          
-          // Call document processing edge function
+
+          const { data, error } = await supabase.functions.invoke('extract-file-text', {
+            body: {
+              file: base64,
+              fileName: file.name,
+              mimeType: file.type || (isPdf ? 'application/pdf' : 'image/jpeg'),
+            },
+          });
+
+          if (error || !data?.text) {
+            throw new Error(error?.message || 'Erro ao extrair conteúdo');
+          }
+
+          fileContent = data.text;
+        } else if (supportedDocFormats.includes(fileExtension || '')) {
+          toast({
+            title: "Processando documento",
+            description: `Extraindo conteúdo de ${file.name}...`,
+          });
+
+          const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+
           const { data, error } = await supabase.functions.invoke('process-document', {
             body: {
               file: base64,
               fileName: file.name,
-              mimeType: file.type
-            }
+              mimeType: file.type,
+            },
           });
-          
+
           if (error || !data?.text) {
             throw new Error('Erro ao processar documento');
           }
-          
+
           fileContent = data.text;
-          
         } else if (fileExtension === 'txt' || fileExtension === 'md') {
-          // Read text files directly
           fileContent = await file.text();
         } else {
           toast({
             title: "Formato não suportado",
-            description: `O formato .${fileExtension} não é suportado. Use PDF, DOCX, PPTX, XLSX, TXT ou MD.`,
+            description: `O formato .${fileExtension} não é suportado. Use imagens, PDF, DOCX, PPTX, XLSX, TXT ou MD.`,
             variant: "destructive",
           });
           continue;
