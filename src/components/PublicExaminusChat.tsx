@@ -162,81 +162,225 @@ export default function PublicExaminusChat() {
     }
   }, [messages, isLoading]);
 
-  const convertFileToBase64 = async (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
+  const fileToBase64Raw = (file: File): Promise<string> =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+  const fileToDataUrl = (file: File): Promise<string> =>
+    new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result as string);
       reader.onerror = reject;
       reader.readAsDataURL(file);
     });
+
+  const ocrPublic = async (
+    base64: string,
+    mimeType: string,
+    fileName: string
+  ): Promise<string> => {
+    const { data, error } = await supabase.functions.invoke('public-extract-text', {
+      body: { file: base64, fileName, mimeType, fingerprint },
+    });
+    if (error || !data?.text) {
+      throw new Error(error?.message || `Erro ao extrair ${fileName}`);
+    }
+    return data.text as string;
+  };
+
+  const extractFromFiles = async (files: File[]): Promise<string> => {
+    const sections: string[] = [];
+    const imageFiles: File[] = [];
+
+    for (const file of files) {
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      const isImage = file.type.startsWith('image/');
+      const isPdf = file.type === 'application/pdf' || ext === 'pdf';
+
+      if (isImage) {
+        imageFiles.push(file);
+        continue;
+      }
+
+      if (isPdf) {
+        toast({
+          title: "Processando PDF",
+          description: `Renderizando páginas de ${file.name}...`,
+        });
+
+        const pages = await pdfToImages(file, { scale: 2, maxPages: 30 });
+
+        toast({
+          title: "Lendo páginas",
+          description: `OCR em ${pages.length} página${pages.length > 1 ? 's' : ''} de ${file.name}...`,
+        });
+
+        const results: string[] = new Array(pages.length).fill('');
+        const concurrency = 3;
+        let cursor = 0;
+        const workers = Array.from({ length: Math.min(concurrency, pages.length) }, async () => {
+          while (cursor < pages.length) {
+            const idx = cursor++;
+            const p = pages[idx];
+            try {
+              results[idx] = await ocrPublic(p.base64, p.mimeType, `${file.name}-p${p.pageNumber}.jpg`);
+            } catch (err: any) {
+              console.error(`OCR page ${p.pageNumber} failed:`, err);
+              results[idx] = `[Erro ao processar página ${p.pageNumber}]`;
+            }
+          }
+        });
+        await Promise.all(workers);
+
+        const pdfText = pages
+          .map((p, i) => `===== PÁGINA ${p.pageNumber} =====\n${results[i].trim()}`)
+          .join('\n\n');
+
+        sections.push(`📎 ${file.name} (${pages.length} página${pages.length > 1 ? 's' : ''})\n\n${pdfText}`);
+        continue;
+      }
+
+      toast({
+        title: "Formato não suportado",
+        description: `${file.name}: use imagens ou PDF.`,
+        variant: "destructive",
+      });
+    }
+
+    if (imageFiles.length > 0) {
+      toast({
+        title: "Lendo imagens",
+        description: `OCR em ${imageFiles.length} imagem${imageFiles.length > 1 ? 'ns' : ''}...`,
+      });
+      const concurrency = 3;
+      const results: string[] = new Array(imageFiles.length).fill('');
+      let cursor = 0;
+      const workers = Array.from({ length: Math.min(concurrency, imageFiles.length) }, async () => {
+        while (cursor < imageFiles.length) {
+          const idx = cursor++;
+          const f = imageFiles[idx];
+          try {
+            const base64 = await fileToBase64Raw(f);
+            results[idx] = await ocrPublic(base64, f.type || 'image/jpeg', f.name);
+          } catch (err: any) {
+            console.error(`OCR image ${f.name} failed:`, err);
+            results[idx] = `[Erro ao processar ${f.name}]`;
+          }
+        }
+      });
+      await Promise.all(workers);
+
+      imageFiles.forEach((f, i) => {
+        const label = imageFiles.length > 1
+          ? `===== IMAGEM ${i + 1}: ${f.name} =====`
+          : `📎 ${f.name}`;
+        sections.push(`${label}\n\n${results[i].trim()}`);
+      });
+    }
+
+    const combined = sections.join('\n\n---\n\n');
+    const MAX = 9500;
+    return combined.length > MAX
+      ? `${combined.slice(0, MAX)}\n\n[Conteúdo truncado]`
+      : combined;
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    if (file.size > 20 * 1024 * 1024) {
+    const tooBig = files.find(f => f.size > 20 * 1024 * 1024);
+    if (tooBig) {
       toast({
         title: "Arquivo muito grande",
-        description: "O arquivo deve ter no máximo 20MB",
+        description: `${tooBig.name} excede 20MB`,
         variant: "destructive",
       });
+      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
 
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
-    if (!validTypes.includes(file.type)) {
+    const validTypes = ['image/', 'application/pdf'];
+    const invalid = files.find(f => !validTypes.some(t => f.type.startsWith(t)));
+    if (invalid) {
       toast({
         title: "Formato não suportado",
-        description: "Use JPG, PNG, WEBP ou PDF",
+        description: `${invalid.name}: use JPG, PNG, WEBP, HEIC ou PDF`,
         variant: "destructive",
       });
+      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
 
-    setSelectedFile(file);
-    
-    if (file.type.startsWith('image/')) {
-      const preview = await convertFileToBase64(file);
-      setFilePreview(preview);
-    } else {
-      setFilePreview(null);
+    setSelectedFiles(files);
+
+    // Generate previews for images
+    const previews = await Promise.all(
+      files.map(async (f) => (f.type.startsWith('image/') ? await fileToDataUrl(f) : ''))
+    );
+    setFilePreviews(previews);
+
+    if (fileInputRef.current) fileInputRef.current.value = '';
+
+    // Pre-extract immediately so the user can review/edit before sending
+    setIsExtracting(true);
+    try {
+      const text = await extractFromFiles(files);
+      setExtractedText(text);
+      toast({
+        title: "✓ Arquivos processados",
+        description: `${files.length} arquivo${files.length > 1 ? 's' : ''} extraído${files.length > 1 ? 's' : ''}.`,
+      });
+    } catch (err: any) {
+      console.error('extract failed', err);
+      toast({
+        title: "Erro ao extrair",
+        description: err?.message || "Tente novamente",
+        variant: "destructive",
+      });
+      setSelectedFiles([]);
+      setFilePreviews([]);
+      setExtractedText("");
+    } finally {
+      setIsExtracting(false);
     }
   };
 
   const removeFile = () => {
-    setSelectedFile(null);
-    setFilePreview(null);
+    setSelectedFiles([]);
+    setFilePreviews([]);
+    setExtractedText("");
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
   const handleSend = async () => {
-    if ((!input.trim() && !selectedFile) || isLoading) return;
+    const hasFiles = selectedFiles.length > 0 && extractedText.trim().length > 0;
+    if ((!input.trim() && !hasFiles) || isLoading || isExtracting) return;
 
-    const messageContent = input || "Extraia e formate este exame:";
+    const userText = input.trim();
+    const composed = hasFiles
+      ? (userText ? `${userText}\n\n${extractedText}` : extractedText)
+      : userText;
 
-    const userMessage: Message = { 
-      role: "user", 
-      content: messageContent
+    const userMessage: Message = {
+      role: "user",
+      content: composed,
     };
     setMessages(prev => [...prev, userMessage]);
     setInput("");
+    removeFile();
     setIsLoading(true);
 
     try {
-      let fileContent: string | undefined;
-      
-      if (selectedFile) {
-        fileContent = await convertFileToBase64(selectedFile);
-        removeFile();
-      }
-
       const { data, error } = await supabase.functions.invoke("public-examinus", {
-        body: { 
+        body: {
           messages: [...messages, userMessage],
-          fileContent,
           usePipeSeparator,
           includeTime,
           onlyAltered,
