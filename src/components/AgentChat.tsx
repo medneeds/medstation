@@ -695,7 +695,7 @@ export function AgentChat({
           <div className="text-center">
             <Paperclip className="h-16 w-16 mx-auto mb-4 text-primary" />
             <p className="text-xl font-bold">Solte o arquivo aqui</p>
-            <p className="text-sm text-muted-foreground mt-2">PDF, DOCX, PPTX, XLSX, TXT, MD</p>
+            <p className="text-sm text-muted-foreground mt-2">Imagens, PDF, DOCX, PPTX, XLSX, TXT, MD</p>
           </div>
         </div>
       )}
