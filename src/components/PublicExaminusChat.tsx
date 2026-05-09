@@ -4,13 +4,14 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Sparkles, ArrowRight, Copy, Check, FileUp, Upload, X, Image as ImageIcon, SeparatorVertical, Clock, AlertTriangle, Stethoscope, Minimize2 } from "lucide-react";
+import { Loader2, Send, Sparkles, ArrowRight, Copy, Check, FileUp, Upload, X, Image as ImageIcon, SeparatorVertical, Clock, AlertTriangle, Stethoscope, Minimize2, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Toggle } from "@/components/ui/toggle";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { pdfToImages } from "@/utils/pdfToImages";
 
 interface Message {
   role: "user" | "assistant";
@@ -131,8 +132,10 @@ export default function PublicExaminusChat() {
   const [remainingMessages, setRemainingMessages] = useState<number | null>(null);
   const [usedCount, setUsedCount] = useState<number>(0);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [filePreviews, setFilePreviews] = useState<string[]>([]);
+  const [extractedText, setExtractedText] = useState<string>("");
+  const [isExtracting, setIsExtracting] = useState(false);
   const [usePipeSeparator, setUsePipeSeparator] = useState(false);
   const [includeTime, setIncludeTime] = useState(true);
   const [onlyAltered, setOnlyAltered] = useState(false);
@@ -159,81 +162,225 @@ export default function PublicExaminusChat() {
     }
   }, [messages, isLoading]);
 
-  const convertFileToBase64 = async (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
+  const fileToBase64Raw = (file: File): Promise<string> =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+  const fileToDataUrl = (file: File): Promise<string> =>
+    new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result as string);
       reader.onerror = reject;
       reader.readAsDataURL(file);
     });
+
+  const ocrPublic = async (
+    base64: string,
+    mimeType: string,
+    fileName: string
+  ): Promise<string> => {
+    const { data, error } = await supabase.functions.invoke('public-extract-text', {
+      body: { file: base64, fileName, mimeType, fingerprint },
+    });
+    if (error || !data?.text) {
+      throw new Error(error?.message || `Erro ao extrair ${fileName}`);
+    }
+    return data.text as string;
+  };
+
+  const extractFromFiles = async (files: File[]): Promise<string> => {
+    const sections: string[] = [];
+    const imageFiles: File[] = [];
+
+    for (const file of files) {
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      const isImage = file.type.startsWith('image/');
+      const isPdf = file.type === 'application/pdf' || ext === 'pdf';
+
+      if (isImage) {
+        imageFiles.push(file);
+        continue;
+      }
+
+      if (isPdf) {
+        toast({
+          title: "Processando PDF",
+          description: `Renderizando páginas de ${file.name}...`,
+        });
+
+        const pages = await pdfToImages(file, { scale: 2, maxPages: 30 });
+
+        toast({
+          title: "Lendo páginas",
+          description: `OCR em ${pages.length} página${pages.length > 1 ? 's' : ''} de ${file.name}...`,
+        });
+
+        const results: string[] = new Array(pages.length).fill('');
+        const concurrency = 3;
+        let cursor = 0;
+        const workers = Array.from({ length: Math.min(concurrency, pages.length) }, async () => {
+          while (cursor < pages.length) {
+            const idx = cursor++;
+            const p = pages[idx];
+            try {
+              results[idx] = await ocrPublic(p.base64, p.mimeType, `${file.name}-p${p.pageNumber}.jpg`);
+            } catch (err: any) {
+              console.error(`OCR page ${p.pageNumber} failed:`, err);
+              results[idx] = `[Erro ao processar página ${p.pageNumber}]`;
+            }
+          }
+        });
+        await Promise.all(workers);
+
+        const pdfText = pages
+          .map((p, i) => `===== PÁGINA ${p.pageNumber} =====\n${results[i].trim()}`)
+          .join('\n\n');
+
+        sections.push(`📎 ${file.name} (${pages.length} página${pages.length > 1 ? 's' : ''})\n\n${pdfText}`);
+        continue;
+      }
+
+      toast({
+        title: "Formato não suportado",
+        description: `${file.name}: use imagens ou PDF.`,
+        variant: "destructive",
+      });
+    }
+
+    if (imageFiles.length > 0) {
+      toast({
+        title: "Lendo imagens",
+        description: `OCR em ${imageFiles.length} imagem${imageFiles.length > 1 ? 'ns' : ''}...`,
+      });
+      const concurrency = 3;
+      const results: string[] = new Array(imageFiles.length).fill('');
+      let cursor = 0;
+      const workers = Array.from({ length: Math.min(concurrency, imageFiles.length) }, async () => {
+        while (cursor < imageFiles.length) {
+          const idx = cursor++;
+          const f = imageFiles[idx];
+          try {
+            const base64 = await fileToBase64Raw(f);
+            results[idx] = await ocrPublic(base64, f.type || 'image/jpeg', f.name);
+          } catch (err: any) {
+            console.error(`OCR image ${f.name} failed:`, err);
+            results[idx] = `[Erro ao processar ${f.name}]`;
+          }
+        }
+      });
+      await Promise.all(workers);
+
+      imageFiles.forEach((f, i) => {
+        const label = imageFiles.length > 1
+          ? `===== IMAGEM ${i + 1}: ${f.name} =====`
+          : `📎 ${f.name}`;
+        sections.push(`${label}\n\n${results[i].trim()}`);
+      });
+    }
+
+    const combined = sections.join('\n\n---\n\n');
+    const MAX = 9500;
+    return combined.length > MAX
+      ? `${combined.slice(0, MAX)}\n\n[Conteúdo truncado]`
+      : combined;
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    if (file.size > 20 * 1024 * 1024) {
+    const tooBig = files.find(f => f.size > 20 * 1024 * 1024);
+    if (tooBig) {
       toast({
         title: "Arquivo muito grande",
-        description: "O arquivo deve ter no máximo 20MB",
+        description: `${tooBig.name} excede 20MB`,
         variant: "destructive",
       });
+      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
 
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
-    if (!validTypes.includes(file.type)) {
+    const validTypes = ['image/', 'application/pdf'];
+    const invalid = files.find(f => !validTypes.some(t => f.type.startsWith(t)));
+    if (invalid) {
       toast({
         title: "Formato não suportado",
-        description: "Use JPG, PNG, WEBP ou PDF",
+        description: `${invalid.name}: use JPG, PNG, WEBP, HEIC ou PDF`,
         variant: "destructive",
       });
+      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
 
-    setSelectedFile(file);
-    
-    if (file.type.startsWith('image/')) {
-      const preview = await convertFileToBase64(file);
-      setFilePreview(preview);
-    } else {
-      setFilePreview(null);
+    setSelectedFiles(files);
+
+    // Generate previews for images
+    const previews = await Promise.all(
+      files.map(async (f) => (f.type.startsWith('image/') ? await fileToDataUrl(f) : ''))
+    );
+    setFilePreviews(previews);
+
+    if (fileInputRef.current) fileInputRef.current.value = '';
+
+    // Pre-extract immediately so the user can review/edit before sending
+    setIsExtracting(true);
+    try {
+      const text = await extractFromFiles(files);
+      setExtractedText(text);
+      toast({
+        title: "✓ Arquivos processados",
+        description: `${files.length} arquivo${files.length > 1 ? 's' : ''} extraído${files.length > 1 ? 's' : ''}.`,
+      });
+    } catch (err: any) {
+      console.error('extract failed', err);
+      toast({
+        title: "Erro ao extrair",
+        description: err?.message || "Tente novamente",
+        variant: "destructive",
+      });
+      setSelectedFiles([]);
+      setFilePreviews([]);
+      setExtractedText("");
+    } finally {
+      setIsExtracting(false);
     }
   };
 
   const removeFile = () => {
-    setSelectedFile(null);
-    setFilePreview(null);
+    setSelectedFiles([]);
+    setFilePreviews([]);
+    setExtractedText("");
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
   const handleSend = async () => {
-    if ((!input.trim() && !selectedFile) || isLoading) return;
+    const hasFiles = selectedFiles.length > 0 && extractedText.trim().length > 0;
+    if ((!input.trim() && !hasFiles) || isLoading || isExtracting) return;
 
-    const messageContent = input || "Extraia e formate este exame:";
+    const userText = input.trim();
+    const composed = hasFiles
+      ? (userText ? `${userText}\n\n${extractedText}` : extractedText)
+      : userText;
 
-    const userMessage: Message = { 
-      role: "user", 
-      content: messageContent
+    const userMessage: Message = {
+      role: "user",
+      content: composed,
     };
     setMessages(prev => [...prev, userMessage]);
     setInput("");
+    removeFile();
     setIsLoading(true);
 
     try {
-      let fileContent: string | undefined;
-      
-      if (selectedFile) {
-        fileContent = await convertFileToBase64(selectedFile);
-        removeFile();
-      }
-
       const { data, error } = await supabase.functions.invoke("public-examinus", {
-        body: { 
+        body: {
           messages: [...messages, userMessage],
-          fileContent,
           usePipeSeparator,
           includeTime,
           onlyAltered,
@@ -482,30 +629,43 @@ export default function PublicExaminusChat() {
 
         {/* Input Area */}
         <div className={`p-3 md:p-5 bg-muted/20 backdrop-blur ${hasMessages ? 'border-t border-border/50 rounded-b-2xl' : 'rounded-2xl'}`}>
-          {/* File Preview */}
-          {selectedFile && (
-            <div className="mb-3 flex items-center gap-3 bg-muted/50 border border-border rounded-lg p-3">
-              {filePreview ? (
-                <img src={filePreview} alt="Preview" className="w-12 h-12 object-cover rounded" />
-              ) : (
-                <div className="w-12 h-12 bg-primary/10 rounded flex items-center justify-center">
-                  <ImageIcon className="w-6 h-6 text-primary" />
+          {/* Files Preview */}
+          {(selectedFiles.length > 0 || isExtracting) && (
+            <div className="mb-3 space-y-2">
+              {isExtracting && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground bg-primary/5 border border-primary/20 rounded-lg px-3 py-2">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                  <span>Extraindo texto dos arquivos…</span>
                 </div>
               )}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{selectedFile.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={removeFile}
-                className="h-8 w-8 p-0"
-              >
-                <X className="h-4 w-4" />
-              </Button>
+              {selectedFiles.length > 0 && (
+                <div className="flex items-center gap-2 flex-wrap bg-muted/50 border border-border rounded-lg p-2">
+                  {selectedFiles.slice(0, 6).map((f, i) => (
+                    <div key={i} className="flex items-center gap-2 bg-background/60 rounded-md px-2 py-1 max-w-[200px]">
+                      {filePreviews[i] ? (
+                        <img src={filePreviews[i]} alt={f.name} className="w-8 h-8 object-cover rounded" />
+                      ) : (
+                        <div className="w-8 h-8 bg-primary/10 rounded flex items-center justify-center">
+                          <FileText className="w-4 h-4 text-primary" />
+                        </div>
+                      )}
+                      <span className="text-xs truncate">{f.name}</span>
+                    </div>
+                  ))}
+                  {selectedFiles.length > 6 && (
+                    <span className="text-xs text-muted-foreground">+{selectedFiles.length - 6}</span>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={removeFile}
+                    className="h-7 w-7 p-0 ml-auto"
+                    title="Remover todos"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </div>
           )}
 
@@ -571,7 +731,8 @@ export default function PublicExaminusChat() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/jpeg,image/png,image/webp,application/pdf"
+                accept="image/*,application/pdf,.pdf"
+                multiple
                 onChange={handleFileSelect}
                 className="hidden"
               />
@@ -579,11 +740,15 @@ export default function PublicExaminusChat() {
                 variant="ghost"
                 size="icon"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isLoading}
+                disabled={isLoading || isExtracting}
                 className="h-10 w-10 shrink-0 rounded-full hover:bg-primary/10 transition-all"
-                title="Upload"
+                title="Upload de imagens ou PDF"
               >
-                <Upload className="w-5 h-5 text-primary" />
+                {isExtracting ? (
+                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                ) : (
+                  <Upload className="w-5 h-5 text-primary" />
+                )}
               </Button>
               <Textarea
                 value={input}
@@ -595,7 +760,7 @@ export default function PublicExaminusChat() {
               />
               <Button
                 onClick={handleSend}
-                disabled={isLoading || (!input.trim() && !selectedFile)}
+                disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0)}
                 size="icon"
                 className="h-10 w-10 rounded-full bg-gradient-primary hover:opacity-90 transition-all shrink-0 shadow-md"
               >
@@ -671,7 +836,8 @@ export default function PublicExaminusChat() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/jpeg,image/png,image/webp,application/pdf"
+                accept="image/*,application/pdf,.pdf"
+                multiple
                 onChange={handleFileSelect}
                 className="hidden"
               />
@@ -679,11 +845,15 @@ export default function PublicExaminusChat() {
                 variant="outline"
                 size="icon"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isLoading}
+                disabled={isLoading || isExtracting}
                 className="h-12 w-12 shrink-0 rounded-xl hover:bg-primary/10 hover:border-primary/50 transition-all"
-                title="Upload de imagem ou PDF"
+                title="Upload de imagens ou PDF"
               >
-                <Upload className="w-5 h-5 text-primary" />
+                {isExtracting ? (
+                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                ) : (
+                  <Upload className="w-5 h-5 text-primary" />
+                )}
               </Button>
               <Textarea
                 value={input}
@@ -695,7 +865,7 @@ export default function PublicExaminusChat() {
               />
               <Button
                 onClick={handleSend}
-                disabled={isLoading || (!input.trim() && !selectedFile)}
+                disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0)}
                 size="lg"
                 className="h-12 px-6 rounded-xl bg-gradient-primary hover:opacity-90 transition-all shadow-medical hover:shadow-elevated"
               >
