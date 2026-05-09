@@ -66,6 +66,9 @@ verify_jwt = false
 [functions.complete-checkout]
 verify_jwt = false
 
+[functions.extract-file-text]
+verify_jwt = true
+
 [functions.process-article]
 verify_jwt = true
 
