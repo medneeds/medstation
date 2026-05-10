@@ -234,12 +234,21 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome section */}
-      <div className="rounded-lg bg-primary p-4 md:p-8 text-primary-foreground shadow-elevated relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-hero opacity-60 pointer-events-none" />
+      <div className="rounded-xl border border-primary/20 p-5 md:p-9 text-primary-foreground shadow-elevated relative overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/75 dark:from-primary dark:via-primary/90 dark:to-primary/60">
+        {/* Soft radial highlights */}
+        <div className="absolute -top-24 -right-16 h-64 w-64 rounded-full bg-primary-foreground/15 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-primary-foreground/10 blur-3xl pointer-events-none" />
+        {/* Diagonal sheen */}
+        <div className="absolute inset-0 bg-[linear-gradient(110deg,transparent_0%,hsl(var(--primary-foreground)/0.07)_45%,transparent_65%)] pointer-events-none" />
         <div className="relative">
-          <h1 className="text-2xl md:text-3xl font-bold mb-2">Bem-vindo ao MedStation AI</h1>
-          <p className="text-sm md:text-base text-primary-foreground/90 mb-4">
-            Assistente clínico inteligente para otimizar seu fluxo de trabalho médico
+          <span className="font-mono text-2xs uppercase tracking-[0.22em] text-primary-foreground/70">
+            MedStation AI
+          </span>
+          <h1 className="font-display text-2xl md:text-4xl font-semibold tracking-tight mt-2 mb-2">
+            Boas-vindas ao MedStation AI
+          </h1>
+          <p className="text-sm md:text-base text-primary-foreground/85 max-w-2xl leading-relaxed">
+            Assistente clínico inteligente para otimizar seu fluxo de trabalho médico — produza mais, digite menos.
           </p>
         </div>
         {/* <Button variant="secondary" size="sm" className="md:size-lg" asChild>
