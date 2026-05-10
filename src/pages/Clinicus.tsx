@@ -15,14 +15,14 @@ export default function Clinicus() {
   return (
     <PremiumAgentGuard agentName="Clínicus">
       {isConsultationMode ? (
-        <div className="h-full -m-3 md:-m-6">
+        <div className="h-[calc(100dvh-3.5rem)] -m-4 md:-m-6 lg:-m-8">
           <ConsultationMode 
             caseId={caseId} 
             onExit={() => setIsConsultationMode(false)} 
           />
         </div>
       ) : (
-        <div className="h-full -m-3 md:-m-6 flex flex-col">
+        <div className="h-[calc(100dvh-3.5rem)] -m-4 md:-m-6 lg:-m-8 flex flex-col">
           {/* Consultation Mode Toggle */}
           <div className="flex items-center justify-between px-4 py-3 border-b bg-card">
             <div className="flex items-center gap-3">

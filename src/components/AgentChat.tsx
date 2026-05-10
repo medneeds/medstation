@@ -1007,7 +1007,7 @@ export function AgentChat({
                     })}
                   </p>
                   {msg.role === "assistant" && (
-                    <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute bottom-2 right-2 flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -1273,7 +1273,7 @@ export function AgentChat({
               }
             }}
             placeholder={isMobile ? "Mensagem..." : placeholder}
-            className="flex-1 text-sm md:text-base"
+            className="flex-1 text-base md:text-base h-11 md:h-10"
             disabled={isLoading}
           />
           <AgentVoiceInput 

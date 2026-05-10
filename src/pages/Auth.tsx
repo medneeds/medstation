@@ -188,7 +188,7 @@ export default function Auth() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-          className="flex items-center justify-center p-6 sm:p-10 lg:p-16"
+          className="flex items-center justify-center p-5 sm:p-10 lg:p-16"
         >
           <div className="w-full max-w-md space-y-8">
             <div className="lg:hidden flex justify-center">
@@ -233,7 +233,7 @@ export default function Auth() {
                           placeholder="seu@email.com"
                           value={signInEmail}
                           onChange={(e) => setSignInEmail(e.target.value)}
-                          className="h-12 rounded-xl border-hairline bg-transparent focus-visible:ring-1 focus-visible:ring-primary transition-all"
+                          className="h-12 rounded-xl border-hairline bg-transparent text-base focus-visible:ring-1 focus-visible:ring-primary transition-all"
                           required
                         />
                       </div>
@@ -275,7 +275,7 @@ export default function Auth() {
                           placeholder="••••••••"
                           value={signInPassword}
                           onChange={(e) => setSignInPassword(e.target.value)}
-                          className="h-12 rounded-xl border-hairline bg-transparent focus-visible:ring-1 focus-visible:ring-primary transition-all"
+                          className="h-12 rounded-xl border-hairline bg-transparent text-base focus-visible:ring-1 focus-visible:ring-primary transition-all"
                           required
                         />
                       </div>
@@ -308,7 +308,7 @@ export default function Auth() {
                           placeholder="Dr. João Silva"
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
-                          className="h-12 rounded-xl border-hairline bg-transparent focus-visible:ring-1 focus-visible:ring-primary"
+                          className="h-12 rounded-xl border-hairline bg-transparent text-base focus-visible:ring-1 focus-visible:ring-primary"
                           required
                         />
                       </div>
@@ -317,7 +317,7 @@ export default function Auth() {
                         <div className="space-y-1.5">
                           <Label className="text-xs uppercase tracking-wider text-muted-foreground">Sexo</Label>
                           <Select value={gender} onValueChange={(v: "M" | "F" | "Outro") => setGender(v)}>
-                            <SelectTrigger className="h-12 rounded-xl border-hairline bg-transparent">
+                            <SelectTrigger className="h-12 rounded-xl border-hairline bg-transparent text-base">
                               <SelectValue placeholder="—" />
                             </SelectTrigger>
                             <SelectContent>
@@ -335,7 +335,7 @@ export default function Auth() {
                             placeholder="123456"
                             value={crm}
                             onChange={(e) => setCrm(e.target.value)}
-                            className="h-12 rounded-xl border-hairline bg-transparent"
+                            className="h-12 rounded-xl border-hairline bg-transparent text-base"
                           />
                         </div>
                       </div>
@@ -344,7 +344,7 @@ export default function Auth() {
                         <div className="space-y-1.5">
                           <Label className="text-xs uppercase tracking-wider text-muted-foreground">UF</Label>
                           <Select value={crmState} onValueChange={setCrmState}>
-                            <SelectTrigger className="h-12 rounded-xl border-hairline bg-transparent">
+                            <SelectTrigger className="h-12 rounded-xl border-hairline bg-transparent text-base">
                               <SelectValue placeholder="—" />
                             </SelectTrigger>
                             <SelectContent className="max-h-[200px]">
@@ -357,7 +357,7 @@ export default function Auth() {
                         <div className="space-y-1.5">
                           <Label className="text-xs uppercase tracking-wider text-muted-foreground">Especialidade</Label>
                           <Select value={specialty} onValueChange={setSpecialty}>
-                            <SelectTrigger className="h-12 rounded-xl border-hairline bg-transparent">
+                            <SelectTrigger className="h-12 rounded-xl border-hairline bg-transparent text-base">
                               <SelectValue placeholder="—" />
                             </SelectTrigger>
                             <SelectContent className="max-h-[200px]">
@@ -377,7 +377,7 @@ export default function Auth() {
                           placeholder="seu@email.com"
                           value={signUpEmail}
                           onChange={(e) => setSignUpEmail(e.target.value)}
-                          className="h-12 rounded-xl border-hairline bg-transparent"
+                          className="h-12 rounded-xl border-hairline bg-transparent text-base"
                           required
                         />
                       </div>
@@ -390,7 +390,7 @@ export default function Auth() {
                             placeholder="••••••••"
                             value={signUpPassword}
                             onChange={(e) => setSignUpPassword(e.target.value)}
-                            className="h-12 rounded-xl border-hairline bg-transparent"
+                            className="h-12 rounded-xl border-hairline bg-transparent text-base"
                             required
                             minLength={8}
                           />
@@ -403,7 +403,7 @@ export default function Auth() {
                             placeholder="••••••••"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="h-12 rounded-xl border-hairline bg-transparent"
+                            className="h-12 rounded-xl border-hairline bg-transparent text-base"
                             required
                             minLength={8}
                           />

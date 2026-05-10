@@ -8,7 +8,7 @@ export default function Gasometrus() {
 
   return (
     <PremiumAgentGuard agentName="Gasometrus">
-      <div className="h-full -m-3 md:-m-6">
+      <div className="h-[calc(100dvh-3.5rem)] -m-4 md:-m-6 lg:-m-8">
         <AgentChat
           agentName="Gasometrus"
           agentIcon={<Wind className="h-8 w-8" />}
