@@ -14,7 +14,7 @@ const logStep = (step: string, details?: any) => {
 // Price IDs - LIVE MODE (Produção)
 const PRICES = {
   agents_monthly: "price_1Sj4FbACiwQRloW42xp6WqYH",
-  agents_yearly: "price_1Sj4GKACiwQRloW4QCtEvley",
+  agents_yearly: "price_1TVe5RACiwQRloW4KsjZ5QsK",
 };
 
 serve(async (req) => {
