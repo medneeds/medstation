@@ -139,8 +139,31 @@ export default function Pricing() {
             Produza mais. <span className="italic text-primary">Digite menos.</span>
           </h1>
           <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
-            Escolha entre os 10 Assistentes, o Modo Consultório com transcrição em tempo real, ou os dois no MedStation AI Pro 2.
+            Os 10 Assistentes e o Modo Consultório são <span className="text-foreground font-medium">produtos separados</span>. Assine só o que usa, ou junte os dois no MedStation AI Pro 2.
           </p>
+
+          {/* Shared billing toggle */}
+          <div className="inline-flex p-1 border border-hairline rounded-md bg-muted/40 mt-4">
+            <button
+              type="button"
+              onClick={() => setBillingPeriod("monthly")}
+              className={`px-4 py-2 rounded-sm text-xs font-mono uppercase tracking-[0.14em] transition-colors ${
+                billingPeriod === "monthly" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Mensal
+            </button>
+            <button
+              type="button"
+              onClick={() => setBillingPeriod("yearly")}
+              className={`relative px-4 py-2 rounded-sm text-xs font-mono uppercase tracking-[0.14em] transition-colors ${
+                billingPeriod === "yearly" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Anual
+              <span className="ml-1.5 text-[0.6rem] text-primary/90 font-semibold">−16%</span>
+            </button>
+          </div>
         </div>
 
         {/* Cross-upgrade banner */}
