@@ -1356,7 +1356,7 @@ export function AgentChat({
           )}
           <Input
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e) => setMessage(e.target.value.slice(0, 10000))}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -1364,9 +1364,10 @@ export function AgentChat({
               }
             }}
             placeholder={isMobile ? "Mensagem..." : placeholder}
-            aria-invalid={message.length > 0 && !message.trim()}
+            maxLength={10000}
+            aria-invalid={(message.length > 0 && !message.trim()) || message.length >= 10000}
             className={`flex-1 text-base md:text-base h-11 md:h-10 ${
-              message.length > 0 && !message.trim()
+              (message.length > 0 && !message.trim()) || message.length >= 10000
                 ? "border-destructive focus-visible:ring-destructive"
                 : ""
             }`}
@@ -1379,7 +1380,7 @@ export function AgentChat({
           />
           <Button 
             onClick={sendMessage}
-            disabled={!message.trim() || isLoading}
+            disabled={!message.trim() || isLoading || message.length > 10000}
             size="icon"
             className="shrink-0 h-9 w-9 md:h-10 md:w-10 rounded-full md:rounded-md"
             title={!message.trim() ? "Digite uma mensagem para enviar" : "Enviar mensagem"}
@@ -1391,15 +1392,31 @@ export function AgentChat({
             )}
           </Button>
         </div>
-        {message.length > 0 && !message.trim() ? (
-          <p className="text-xs text-destructive mt-2" role="alert">
-            A mensagem contém apenas espaços. Digite algum texto para enviar.
-          </p>
-        ) : !isMobile ? (
-          <p className="text-xs text-muted-foreground mt-2">
-            Pressione Enter para enviar, Shift+Enter para quebrar linha
-          </p>
-        ) : null}
+        <div className="flex items-center justify-between gap-2 mt-2">
+          <div className="min-w-0 flex-1">
+            {message.length > 0 && !message.trim() ? (
+              <p className="text-xs text-destructive truncate" role="alert">
+                A mensagem contém apenas espaços. Digite algum texto para enviar.
+              </p>
+            ) : !isMobile ? (
+              <p className="text-xs text-muted-foreground truncate">
+                Pressione Enter para enviar, Shift+Enter para quebrar linha
+              </p>
+            ) : null}
+          </div>
+          <span
+            className={`text-xs tabular-nums shrink-0 ${
+              message.length >= 10000
+                ? "text-destructive font-medium"
+                : message.length >= 9000
+                ? "text-amber-600 dark:text-amber-400"
+                : "text-muted-foreground"
+            }`}
+            aria-live="polite"
+          >
+            {message.length.toLocaleString("pt-BR")}/10.000
+          </span>
+        </div>
       </div>
     </div>
   );
