@@ -147,6 +147,7 @@ export default function PublicExaminusChat() {
   const [compactMode, setCompactMode] = useState(false);
   const [fingerprint, setFingerprint] = useState<string>("");
   const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
+  const [validationAnnouncement, setValidationAnnouncement] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
