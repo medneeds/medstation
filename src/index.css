@@ -2,151 +2,148 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/*
+  MedStation AI — Design System v3 "Clinic OS"
+  Dark & Precise. True near-black base, hairline borders, single sage accent,
+  tight grid, monospace technical accents. No soft shadows. Minimal radius.
+  All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    /* Elegant Pastel Green & Gray Palette - Light Mode */
-    --background: 150 10% 99%;
-    --foreground: 150 10% 15%;
+    /* Light mode — warm clinical paper */
+    --background: 40 20% 98%;
+    --foreground: 0 0% 8%;
 
     --card: 0 0% 100%;
-    --card-foreground: 150 10% 15%;
+    --card-foreground: 0 0% 8%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 150 10% 15%;
+    --popover-foreground: 0 0% 8%;
 
-    /* Elegant Pastel Green Primary */
-    --primary: 158 45% 52%;
-    --primary-foreground: 0 0% 100%;
-    --primary-hover: 158 50% 45%;
-    --primary-rgb: 74, 182, 156;
+    /* Single sage accent — kept brand-relevant, used sparingly */
+    --primary: 158 35% 38%;
+    --primary-foreground: 40 20% 98%;
+    --primary-hover: 158 40% 32%;
+    --primary-rgb: 71, 138, 112;
 
-    /* Soft Green Secondary */
-    --secondary: 150 25% 96%;
-    --secondary-foreground: 155 30% 35%;
+    --secondary: 40 12% 94%;
+    --secondary-foreground: 0 0% 12%;
 
-    /* Clean neutral gray tones */
-    --muted: 150 8% 96%;
-    --muted-foreground: 150 8% 45%;
+    --muted: 40 10% 95%;
+    --muted-foreground: 0 0% 42%;
 
-    --accent: 155 30% 96%;
-    --accent-foreground: 158 45% 45%;
+    --accent: 40 12% 94%;
+    --accent-foreground: 0 0% 8%;
 
-    /* Medical alert red */
-    --destructive: 0 72% 51%;
+    --destructive: 4 70% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Clinical warning */
-    --warning: 38 92% 50%;
+    --warning: 32 90% 48%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 150 12% 90%;
-    --input: 150 12% 90%;
-    --ring: 158 45% 52%;
+    --border: 40 10% 88%;
+    --input: 40 10% 86%;
+    --ring: 158 35% 38%;
 
-    /* Agent-specific colors - green toned */
-    --examinus: 165 55% 42%;
-    --examinus-foreground: 0 0% 100%;
+    --examinus: 158 35% 38%;
+    --examinus-foreground: 40 20% 98%;
 
-    --radius: 0.75rem;
+    /* Tight radius — no rounded-everything */
+    --radius: 0.25rem;
 
-    /* Sidebar - clean with green accent */
-    --sidebar-background: 150 8% 98%;
-    --sidebar-foreground: 150 10% 20%;
-    --sidebar-primary: 158 45% 52%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 150 20% 95%;
-    --sidebar-accent-foreground: 155 30% 35%;
-    --sidebar-border: 150 12% 90%;
-    --sidebar-ring: 158 45% 52%;
+    /* Sidebar */
+    --sidebar-background: 40 16% 96%;
+    --sidebar-foreground: 0 0% 18%;
+    --sidebar-primary: 158 35% 38%;
+    --sidebar-primary-foreground: 40 20% 98%;
+    --sidebar-accent: 40 12% 92%;
+    --sidebar-accent-foreground: 0 0% 12%;
+    --sidebar-border: 40 10% 88%;
+    --sidebar-ring: 158 35% 38%;
 
-    /* Editorial accents — warm amber for premium emphasis */
-    --accent-warm: 35 85% 65%;
-    --accent-warm-foreground: 30 30% 12%;
-    --hairline: 150 12% 88%;
+    /* Editorial accents */
+    --accent-warm: 28 75% 55%;
+    --accent-warm-foreground: 0 0% 8%;
+    --hairline: 40 10% 86%;
     --surface-elevated: 0 0% 100%;
+    --ink: 0 0% 8%;
 
-    /* Elegant pastel green gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(158 45% 52%), hsl(165 50% 60%));
-    --gradient-clinical: linear-gradient(135deg, hsl(150 25% 96%), hsl(155 20% 98%));
-    --gradient-hero: linear-gradient(135deg, hsl(158 45% 45%), hsl(165 50% 55%));
+    /* Gradients — restrained, single-hue */
+    --gradient-primary: linear-gradient(180deg, hsl(158 35% 38%), hsl(158 40% 30%));
+    --gradient-clinical: linear-gradient(180deg, hsl(40 16% 96%), hsl(40 12% 92%));
+    --gradient-hero: radial-gradient(ellipse at top, hsl(158 35% 38% / 0.08), transparent 60%);
 
-    /* Soft shadows with green undertone */
-    --shadow-medical: 0 2px 8px hsl(150 20% 40% / 0.06);
-    --shadow-elevated: 0 4px 16px hsl(150 20% 40% / 0.08);
-    --shadow-critical: 0 8px 24px hsl(0 72% 51% / 0.12);
+    /* Hairline-based depth instead of soft shadows */
+    --shadow-medical: 0 0 0 1px hsl(40 10% 88%);
+    --shadow-elevated: 0 1px 0 hsl(40 10% 86%), 0 0 0 1px hsl(40 10% 90%);
+    --shadow-critical: 0 0 0 1px hsl(4 70% 48% / 0.4);
 
-    /* Transitions */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-fast: all 0.15s ease-out;
+    --transition-smooth: all 200ms cubic-bezier(0.32, 0.72, 0, 1);
+    --transition-fast: all 120ms cubic-bezier(0.32, 0.72, 0, 1);
   }
 
   .dark {
-    /* Elegant Dark Mode - Deep Gray with Green accents */
-    --background: 160 12% 7%;
-    --foreground: 150 8% 95%;
+    /* True dark — near-black, neutral, technical */
+    --background: 0 0% 5%;
+    --foreground: 60 5% 96%;
 
-    --card: 160 10% 10%;
-    --card-foreground: 150 8% 95%;
+    --card: 0 0% 7%;
+    --card-foreground: 60 5% 96%;
 
-    --popover: 160 10% 10%;
-    --popover-foreground: 150 8% 95%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 60 5% 96%;
 
-    /* Pastel Green Primary - softer in dark mode */
-    --primary: 158 40% 58%;
-    --primary-foreground: 160 15% 8%;
-    --primary-hover: 158 45% 52%;
-    --primary-rgb: 100, 192, 168;
+    /* Single muted sage accent — the only color in the system */
+    --primary: 152 38% 62%;
+    --primary-foreground: 0 0% 6%;
+    --primary-hover: 152 45% 70%;
+    --primary-rgb: 138, 196, 166;
 
-    --secondary: 160 12% 15%;
-    --secondary-foreground: 150 15% 75%;
+    --secondary: 0 0% 11%;
+    --secondary-foreground: 60 5% 88%;
 
-    --muted: 160 10% 13%;
-    --muted-foreground: 150 8% 55%;
+    --muted: 0 0% 9%;
+    --muted-foreground: 60 3% 58%;
 
-    --accent: 160 12% 14%;
-    --accent-foreground: 158 40% 62%;
+    --accent: 0 0% 12%;
+    --accent-foreground: 152 38% 70%;
 
-    --destructive: 0 72% 58%;
+    --destructive: 4 75% 58%;
     --destructive-foreground: 0 0% 100%;
 
-    --warning: 38 92% 58%;
-    --warning-foreground: 0 0% 100%;
+    --warning: 36 90% 60%;
+    --warning-foreground: 0 0% 6%;
 
-    --border: 160 10% 16%;
-    --input: 160 10% 16%;
-    --ring: 158 40% 58%;
+    --border: 0 0% 14%;
+    --input: 0 0% 14%;
+    --ring: 152 38% 62%;
 
-    /* Agent-specific colors */
-    --examinus: 165 50% 55%;
-    --examinus-foreground: 0 0% 100%;
+    --examinus: 152 38% 62%;
+    --examinus-foreground: 0 0% 6%;
 
-    --sidebar-background: 160 12% 5%;
-    --sidebar-foreground: 150 8% 88%;
-    --sidebar-primary: 158 40% 58%;
-    --sidebar-primary-foreground: 160 12% 5%;
-    --sidebar-accent: 160 10% 10%;
-    --sidebar-accent-foreground: 150 8% 88%;
-    --sidebar-border: 160 10% 14%;
-    --sidebar-ring: 158 40% 58%;
+    --sidebar-background: 0 0% 4%;
+    --sidebar-foreground: 60 5% 82%;
+    --sidebar-primary: 152 38% 62%;
+    --sidebar-primary-foreground: 0 0% 6%;
+    --sidebar-accent: 0 0% 9%;
+    --sidebar-accent-foreground: 60 5% 92%;
+    --sidebar-border: 0 0% 12%;
+    --sidebar-ring: 152 38% 62%;
 
-    /* Editorial accents — warm amber for premium emphasis */
-    --accent-warm: 38 80% 62%;
-    --accent-warm-foreground: 30 30% 8%;
-    --hairline: 160 10% 18%;
-    --surface-elevated: 160 10% 12%;
+    --accent-warm: 28 80% 62%;
+    --accent-warm-foreground: 0 0% 6%;
+    --hairline: 0 0% 14%;
+    --surface-elevated: 0 0% 9%;
+    --ink: 60 5% 96%;
 
-    /* Dark mode gradients - subtle green glow */
-    --gradient-primary: linear-gradient(135deg, hsl(158 40% 58%), hsl(165 45% 65%));
-    --gradient-clinical: linear-gradient(135deg, hsl(160 10% 12%), hsl(155 8% 16%));
-    --gradient-hero: linear-gradient(135deg, hsl(160 12% 7%), hsl(158 25% 18%));
+    --gradient-primary: linear-gradient(180deg, hsl(152 38% 62%), hsl(152 42% 54%));
+    --gradient-clinical: linear-gradient(180deg, hsl(0 0% 7%), hsl(0 0% 5%));
+    --gradient-hero: radial-gradient(ellipse 80% 60% at 50% 0%, hsl(152 38% 40% / 0.18), transparent 70%);
 
-    --shadow-medical: 0 2px 8px hsl(0 0% 0% / 0.25);
-    --shadow-elevated: 0 4px 16px hsl(0 0% 0% / 0.35);
-    --shadow-critical: 0 8px 24px hsl(0 72% 58% / 0.25);
+    --shadow-medical: 0 0 0 1px hsl(0 0% 14%);
+    --shadow-elevated: 0 0 0 1px hsl(0 0% 16%), 0 24px 48px -24px hsl(0 0% 0% / 0.6);
+    --shadow-critical: 0 0 0 1px hsl(4 75% 58% / 0.5);
   }
 }
 
@@ -155,21 +152,83 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "ss01", "cv11", "cv02";
+    letter-spacing: -0.01em;
+  }
+
+  h1, h2, h3, h4 {
+    letter-spacing: -0.02em;
+  }
+
+  /* Editorial display utility */
+  .font-display {
+    font-feature-settings: "ss01", "ss02", "kern";
+    letter-spacing: -0.03em;
+  }
+
+  /* Selection */
+  ::selection {
+    background: hsl(var(--primary) / 0.25);
+    color: hsl(var(--foreground));
+  }
+
+  /* Scrollbar — minimal */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 0;
+    border: 2px solid hsl(var(--background));
+  }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
+
+  /* Focus ring — thin, square */
+  :focus-visible {
+    outline: 1px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
 }
 
 @layer utilities {
-  .perspective-1000 {
-    perspective: 1000px;
+  .perspective-1000 { perspective: 1000px; }
+  .backface-hidden { backface-visibility: hidden; }
+  .preserve-3d { transform-style: preserve-3d; }
+
+  /* Editorial micro-utilities */
+  .label-mono {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
   }
-  
-  .backface-hidden {
-    backface-visibility: hidden;
+
+  .hairline {
+    border-color: hsl(var(--hairline));
   }
-  
-  .preserve-3d {
-    transform-style: preserve-3d;
+
+  .hairline-t { border-top: 1px solid hsl(var(--hairline)); }
+  .hairline-b { border-bottom: 1px solid hsl(var(--hairline)); }
+  .hairline-l { border-left: 1px solid hsl(var(--hairline)); }
+  .hairline-r { border-right: 1px solid hsl(var(--hairline)); }
+
+  .grid-bg {
+    background-image:
+      linear-gradient(hsl(var(--hairline) / 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--hairline) / 0.5) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
   }
 }
