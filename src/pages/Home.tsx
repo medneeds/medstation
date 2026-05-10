@@ -257,9 +257,9 @@ export default function Home() {
                   Atenda como sempre. Nós transcrevemos a consulta ao vivo e devolvemos a anamnese estruturada no momento em que o paciente sai.
                 </p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> Transcrição híbrida (Scribe v2 + Whisper)</li>
-                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> Anti-alucinação estrita</li>
-                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> AHE estruturada automaticamente</li>
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> Transcrição em tempo real, com revisão final do áudio</li>
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> Sem invenções: registra apenas o que foi dito</li>
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> Anamnese estruturada automaticamente, pronta para revisar e registrar</li>
                 </ul>
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                   <Button size="lg" onClick={() => navigate('/consultorio-landing')}>
@@ -340,7 +340,7 @@ export default function Home() {
                 </div>
                 <ul className="space-y-2 text-xs text-muted-foreground">
                   <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Apenas Examinus</li>
-                  <li className="flex gap-2"><span className="text-amber-500 mt-0.5">!</span> Cota e cooldown por sessão</li>
+                  <li className="flex gap-2"><span className="text-amber-500 mt-0.5">!</span> Limite de uso e tempo de espera entre mensagens</li>
                   <li className="flex gap-2"><span className="text-amber-500 mt-0.5">!</span> Pop-ups de upgrade</li>
                   <li className="flex gap-2"><span className="text-amber-500 mt-0.5">!</span> Outros 9 bloqueados</li>
                 </ul>
@@ -357,7 +357,7 @@ export default function Home() {
                 <div>
                   <span className="text-[0.6rem] uppercase tracking-[0.22em] font-mono text-muted-foreground">10 Assistentes</span>
                   <h3 className="font-display text-2xl tracking-tight mt-1">MedStation AI Pro</h3>
-                  <p className="text-xs text-muted-foreground mt-1">Os 10 assistentes ilimitados, sem cooldown.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Os 10 assistentes liberados, sem restrições de uso.</p>
                 </div>
                 <div>
                   <div className="flex items-baseline gap-1">
@@ -434,10 +434,10 @@ export default function Home() {
                   )}
                 </div>
                 <ul className="space-y-1.5 text-xs text-muted-foreground">
-                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Transcrição em tempo real</li>
-                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> AHE estruturada automática</li>
-                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Anti-alucinação 3 camadas</li>
-                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Whisper médico</li>
+                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Transcrição em tempo real, palavra por palavra</li>
+                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Anamnese estruturada automaticamente</li>
+                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> 3 camadas que impedem qualquer invenção do modelo</li>
+                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Reconhecimento de voz treinado para vocabulário médico</li>
                 </ul>
               </div>
               <Button variant="outline" className="w-full h-11 mt-5" onClick={() => navigate('/consultorio-landing')}>

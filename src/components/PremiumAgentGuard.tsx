@@ -71,7 +71,7 @@ export function PremiumAgentGuard({ children, agentName }: PremiumAgentGuardProp
             </div>
             <CardTitle className="text-2xl">Assistente Premium</CardTitle>
             <CardDescription className="text-base mt-2">
-              {agentName} faz parte do MedStation AI Pro. No plano grátis só o Examinus está liberado — e mesmo ele com cota, cooldown e pop-ups. No Pro, os 10 assistentes ficam ilimitados de verdade.
+              {agentName} faz parte do MedStation AI Pro. No plano grátis só o Examinus está liberado — e mesmo assim com limite de uso, espera entre mensagens e pop-ups. No Pro, os 10 assistentes ficam liberados, sem restrições.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -83,7 +83,7 @@ export function PremiumAgentGuard({ children, agentName }: PremiumAgentGuardProp
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-0.5">✓</span>
-                  <span>Os 10 assistentes liberados — <strong className="text-foreground">ilimitado de verdade</strong>, sem cota e sem cooldown</span>
+                  <span>Os 10 assistentes liberados — <strong className="text-foreground">sem restrições de uso</strong>, sem limite e sem espera entre mensagens</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-0.5">✓</span>

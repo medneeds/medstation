@@ -127,7 +127,7 @@ export const OFFER_PROMOS: PromoItem[] = [
     id: "o-no-card",
     category: "offer",
     title: "Crie sua conta sem cartão",
-    description: "Examinus grátis para experimentar (com restrições: cota, cooldown e pop-ups). Pro libera os 10 assistentes ilimitados de verdade.",
+    description: "Examinus grátis para experimentar (com limite de uso, espera entre mensagens e pop-ups). Pro libera os 10 assistentes sem restrições.",
     cta: "Criar conta grátis",
   },
   {

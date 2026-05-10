@@ -17,9 +17,9 @@ const proAgents = [
 
 const consultorioFeatures = [
   "Transcrição em tempo real da consulta",
-  "AHE estruturada gerada automaticamente",
-  "Anti-alucinação em 3 camadas",
-  "Áudio processado com Whisper médico",
+  "Anamnese estruturada automaticamente, pronta para revisar e registrar",
+  "3 camadas que impedem qualquer invenção do modelo",
+  "Reconhecimento de voz treinado para vocabulário médico",
   "Pronto para colar no prontuário",
 ];
 
@@ -214,7 +214,7 @@ export default function Pricing() {
                 </div>
                 <h2 className="font-display text-2xl md:text-3xl tracking-tight">MedStation AI Pro</h2>
                 <p className="text-xs md:text-sm text-muted-foreground mt-1">
-                  Os 10 assistentes IA — ilimitado, sem cooldown, sem pop-ups.
+                  Os 10 assistentes IA liberados — uso sem restrições, sem pop-ups.
                 </p>
               </div>
 

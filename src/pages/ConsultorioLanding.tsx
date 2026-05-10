@@ -164,7 +164,7 @@ export default function ConsultorioLanding() {
                 {
                   n: "03",
                   title: "Anamnese pronta",
-                  desc: "Ao finalizar, Whisper revisa o áudio completo e o Clínicus estrutura a AHE automaticamente.",
+                  desc: "Ao finalizar, o áudio inteiro é revisado para máxima precisão e o Clínicus devolve a anamnese estruturada, pronta para revisar e registrar.",
                   icon: Sparkles,
                 },
               ].map((step) => (
@@ -187,20 +187,20 @@ export default function ConsultorioLanding() {
         <section className="py-12 md:py-20 px-4 md:px-6">
           <div className="container mx-auto max-w-4xl">
             <div className="text-center mb-10 space-y-3">
-              <Badge variant="secondary" className="text-xs">Tecnologia híbrida</Badge>
+              <Badge variant="secondary" className="text-xs">Tecnologia clínica</Badge>
               <h2 className="font-display text-3xl md:text-4xl tracking-tight">
                 Engenharia clínica de ponta
               </h2>
               <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
-                Combinamos dois engines de transcrição para entregar latência baixa <em>e</em> precisão clínica.
+                Dois motores de transcrição trabalhando juntos: velocidade durante a consulta <em>e</em> precisão na revisão final.
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
-                { title: "Scribe v2 ao vivo", desc: "Transcrição streaming token-a-token com VAD de 700ms para fluidez natural." },
-                { title: "Whisper na revisão", desc: "Áudio completo é re-processado ao final para corrigir qualquer ruído da live." },
-                { title: "Anti-alucinação estrita", desc: "Filtros impedem o modelo de inventar termos ou completar frases que não foram ditas." },
-                { title: "AHE estruturada automática", desc: "Clínicus recebe a transcrição limpa e devolve anamnese no formato hospitalar." },
+                { title: "Transcrição ao vivo, palavra por palavra", desc: "Aparece na tela no ritmo da conversa, respeitando pausas naturais." },
+                { title: "Revisão final do áudio completo", desc: "Ao encerrar, o áudio inteiro é re-processado para corrigir qualquer ruído e garantir máxima precisão." },
+                { title: "Sem invenções, sem alucinação", desc: "Filtros rígidos impedem o modelo de completar frases ou inventar termos que não foram ditos." },
+                { title: "Anamnese estruturada automaticamente", desc: "Clínicus recebe a transcrição limpa e devolve a anamnese pronta para revisar e registrar." },
               ].map((item) => (
                 <div key={item.title} className="flex gap-3 p-4 rounded-md border border-hairline bg-card/40">
                   <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
@@ -265,10 +265,10 @@ export default function ConsultorioLanding() {
                   </div>
                   <p className="text-[11px] text-muted-foreground">ou R$ 299,90/ano (≈ R$ 24,99/mês)</p>
                   <ul className="space-y-2 text-sm text-muted-foreground">
-                    <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> Transcrição em tempo real</li>
-                    <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> Revisão final com Whisper</li>
-                    <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> AHE estruturada automática</li>
-                    <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> Anti-alucinação estrita</li>
+                    <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> Transcrição em tempo real, palavra por palavra</li>
+                    <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> Revisão final do áudio para máxima precisão</li>
+                    <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> Anamnese estruturada automaticamente</li>
+                    <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> Sem invenções: só registra o que foi dito</li>
                   </ul>
                 </div>
                 <Button
@@ -302,7 +302,7 @@ export default function ConsultorioLanding() {
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> <strong className="text-foreground">10 Assistentes</strong> (Clínicus, Examinus, etc.)</li>
                     <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> <strong className="text-foreground">Modo Consultório</strong> em tempo real</li>
-                    <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> Sem cooldown, sem pop-ups</li>
+                    <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> Uso sem restrições, sem pop-ups</li>
                     <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> Garantia 7 dias</li>
                   </ul>
                 </div>
@@ -385,7 +385,7 @@ export default function ConsultorioLanding() {
               {[
                 {
                   q: "Por que o Modo Consultório é cobrado à parte dos Assistentes?",
-                  a: "Os custos de manutenção são significativamente mais altos: transcrição streaming ao vivo, revisão completa com Whisper e processamento contínuo de áudio. Para manter a qualidade, separamos o produto. Quem já assina os Assistentes paga apenas R$ 19,90/mês de upgrade.",
+                  a: "Os custos de manutenção são significativamente mais altos: transcrição ao vivo durante toda a consulta, revisão completa do áudio ao final e processamento contínuo. Para manter a qualidade, separamos o produto. Quem já assina os Assistentes paga apenas R$ 19,90/mês de upgrade.",
                 },
                 {
                   q: "Funciona offline?",
