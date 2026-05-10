@@ -303,12 +303,16 @@ export default function Dashboard() {
         </div>
         <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {agentModules.map((module) => (
-            <Link key={module.title} to={module.url}>
-              <Card className="h-full hover:shadow-elevated hover:border-primary/50 transition-all cursor-pointer group relative">
-                <CardHeader className="space-y-4">
+            <Link key={module.title} to={module.url} className="group/card focus:outline-none">
+              <Card className="h-full cursor-pointer relative overflow-hidden border-border/60 bg-card/80 backdrop-blur-sm transition-all duration-300 ease-out hover:border-primary/40 hover:shadow-elevated hover:-translate-y-0.5">
+                {/* Soft hover glow */}
+                <div className="pointer-events-none absolute inset-0 opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 bg-[radial-gradient(ellipse_at_top_left,hsl(var(--primary)/0.08),transparent_60%)]" />
+                {/* Top accent line */}
+                <div className="pointer-events-none absolute top-0 left-0 h-px w-full bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
+                <CardHeader className="space-y-4 relative">
                   <div className="flex items-center justify-between">
-                    <div className={`rounded-xl p-4 bg-gradient-to-br from-primary/10 to-primary/5 ${module.color}`}>
-                      <module.icon className="h-8 w-8" />
+                    <div className="rounded-xl p-3.5 bg-primary/8 text-primary border border-primary/15 transition-all duration-300 ease-out group-hover/card:bg-primary group-hover/card:text-primary-foreground group-hover/card:border-primary group-hover/card:scale-[1.04] group-hover/card:shadow-[0_8px_24px_-12px_hsl(var(--primary)/0.6)]">
+                      <module.icon className="h-7 w-7 transition-transform duration-300 ease-out" strokeWidth={1.75} />
                     </div>
                     {module.isPremium && !subscribed && (
                       <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
@@ -323,7 +327,7 @@ export default function Dashboard() {
                     )}
                   </div>
                   <div>
-                    <CardTitle className="text-xl mb-2 group-hover:text-primary transition-colors">
+                    <CardTitle className="text-xl mb-2 transition-colors duration-300 group-hover/card:text-primary">
                       {module.title}
                     </CardTitle>
                     <CardDescription className="text-sm leading-relaxed">
@@ -331,8 +335,8 @@ export default function Dashboard() {
                     </CardDescription>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                <CardContent className="relative">
+                  <Button variant="outline" className="w-full transition-all duration-300 group-hover/card:bg-primary group-hover/card:text-primary-foreground group-hover/card:border-primary">
                     {module.isPremium && !subscribed ? (
                       <>
                         <Crown className="mr-2 h-4 w-4" />
