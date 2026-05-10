@@ -33,8 +33,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useProfile } from "@/contexts/ProfileContext";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 
