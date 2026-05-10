@@ -338,17 +338,20 @@ export default function Pricing() {
                 </div>
                 <h2 className="font-display text-2xl md:text-3xl tracking-tight">Modo Consultório</h2>
                 <p className="text-xs md:text-sm text-muted-foreground mt-1">
-                  Grave a consulta, receba a AHE pronta. Sem digitar.
+                  Produto separado dos Assistentes — pode ser assinado isoladamente ou somado a eles.
                 </p>
               </div>
 
               <div>
                 <div className="flex items-baseline gap-2">
                   <span className="font-display text-4xl md:text-5xl tracking-tight text-foreground">
-                    R$ 29,90
+                    {consultorioPrice}
                   </span>
-                  <span className="text-base text-muted-foreground">/mês</span>
+                  <span className="text-base text-muted-foreground">{consultorioSuffix}</span>
                 </div>
+                {consultorioHint && (
+                  <p className="text-[11px] text-muted-foreground mt-1.5">{consultorioHint}</p>
+                )}
                 <p className="text-[11px] text-muted-foreground mt-1.5">
                   Já assina os 10 Assistentes? Adicione por <span className="text-primary font-medium">R$ 19,90/mês</span>
                 </p>
@@ -367,12 +370,12 @@ export default function Pricing() {
                 size="lg"
                 variant="outline"
                 className="w-full h-12 mt-auto"
-                onClick={() => startCheckout("consultorio_monthly")}
+                onClick={() => startCheckout(consultorioPlan)}
                 disabled={anyLoading || hasConsultorio}
               >
                 {hasConsultorio ? (
                   "Plano ativo"
-                ) : isLoading("consultorio_monthly") ? (
+                ) : isLoading(consultorioPlan) ? (
                   <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processando...</>
                 ) : (
                   <>Assinar Consultório <ArrowRight className="ml-2 h-4 w-4" /></>
