@@ -327,7 +327,7 @@ export default function Home() {
                   <div className="flex items-center gap-2 p-2 md:p-3 bg-muted/50 rounded-lg border border-hairline mt-3">
                     <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
                     <span className="text-[10px] md:text-xs text-muted-foreground">
-                      Ou <span className="font-medium text-foreground">R$ 199,90/ano</span> — economize 2 meses
+                      Ou <span className="font-medium text-foreground">R$ 299,90/ano</span> — economize R$ 58,90 (16%)
                     </span>
                   </div>
                 </div>

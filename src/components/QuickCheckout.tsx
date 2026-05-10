@@ -63,7 +63,7 @@ export function QuickCheckout({
   };
 
   const prices = {
-    agents: { monthly: 29.90, yearly: 199.90 },
+    agents: { monthly: 29.90, yearly: 299.90 },
   };
 
   const price = billingPeriod === "yearly"
