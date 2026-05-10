@@ -54,7 +54,6 @@ const agentModules = [
 ];
 
 const settings = [
-  { title: "Perfil", url: "/settings", icon: User },
   { title: "Assinatura", url: "/pricing", icon: CreditCard },
 ];
 
