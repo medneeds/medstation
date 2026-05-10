@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import PublicExaminusChat from "@/components/PublicExaminusChat";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { InlineCheckout } from "@/components/QuickCheckout";
+import { Logo } from "@/components/Logo";
 
 // Definição centralizada dos agentes com descrições precisas
 const agents = [
@@ -41,14 +42,11 @@ export default function Home() {
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/50">
         <div className="container mx-auto px-4 md:px-6 py-3 md:py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2 md:gap-3 group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl md:rounded-2xl bg-gradient-primary flex items-center justify-center shadow-medical transition-transform group-hover:scale-105">
-              <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-primary-foreground" />
-            </div>
-            <div>
-              <div className="text-sm md:text-base font-bold text-foreground tracking-tight">MedStation AI</div>
-              <div className="hidden md:block text-[0.65rem] text-muted-foreground font-medium">Produza mais. Digite menos.</div>
-            </div>
+          <div className="flex items-center gap-3 group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <Logo size="sm" />
+            <span className="hidden md:inline-block text-[0.65rem] uppercase tracking-[0.22em] font-mono text-muted-foreground border-l border-hairline pl-3">
+              Produza mais. Digite menos.
+            </span>
           </div>
           <nav className="flex gap-2 md:gap-8 items-center">
             <Button 
@@ -129,10 +127,8 @@ export default function Home() {
             <Badge variant="secondary" className="px-3 md:px-4 py-1.5 text-xs md:text-sm font-medium backdrop-blur-sm">
               Ecossistema Completo
             </Badge>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight max-w-3xl mx-auto leading-tight px-4">
-              <span className="bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text">
-                Produza mais. Digite menos.
-              </span>
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-tight max-w-3xl mx-auto leading-[1.02] px-4 text-foreground">
+              Produza mais. <span className="italic text-primary">Digite menos.</span>
             </h2>
             <p className="text-sm md:text-base lg:text-lg text-muted-foreground max-w-xl mx-auto">
               10 assistentes especializados para acelerar sua rotina médica
@@ -200,8 +196,8 @@ export default function Home() {
             <Badge variant="secondary" className="backdrop-blur-sm text-xs md:text-sm">
               Preço justo para médicos
             </Badge>
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight">
-              Comece grátis, evolua quando quiser
+            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl tracking-tight text-foreground">
+              Comece grátis, <span className="italic text-primary">evolua quando quiser</span>
             </h2>
             <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
               Examinus sempre grátis. Pro desbloqueia todos os 10 assistentes.
@@ -213,12 +209,12 @@ export default function Home() {
             <Card className="p-5 md:p-6 lg:p-8 text-left border-2 border-border/50 h-full flex flex-col">
               <div className="space-y-4 md:space-y-5 flex-1 flex flex-col">
                 <div>
-                  <h3 className="text-xl md:text-2xl font-bold mb-1">Grátis</h3>
+                  <h3 className="font-display text-2xl md:text-3xl tracking-tight mb-1">Grátis</h3>
                   <p className="text-xs md:text-sm text-muted-foreground">Examinus ilimitado para sempre</p>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl md:text-4xl lg:text-5xl font-bold">R$ 0</span>
-                  <span className="text-base md:text-lg lg:text-xl text-muted-foreground">/sempre</span>
+                  <span className="font-display text-4xl md:text-5xl tracking-tight">R$ 0</span>
+                  <span className="text-base md:text-lg text-muted-foreground">/sempre</span>
                 </div>
                 <ul className="space-y-2.5 text-sm flex-1">
                   <li className="flex items-start gap-2 text-muted-foreground">
@@ -248,48 +244,42 @@ export default function Home() {
             </Card>
 
             {/* Plano Pro */}
-            <Card className="p-5 md:p-6 lg:p-8 text-left border-2 border-primary relative overflow-hidden shadow-[0_20px_70px_-15px_rgba(168,85,247,0.4)] animate-in fade-in duration-700 hover:shadow-[0_25px_80px_-15px_rgba(168,85,247,0.5)] transition-all">
-              {/* Animated gradient background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-purple-500/5 to-pink-500/10 animate-pulse"></div>
-              
-              {/* Popular badge with glow */}
+            <Card className="p-5 md:p-6 lg:p-8 text-left border-2 border-primary relative overflow-hidden animate-in fade-in duration-700 transition-all">
+              {/* Popular badge */}
               <div className="absolute -top-1 -right-1">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-primary blur-lg opacity-70 animate-pulse"></div>
-                  <Badge className="relative bg-gradient-primary text-primary-foreground border-0 px-4 py-1.5 text-xs font-bold shadow-lg">
-                    RECOMENDADO
-                  </Badge>
-                </div>
+                <Badge className="bg-primary text-primary-foreground border-0 px-4 py-1.5 text-[0.65rem] uppercase tracking-[0.18em] font-mono">
+                  Recomendado
+                </Badge>
               </div>
 
               <div className="space-y-4 md:space-y-5 relative">
                 <div>
-                  <h3 className="text-xl md:text-2xl font-bold mb-1 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">Pro</h3>
+                  <h3 className="font-display text-2xl md:text-3xl tracking-tight mb-1 text-primary">Pro</h3>
                   <p className="text-xs md:text-sm text-muted-foreground">10 assistentes IA especializados</p>
                 </div>
                 
                 {/* Pricing */}
                 <div className="my-4 md:my-6">
-                  <div className="inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1 md:py-1.5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-full mb-3">
-                    <span className="text-[10px] md:text-xs font-bold text-green-600 dark:text-green-400">OFERTA DE LANÇAMENTO</span>
+                  <div className="inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1 md:py-1.5 bg-primary/10 border border-primary/30 rounded-full mb-3">
+                    <span className="text-[0.65rem] uppercase tracking-[0.18em] font-mono text-primary">Oferta de lançamento</span>
                   </div>
                   
                   <div className="flex items-end gap-2 md:gap-3">
                     <div className="flex flex-col">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm md:text-base lg:text-lg text-muted-foreground line-through decoration-2">De R$ 59,90</span>
+                        <span className="text-sm md:text-base text-muted-foreground line-through decoration-1">De R$ 59,90</span>
                       </div>
                       <div className="flex items-baseline gap-1 md:gap-2">
-                        <span className="text-3xl md:text-4xl lg:text-5xl font-black bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">R$ 29,90</span>
-                        <span className="text-base md:text-lg lg:text-xl text-muted-foreground font-medium">/mês</span>
+                        <span className="font-display text-4xl md:text-5xl tracking-tight text-foreground">R$ 29,90</span>
+                        <span className="text-base md:text-lg text-muted-foreground">/mês</span>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-2 p-2 md:p-3 bg-muted/50 rounded-lg border border-border/50 mt-3">
-                    <div className="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-primary animate-pulse"></div>
+                  <div className="flex items-center gap-2 p-2 md:p-3 bg-muted/50 rounded-lg border border-hairline mt-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
                     <span className="text-[10px] md:text-xs text-muted-foreground">
-                      Ou <span className="font-bold text-foreground">R$ 199,90/ano</span> — economize 2 meses
+                      Ou <span className="font-medium text-foreground">R$ 199,90/ano</span> — economize 2 meses
                     </span>
                   </div>
                 </div>
@@ -341,8 +331,8 @@ export default function Home() {
       <section id="cadastro" className="py-12 md:py-20 lg:py-24 px-4 md:px-6 relative overflow-hidden">
         <div className="container mx-auto max-w-2xl text-center relative space-y-6 md:space-y-8">
           <div className="space-y-3 md:space-y-4">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight">
-              Comece em 30 segundos
+            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl tracking-tight text-foreground">
+              Comece em <span className="italic text-primary">30 segundos</span>
             </h2>
             <p className="text-sm md:text-base lg:text-lg text-muted-foreground">
               Sem cartão. Sem burocracia. Examinus grátis para sempre.
