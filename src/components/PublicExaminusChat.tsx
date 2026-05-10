@@ -147,6 +147,7 @@ export default function PublicExaminusChat() {
   const [compactMode, setCompactMode] = useState(false);
   const [fingerprint, setFingerprint] = useState<string>("");
   const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
+  const [validationAnnouncement, setValidationAnnouncement] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -400,6 +401,9 @@ export default function PublicExaminusChat() {
     const hasFiles = selectedFiles.length > 0 && extractedText.trim().length > 0;
     if (isLoading || isExtracting) return;
     if (!input.trim() && !hasFiles) {
+      const msg = "Mensagem vazia. Digite algum texto ou anexe um arquivo antes de enviar.";
+      setValidationAnnouncement("");
+      setTimeout(() => setValidationAnnouncement(msg), 50);
       toast({
         title: "Mensagem vazia",
         description: "Digite algo ou anexe um arquivo antes de enviar.",
@@ -407,6 +411,7 @@ export default function PublicExaminusChat() {
       });
       return;
     }
+    setValidationAnnouncement("");
     if (cooldownRemaining > 0) {
       window.dispatchEvent(new CustomEvent("demo:cooldown-click"));
       return;
@@ -679,6 +684,10 @@ export default function PublicExaminusChat() {
 
         {/* Input Area */}
         <div className={`p-3 md:p-5 bg-muted/20 backdrop-blur ${hasMessages ? 'border-t border-border/50 rounded-b-2xl' : 'rounded-2xl'}`}>
+          {/* SR-only live region for blocked send attempts */}
+          <span role="status" aria-live="assertive" className="sr-only">
+            {validationAnnouncement}
+          </span>
           {/* Files Preview */}
           {(selectedFiles.length > 0 || isExtracting) && (
             <div className="mb-3 space-y-2">

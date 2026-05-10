@@ -109,6 +109,7 @@ export function AgentChat({
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [message, setMessage] = useState("");
+  const [validationAnnouncement, setValidationAnnouncement] = useState("");
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const [lastConversation, setLastConversation] = useState<Conversation | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -280,6 +281,10 @@ export function AgentChat({
   const sendMessage = async () => {
     if (isLoading) return;
     if (!message.trim()) {
+      const msg = "Mensagem vazia. Digite algum texto antes de enviar.";
+      setValidationAnnouncement("");
+      // re-set on next tick so screen readers re-announce repeated attempts
+      setTimeout(() => setValidationAnnouncement(msg), 50);
       toast({
         title: "Mensagem vazia",
         description: "Digite algo antes de enviar.",
@@ -287,6 +292,7 @@ export function AgentChat({
       });
       return;
     }
+    setValidationAnnouncement("");
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -1395,7 +1401,11 @@ export function AgentChat({
         <div className="flex items-center justify-between gap-2 mt-2">
           <div className="min-w-0 flex-1">
             {message.length > 0 && !message.trim() ? (
-              <p className="text-xs text-destructive truncate" role="alert">
+              <p
+                className="text-xs text-destructive truncate"
+                role="alert"
+                aria-live="assertive"
+              >
                 A mensagem contém apenas espaços. Digite algum texto para enviar.
               </p>
             ) : !isMobile ? (
@@ -1403,6 +1413,10 @@ export function AgentChat({
                 Pressione Enter para enviar, Shift+Enter para quebrar linha
               </p>
             ) : null}
+            {/* SR-only live region for blocked send attempts */}
+            <span role="status" aria-live="assertive" className="sr-only">
+              {validationAnnouncement}
+            </span>
           </div>
           <span
             className={`text-xs tabular-nums shrink-0 ${
