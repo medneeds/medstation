@@ -26,7 +26,8 @@ import {
   SeparatorVertical,
   Clock,
   Pill,
-  ListChecks
+  ListChecks,
+  Zap
 } from "lucide-react";
 import {
   Sheet,
