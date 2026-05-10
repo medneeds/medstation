@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Sparkles, Activity, Brain, Calculator, Pill, FileCode, TestTube2, Wind, FileCheck, BookOpen, Compass, Stethoscope, Sigma } from "lucide-react";
+import { ArrowRight, ArrowDown, Sparkles, Activity, Brain, Calculator, Pill, FileCode, TestTube2, Wind, FileCheck, BookOpen, Compass, Stethoscope, Sigma } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PublicExaminusChat from "@/components/PublicExaminusChat";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -105,7 +105,7 @@ export default function Home() {
                   Conheça <span className="font-medium text-foreground">Examinus</span> — um dos 10 assistentes clínicos da MedStation AI.
                   Teste agora, grátis e sem cadastro
                 </span>
-                <ArrowRight className="inline-block w-3.5 h-3.5 text-primary translate-y-[1px] animate-[bounce-x_1.6s_ease-in-out_infinite]" />
+                <ArrowDown className="inline-block w-3.5 h-3.5 text-primary translate-y-[1px] animate-bounce" />
               </p>
             </div>
 
