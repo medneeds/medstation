@@ -70,24 +70,11 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const navigate = useNavigate();
-  const { profile } = useProfile();
   const { theme, setTheme } = useTheme();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/auth");
-  };
-
-  const getInitials = () => {
-    if (!profile?.full_name) return "?";
-    const names = profile.full_name.split(" ");
-    if (names.length === 1) return names[0][0].toUpperCase();
-    return (names[0][0] + names[names.length - 1][0]).toUpperCase();
-  };
-
-  const getTitle = () => {
-    if (!profile?.gender) return "Dr(a)";
-    return profile.gender === "M" ? "Dr." : profile.gender === "F" ? "Dra." : "Dr(a)";
   };
 
   return (
