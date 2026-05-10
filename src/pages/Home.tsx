@@ -209,12 +209,12 @@ export default function Home() {
             <Card className="p-5 md:p-6 lg:p-8 text-left border-2 border-border/50 h-full flex flex-col">
               <div className="space-y-4 md:space-y-5 flex-1 flex flex-col">
                 <div>
-                  <h3 className="text-xl md:text-2xl font-bold mb-1">Grátis</h3>
+                  <h3 className="font-display text-2xl md:text-3xl tracking-tight mb-1">Grátis</h3>
                   <p className="text-xs md:text-sm text-muted-foreground">Examinus ilimitado para sempre</p>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl md:text-4xl lg:text-5xl font-bold">R$ 0</span>
-                  <span className="text-base md:text-lg lg:text-xl text-muted-foreground">/sempre</span>
+                  <span className="font-display text-4xl md:text-5xl tracking-tight">R$ 0</span>
+                  <span className="text-base md:text-lg text-muted-foreground">/sempre</span>
                 </div>
                 <ul className="space-y-2.5 text-sm flex-1">
                   <li className="flex items-start gap-2 text-muted-foreground">
