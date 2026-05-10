@@ -1,43 +1,90 @@
 import { ReactNode } from "react";
+import { useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import NotificationBell from "@/components/NotificationBell";
 import { SupportChat } from "@/components/SupportChat";
-import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface DashboardLayoutProps {
   children: ReactNode;
 }
 
+const ROUTE_LABELS: Record<string, string> = {
+  dashboard: "Início",
+  clinicus: "Clínicus",
+  examinus: "Examinus",
+  gasometrus: "Gasometrus",
+  scorius: "Scorius",
+  numerus: "Numerus",
+  prescriptus: "Prescriptus",
+  atestus: "Atestus",
+  protocolus: "Protocolus",
+  orientus: "Orientus",
+  codexus: "CODexus",
+  settings: "Perfil",
+  pricing: "Assinatura",
+  patients: "Pacientes",
+  cases: "Casos",
+  notes: "Notas",
+};
+
+function getCrumb(pathname: string) {
+  const seg = pathname.split("/").filter(Boolean)[0] || "dashboard";
+  return ROUTE_LABELS[seg] || seg.charAt(0).toUpperCase() + seg.slice(1);
+}
+
 export function DashboardLayout({ children }: DashboardLayoutProps) {
+  const { pathname } = useLocation();
+  const crumb = getCrumb(pathname);
+
   return (
     <>
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+        <div className="flex min-h-screen w-full bg-background">
           <AppSidebar />
-          <div className="flex flex-1 flex-col">
-            {/* Top header */}
-            <header className="sticky top-0 z-10 flex h-12 md:h-14 lg:h-16 items-center justify-between border-b bg-background px-2 md:px-4 lg:px-6 shadow-medical">
-              <div className="flex items-center gap-1 md:gap-2 lg:gap-4 flex-1 min-w-0">
-                <SidebarTrigger className="h-8 w-8 md:h-9 md:w-9" />
-                <div className="relative hidden lg:block flex-1 max-w-md">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <div className="flex flex-1 flex-col min-w-0">
+            {/* Editorial top bar — hairline only, no shadow */}
+            <header className="sticky top-0 z-20 flex h-14 items-center justify-between hairline-b bg-background/85 backdrop-blur-md px-3 md:px-5">
+              <div className="flex items-center gap-3 md:gap-5 flex-1 min-w-0">
+                <SidebarTrigger
+                  className="h-8 w-8 rounded-sm border border-hairline hover:bg-accent hover:border-foreground/40 transition-colors"
+                />
+
+                {/* Editorial breadcrumb */}
+                <div className="hidden md:flex items-center gap-3 min-w-0">
+                  <span className="font-mono text-2xs uppercase tracking-mono text-muted-foreground/70">
+                    MedStation
+                  </span>
+                  <span className="text-muted-foreground/40">/</span>
+                  <span className="font-display text-base font-semibold tracking-tight text-foreground truncate">
+                    {crumb}
+                  </span>
+                </div>
+
+                {/* Search */}
+                <div className="relative hidden lg:block ml-auto w-full max-w-xs">
+                  <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/60" />
                   <Input
-                    placeholder="Buscar pacientes, CID, medicamentos..."
-                    className="w-full pl-9 h-9"
+                    placeholder="Buscar..."
+                    className="h-8 pl-8 pr-12 text-sm bg-transparent"
                   />
+                  <kbd className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-2xs text-muted-foreground/60 border border-hairline rounded-sm px-1.5 py-0.5 leading-none">
+                    ⌘K
+                  </kbd>
                 </div>
               </div>
-              <div className="flex items-center gap-1 md:gap-2">
-                <ThemeToggle />
+
+              <div className="flex items-center gap-1 md:gap-2 hairline-l pl-2 md:pl-4 ml-2 md:ml-4">
                 <NotificationBell />
               </div>
             </header>
 
-            {/* Main content */}
-            <main className="flex-1 overflow-x-hidden bg-muted/30 p-2 md:p-4 lg:p-6">{children}</main>
+            {/* Main */}
+            <main className="flex-1 overflow-x-hidden bg-background p-4 md:p-6 lg:p-8">
+              {children}
+            </main>
           </div>
         </div>
       </SidebarProvider>

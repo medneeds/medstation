@@ -6,14 +6,11 @@ import {
   Sigma,
   Pill,
   FileText,
-  Users,
   LogOut,
   Activity,
-  Folder,
   CreditCard,
   User,
   Home,
-  StickyNote,
   Wind,
   FileCheck,
   BookOpen,
@@ -21,7 +18,6 @@ import {
   Calculator,
   Moon,
   Sun,
-  GraduationCap,
 } from "lucide-react";
 import {
   Sidebar,
@@ -32,44 +28,43 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProfile } from "@/contexts/ProfileContext";
 import { useTheme } from "next-themes";
+import { cn } from "@/lib/utils";
 
-const homeModule = { title: "Início", url: "/dashboard", icon: Home };
-
-// Management modules - HIDDEN from sidebar but routes still active
-const managementModules = [
-  { title: "Pacientes", url: "/patients", icon: Users },
-  { title: "Casos", url: "/cases", icon: Folder },
-  { title: "Prescrições", url: "/prescricoes", icon: FileText },
-  { title: "Exames", url: "/exames", icon: FlaskConical },
-  { title: "Emitir Documentos", url: "/documentos", icon: FileText },
-  { title: "Notas", url: "/notes", icon: StickyNote },
-];
+const homeModule = { title: "Início", url: "/dashboard", icon: Home, code: "00" };
 
 const agentModules = [
-  { title: "Clínicus", url: "/clinicus", icon: Stethoscope },
-  { title: "Examinus", url: "/examinus", icon: Activity },
-  { title: "Gasometrus", url: "/gasometrus", icon: Wind },
-  { title: "Scorius", url: "/scorius", icon: Calculator },
-  { title: "Numerus", url: "/numerus", icon: Sigma },
-  { title: "Prescriptus", url: "/prescriptus", icon: Pill },
-  { title: "Atestus", url: "/atestus", icon: FileCheck },
-  { title: "Protocolus", url: "/protocolus", icon: BookOpen },
-  { title: "Orientus", url: "/orientus", icon: Compass },
-  { title: "CODexus", url: "/codexus", icon: FileText },
+  { title: "Clínicus", url: "/clinicus", icon: Stethoscope, code: "01" },
+  { title: "Examinus", url: "/examinus", icon: Activity, code: "02" },
+  { title: "Gasometrus", url: "/gasometrus", icon: Wind, code: "03" },
+  { title: "Scorius", url: "/scorius", icon: Calculator, code: "04" },
+  { title: "Numerus", url: "/numerus", icon: Sigma, code: "05" },
+  { title: "Prescriptus", url: "/prescriptus", icon: Pill, code: "06" },
+  { title: "Atestus", url: "/atestus", icon: FileCheck, code: "07" },
+  { title: "Protocolus", url: "/protocolus", icon: BookOpen, code: "08" },
+  { title: "Orientus", url: "/orientus", icon: Compass, code: "09" },
+  { title: "CODexus", url: "/codexus", icon: FileText, code: "10" },
 ];
 
 const settings = [
-  { title: "Meu Perfil", url: "/settings", icon: User },
+  { title: "Perfil", url: "/settings", icon: User },
   { title: "Assinatura", url: "/pricing", icon: CreditCard },
 ];
 
-
+const navItemClass = ({ isActive }: { isActive: boolean }) =>
+  cn(
+    "group relative flex items-center gap-3 rounded-sm px-3 h-9 text-sm font-medium transition-colors duration-150 ease-precise outline-none",
+    "border-l-2 border-transparent",
+    "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+    "focus-visible:bg-sidebar-accent focus-visible:text-sidebar-accent-foreground focus-visible:border-l-primary",
+    isActive
+      ? "bg-sidebar-accent text-foreground border-l-primary font-semibold"
+      : "text-sidebar-foreground/80",
+  );
 
 export function AppSidebar() {
   const { state } = useSidebar();
@@ -96,49 +91,52 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border bg-background shadow-sm">
-      <SidebarContent className="gap-0 bg-background">
-        {/* User Profile */}
-        <div className="flex items-center gap-3 px-4 py-6 border-b border-border bg-card">
-          <Avatar className="h-12 w-12 ring-2 ring-primary/20 shadow-sm transition-all hover:ring-primary/40 hover:scale-105">
-            <AvatarImage src={profile?.avatar_url || ""} alt={profile?.full_name || ""} />
-            <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground font-semibold">
-              {getInitials()}
-            </AvatarFallback>
-          </Avatar>
+    <Sidebar collapsible="icon" className="border-r border-hairline bg-sidebar">
+      <SidebarContent className="gap-0 bg-sidebar">
+        {/* Brand mark */}
+        <div className={cn("flex items-center gap-2 hairline-b px-4 h-14", collapsed && "px-3 justify-center")}>
+          <div className="h-6 w-6 border border-hairline grid place-items-center">
+            <div className="h-1.5 w-1.5 bg-primary" />
+          </div>
           {!collapsed && (
-            <div className="flex-1 min-w-0 animate-fade-in">
-              <p className="text-sm font-semibold text-foreground truncate">
-                {getTitle()} {profile?.full_name || "Carregando..."}
-              </p>
-              <p className="text-xs text-muted-foreground truncate mt-0.5">
-                {profile?.specialty || "Médico"}
-              </p>
-              {profile?.crm && profile?.crm_state && (
-                <p className="text-xs text-muted-foreground truncate mt-0.5">
-                  CRM-{profile.crm_state} {profile.crm}
-                </p>
-              )}
+            <div className="flex flex-col leading-none">
+              <span className="font-display text-sm font-semibold tracking-tightest text-foreground">MedStation</span>
+              <span className="font-mono text-2xs uppercase tracking-mono text-muted-foreground mt-0.5">Clinic OS</span>
             </div>
           )}
         </div>
 
-        {/* Home */}
+        {/* User profile */}
+        <div className={cn("flex items-center gap-3 px-4 py-4 hairline-b", collapsed && "justify-center px-2")}>
+          <Avatar className="h-9 w-9 rounded-sm border border-hairline">
+            <AvatarImage src={profile?.avatar_url || ""} alt={profile?.full_name || ""} className="rounded-sm" />
+            <AvatarFallback className="rounded-sm bg-muted text-foreground font-medium text-xs">
+              {getInitials()}
+            </AvatarFallback>
+          </Avatar>
+          {!collapsed && (
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground truncate leading-tight">
+                {getTitle()} {profile?.full_name?.split(" ")[0] || "—"}
+              </p>
+              <p className="font-mono text-2xs uppercase tracking-mono text-muted-foreground truncate mt-1">
+                {profile?.crm && profile?.crm_state
+                  ? `CRM-${profile.crm_state} ${profile.crm}`
+                  : profile?.specialty || "Médico"}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Início */}
         <SidebarGroup className="py-3">
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-0.5">
               <SidebarMenuItem>
-                  <SidebarMenuButton asChild tooltip={homeModule.title}>
-                  <NavLink
-                    to={homeModule.url}
-                    className={({ isActive }) =>
-                      isActive
-                        ? "bg-muted text-foreground font-semibold"
-                        : "hover:bg-muted/50 hover:translate-x-1 transition-all duration-200"
-                    }
-                  >
-                    <homeModule.icon className="h-4 w-4" />
-                    {!collapsed && <span className="animate-fade-in">{homeModule.title}</span>}
+                <SidebarMenuButton asChild tooltip={homeModule.title} className="p-0 h-auto bg-transparent hover:bg-transparent">
+                  <NavLink to={homeModule.url} className={navItemClass}>
+                    <homeModule.icon className="h-4 w-4 shrink-0" />
+                    {!collapsed && <span className="flex-1">{homeModule.title}</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -146,26 +144,29 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Agent modules */}
-        <SidebarGroup className="py-3 border-t border-border">
-          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-1">
-            Assistentes IA
-          </SidebarGroupLabel>
+        {/* Assistentes */}
+        <SidebarGroup className="py-3 hairline-t">
+          {!collapsed && (
+            <SidebarGroupLabel className="label-mono px-4 mb-2 h-auto flex items-center justify-between">
+              <span>Assistentes</span>
+              <span className="font-mono text-2xs text-muted-foreground/60">{agentModules.length.toString().padStart(2, "0")}</span>
+            </SidebarGroupLabel>
+          )}
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
+            <SidebarMenu className="gap-0.5">
               {agentModules.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title}>
-                    <NavLink
-                      to={item.url}
-                      className={({ isActive }) =>
-                        isActive
-                          ? "bg-muted text-foreground font-semibold"
-                          : "hover:bg-muted/50 hover:translate-x-1 transition-all duration-200"
-                      }
-                    >
-                      <item.icon className="h-4 w-4" />
-                      {!collapsed && <span className="animate-fade-in">{item.title}</span>}
+                  <SidebarMenuButton asChild tooltip={item.title} className="p-0 h-auto bg-transparent hover:bg-transparent">
+                    <NavLink to={item.url} className={navItemClass}>
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      {!collapsed && (
+                        <>
+                          <span className="flex-1">{item.title}</span>
+                          <span className="font-mono text-2xs text-muted-foreground/50 group-hover:text-muted-foreground">
+                            {item.code}
+                          </span>
+                        </>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -174,49 +175,51 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Settings */}
-        <SidebarGroup className="mt-auto py-3 border-t border-border">
+        {/* Settings + actions */}
+        <SidebarGroup className="mt-auto py-3 hairline-t">
+          {!collapsed && (
+            <SidebarGroupLabel className="label-mono px-4 mb-2 h-auto">Conta</SidebarGroupLabel>
+          )}
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
+            <SidebarMenu className="gap-0.5">
               {settings.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title}>
-                    <NavLink
-                      to={item.url}
-                      className={({ isActive }) =>
-                        isActive
-                          ? "bg-muted text-foreground font-semibold"
-                          : "hover:bg-muted/50 hover:translate-x-1 transition-all duration-200"
-                      }
-                    >
-                      <item.icon className="h-4 w-4" />
-                      {!collapsed && <span className="animate-fade-in">{item.title}</span>}
+                  <SidebarMenuButton asChild tooltip={item.title} className="p-0 h-auto bg-transparent hover:bg-transparent">
+                    <NavLink to={item.url} className={navItemClass}>
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      {!collapsed && <span className="flex-1">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
               <SidebarMenuItem>
-                <SidebarMenuButton 
-                  tooltip={theme === "dark" ? "Modo claro" : "Modo escuro"} 
+                <SidebarMenuButton
+                  tooltip={theme === "dark" ? "Modo claro" : "Modo escuro"}
                   onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                  className="hover:bg-muted/50 hover:translate-x-1 transition-all duration-200"
-                >
-                  {theme === "dark" ? (
-                    <Sun className="h-4 w-4" />
-                  ) : (
-                    <Moon className="h-4 w-4" />
+                  className={cn(
+                    "group flex items-center gap-3 rounded-sm px-3 h-9 text-sm font-medium",
+                    "border-l-2 border-transparent text-sidebar-foreground/80",
+                    "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                    "transition-colors duration-150 ease-precise",
                   )}
-                  {!collapsed && <span className="animate-fade-in">{theme === "dark" ? "Modo claro" : "Modo escuro"}</span>}
+                >
+                  {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                  {!collapsed && <span className="flex-1">{theme === "dark" ? "Modo claro" : "Modo escuro"}</span>}
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton 
-                  tooltip="Sair" 
+                <SidebarMenuButton
+                  tooltip="Sair"
                   onClick={handleLogout}
-                  className="text-destructive hover:bg-destructive/10 hover:text-destructive hover:translate-x-1 transition-all duration-200"
+                  className={cn(
+                    "group flex items-center gap-3 rounded-sm px-3 h-9 text-sm font-medium",
+                    "border-l-2 border-transparent text-destructive/90",
+                    "hover:bg-destructive/10 hover:text-destructive hover:border-l-destructive",
+                    "transition-colors duration-150 ease-precise",
+                  )}
                 >
                   <LogOut className="h-4 w-4" />
-                  {!collapsed && <span className="animate-fade-in">Sair</span>}
+                  {!collapsed && <span className="flex-1">Sair</span>}
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
