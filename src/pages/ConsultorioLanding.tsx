@@ -260,6 +260,7 @@ export default function ConsultorioLanding() {
                     <span className="font-display text-4xl tracking-tight">R$ 29,90</span>
                     <span className="text-sm text-muted-foreground">/mês</span>
                   </div>
+                  <p className="text-[11px] text-muted-foreground">ou R$ 299,90/ano (≈ R$ 24,99/mês)</p>
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> Transcrição em tempo real</li>
                     <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> Revisão final com Whisper</li>
