@@ -11,6 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from "@/hooks/use-toast";
 import { Activity } from "lucide-react";
 import { signUpSchema, signInSchema } from "@/lib/validations";
+import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 
 export default function Auth() {
   const navigate = useNavigate();
