@@ -331,8 +331,8 @@ export default function Home() {
       <section id="cadastro" className="py-12 md:py-20 lg:py-24 px-4 md:px-6 relative overflow-hidden">
         <div className="container mx-auto max-w-2xl text-center relative space-y-6 md:space-y-8">
           <div className="space-y-3 md:space-y-4">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight">
-              Comece em 30 segundos
+            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl tracking-tight text-foreground">
+              Comece em <span className="italic text-primary">30 segundos</span>
             </h2>
             <p className="text-sm md:text-base lg:text-lg text-muted-foreground">
               Sem cartão. Sem burocracia. Examinus grátis para sempre.
