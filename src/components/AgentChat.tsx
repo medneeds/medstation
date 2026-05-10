@@ -109,6 +109,7 @@ export function AgentChat({
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [message, setMessage] = useState("");
+  const [validationAnnouncement, setValidationAnnouncement] = useState("");
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const [lastConversation, setLastConversation] = useState<Conversation | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
