@@ -754,7 +754,7 @@ export function AgentChat({
 
   return (
     <div 
-      className="flex flex-col h-full p-4 md:p-6"
+      className="flex flex-col h-full p-3 md:p-6"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
