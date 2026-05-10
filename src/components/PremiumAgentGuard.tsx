@@ -115,7 +115,7 @@ export function PremiumAgentGuard({ children, agentName }: PremiumAgentGuardProp
                 </div>
                 <span className="text-muted-foreground">/mês</span>
                 <p className="text-xs text-muted-foreground mt-1">
-                  ou R$ 199,90/ano — economize 2 meses
+                  ou R$ 299,90/ano — economize R$ 58,90 (16%)
                 </p>
               </div>
               <Button 
