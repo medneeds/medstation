@@ -48,26 +48,44 @@ export default function Pricing() {
     });
   };
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     setLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          title: "Login necessário",
-          description: "Faça login para assinar o plano Pro.",
+
+      // Logged in → use create-checkout (current customer flow)
+      if (session) {
+        const { data, error } = await supabase.functions.invoke("create-checkout", {
+          body: {
+            couponCode: couponApplied ? couponCode.trim() : undefined,
+            billingPeriod,
+          },
         });
-        navigate("/auth");
+        if (error) throw error;
+        if (data?.url) window.location.href = data.url;
         return;
       }
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
+
+      // Guest → require email and use guest-checkout (same flow as homepage)
+      const trimmedEmail = email.trim().toLowerCase();
+      if (!trimmedEmail || !trimmedEmail.includes("@")) {
+        toast({
+          title: "Email necessário",
+          description: "Digite seu email para iniciar a assinatura.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const { data, error } = await supabase.functions.invoke("guest-checkout", {
         body: {
-          couponCode: couponApplied ? couponCode.trim() : undefined,
+          email: trimmedEmail,
           billingPeriod,
+          couponCode: couponApplied ? couponCode.trim() : undefined,
         },
       });
       if (error) throw error;
-      if (data?.url) window.open(data.url, "_blank");
+      if (data?.url) window.location.href = data.url;
     } catch (error: any) {
       console.error("Checkout error:", error);
       toast({
