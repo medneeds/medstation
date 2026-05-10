@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from "react";
+
+export const SUPPORT_CHAT_EVENT = "open-support-chat";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
