@@ -616,7 +616,7 @@ export default function PublicExaminusChat() {
                       {message.content}
                     </p>
                     {message.role === "assistant" && (
-                      <div className="absolute bottom-1.5 md:bottom-2 right-1.5 md:right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute bottom-1.5 md:bottom-2 right-1.5 md:right-2 flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -797,7 +797,7 @@ export default function PublicExaminusChat() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder={hasMessages ? "Cole exames..." : "Cole exames aqui"}
-                className="min-h-[44px] max-h-32 resize-none flex-1 rounded-2xl border-border/50 focus:border-primary/50 text-sm py-3"
+                className="min-h-[44px] max-h-32 resize-none flex-1 rounded-2xl border-border/50 focus:border-primary/50 text-base py-3"
                 disabled={isLoading}
               />
               <Button
