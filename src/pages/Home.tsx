@@ -97,15 +97,13 @@ export default function Home() {
                 <span className="h-px w-8 bg-primary" />
                 Para médicos ocupados
               </div>
-              <h1 className="font-display text-[clamp(2.25rem,7vw,4.5rem)] tracking-tight leading-[1.02] text-foreground whitespace-nowrap">
+              <h1 className="font-display text-[clamp(2rem,8.5vw,4.5rem)] tracking-tight leading-[1.05] text-foreground md:whitespace-nowrap">
                 Produza mais. <span className="italic text-primary">Digite menos.</span>
               </h1>
-              <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto inline-flex flex-wrap items-center justify-center gap-x-1.5">
-                <span>
-                  Conheça <span className="font-medium text-foreground">Examinus</span> — um dos 10 assistentes clínicos da MedStation AI.
-                  Teste agora, grátis e sem cadastro
-                </span>
-                <ArrowDown className="inline-block w-3.5 h-3.5 text-primary translate-y-[1px] animate-bounce" />
+              <p className="text-[13px] md:text-base text-muted-foreground max-w-2xl mx-auto px-2 leading-relaxed">
+                Conheça <span className="font-medium text-foreground">Examinus</span> — um dos 10 assistentes clínicos da MedStation AI.
+                Teste agora, grátis e sem cadastro
+                <ArrowDown className="inline-block w-3.5 h-3.5 text-primary ml-1 translate-y-[2px] animate-bounce" />
               </p>
             </div>
 
@@ -116,8 +114,8 @@ export default function Home() {
               {/* Hairline ring que respira */}
               <div className="absolute -inset-px rounded-2xl border border-primary/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-              {/* Affordance — clip/nota no canto superior direito */}
-              <div className="absolute -top-3 right-4 md:right-6 z-10 pointer-events-none rotate-[2deg] origin-top-right">
+              {/* Affordance — clip/nota no canto superior direito (oculto em telas muito pequenas para não sobrepor) */}
+              <div className="hidden sm:block absolute -top-3 right-4 md:right-6 z-10 pointer-events-none rotate-[2deg] origin-top-right">
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-primary text-primary-foreground border border-primary/60 text-[0.58rem] uppercase tracking-[0.2em] font-mono shadow-md">
                   <span className="w-1 h-1 rounded-full bg-primary-foreground animate-pulse" />
                   Cole um exame e teste

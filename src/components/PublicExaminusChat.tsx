@@ -533,7 +533,7 @@ export default function PublicExaminusChat() {
   const isCoolingDown = cooldownRemaining > 0;
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-2 md:px-4">
+    <div className="w-full max-w-5xl mx-auto">
       {/* Hero Section */}
       {!hasMessages && (
         <div className="text-center space-y-3 md:space-y-4 mb-4 md:mb-6 animate-in fade-in duration-700 slide-in-from-bottom-4">
@@ -564,7 +564,7 @@ export default function PublicExaminusChat() {
       )}
 
       {/* Chat Card */}
-      <Card className={`shadow-elevated border-border/50 backdrop-blur-xl bg-card/95 transition-all duration-500 ${hasMessages ? 'hover:shadow-medical' : ''} mx-2 md:mx-0`}>
+      <Card className={`shadow-elevated border-border/50 backdrop-blur-xl bg-card/95 transition-all duration-500 ${hasMessages ? 'hover:shadow-medical' : ''}`}>
         {/* Compact Header (only shown when there are messages) */}
         {hasMessages && (
           <div className="bg-gradient-primary p-3 md:p-4 rounded-t-2xl relative overflow-hidden">
