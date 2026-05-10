@@ -12,6 +12,24 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
+// Product IDs - LIVE MODE (Produção)
+const AGENTS_PRODUCT_IDS = [
+  "prod_TgR7u5urUle7om", // Agents standalone
+  "prod_UUfvAeta3d1Rn5", // Agents upgrade
+  "prod_UUfw2uz4UPwkco", // Pro 2 bundle
+];
+const CONSULTORIO_PRODUCT_IDS = [
+  "prod_UUfuDkH9yfcfb3", // Consultório standalone
+  "prod_UUfu9AzBtaGsCW", // Consultório upgrade
+  "prod_UUfw2uz4UPwkco", // Pro 2 bundle
+];
+
+function computeAvailableUpgrade(hasAgents: boolean, hasConsultorio: boolean): string | null {
+  if (hasAgents && !hasConsultorio) return "consultorio_upgrade";
+  if (hasConsultorio && !hasAgents) return "agents_upgrade";
+  return null;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -28,27 +46,22 @@ serve(async (req) => {
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
-    logStep("Stripe key verified");
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header provided");
-    logStep("Authorization header found");
 
     const token = authHeader.replace("Bearer ", "");
-    logStep("Authenticating user with token");
-    
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError) throw new Error(`Authentication error: ${userError.message}`);
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Check if user has admin role
+    // Admin
     const { data: isAdmin } = await supabaseClient.rpc('has_role', {
       _user_id: user.id,
       _role: 'admin'
     });
-
     if (isAdmin) {
       logStep("User is admin, granting full access");
       return new Response(JSON.stringify({
@@ -56,18 +69,19 @@ serve(async (req) => {
         product_ids: ['admin'],
         subscription_end: null,
         has_agents: true,
+        has_consultorio: true,
+        available_upgrade: null,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
     }
 
+    // Courtesy
     const { data: hasCourtesy } = await supabaseClient.rpc('has_active_courtesy', {
       _user_id: user.id,
     });
-
     if (hasCourtesy) {
-      logStep("User has active courtesy access, granting full access");
       const { data: courtesyData } = await supabaseClient
         .from('courtesy_access')
         .select('expires_at')
@@ -79,6 +93,8 @@ serve(async (req) => {
         product_ids: ['courtesy'],
         subscription_end: courtesyData?.expires_at || null,
         has_agents: true,
+        has_consultorio: true,
+        available_upgrade: null,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -87,13 +103,14 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    
+
     if (customers.data.length === 0) {
-      logStep("No customer found, updating unsubscribed state");
       return new Response(JSON.stringify({
         subscribed: false,
         product_ids: [],
         has_agents: false,
+        has_consultorio: false,
+        available_upgrade: null,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -101,56 +118,39 @@ serve(async (req) => {
     }
 
     const customerId = customers.data[0].id;
-    logStep("Found Stripe customer", { customerId });
-
-    // Get ALL subscriptions (active, trialing, past_due) to be more lenient
-    // past_due users are typically given a grace period to update payment
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "all",
       limit: 20,
     });
-    
-    // Consider these statuses as "subscribed" (with grace for payment issues)
+
     const validStatuses = ["active", "trialing", "past_due"];
     const validSubs = subscriptions.data.filter((s) => validStatuses.includes(s.status));
-    
+
     const hasActiveSub = validSubs.length > 0;
     const productIds: string[] = [];
     let subscriptionEnd: string | null = null;
 
-    // Product IDs - LIVE MODE (Produção)
-    const AGENTS_PRODUCT_ID = "prod_TgR7u5urUle7om"; // MedStation AI
-
-    if (hasActiveSub) {
-      logStep("Processing valid subscriptions", {
-        count: validSubs.length,
-        statuses: validSubs.map(s => s.status)
-      });
-
-      for (const subscription of validSubs) {
-        for (const item of subscription.items.data) {
-          const productId = item.price.product as string;
-          if (productId && !productIds.includes(productId)) {
-            productIds.push(productId);
-          }
-        }
-        if (subscription.current_period_end) {
-          try {
-            const endDate = new Date(subscription.current_period_end * 1000).toISOString();
-            if (!subscriptionEnd || endDate > subscriptionEnd) {
-              subscriptionEnd = endDate;
-            }
-          } catch (dateError) {
-            logStep("Date parsing error, skipping", { current_period_end: subscription.current_period_end });
-          }
+    for (const subscription of validSubs) {
+      for (const item of subscription.items.data) {
+        const pid = item.price.product as string;
+        if (pid && !productIds.includes(pid)) productIds.push(pid);
+      }
+      if (subscription.current_period_end) {
+        try {
+          const endDate = new Date(subscription.current_period_end * 1000).toISOString();
+          if (!subscriptionEnd || endDate > subscriptionEnd) subscriptionEnd = endDate;
+        } catch {
+          /* skip */
         }
       }
-      logStep("Valid subscriptions processed", { productIds, subscriptionEnd });
     }
 
-    const hasAgents = productIds.includes(AGENTS_PRODUCT_ID);
-    logStep("Access levels determined", { hasAgents });
+    const hasAgents = productIds.some((id) => AGENTS_PRODUCT_IDS.includes(id));
+    const hasConsultorio = productIds.some((id) => CONSULTORIO_PRODUCT_IDS.includes(id));
+    const availableUpgrade = computeAvailableUpgrade(hasAgents, hasConsultorio);
+
+    logStep("Access levels determined", { hasAgents, hasConsultorio, availableUpgrade });
 
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
@@ -158,6 +158,8 @@ serve(async (req) => {
       product_id: productIds[0] || null,
       subscription_end: subscriptionEnd,
       has_agents: hasAgents,
+      has_consultorio: hasConsultorio,
+      available_upgrade: availableUpgrade,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
