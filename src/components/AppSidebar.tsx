@@ -96,37 +96,16 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r border-hairline bg-sidebar">
       <SidebarContent className="gap-0 bg-sidebar">
         {/* Brand mark */}
-        <div className={cn("flex items-center gap-2.5 hairline-b px-4 h-16", collapsed && "px-2 justify-center")}>
-          <LogoMark className={cn(collapsed ? "h-9 w-9" : "h-10 w-10", "shrink-0")} />
+        <div className={cn("flex items-center gap-3 hairline-b px-4 h-20", collapsed && "px-2 justify-center h-16")}>
+          <LogoMark className={cn(collapsed ? "h-10 w-10" : "h-12 w-12", "shrink-0")} />
           {!collapsed && (
             <div className="flex flex-col leading-none">
-              <span className="font-display text-base font-semibold tracking-tightest text-foreground">
+              <span className="font-display text-xl font-semibold tracking-tightest text-foreground">
                 MedStation
-                <span className="font-mono uppercase tracking-[0.18em] text-primary ml-1 text-[0.6em] align-middle">AI</span>
               </span>
-              <span className="font-mono text-2xs uppercase tracking-mono text-muted-foreground mt-1">Clinic OS</span>
-            </div>
-          )}
-        </div>
-
-        {/* User profile */}
-        <div className={cn("flex items-center gap-3 px-4 py-4 hairline-b", collapsed && "justify-center px-2")}>
-          <Avatar className="h-9 w-9 rounded-sm border border-hairline">
-            <AvatarImage src={profile?.avatar_url || ""} alt={profile?.full_name || ""} className="rounded-sm" />
-            <AvatarFallback className="rounded-sm bg-muted text-foreground font-medium text-xs">
-              {getInitials()}
-            </AvatarFallback>
-          </Avatar>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate leading-tight">
-                {getTitle()} {profile?.full_name?.split(" ")[0] || "—"}
-              </p>
-              <p className="font-mono text-2xs uppercase tracking-mono text-muted-foreground truncate mt-1">
-                {profile?.crm && profile?.crm_state
-                  ? `CRM-${profile.crm_state} ${profile.crm}`
-                  : profile?.specialty || "Médico"}
-              </p>
+              <span className="font-mono uppercase tracking-[0.22em] text-primary mt-1.5 text-[0.65rem]">
+                AI
+              </span>
             </div>
           )}
         </div>
