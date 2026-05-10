@@ -65,7 +65,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
+  
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
