@@ -33,7 +33,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 
 const homeModule = { title: "Início", url: "/dashboard", icon: Home, code: "00" };
