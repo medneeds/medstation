@@ -395,7 +395,7 @@ export default function Home() {
               Comece em <span className="italic text-primary">30 segundos</span>
             </h2>
             <p className="text-sm md:text-base lg:text-lg text-muted-foreground">
-              Sem cartão. Sem burocracia. Examinus grátis para sempre.
+              Sem cartão. Sem burocracia. Examinus grátis para experimentar (com restrições) — Pro libera os 10 ilimitados de verdade.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -418,7 +418,7 @@ export default function Home() {
           </div>
           <p className="text-[10px] md:text-xs text-muted-foreground flex flex-wrap items-center justify-center gap-1.5 md:gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-            <span>Examinus grátis • Pro a partir de R$ 29,90/mês</span>
+            <span>Examinus grátis com restrições • Pro R$ 29,90/mês ou R$ 299,90/ano</span>
           </p>
         </div>
       </section>
