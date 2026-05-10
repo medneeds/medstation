@@ -133,24 +133,20 @@ All colors MUST be HSL.
     --sidebar-border: 160 10% 14%;
     --sidebar-ring: 158 40% 58%;
 
-    /* Studius Premium Colors - Dark Mode */
-    --studius-primary: 165 55% 52%;
-    --studius-secondary: 145 45% 55%;
-    --studius-accent: 175 50% 48%;
-    --studius-bg: 160 12% 8%;
-    --studius-muted: 160 10% 12%;
-    --studius-border: 160 8% 18%;
+    /* Editorial accents — warm amber for premium emphasis */
+    --accent-warm: 38 80% 62%;
+    --accent-warm-foreground: 30 30% 8%;
+    --hairline: 160 10% 18%;
+    --surface-elevated: 160 10% 12%;
 
     /* Dark mode gradients - subtle green glow */
     --gradient-primary: linear-gradient(135deg, hsl(158 40% 58%), hsl(165 45% 65%));
     --gradient-clinical: linear-gradient(135deg, hsl(160 10% 12%), hsl(155 8% 16%));
     --gradient-hero: linear-gradient(135deg, hsl(160 12% 7%), hsl(158 25% 18%));
-    --gradient-studius: linear-gradient(135deg, hsl(165 55% 52%), hsl(155 45% 55%), hsl(175 50% 48%));
 
     --shadow-medical: 0 2px 8px hsl(0 0% 0% / 0.25);
     --shadow-elevated: 0 4px 16px hsl(0 0% 0% / 0.35);
     --shadow-critical: 0 8px 24px hsl(0 72% 58% / 0.25);
-    --shadow-studius: 0 8px 32px hsl(165 45% 40% / 0.25);
   }
 }
 
