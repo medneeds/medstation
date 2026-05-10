@@ -278,7 +278,15 @@ export function AgentChat({
   };
 
   const sendMessage = async () => {
-    if (!message.trim() || isLoading) return;
+    if (isLoading) return;
+    if (!message.trim()) {
+      toast({
+        title: "Mensagem vazia",
+        description: "Digite algo antes de enviar.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
