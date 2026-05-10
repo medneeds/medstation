@@ -399,6 +399,10 @@ export default function PublicExaminusChat() {
   const handleSend = async () => {
     const hasFiles = selectedFiles.length > 0 && extractedText.trim().length > 0;
     if ((!input.trim() && !hasFiles) || isLoading || isExtracting) return;
+    if (cooldownRemaining > 0) {
+      window.dispatchEvent(new CustomEvent("demo:cooldown-click"));
+      return;
+    }
 
     const userText = input.trim();
     const composed = hasFiles
@@ -432,18 +436,9 @@ export default function PublicExaminusChat() {
       if (data.error || data.limitReached) {
         setMessages(prev => [...prev, {
           role: "assistant",
-          content: "🎯 Você usou suas extrações gratuitas!\n\n✨ Crie sua conta grátis agora e continue usando o Examinus sem limites — é rápido e sem cartão de crédito.\n\nAlém disso, você terá acesso aos outros 9 assistentes médicos especializados:\n\n• Clínicus — Anamneses estruturadas\n• Scorius — Cálculo de scores clínicos\n• Prescriptus — Prescrições inteligentes\n• E muito mais!"
+          content: "🎯 Você usou suas extrações gratuitas!\n\n✨ Crie sua conta grátis agora e continue sem limites — é rápido e sem cartão de crédito.\n\nAlém disso, você desbloqueia os outros 9 assistentes médicos especializados."
         }]);
-        
-        toast({
-          title: "Limite atingido",
-          description: "Crie sua conta grátis para continuar!",
-          action: (
-            <Button size="sm" onClick={() => navigate('/auth')} className="ml-2">
-              Criar Conta
-            </Button>
-          ),
-        });
+        window.dispatchEvent(new CustomEvent("demo:limit-reached"));
         return;
       }
 
@@ -456,26 +451,28 @@ export default function PublicExaminusChat() {
       setRemainingMessages(data.remainingMessages);
       setUsedCount(data.usedCount || 0);
 
-      // CTAs progressivos baseados no uso
-      if (data.remainingMessages === 2) {
+      // Inicia cooldown de 30s após cada extração bem-sucedida
+      startCooldown();
+
+      // Notifica engine de pop-ups
+      const newCount = (data.usedCount as number) || 0;
+      window.dispatchEvent(
+        new CustomEvent("demo:extraction-completed", { detail: { count: newCount } })
+      );
+
+      // Última extração: aviso direto
+      if (data.remainingMessages === 1) {
         setTimeout(() => {
           toast({
-            title: "2 extrações restantes",
-            description: "Está gostando? Crie sua conta grátis para uso ilimitado!",
-          });
-        }, 1500);
-      } else if (data.remainingMessages === 1) {
-        setTimeout(() => {
-          toast({
-            title: "Última extração!",
-            description: "Crie sua conta grátis agora para não perder acesso.",
+            title: "Última extração gratuita",
+            description: "Crie sua conta agora para continuar.",
             action: (
               <Button size="sm" onClick={() => navigate('/auth')} className="ml-2">
                 Criar Conta
               </Button>
             ),
           });
-        }, 1000);
+        }, 1200);
       }
 
     } catch (error) {
