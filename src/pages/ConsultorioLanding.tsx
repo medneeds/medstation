@@ -295,6 +295,7 @@ export default function ConsultorioLanding() {
                     <span className="text-sm text-muted-foreground">/mês</span>
                   </div>
                   <p className="text-xs text-muted-foreground">Economize R$ 9,90 vs comprar separado</p>
+                  <p className="text-[11px] text-muted-foreground -mt-2">ou R$ 499,90/ano (≈ R$ 41,66/mês)</p>
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> <strong className="text-foreground">10 Assistentes</strong> (Clínicus, Examinus, etc.)</li>
                     <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> <strong className="text-foreground">Modo Consultório</strong> em tempo real</li>
