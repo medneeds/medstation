@@ -7,8 +7,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Limite total de extrações gratuitas
-const RATE_LIMIT = 5;
+// Limite total de extrações gratuitas + cooldown entre extrações
+const RATE_LIMIT = 3;
+const COOLDOWN_MS = 30_000;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
