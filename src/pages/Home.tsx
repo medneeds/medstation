@@ -423,6 +423,19 @@ export default function Home() {
         </div>
       </footer>
       </div>
+
+      {activeAgent && (
+        <AssistantShowcaseDialog
+          open={!!activeAssistant}
+          onOpenChange={(o) => !o && setActiveAssistant(null)}
+          name={activeAgent.name}
+          shortDesc={activeAgent.shortDesc}
+          fullDesc={activeAgent.fullDesc}
+          icon={activeAgent.icon}
+          slides={assistantSlides[activeAgent.name] ?? []}
+          code={String(activeIndex + 1).padStart(2, "0")}
+        />
+      )}
     </div>
   );
 }
