@@ -110,7 +110,7 @@ export default function Pricing() {
             Comece grátis, <span className="italic text-primary">evolua quando quiser</span>
           </h1>
           <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
-            Examinus sempre grátis. Pro desbloqueia os 10 assistentes especializados.
+            Examinus grátis para experimentar (com restrições). Pro libera os 10 assistentes <span className="italic text-foreground">verdadeiramente ilimitados</span>, sem espera e sem pop-ups.
           </p>
         </div>
 
