@@ -87,23 +87,49 @@ export default function Home() {
       </header>
 
       {/* Seção 1: Examinus por MedStation AI */}
-      <section id="demo" className="py-6 md:py-8 px-4 md:px-6 relative overflow-hidden">
+      <section id="demo" className="pt-10 md:pt-16 pb-6 md:pb-8 px-4 md:px-6 relative overflow-hidden">
         <div className="container mx-auto max-w-4xl relative">
-          <div className="space-y-6 md:space-y-8 animate-in fade-in duration-700 text-center">
+          <div className="space-y-8 md:space-y-10 animate-in fade-in duration-700 text-center">
 
-            {/* Demo Card Centralizado */}
-            <div className="relative">
-              <div className="absolute -inset-1 bg-gradient-primary rounded-3xl blur-2xl opacity-20"></div>
-              <div className="relative">
+            {/* Hero editorial header */}
+            <div className="space-y-4 md:space-y-5 max-w-3xl mx-auto">
+              <div className="inline-flex items-center gap-2 text-[0.65rem] uppercase tracking-[0.22em] font-mono text-muted-foreground">
+                <span className="h-px w-8 bg-primary" />
+                Para médicos ocupados
+              </div>
+              <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tight leading-[1.02] text-foreground">
+                Produza mais. <span className="italic text-primary">Digite menos.</span>
+              </h1>
+              <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
+                Conheça <span className="font-medium text-foreground">Examinus</span> — um dos 10 assistentes clínicos da MedStation AI.
+                <br className="hidden sm:block" />
+                Teste agora, grátis e sem cadastro.
+              </p>
+            </div>
+
+            {/* Demo Card Centralizado — com pulso sutil para chamar interação */}
+            <div className="relative group">
+              {/* Glow pulsante */}
+              <div className="absolute -inset-1 bg-primary/20 rounded-3xl blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-700 animate-[pulse_4s_ease-in-out_infinite]"></div>
+              {/* Hairline ring que respira */}
+              <div className="absolute -inset-px rounded-2xl border border-primary/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              {/* Affordance label flutuante */}
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-background border border-hairline text-[0.6rem] uppercase tracking-[0.2em] font-mono text-muted-foreground shadow-sm">
+                  <span className="w-1 h-1 rounded-full bg-primary animate-pulse" />
+                  Cole um exame e teste
+                </div>
+              </div>
+              <div className="relative transition-transform duration-500 group-hover:-translate-y-0.5">
                 <PublicExaminusChat />
               </div>
             </div>
 
             {/* CTA Footer */}
-            <div className="flex flex-col items-center gap-2 md:gap-3 pt-3 md:pt-4">
+            <div className="flex flex-col items-center gap-2 md:gap-3 pt-2 md:pt-3">
               <p className="text-xs md:text-sm text-muted-foreground flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-                Teste grátis • Sem cadastro
+                Grátis para sempre · Sem cartão · Sem cadastro
               </p>
               <Button 
                 variant="ghost"
@@ -111,7 +137,7 @@ export default function Home() {
                 className="text-xs md:text-sm text-muted-foreground hover:text-foreground h-8 md:h-9"
                 onClick={() => scrollToSection('plataforma')}
               >
-                Ver plataforma completa ↓
+                Ver os outros 9 assistentes ↓
               </Button>
             </div>
           </div>
