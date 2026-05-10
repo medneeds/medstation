@@ -7,7 +7,6 @@ interface SubscriptionContextType {
   productIds: string[];
   subscriptionEnd: string | null;
   hasAgents: boolean;
-  hasStudius: boolean;
   loading: boolean;
   checkSubscription: () => Promise<void>;
 }
@@ -20,58 +19,31 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [productIds, setProductIds] = useState<string[]>([]);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [hasAgents, setHasAgents] = useState(false);
-  const [hasStudius, setHasStudius] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const checkSubscription = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        console.log("[SubscriptionContext] No session found, resetting state");
         setSubscribed(false);
         setProductId(null);
         setProductIds([]);
         setSubscriptionEnd(null);
         setHasAgents(false);
-        setHasStudius(false);
         setLoading(false);
         return;
       }
 
-      console.log("[SubscriptionContext] Checking subscription for user:", session.user.email);
-      
       const { data, error } = await supabase.functions.invoke("check-subscription");
-      
-      if (error) {
-        console.error("[SubscriptionContext] Error from check-subscription:", error);
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log("[SubscriptionContext] Subscription data received:", data);
-
-      // Ensure we properly handle the response
-      const isSubscribed = data?.subscribed === true;
-      const userHasAgents = data?.has_agents === true;
-      const userHasStudius = data?.has_studius === true;
-
-      setSubscribed(isSubscribed);
+      setSubscribed(data?.subscribed === true);
       setProductId(data?.product_id || null);
       setProductIds(data?.product_ids || []);
       setSubscriptionEnd(data?.subscription_end || null);
-      setHasAgents(userHasAgents);
-      setHasStudius(userHasStudius);
-      
-      console.log("[SubscriptionContext] State updated:", { 
-        subscribed: isSubscribed, 
-        hasAgents: userHasAgents, 
-        hasStudius: userHasStudius,
-        productIds: data?.product_ids 
-      });
+      setHasAgents(data?.has_agents === true);
     } catch (error) {
       console.error("[SubscriptionContext] Error checking subscription:", error);
-      // On transient error, do NOT downgrade an already-granted access state.
-      // This prevents paying customers from being temporarily locked out due to network/API hiccups.
-      // Access state will be re-evaluated on next successful check (auto-refresh every 60s).
     } finally {
       setLoading(false);
     }
@@ -79,7 +51,6 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     checkSubscription();
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         checkSubscription();
@@ -89,14 +60,10 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         setProductIds([]);
         setSubscriptionEnd(null);
         setHasAgents(false);
-        setHasStudius(false);
         setLoading(false);
       }
     });
-
-    // Refresh subscription status every 60 seconds
     const interval = setInterval(checkSubscription, 60000);
-
     return () => {
       subscription.unsubscribe();
       clearInterval(interval);
@@ -104,15 +71,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <SubscriptionContext.Provider value={{ 
-      subscribed, 
-      productId, 
-      productIds,
-      subscriptionEnd, 
-      hasAgents,
-      hasStudius,
-      loading, 
-      checkSubscription 
+    <SubscriptionContext.Provider value={{
+      subscribed, productId, productIds, subscriptionEnd, hasAgents, loading, checkSubscription
     }}>
       {children}
     </SubscriptionContext.Provider>
