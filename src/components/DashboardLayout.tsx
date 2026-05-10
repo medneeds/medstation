@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import NotificationBell from "@/components/NotificationBell";
+import { HeaderUserMenu } from "@/components/HeaderUserMenu";
 import { SupportChat } from "@/components/SupportChat";
 
 interface DashboardLayoutProps {
