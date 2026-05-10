@@ -93,8 +93,7 @@ export function UpgradeModal({ open, onOpenChange, reason = "engagement" }: Upgr
           <Button
             onClick={() => {
               onOpenChange(false);
-              const el = document.getElementById("pricing");
-              el?.scrollIntoView({ behavior: "smooth" });
+              navigate("/pricing");
             }}
             variant="outline"
             size="lg"
