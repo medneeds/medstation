@@ -1,14 +1,13 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
-  Mic, 
-  MicOff, 
-  Pause, 
-  Play, 
+  Mic,
+  Pause,
+  Play,
   CheckCircle2,
   Clock,
   Copy,
@@ -16,9 +15,9 @@ import {
   Save,
   MessageSquare,
   FileText,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useContinuousRecording } from "@/hooks/useContinuousRecording";
 import { useConsultation } from "@/hooks/useConsultation";
 import { AudioVisualizer } from "@/components/consultation/AudioVisualizer";
 import { TranscriptionPane } from "@/components/consultation/TranscriptionPane";
@@ -33,63 +32,43 @@ interface ConsultationModeProps {
 
 export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
   const isMobile = useIsMobile();
-  const [audioLevel, setAudioLevel] = useState(0);
   const [showFinishDialog, setShowFinishDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("transcription");
 
   const {
     segments,
+    partialTranscription,
     structure,
-    isTranscribing,
-    isStructuring,
-    formattedTime,
-    currentSpeaker,
-    processAudioChunk,
-    updateStructure,
-    changeSpeaker,
-    deleteSegment,
-    updateStructureField,
-    startTimer,
-    stopTimer,
-    reset,
-    finalize,
-  } = useConsultation({ caseId });
-
-  const {
     isRecording,
     isPaused,
+    isConnecting,
+    isTranscribing,
+    isStructuring,
+    isFinalizing,
+    formattedTime,
+    currentSpeaker,
+    audioLevel,
     error,
     startRecording,
     stopRecording,
     pauseRecording,
     resumeRecording,
-  } = useContinuousRecording({
-    onAudioChunk: processAudioChunk,
-    onAudioLevel: setAudioLevel,
-    chunkIntervalMs: 3000,
-  });
+    updateStructure,
+    changeSpeaker,
+    deleteSegment,
+    updateStructureField,
+    stopTimer,
+    reset,
+  } = useConsultation({ caseId });
 
-  const handleStart = useCallback(async () => {
-    await startRecording();
-    startTimer();
-    toast.success('Modo Consultório ativado');
-  }, [startRecording, startTimer]);
-
-  const handlePause = useCallback(() => {
-    pauseRecording();
-    toast.info('Gravação pausada');
-  }, [pauseRecording]);
-
-  const handleResume = useCallback(() => {
-    resumeRecording();
-    toast.info('Gravação retomada');
-  }, [resumeRecording]);
+  useEffect(() => {
+    if (error) toast.error(error);
+  }, [error]);
 
   const handleFinish = useCallback(async () => {
-    stopRecording();
-    await finalize();
+    await stopRecording();
     setShowFinishDialog(true);
-  }, [stopRecording, finalize]);
+  }, [stopRecording]);
 
   const handleGenerateStructure = useCallback(async () => {
     try {
@@ -102,9 +81,9 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     }
   }, [updateStructure]);
 
-  const handleExit = useCallback(() => {
+  const handleExit = useCallback(async () => {
     if (isRecording) {
-      stopRecording();
+      await stopRecording();
       stopTimer();
     }
     reset();
@@ -131,14 +110,10 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
         return `${labels[key] || key}:\n${value}`;
       })
       .join('\n\n');
-    
+
     navigator.clipboard.writeText(text);
     toast.success('Copiado para a área de transferência');
   }, [structure]);
-
-  if (error) {
-    toast.error(error);
-  }
 
   return (
     <div className="flex flex-col h-full bg-background">
@@ -150,16 +125,16 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           </Button>
           <div>
             <h1 className="font-semibold text-sm md:text-base">Modo Consultório</h1>
-            <p className="text-[10px] md:text-xs text-muted-foreground">Clínicus</p>
+            <p className="text-[10px] md:text-xs text-muted-foreground">Clínicus · Scribe v2 ao vivo + Whisper revisão final</p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2 md:gap-4">
           <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
             <Clock className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
             <span className="font-mono">{formattedTime}</span>
           </div>
-          
+
           {isRecording && (
             <div className="flex items-center gap-1 md:gap-2">
               <div className={cn(
@@ -176,35 +151,55 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
 
       {/* Audio Control Bar */}
       <div className="flex flex-col items-center gap-4 md:gap-6 px-3 md:px-4 py-6 md:py-8 border-b bg-gradient-to-b from-muted/50 to-background relative overflow-hidden">
-        {/* Background pulse when recording */}
         {isRecording && !isPaused && (
           <div className="absolute inset-0 bg-primary/5 animate-pulse pointer-events-none" />
         )}
-        
-        {/* Audio Visualizer */}
-        <AudioVisualizer 
-          level={audioLevel} 
+
+        <AudioVisualizer
+          level={audioLevel}
           isActive={isRecording && !isPaused}
           currentSpeaker={isRecording && !isPaused ? currentSpeaker : undefined}
           className="w-full max-w-sm"
         />
-        
+
+        {/* Live partial transcript indicator */}
+        {isRecording && !isPaused && (
+          <div className="text-center min-h-[1.5rem] max-w-md px-3">
+            {partialTranscription ? (
+              <p className="text-sm text-muted-foreground italic">{partialTranscription}</p>
+            ) : (
+              <p className="text-xs text-muted-foreground/60">
+                {isTranscribing ? 'Ouvindo…' : 'Aguardando fala…'}
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Control Buttons */}
         <div className="flex items-center gap-3">
           {!isRecording ? (
-            <Button onClick={handleStart} size={isMobile ? "default" : "lg"} className="gap-2 px-6">
-              <Mic className="h-4 w-4 md:h-5 md:w-5" />
-              <span className="text-sm md:text-base">Iniciar Gravação</span>
+            <Button onClick={startRecording} disabled={isConnecting} size={isMobile ? "default" : "lg"} className="gap-2 px-6">
+              {isConnecting ? (
+                <>
+                  <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" />
+                  <span className="text-sm md:text-base">Conectando…</span>
+                </>
+              ) : (
+                <>
+                  <Mic className="h-4 w-4 md:h-5 md:w-5" />
+                  <span className="text-sm md:text-base">Iniciar Gravação</span>
+                </>
+              )}
             </Button>
           ) : (
             <>
               {isPaused ? (
-                <Button onClick={handleResume} variant="outline" size={isMobile ? "default" : "lg"} className="gap-2">
+                <Button onClick={resumeRecording} variant="outline" size={isMobile ? "default" : "lg"} className="gap-2">
                   <Play className="h-4 w-4 md:h-5 md:w-5" />
                   <span className="text-sm md:text-base">Continuar</span>
                 </Button>
               ) : (
-                <Button onClick={handlePause} variant="outline" size={isMobile ? "default" : "lg"} className="gap-2">
+                <Button onClick={pauseRecording} variant="outline" size={isMobile ? "default" : "lg"} className="gap-2">
                   <Pause className="h-4 w-4 md:h-5 md:w-5" />
                   <span className="text-sm md:text-base">Pausar</span>
                 </Button>
@@ -217,8 +212,14 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           )}
         </div>
 
-        {/* Structure Generation Button - Always visible when there are segments */}
-        {segments.length > 0 && !isRecording && (
+        {isFinalizing && (
+          <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Revisão final com Whisper em andamento…</span>
+          </div>
+        )}
+
+        {segments.length > 0 && !isRecording && !isFinalizing && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -226,7 +227,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           >
             <Button
               onClick={handleGenerateStructure}
-              disabled={isStructuring || isTranscribing}
+              disabled={isStructuring}
               size="lg"
               variant="secondary"
               className="gap-2 px-6 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20"
@@ -238,7 +239,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
         )}
       </div>
 
-      {/* Main Content - Split View on desktop, Tabs on mobile */}
+      {/* Main Content */}
       {isMobile ? (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
           <TabsList className="grid w-full grid-cols-2 mx-0 rounded-none border-b">
@@ -270,7 +271,6 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
         </Tabs>
       ) : (
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-0 overflow-hidden">
-          {/* Left - Transcription */}
           <Card className="rounded-none border-0 border-r h-full overflow-hidden">
             <TranscriptionPane
               segments={segments}
@@ -280,8 +280,6 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               onDeleteSegment={deleteSegment}
             />
           </Card>
-
-          {/* Right - Structure */}
           <Card className="rounded-none border-0 h-full overflow-hidden">
             <StructuredPane
               structure={structure}
@@ -303,7 +301,8 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               <div>
                 <h2 className="font-semibold text-base md:text-lg">Consulta Finalizada</h2>
                 <p className="text-xs md:text-sm text-muted-foreground">
-                  Duração: {formattedTime} • {segments.length} falas
+                  Duração: {formattedTime} • {segments.length} {segments.length === 1 ? 'segmento' : 'segmentos'}
+                  {isFinalizing && ' • revisando com Whisper…'}
                 </p>
               </div>
             </div>
@@ -314,7 +313,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                 size="sm"
                 className="gap-2 flex-1 sm:flex-none"
                 onClick={handleGenerateStructure}
-                disabled={segments.length === 0 || isStructuring || isTranscribing}
+                disabled={segments.length === 0 || isStructuring || isFinalizing}
               >
                 <FileText className="h-4 w-4" />
                 <span className="text-xs md:text-sm">

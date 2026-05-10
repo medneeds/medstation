@@ -48,6 +48,9 @@ verify_jwt = true
 [functions.consultation-transcribe]
 verify_jwt = true
 
+[functions.elevenlabs-scribe-token]
+verify_jwt = true
+
 [functions.structure-anamnesis]
 verify_jwt = true
 
