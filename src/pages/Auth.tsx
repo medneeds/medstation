@@ -405,7 +405,10 @@ export default function Auth() {
             </TabsContent>
 
             <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4 mt-6">
+              <div className="mt-6">
+                <GoogleAuthButton label="Cadastrar com Google" />
+              </div>
+              <form onSubmit={handleSignUp} className="space-y-4 mt-5">
                 <div className="space-y-2">
                   <Label htmlFor="signup-name" className="text-sm font-medium">Nome Completo *</Label>
                   <Input
