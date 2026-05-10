@@ -218,42 +218,15 @@ export default function Pricing() {
                 </p>
               </div>
 
-              {/* Billing toggle */}
-              <div className="inline-flex p-1 border border-hairline rounded-md bg-muted/40 self-start">
-                <button
-                  type="button"
-                  onClick={() => setBillingPeriod("monthly")}
-                  className={`px-3 py-1.5 rounded-sm text-xs font-mono uppercase tracking-[0.14em] transition-colors ${
-                    billingPeriod === "monthly" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Mensal
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setBillingPeriod("yearly")}
-                  className={`relative px-3 py-1.5 rounded-sm text-xs font-mono uppercase tracking-[0.14em] transition-colors ${
-                    billingPeriod === "yearly" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Anual
-                  <span className="ml-1.5 text-[0.6rem] text-primary/90 font-semibold">−16%</span>
-                </button>
-              </div>
-
               <div>
                 <div className="flex items-baseline gap-2">
                   <span className="font-display text-4xl md:text-5xl tracking-tight text-foreground">
-                    {billingPeriod === "monthly" ? "R$ 29,90" : "R$ 299,90"}
+                    {agentsPrice}
                   </span>
-                  <span className="text-base text-muted-foreground">
-                    {billingPeriod === "monthly" ? "/mês" : "/ano"}
-                  </span>
+                  <span className="text-base text-muted-foreground">{agentsSuffix}</span>
                 </div>
-                {billingPeriod === "yearly" && (
-                  <p className="text-[11px] text-muted-foreground mt-1.5">
-                    Equivale a <span className="text-foreground font-medium">R$ 24,99/mês</span> — economize R$ 58,90
-                  </p>
+                {agentsHint && (
+                  <p className="text-[11px] text-muted-foreground mt-1.5">{agentsHint}</p>
                 )}
               </div>
 
