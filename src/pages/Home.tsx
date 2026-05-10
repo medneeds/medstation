@@ -42,14 +42,11 @@ export default function Home() {
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/50">
         <div className="container mx-auto px-4 md:px-6 py-3 md:py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2 md:gap-3 group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl md:rounded-2xl bg-gradient-primary flex items-center justify-center shadow-medical transition-transform group-hover:scale-105">
-              <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-primary-foreground" />
-            </div>
-            <div>
-              <div className="text-sm md:text-base font-bold text-foreground tracking-tight">MedStation AI</div>
-              <div className="hidden md:block text-[0.65rem] text-muted-foreground font-medium">Produza mais. Digite menos.</div>
-            </div>
+          <div className="flex items-center gap-3 group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <Logo size="sm" />
+            <span className="hidden md:inline-block text-[0.65rem] uppercase tracking-[0.22em] font-mono text-muted-foreground border-l border-hairline pl-3">
+              Produza mais. Digite menos.
+            </span>
           </div>
           <nav className="flex gap-2 md:gap-8 items-center">
             <Button 
