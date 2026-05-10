@@ -79,6 +79,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               </div>
 
               <div className="flex items-center gap-2 md:gap-3 hairline-l pl-2 md:pl-4 ml-2 md:ml-4">
+                <HeaderThemeToggle />
                 <NotificationBell />
                 <HeaderUserMenu />
               </div>
