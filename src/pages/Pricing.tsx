@@ -283,13 +283,11 @@ export default function Pricing() {
               <div>
                 <div className="flex items-baseline gap-2">
                   <span className="font-display text-4xl md:text-5xl tracking-tight text-foreground">
-                    R$ 49,90
+                    {pro2Price}
                   </span>
-                  <span className="text-base text-muted-foreground">/mês</span>
+                  <span className="text-base text-muted-foreground">{pro2Suffix}</span>
                 </div>
-                <p className="text-[11px] text-muted-foreground mt-1.5">
-                  Economize <span className="text-foreground font-medium">R$ 9,90/mês</span> em vez de assinar separado
-                </p>
+                <p className="text-[11px] text-muted-foreground mt-1.5">{pro2Hint}</p>
               </div>
 
               <ul className="space-y-2 text-xs md:text-sm flex-1">
