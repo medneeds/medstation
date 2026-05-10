@@ -196,8 +196,8 @@ export default function Home() {
             <Badge variant="secondary" className="backdrop-blur-sm text-xs md:text-sm">
               Preço justo para médicos
             </Badge>
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight">
-              Comece grátis, evolua quando quiser
+            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl tracking-tight text-foreground">
+              Comece grátis, <span className="italic text-primary">evolua quando quiser</span>
             </h2>
             <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
               Examinus sempre grátis. Pro desbloqueia todos os 10 assistentes.
