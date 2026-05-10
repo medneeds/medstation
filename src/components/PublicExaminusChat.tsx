@@ -12,11 +12,15 @@ import { Toggle } from "@/components/ui/toggle";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { pdfToImages } from "@/utils/pdfToImages";
+import { DemoPromoEngine } from "@/components/demo/DemoPromoEngine";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
+
+const COOLDOWN_SECONDS = 30;
+const COOLDOWN_KEY = "ms_demo_cooldown_until";
 
 // Gera fingerprint do navegador (combinação de características únicas)
 const generateFingerprint = (): string => {
