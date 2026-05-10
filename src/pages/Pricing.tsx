@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, Check, ShieldCheck } from "lucide-react";
+import { ArrowRight, Check, ShieldCheck, Mail, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +27,7 @@ export default function Pricing() {
   const [couponCode, setCouponCode] = useState("");
   const [couponApplied, setCouponApplied] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
+  const [email, setEmail] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -47,26 +48,44 @@ export default function Pricing() {
     });
   };
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     setLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          title: "Login necessário",
-          description: "Faça login para assinar o plano Pro.",
+
+      // Logged in → use create-checkout (current customer flow)
+      if (session) {
+        const { data, error } = await supabase.functions.invoke("create-checkout", {
+          body: {
+            couponCode: couponApplied ? couponCode.trim() : undefined,
+            billingPeriod,
+          },
         });
-        navigate("/auth");
+        if (error) throw error;
+        if (data?.url) window.location.href = data.url;
         return;
       }
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
+
+      // Guest → require email and use guest-checkout (same flow as homepage)
+      const trimmedEmail = email.trim().toLowerCase();
+      if (!trimmedEmail || !trimmedEmail.includes("@")) {
+        toast({
+          title: "Email necessário",
+          description: "Digite seu email para iniciar a assinatura.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const { data, error } = await supabase.functions.invoke("guest-checkout", {
         body: {
-          couponCode: couponApplied ? couponCode.trim() : undefined,
+          email: trimmedEmail,
           billingPeriod,
+          couponCode: couponApplied ? couponCode.trim() : undefined,
         },
       });
       if (error) throw error;
-      if (data?.url) window.open(data.url, "_blank");
+      if (data?.url) window.location.href = data.url;
     } catch (error: any) {
       console.error("Checkout error:", error);
       toast({
@@ -307,18 +326,41 @@ export default function Pricing() {
                 )}
               </div>
 
-              <Button
-                size="lg"
-                className="w-full h-12 md:h-13 text-sm md:text-base"
-                onClick={handleSubscribe}
-                disabled={loading}
-              >
-                {loading ? "Processando..." : "Assinar agora"}
-                {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
-              </Button>
+              <form onSubmit={handleSubscribe} className="space-y-2">
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="h-12 pl-10 text-base"
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full h-12 md:h-13 text-sm md:text-base"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Processando...
+                    </>
+                  ) : (
+                    <>
+                      Assinar agora
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </form>
 
               <p className="text-[11px] md:text-xs text-center text-muted-foreground">
-                Cancele quando quiser • Sem taxas ocultas • Sem multa
+                Você criará sua senha no checkout • Cancele quando quiser • Sem multa
               </p>
             </div>
           </Card>
