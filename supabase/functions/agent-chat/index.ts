@@ -106,7 +106,7 @@ serve(async (req) => {
 
     console.log(`Rate limit check passed for user ${user.id}`);
 
-    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, bulaInteligenteMode, directLIMode, onlyAltered, clinicalImpression } = await req.json();
+    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, bulaInteligenteMode, directLIMode, onlyAltered, clinicalImpression, quickCIDMode } = await req.json();
 
     // Validate input
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
