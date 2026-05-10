@@ -234,11 +234,14 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome section */}
-      <div className="rounded-lg bg-gradient-hero p-4 md:p-8 text-white shadow-elevated">
-        <h1 className="text-2xl md:text-3xl font-bold mb-2">Bem-vindo ao MedStation AI</h1>
-        <p className="text-sm md:text-base text-white/90 mb-4">
-          Assistente clínico inteligente para otimizar seu fluxo de trabalho médico
-        </p>
+      <div className="rounded-lg bg-primary p-4 md:p-8 text-primary-foreground shadow-elevated relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-hero opacity-60 pointer-events-none" />
+        <div className="relative">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">Bem-vindo ao MedStation AI</h1>
+          <p className="text-sm md:text-base text-primary-foreground/90 mb-4">
+            Assistente clínico inteligente para otimizar seu fluxo de trabalho médico
+          </p>
+        </div>
         {/* <Button variant="secondary" size="sm" className="md:size-lg" asChild>
           <Link to="/patients">
             <Users className="mr-2 h-4 w-4" />
