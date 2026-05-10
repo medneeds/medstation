@@ -195,7 +195,7 @@ export default function Pricing() {
                   MedStation AI Pro
                 </h2>
                 <p className="text-xs md:text-sm text-muted-foreground mt-1">
-                  10 assistentes IA especializados
+                  10 assistentes IA — ilimitado de verdade, sem cooldown e sem pop-ups
                 </p>
               </div>
 
