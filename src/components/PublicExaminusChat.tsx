@@ -536,23 +536,16 @@ export default function PublicExaminusChat() {
     <div className="w-full max-w-5xl mx-auto px-2 md:px-4">
       {/* Hero Section */}
       {!hasMessages && (
-        <div className="text-center space-y-4 md:space-y-6 mb-6 md:mb-12 animate-in fade-in duration-700 slide-in-from-bottom-4">
-          <div className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-primary/10 border border-primary/20">
-            <Sparkles className="w-3.5 md:w-4 h-3.5 md:h-4 text-primary" />
-            <span className="text-xs md:text-sm font-medium text-primary">Examinus por MedStation AI</span>
+        <div className="text-center space-y-3 md:space-y-4 mb-4 md:mb-6 animate-in fade-in duration-700 slide-in-from-bottom-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+            <Sparkles className="w-3.5 h-3.5 text-primary" />
+            <span className="text-[0.7rem] md:text-xs uppercase tracking-[0.18em] font-mono text-primary">Examinus · MedStation AI</span>
           </div>
-          
-          <div className="space-y-1.5 md:space-y-2 px-2">
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-              Produza Mais.{" "}
-              <span className="bg-gradient-primary bg-clip-text text-transparent">
-                Digite Menos.
-              </span>
-            </h1>
-            <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Cole os resultados dos exames aqui e veja a mágica acontecer!
-            </p>
-          </div>
+
+          <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed px-2">
+            Cole os resultados dos exames abaixo e veja a mágica acontecer.
+          </p>
+        </div>
 
           <div className="hidden md:flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground pt-1">
             <div className="flex items-center gap-2">
