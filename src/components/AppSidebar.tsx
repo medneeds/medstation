@@ -18,7 +18,9 @@ import {
   Calculator,
   Moon,
   Sun,
+  LifeBuoy,
 } from "lucide-react";
+import { SUPPORT_CHAT_EVENT } from "@/components/SupportChat";
 import {
   Sidebar,
   SidebarContent,
