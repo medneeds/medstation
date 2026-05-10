@@ -53,6 +53,13 @@ export function SupportChat() {
     }
   }, [messages]);
 
+  // Listen to global open event (triggered from sidebar)
+  useEffect(() => {
+    const handler = () => setIsOpen(true);
+    window.addEventListener(SUPPORT_CHAT_EVENT, handler);
+    return () => window.removeEventListener(SUPPORT_CHAT_EVENT, handler);
+  }, []);
+
   const handleClose = () => {
     // Save current conversation if it has more than just the initial message
     if (messages.length > 1) {
