@@ -23,10 +23,10 @@ export function UpgradeModal({ open, onOpenChange, reason = "engagement" }: Upgr
 
   const subline =
     reason === "limit-reached"
-      ? "Continue ilimitado e desbloqueie os outros 9 assistentes."
+      ? "No Pro o Examinus fica ilimitado de verdade — sem cota, sem cooldown e sem pop-ups — e você libera os outros 9 assistentes."
       : reason === "cooldown"
-        ? "Crie sua conta Pro e use todos os assistentes sem espera."
-        : "Examinus é só o começo. O MedStation AI tem 10 assistentes para o seu plantão.";
+        ? "No Pro acabam o cooldown e os pop-ups. Use os 10 assistentes sem espera."
+        : "Examinus é só o começo (e no plano grátis tem cota, cooldown e pop-ups). O Pro libera os 10 assistentes ilimitados de verdade.";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -104,7 +104,7 @@ export function UpgradeModal({ open, onOpenChange, reason = "engagement" }: Upgr
         </div>
 
         <p className="text-[11px] text-center text-muted-foreground">
-          Pro a partir de R$ 29,90/mês · sem cartão para o grátis
+          Pro R$ 29,90/mês ou R$ 299,90/ano (economize R$ 58,90) · grátis sem cartão, com restrições
         </p>
       </DialogContent>
     </Dialog>
