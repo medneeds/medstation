@@ -315,7 +315,7 @@ export default function Home() {
               <div className="space-y-4 md:space-y-5 relative">
                 <div>
                   <h3 className="font-display text-2xl md:text-3xl tracking-tight mb-1 text-primary">Pro</h3>
-                  <p className="text-xs md:text-sm text-muted-foreground">10 assistentes IA especializados</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">10 assistentes IA — ilimitado de verdade, sem cooldown e sem pop-ups</p>
                 </div>
                 
                 {/* Pricing */}
