@@ -153,8 +153,8 @@ export default function Home() {
             <Badge variant="secondary" className="px-3 md:px-4 py-1.5 text-xs md:text-sm font-medium backdrop-blur-sm">
               Ecossistema Completo
             </Badge>
-            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-tight max-w-3xl mx-auto leading-[1.02] px-4 text-foreground">
-              Produza mais. <span className="italic text-primary">Digite menos.</span>
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-tight max-w-3xl mx-auto leading-[1.05] px-4 text-foreground">
+              Dez assistentes. <span className="italic text-primary">Um único fluxo.</span>
             </h2>
             <p className="text-sm md:text-base lg:text-lg text-muted-foreground max-w-xl mx-auto">
               10 assistentes especializados para acelerar sua rotina médica
