@@ -401,6 +401,9 @@ export default function PublicExaminusChat() {
     const hasFiles = selectedFiles.length > 0 && extractedText.trim().length > 0;
     if (isLoading || isExtracting) return;
     if (!input.trim() && !hasFiles) {
+      const msg = "Mensagem vazia. Digite algum texto ou anexe um arquivo antes de enviar.";
+      setValidationAnnouncement("");
+      setTimeout(() => setValidationAnnouncement(msg), 50);
       toast({
         title: "Mensagem vazia",
         description: "Digite algo ou anexe um arquivo antes de enviar.",
@@ -408,6 +411,7 @@ export default function PublicExaminusChat() {
       });
       return;
     }
+    setValidationAnnouncement("");
     if (cooldownRemaining > 0) {
       window.dispatchEvent(new CustomEvent("demo:cooldown-click"));
       return;
