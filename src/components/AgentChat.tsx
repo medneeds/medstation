@@ -1332,6 +1332,18 @@ export function AgentChat({
               <span className="text-xs">L.I.</span>
             </Toggle>
           )}
+          {!isMobile && agentType === "codexus" && (
+            <Toggle
+              pressed={quickCIDMode}
+              onPressedChange={setQuickCIDMode}
+              size="sm"
+              className="shrink-0 data-[state=on]:bg-primary/20 gap-1"
+              title="Modo C.R.: CID Rápido — retorna até 10 CIDs com base no termo, sem perguntas"
+            >
+              <Zap className="h-4 w-4" />
+              <span className="text-xs">C.R.</span>
+            </Toggle>
+          )}
           {!isMobile && agentType === "examinus" && (
             <>
               <Toggle
