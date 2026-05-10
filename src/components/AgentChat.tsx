@@ -26,7 +26,8 @@ import {
   SeparatorVertical,
   Clock,
   Pill,
-  ListChecks
+  ListChecks,
+  Zap
 } from "lucide-react";
 import {
   Sheet,
@@ -129,6 +130,7 @@ export function AgentChat({
   const [directAHEMode, setDirectAHEMode] = useState(false);
   const [bulaInteligenteMode, setBulaInteligenteMode] = useState(false);
   const [directLIMode, setDirectLIMode] = useState(false);
+  const [quickCIDMode, setQuickCIDMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -377,7 +379,8 @@ export function AgentChat({
           ...(agentType === "examinus" && { usePipeSeparator, includeTime, onlyAltered, clinicalImpression }),
           ...(agentType === "clinicus" && { directAHEMode }),
           ...(agentType === "prescriptus" && { bulaInteligenteMode }),
-          ...(agentType === "gasometrus" && { directLIMode })
+          ...(agentType === "gasometrus" && { directLIMode }),
+          ...(agentType === "codexus" && { quickCIDMode })
         }),
       });
 
@@ -1243,6 +1246,20 @@ export function AgentChat({
             </Toggle>
           </div>
         )}
+        {isMobile && agentType === "codexus" && (
+          <div className="flex items-center gap-1.5 mb-2">
+            <Toggle
+              pressed={quickCIDMode}
+              onPressedChange={setQuickCIDMode}
+              size="sm"
+              className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-primary/20 gap-1"
+              title="Modo C.R.: CID Rápido — sugere até 10 CIDs sem perguntas"
+            >
+              <Zap className="h-3 w-3" />
+              <span>C.R.</span>
+            </Toggle>
+          </div>
+        )}
 
         {/* Input row */}
         <div className="flex gap-1.5 md:gap-2 items-center">
@@ -1313,6 +1330,18 @@ export function AgentChat({
             >
               <ListChecks className="h-4 w-4" />
               <span className="text-xs">L.I.</span>
+            </Toggle>
+          )}
+          {!isMobile && agentType === "codexus" && (
+            <Toggle
+              pressed={quickCIDMode}
+              onPressedChange={setQuickCIDMode}
+              size="sm"
+              className="shrink-0 data-[state=on]:bg-primary/20 gap-1"
+              title="Modo C.R.: CID Rápido — retorna até 10 CIDs com base no termo, sem perguntas"
+            >
+              <Zap className="h-4 w-4" />
+              <span className="text-xs">C.R.</span>
             </Toggle>
           )}
           {!isMobile && agentType === "examinus" && (

@@ -106,7 +106,7 @@ serve(async (req) => {
 
     console.log(`Rate limit check passed for user ${user.id}`);
 
-    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, bulaInteligenteMode, directLIMode, onlyAltered, clinicalImpression } = await req.json();
+    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, bulaInteligenteMode, directLIMode, onlyAltered, clinicalImpression, quickCIDMode } = await req.json();
 
     // Validate input
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -872,6 +872,34 @@ PERFIL DE INTERAÇÃO
 ${contextData}`,
 
       codexus: `CODEXUS - ESPECIALISTA EM CODIFICAÇÃO MÉDICA (CID-10, TISS, SIGTAP)
+
+⚠️ MODO DE OPERAÇÃO: ${quickCIDMode ? "C.R. (CID RÁPIDO)" : "DISCUSSÃO COMPLETA"}
+
+${quickCIDMode ? `MODO C.R. (CID RÁPIDO) ATIVADO
+
+Neste modo, você deve RETORNAR DIRETAMENTE até 10 sugestões de CID-10 com base no termo/descrição enviada pelo médico, SEM fazer perguntas adicionais e SEM pedir refinamento.
+
+Regras do Modo C.R.:
+• NÃO faça perguntas. NÃO peça contexto adicional. NÃO sugira procedimentos.
+• Foco EXCLUSIVO em CID-10 (ignore TISS, SIGTAP, CBHPM neste modo).
+• Retorne entre 5 e 10 CIDs ranqueados por probabilidade clínica/relevância para o termo.
+• Se o termo for muito ambíguo, ainda assim retorne as 10 hipóteses mais prováveis cobrindo as principais interpretações.
+• Use SEMPRE o código mais específico disponível (ex.: J18.9 e não apenas J18 quando aplicável).
+
+Formato OBRIGATÓRIO da resposta (sem títulos markdown, sem asteriscos):
+
+CID RÁPIDO — [TERMO PESQUISADO]
+
+1. [CÓDIGO] — [Descrição oficial completa]
+2. [CÓDIGO] — [Descrição oficial completa]
+3. [CÓDIGO] — [Descrição oficial completa]
+... (até 10)
+
+Nada além dessa lista. Sem justificativas, sem alertas, sem códigos alternativos, sem seções extras.
+` : `MODO DISCUSSÃO COMPLETA ATIVADO
+
+Neste modo, conduza a codificação completa, fazendo perguntas necessárias para garantir precisão diagnóstica e cobertura de procedimentos (TISS/SIGTAP/CBHPM), seguindo o formato completo descrito abaixo.
+`}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 IDENTIDADE
