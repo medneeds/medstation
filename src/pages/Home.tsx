@@ -8,6 +8,8 @@ import PublicExaminusChat from "@/components/PublicExaminusChat";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { InlineCheckout } from "@/components/QuickCheckout";
 import { Logo } from "@/components/Logo";
+import { AssistantShowcaseDialog } from "@/components/AssistantShowcaseDialog";
+import { assistantSlides } from "@/lib/assistantSlides";
 
 // Definição centralizada dos agentes com descrições precisas
 const agents = [
@@ -25,10 +27,14 @@ const agents = [
 
 export default function Home() {
   const navigate = useNavigate();
+  const [activeAssistant, setActiveAssistant] = useState<string | null>(null);
 
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  const activeAgent = activeAssistant ? agents.find(a => a.name === activeAssistant) : null;
+  const activeIndex = activeAgent ? agents.findIndex(a => a.name === activeAgent.name) : -1;
 
   return (
     <div className="min-h-screen relative">
@@ -169,9 +175,12 @@ export default function Home() {
               const Icon = agent.icon;
               const code = String(i + 1).padStart(2, "0");
               return (
-                <div
+                <button
+                  type="button"
                   key={agent.name}
-                  className="group relative p-4 md:p-5 rounded-md border border-hairline bg-card/60 backdrop-blur-sm hover:border-primary/40 hover:bg-card transition-all duration-300 cursor-pointer hover:-translate-y-0.5"
+                  onClick={() => setActiveAssistant(agent.name)}
+                  aria-label={`Saiba mais sobre ${agent.name}`}
+                  className="group relative text-left p-4 md:p-5 rounded-md border border-hairline bg-card/60 backdrop-blur-sm hover:border-primary/40 hover:bg-card transition-all duration-300 cursor-pointer hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                   style={{ animationDelay: `${i * 50}ms` }}
                 >
                   {/* Mono code, top-right — matches LogoMark registration ticks */}
@@ -189,7 +198,7 @@ export default function Home() {
 
                   <h4 className="font-display text-sm md:text-base tracking-tight text-foreground">{agent.name}</h4>
                   <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5">{agent.shortDesc}</p>
-                </div>
+                </button>
               );
             })}
           </div>
