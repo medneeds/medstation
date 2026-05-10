@@ -379,7 +379,8 @@ export function AgentChat({
           ...(agentType === "examinus" && { usePipeSeparator, includeTime, onlyAltered, clinicalImpression }),
           ...(agentType === "clinicus" && { directAHEMode }),
           ...(agentType === "prescriptus" && { bulaInteligenteMode }),
-          ...(agentType === "gasometrus" && { directLIMode })
+          ...(agentType === "gasometrus" && { directLIMode }),
+          ...(agentType === "codexus" && { quickCIDMode })
         }),
       });
 
