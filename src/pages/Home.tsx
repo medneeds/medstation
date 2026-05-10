@@ -28,6 +28,7 @@ const agents = [
 export default function Home() {
   const navigate = useNavigate();
   const [activeAssistant, setActiveAssistant] = useState<string | null>(null);
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
 
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
@@ -292,149 +293,171 @@ export default function Home() {
       {/* Planos */}
       <section id="planos" className="py-12 md:py-20 lg:py-24 px-4 md:px-6 relative overflow-hidden">
         <div className="absolute inset-0 bg-muted/30 backdrop-blur-3xl"></div>
-        <div className="container mx-auto text-center max-w-5xl">
+        <div className="container mx-auto text-center max-w-7xl relative">
           <div className="mb-8 md:mb-10 lg:mb-12 space-y-3 md:space-y-4 px-4">
             <Badge variant="secondary" className="backdrop-blur-sm text-xs md:text-sm">
               Preço justo para médicos
             </Badge>
             <h2 className="font-display text-3xl md:text-4xl lg:text-5xl tracking-tight text-foreground">
-              Comece grátis, <span className="italic text-primary">evolua quando quiser</span>
+              Comece grátis, <span className="italic text-primary">monte sua estação</span>
             </h2>
             <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
-              Examinus grátis para experimentar (com restrições). Pro libera os 10 assistentes <span className="italic text-foreground">verdadeiramente ilimitados</span>.
+              Os 10 Assistentes e o Modo Consultório são <span className="text-foreground font-medium">produtos separados</span>. Assine só o que usa, ou junte os dois no MedStation AI Pro 2.
             </p>
+
+            {/* Shared billing toggle */}
+            <div className="inline-flex p-1 border border-hairline rounded-md bg-muted/40 mt-2">
+              <button
+                type="button"
+                onClick={() => setBillingPeriod('monthly')}
+                className={`px-4 py-2 rounded-sm text-xs font-mono uppercase tracking-[0.14em] transition-colors ${billingPeriod === 'monthly' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                Mensal
+              </button>
+              <button
+                type="button"
+                onClick={() => setBillingPeriod('yearly')}
+                className={`relative px-4 py-2 rounded-sm text-xs font-mono uppercase tracking-[0.14em] transition-colors ${billingPeriod === 'yearly' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                Anual
+                <span className="ml-1.5 text-[0.6rem] text-primary/90 font-semibold">−16%</span>
+              </button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 max-w-3xl mx-auto">
-            {/* Plano Grátis */}
-            <Card className="p-5 md:p-6 lg:p-8 text-left border-2 border-border/50 h-full flex flex-col">
-              <div className="space-y-4 md:space-y-5 flex-1 flex flex-col">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 text-left">
+            {/* Grátis */}
+            <Card className="p-5 md:p-6 border border-hairline bg-card/60 backdrop-blur-sm flex flex-col">
+              <div className="flex-1 space-y-4">
                 <div>
-                  <h3 className="font-display text-2xl md:text-3xl tracking-tight mb-1">Grátis</h3>
-                  <p className="text-xs md:text-sm text-muted-foreground">Examinus para experimentar — com restrições</p>
+                  <span className="text-[0.6rem] uppercase tracking-[0.22em] font-mono text-muted-foreground">Sempre grátis</span>
+                  <h3 className="font-display text-2xl tracking-tight mt-1">Grátis</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Examinus para experimentar — com restrições</p>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="font-display text-4xl md:text-5xl tracking-tight">R$ 0</span>
-                  <span className="text-base md:text-lg text-muted-foreground">/sempre</span>
+                  <span className="font-display text-4xl tracking-tight">R$ 0</span>
+                  <span className="text-sm text-muted-foreground">/sempre</span>
                 </div>
-                <ul className="space-y-2.5 text-sm flex-1">
-                  <li className="flex items-start gap-2 text-muted-foreground">
-                    <div className="w-1 h-1 rounded-full bg-primary mt-2"></div>
-                    <span><strong className="text-foreground">Apenas Examinus:</strong> extração e formatação de exames laboratoriais e de imagem</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-muted-foreground">
-                    <div className="w-1 h-1 rounded-full bg-primary mt-2"></div>
-                    <span>Aceita PDFs, fotos e textos confusos — qualquer formato</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-muted-foreground">
-                    <div className="w-1 h-1 rounded-full bg-amber-500/80 mt-2"></div>
-                    <span><strong className="text-foreground">Cota limitada por sessão:</strong> após poucas extrações, o uso é bloqueado temporariamente</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-muted-foreground">
-                    <div className="w-1 h-1 rounded-full bg-amber-500/80 mt-2"></div>
-                    <span><strong className="text-foreground">Tempo de espera entre extrações</strong> (cooldown) que aumenta conforme o volume</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-muted-foreground">
-                    <div className="w-1 h-1 rounded-full bg-amber-500/80 mt-2"></div>
-                    <span><strong className="text-foreground">Pop-ups de upgrade</strong> e processamento mais lento em horário de pico</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-muted-foreground">
-                    <div className="w-1 h-1 rounded-full bg-amber-500/80 mt-2"></div>
-                    <span>Os outros 9 assistentes ficam <strong className="text-foreground">bloqueados</strong></span>
-                  </li>
+                <ul className="space-y-2 text-xs text-muted-foreground">
+                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Apenas Examinus</li>
+                  <li className="flex gap-2"><span className="text-amber-500 mt-0.5">!</span> Cota e cooldown por sessão</li>
+                  <li className="flex gap-2"><span className="text-amber-500 mt-0.5">!</span> Pop-ups de upgrade</li>
+                  <li className="flex gap-2"><span className="text-amber-500 mt-0.5">!</span> Outros 9 bloqueados</li>
                 </ul>
-                
-                <div className="space-y-3 mt-auto">
-                  <Button 
-                    variant="outline"
-                    className="w-full h-12"
-                    onClick={() => navigate('/auth')}
-                  >
-                    Criar conta grátis
-                  </Button>
-                  
-                  <p className="text-xs text-center text-muted-foreground">
-                    Sem cartão • Sem compromisso
-                  </p>
-                </div>
               </div>
+              <Button variant="outline" className="w-full h-11 mt-5" onClick={() => navigate('/auth')}>
+                Criar conta grátis
+              </Button>
+              <p className="text-[10px] text-center text-muted-foreground mt-2">Sem cartão</p>
             </Card>
 
-            {/* Plano Pro */}
-            <Card className="p-5 md:p-6 lg:p-8 text-left border-2 border-primary relative overflow-hidden animate-in fade-in duration-700 transition-all">
-              {/* Popular badge */}
+            {/* MedStation AI Pro — 10 Assistentes */}
+            <Card className="p-5 md:p-6 border border-hairline bg-card/60 backdrop-blur-sm flex flex-col">
+              <div className="flex-1 space-y-4">
+                <div>
+                  <span className="text-[0.6rem] uppercase tracking-[0.22em] font-mono text-muted-foreground">10 Assistentes</span>
+                  <h3 className="font-display text-2xl tracking-tight mt-1">MedStation AI Pro</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Os 10 assistentes ilimitados, sem cooldown.</p>
+                </div>
+                <div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="font-display text-4xl tracking-tight">{billingPeriod === 'yearly' ? 'R$ 299,90' : 'R$ 29,90'}</span>
+                    <span className="text-sm text-muted-foreground">{billingPeriod === 'yearly' ? '/ano' : '/mês'}</span>
+                  </div>
+                  {billingPeriod === 'yearly' && (
+                    <p className="text-[10px] text-muted-foreground mt-1">≈ R$ 24,99/mês — economize R$ 58,90</p>
+                  )}
+                </div>
+                <ul className="space-y-1.5 text-xs text-muted-foreground">
+                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Clínicus, Examinus, Gasometrus...</li>
+                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Prescriptus com Bula Inteligente</li>
+                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Pacientes e casos ilimitados</li>
+                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Garantia 7 dias</li>
+                </ul>
+              </div>
+              <Button className="w-full h-11 mt-5" onClick={() => navigate('/pricing')}>
+                Assinar Pro
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Card>
+
+            {/* MedStation AI Pro 2 — destaque */}
+            <Card className="p-5 md:p-6 border-2 border-primary bg-card/85 backdrop-blur-sm flex flex-col relative overflow-hidden lg:scale-[1.03]">
               <div className="absolute -top-1 -right-1">
-                <Badge className="bg-primary text-primary-foreground border-0 px-4 py-1.5 text-[0.65rem] uppercase tracking-[0.18em] font-mono">
+                <Badge className="bg-primary text-primary-foreground border-0 px-3 py-1 text-[0.6rem] uppercase tracking-[0.18em] font-mono rounded-sm">
                   Recomendado
                 </Badge>
               </div>
-
-              <div className="space-y-4 md:space-y-5 relative">
+              <div className="flex-1 space-y-4">
                 <div>
-                  <h3 className="font-display text-2xl md:text-3xl tracking-tight mb-1 text-primary">MedStation AI Pro</h3>
-                  <p className="text-xs md:text-sm text-muted-foreground">10 assistentes IA — ilimitado de verdade, sem cooldown e sem pop-ups</p>
+                  <span className="text-[0.6rem] uppercase tracking-[0.22em] font-mono text-primary">Estação completa</span>
+                  <h3 className="font-display text-2xl tracking-tight mt-1 text-primary">MedStation AI Pro 2</h3>
+                  <p className="text-xs text-muted-foreground mt-1">10 Assistentes + Modo Consultório no mesmo plano.</p>
                 </div>
-                
-                {/* Pricing */}
-                <div className="my-4 md:my-6">
-                  <div className="inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1 md:py-1.5 bg-primary/10 border border-primary/30 rounded-full mb-3">
-                    <span className="text-[0.65rem] uppercase tracking-[0.18em] font-mono text-primary">Oferta especial</span>
+                <div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="font-display text-4xl tracking-tight">{billingPeriod === 'yearly' ? 'R$ 499,90' : 'R$ 49,90'}</span>
+                    <span className="text-sm text-muted-foreground">{billingPeriod === 'yearly' ? '/ano' : '/mês'}</span>
                   </div>
-                  
-                  <div className="flex items-end gap-2 md:gap-3">
-                    <div className="flex flex-col">
-                      <div className="flex items-baseline gap-1 md:gap-2">
-                        <span className="font-display text-4xl md:text-5xl tracking-tight text-foreground">R$ 29,90</span>
-                        <span className="text-base md:text-lg text-muted-foreground">/mês</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 p-2 md:p-3 bg-muted/50 rounded-lg border border-hairline mt-3">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
-                    <span className="text-[10px] md:text-xs text-muted-foreground">
-                      Ou <span className="font-medium text-foreground">R$ 299,90/ano</span> (em vez de R$ 358,80) — economize <span className="font-medium text-foreground">R$ 58,90 (16%)</span>
-                    </span>
-                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    {billingPeriod === 'yearly' ? '≈ R$ 41,66/mês — economize R$ 98,90' : 'Economize R$ 9,90/mês vs assinar separado'}
+                  </p>
                 </div>
-                
-                <ul className="space-y-2 md:space-y-2.5 text-xs md:text-sm">
-                  {agents.map((agent, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <div className="w-1 h-1 rounded-full bg-primary mt-2"></div>
-                      <span><strong className="text-foreground">{agent.name}:</strong> {agent.fullDesc}</span>
-                    </li>
-                  ))}
+                <ul className="space-y-1.5 text-xs text-muted-foreground">
+                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> <span className="text-foreground"><strong>10 Assistentes</strong> ilimitados</span></li>
+                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> <span className="text-foreground"><strong>Modo Consultório</strong> em tempo real</span></li>
+                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> AHE estruturada automática</li>
+                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Suporte prioritário · Garantia 7 dias</li>
                 </ul>
-                
-                {/* Garantia de 7 dias */}
-                <div className="mt-4 md:mt-6 p-3 md:p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl">
-                  <div className="flex items-start gap-2 md:gap-3">
-                    <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                      <svg className="w-4 h-4 md:w-5 md:h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-bold text-xs md:text-sm text-foreground mb-0.5 md:mb-1">Garantia de 7 dias</h4>
-                      <p className="text-[10px] md:text-xs text-muted-foreground leading-relaxed">
-                        Teste sem risco. Se não gostar, devolvemos 100% do valor.
-                      </p>
-                    </div>
-                  </div>
+              </div>
+              <Button className="w-full h-11 mt-5" onClick={() => navigate('/pricing')}>
+                Assinar Pro 2
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Card>
+
+            {/* Modo Consultório */}
+            <Card className="p-5 md:p-6 border border-hairline bg-card/60 backdrop-blur-sm flex flex-col">
+              <div className="flex-1 space-y-4">
+                <div>
+                  <span className="text-[0.6rem] uppercase tracking-[0.22em] font-mono text-muted-foreground">Tempo real</span>
+                  <h3 className="font-display text-2xl tracking-tight mt-1">Modo Consultório</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Produto separado. Pode ser somado aos 10 Assistentes.</p>
                 </div>
-                
-                <InlineCheckout 
-                  product="agents" 
-                  billingPeriod="monthly"
-                  buttonText="Assinar agora"
-                  placeholder="Seu email para começar"
-                  className="flex-col sm:flex-row"
-                />
-                
-                <p className="text-[10px] md:text-xs text-center text-muted-foreground">
-                  Cancele quando quiser • Sem multa • Crie sua senha no checkout
+                <div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="font-display text-4xl tracking-tight">{billingPeriod === 'yearly' ? 'R$ 299,90' : 'R$ 29,90'}</span>
+                    <span className="text-sm text-muted-foreground">{billingPeriod === 'yearly' ? '/ano' : '/mês'}</span>
+                  </div>
+                  {billingPeriod === 'yearly' && (
+                    <p className="text-[10px] text-muted-foreground mt-1">≈ R$ 24,99/mês — economize R$ 58,90</p>
+                  )}
+                </div>
+                <ul className="space-y-1.5 text-xs text-muted-foreground">
+                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Transcrição em tempo real</li>
+                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> AHE estruturada automática</li>
+                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Anti-alucinação 3 camadas</li>
+                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Whisper médico</li>
+                </ul>
+              </div>
+              <Button variant="outline" className="w-full h-11 mt-5" onClick={() => navigate('/consultorio-landing')}>
+                Conhecer o Consultório
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Card>
+          </div>
+
+          {/* Cross-upgrade strip */}
+          <div className="mt-8 md:mt-10 max-w-4xl mx-auto">
+            <Card className="p-4 md:p-5 border border-primary/30 bg-primary/5 backdrop-blur-sm">
+              <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 text-center md:text-left">
+                <Sparkles className="w-4 h-4 text-primary flex-shrink-0" />
+                <p className="text-xs md:text-sm text-muted-foreground">
+                  Já é assinante de um dos lados? Adicione o outro por <span className="text-primary font-semibold">apenas R$ 19,90/mês</span> — preço exclusivo de upgrade cruzado.
                 </p>
+                <Button variant="link" size="sm" className="text-primary h-auto p-0" onClick={() => navigate('/pricing')}>
+                  Ver upgrade <ArrowRight className="w-3 h-3 ml-1" />
+                </Button>
               </div>
             </Card>
           </div>
