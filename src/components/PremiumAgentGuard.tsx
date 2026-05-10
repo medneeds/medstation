@@ -71,51 +71,50 @@ export function PremiumAgentGuard({ children, agentName }: PremiumAgentGuardProp
             </div>
             <CardTitle className="text-2xl">Assistente Premium</CardTitle>
             <CardDescription className="text-base mt-2">
-              O assistente {agentName} está disponível apenas para assinantes do plano Pro
+              {agentName} faz parte do MedStation AI Pro. No plano grátis só o Examinus está liberado — e mesmo ele com cota, cooldown e pop-ups. No Pro, os 10 assistentes ficam ilimitados de verdade.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-lg p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Sparkles className="w-5 h-5 text-primary" />
-                <h3 className="font-semibold">Com o plano Pro você tem:</h3>
+                <h3 className="font-semibold">Por que migrar para o Pro:</h3>
               </div>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-0.5">✓</span>
-                  <span>Acesso completo a todos os 10 assistentes de IA especializados</span>
+                  <span>Os 10 assistentes liberados — <strong className="text-foreground">ilimitado de verdade</strong>, sem cota e sem cooldown</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-0.5">✓</span>
-                  <span>Pacientes e casos ilimitados</span>
+                  <span><strong className="text-foreground">Sem pop-ups</strong> de upgrade interrompendo seu plantão</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-0.5">✓</span>
-                  <span>Análises avançadas e exportação de relatórios</span>
+                  <span>Pacientes e casos ilimitados, com upload de documentos e áudio</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-0.5">✓</span>
-                  <span>Upload de documentos e transcrição de áudio</span>
+                  <span>Velocidade prioritária mesmo nos horários de pico</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-0.5">✓</span>
-                  <span>Garantia de 7 dias ou seu dinheiro de volta</span>
+                  <span>Garantia de 7 dias — se não gostar, devolvemos 100%</span>
                 </li>
               </ul>
             </div>
             
             <div className="text-center">
               <div className="mb-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-full mb-3">
-                  <span className="text-xs font-bold text-green-600 dark:text-green-400">67% OFF</span>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/30 rounded-full mb-3">
+                  <span className="text-[0.65rem] uppercase tracking-[0.18em] font-mono text-primary">Oferta especial</span>
                 </div>
-              <div className="flex items-center justify-center gap-3 mb-2">
-                  <span className="text-lg text-muted-foreground line-through">R$ 59,90</span>
+                <div className="flex items-baseline justify-center gap-2 mb-1">
                   <span className="text-4xl font-black bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">R$ 29,90</span>
+                  <span className="text-muted-foreground">/mês</span>
                 </div>
-                <span className="text-muted-foreground">/mês</span>
                 <p className="text-xs text-muted-foreground mt-1">
-                  ou R$ 299,90/ano — economize R$ 58,90 (16%)
+                  Ou R$ 299,90/ano (em vez de R$ 358,80) — economize R$ 58,90 (16%)
                 </p>
               </div>
               <Button 
