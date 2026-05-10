@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { useScribe } from '@elevenlabs/react';
+import { useScribe, CommitStrategy } from '@elevenlabs/react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -97,7 +97,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
   // ElevenLabs Scribe v2 Realtime - VAD ~700ms, no diarization
   const scribe = useScribe({
     modelId: 'scribe_v2_realtime',
-    commitStrategy: 'vad',
+    commitStrategy: CommitStrategy.VAD,
     onPartialTranscript: (data: { text: string }) => {
       setPartialTranscription(data?.text || '');
     },
