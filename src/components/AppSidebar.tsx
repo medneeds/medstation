@@ -33,7 +33,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 
 const homeModule = { title: "Início", url: "/dashboard", icon: Home, code: "00" };
@@ -51,10 +50,6 @@ const agentModules = [
   { title: "CODexus", url: "/codexus", icon: FileText, code: "10" },
 ];
 
-const settings = [
-  { title: "Assinatura", url: "/pricing", icon: CreditCard },
-];
-
 const navItemClass = ({ isActive }: { isActive: boolean }) =>
   cn(
     "group relative flex items-center gap-3 rounded-sm px-3 h-9 text-sm font-medium transition-colors duration-150 ease-precise outline-none",
@@ -70,7 +65,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
+  
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -149,16 +144,6 @@ export function AppSidebar() {
           )}
           <SidebarGroupContent>
             <SidebarMenu className="gap-0.5">
-              {settings.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title} className="p-0 h-auto bg-transparent hover:bg-transparent">
-                    <NavLink to={item.url} className={navItemClass}>
-                      <item.icon className="h-4 w-4 shrink-0" />
-                      {!collapsed && <span className="flex-1">{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   tooltip="Suporte MedPocket"
@@ -172,21 +157,6 @@ export function AppSidebar() {
                 >
                   <LifeBuoy className="h-4 w-4" />
                   {!collapsed && <span className="flex-1">Suporte</span>}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip={theme === "dark" ? "Modo claro" : "Modo escuro"}
-                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                  className={cn(
-                    "group flex items-center gap-3 rounded-sm px-3 h-9 text-sm font-medium",
-                    "border-l-2 border-transparent text-sidebar-foreground/80",
-                    "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                    "transition-colors duration-150 ease-precise",
-                  )}
-                >
-                  {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                  {!collapsed && <span className="flex-1">{theme === "dark" ? "Modo claro" : "Modo escuro"}</span>}
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
