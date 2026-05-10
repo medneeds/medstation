@@ -7,9 +7,9 @@ export const SUBSCRIPTION_TIERS = {
       price: 29.90,
     },
     YEARLY: {
-      priceId: "price_1Sj4GKACiwQRloW4QCtEvley",
+      priceId: "price_1TVe5RACiwQRloW4KsjZ5QsK",
       productId: "prod_TgR7u5urUle7om",
-      price: 199.90,
+      price: 299.90,
     },
   },
 } as const;
