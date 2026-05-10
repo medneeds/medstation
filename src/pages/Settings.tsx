@@ -474,6 +474,9 @@ export default function Settings() {
         </CardContent>
       </Card>
 
+      {/* Conta e segurança */}
+      <AccountSecurityCard />
+
       {/* Administração - Somente para admins */}
       {isAdmin && <AdminUserManagement />}
 
