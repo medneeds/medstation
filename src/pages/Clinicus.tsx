@@ -25,7 +25,7 @@ export default function Clinicus() {
           <button
             type="button"
             onClick={() => setIsConsultationMode(true)}
-            className="group relative overflow-hidden border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent hover:from-primary/15 hover:via-primary/10 transition-all text-left"
+            className="group relative overflow-hidden border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent hover:from-primary/15 hover:via-primary/10 transition-all text-left flex-shrink-0"
           >
             <div className="absolute inset-y-0 left-0 w-1 bg-primary" />
             <div className="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-primary/10 blur-2xl pointer-events-none" />
@@ -66,7 +66,7 @@ export default function Clinicus() {
           </button>
           
           {/* Regular Chat */}
-          <div className="flex-1">
+          <div className="flex-1 min-h-0 overflow-hidden">
             <AgentChat
               agentName="Clínicus"
               agentIcon={<FileText className="h-8 w-8" />}
