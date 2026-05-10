@@ -312,12 +312,12 @@ export default function Pricing() {
               <Button
                 size="lg"
                 className="w-full h-12 mt-auto"
-                onClick={() => startCheckout("pro2_bundle")}
+                onClick={() => startCheckout(pro2Plan)}
                 disabled={anyLoading || (hasAgents && hasConsultorio)}
               >
                 {hasAgents && hasConsultorio ? (
                   "Plano ativo"
-                ) : isLoading("pro2_bundle") ? (
+                ) : isLoading(pro2Plan) ? (
                   <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processando...</>
                 ) : (
                   <>Assinar Pro 2 <ArrowRight className="ml-2 h-4 w-4" /></>
