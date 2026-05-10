@@ -69,7 +69,7 @@ const settings = [
   { title: "Assinatura", url: "/pricing", icon: CreditCard },
 ];
 
-const studiusItem = { title: "Studius", url: "/studius", icon: GraduationCap };
+
 
 export function AppSidebar() {
   const { state } = useSidebar();
@@ -170,36 +170,6 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Studius Premium */}
-        <SidebarGroup className="py-3 border-t border-border">
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip={studiusItem.title}>
-                  <NavLink
-                    to={studiusItem.url}
-                    className={({ isActive }) =>
-                      isActive
-                        ? "bg-gradient-to-r from-studius-primary/20 to-studius-secondary/20 text-studius-primary font-semibold border border-studius-primary/30"
-                        : "hover:bg-gradient-to-r hover:from-studius-primary/10 hover:to-studius-secondary/10 hover:translate-x-1 transition-all duration-200"
-                    }
-                  >
-                    <studiusItem.icon className="h-4 w-4" />
-                    {!collapsed && (
-                      <span className="flex items-center gap-2 animate-fade-in">
-                        {studiusItem.title}
-                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-gradient-to-r from-studius-primary to-studius-secondary text-white">
-                          ELITE
-                        </span>
-                      </span>
-                    )}
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

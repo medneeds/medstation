@@ -535,7 +535,7 @@ export default function AdminSubscribers() {
               {grantDialog.user?.courtesy?.active ? "Editar" : "Conceder"} Cortesia
             </DialogTitle>
             <DialogDescription>
-              {grantDialog.user?.email} terá acesso completo a todos os assistentes e ao Studius.
+              {grantDialog.user?.email} terá acesso completo a todos os assistentes.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">

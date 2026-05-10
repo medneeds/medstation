@@ -15,8 +15,6 @@ const logStep = (step: string, details?: any) => {
 const PRICES = {
   agents_monthly: "price_1Sj4FbACiwQRloW42xp6WqYH",
   agents_yearly: "price_1Sj4GKACiwQRloW4QCtEvley",
-  studius_monthly: "price_1Sj4CcACiwQRloW4CnXg7srB",
-  studius_yearly: "price_1Sj4EnACiwQRloW4DnrpE1Xg",
 };
 
 serve(async (req) => {
@@ -30,47 +28,27 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const email = body.email?.trim().toLowerCase();
     const billingPeriod = body.billingPeriod || "monthly";
-    const product = body.product || "agents";
     const couponCode = body.couponCode?.trim();
-    
+
     if (!email) {
       throw new Error("Email é obrigatório");
     }
-    
-    logStep("Request parameters", { email, billingPeriod, product, couponCode: couponCode || "none" });
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
-      apiVersion: "2025-08-27.basil" 
+    logStep("Request parameters", { email, billingPeriod, couponCode: couponCode || "none" });
+
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+      apiVersion: "2025-08-27.basil"
     });
-    
-    // Check if customer already exists
+
     const customers = await stripe.customers.list({ email, limit: 1 });
     let customerId;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
       logStep("Found existing customer", { customerId });
-    } else {
-      logStep("New customer, will create in checkout");
     }
 
-    // Determine price based on product and billing period
-    let priceId: string;
-    switch (product) {
-      case "studius":
-      case "studius_addon":
-        priceId = billingPeriod === "yearly" 
-          ? PRICES.studius_yearly 
-          : PRICES.studius_monthly;
-        break;
-      case "agents":
-      default:
-        priceId = billingPeriod === "yearly" 
-          ? PRICES.agents_yearly 
-          : PRICES.agents_monthly;
-        break;
-    }
-    
-    logStep("Price selected", { priceId, product, billingPeriod });
+    const priceId = billingPeriod === "yearly" ? PRICES.agents_yearly : PRICES.agents_monthly;
+    logStep("Price selected", { priceId, billingPeriod });
 
     const origin = req.headers.get("origin") || "https://medstation.ai";
     
@@ -100,7 +78,7 @@ serve(async (req) => {
       // Allow promo codes
       allow_promotion_codes: !couponCode,
       metadata: {
-        product,
+        product: "agents",
         billingPeriod,
       },
     };

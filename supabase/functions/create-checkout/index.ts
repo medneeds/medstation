@@ -16,8 +16,6 @@ const logStep = (step: string, details?: any) => {
 const PRICES = {
   agents_monthly: "price_1Sj4FbACiwQRloW42xp6WqYH",
   agents_yearly: "price_1Sj4GKACiwQRloW4QCtEvley",
-  studius_monthly: "price_1Sj4CcACiwQRloW4CnXg7srB",
-  studius_yearly: "price_1Sj4EnACiwQRloW4DnrpE1Xg",
 };
 
 serve(async (req) => {
@@ -45,40 +43,21 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const couponCode = body.couponCode?.trim();
     const billingPeriod = body.billingPeriod || "monthly";
-    const product = body.product || "agents"; // agents, studius, studius_addon
-    logStep("Request parameters", { couponCode: couponCode || "none", billingPeriod, product });
+    logStep("Request parameters", { couponCode: couponCode || "none", billingPeriod });
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
-      apiVersion: "2025-08-27.basil" 
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+      apiVersion: "2025-08-27.basil"
     });
-    
+
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     let customerId;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
       logStep("Found existing customer", { customerId });
-    } else {
-      logStep("No customer found, will create one in checkout");
     }
 
-    // Determine which price to use
-    let priceId: string;
-    switch (product) {
-      case "studius":
-      case "studius_addon":
-        priceId = billingPeriod === "yearly" 
-          ? PRICES.studius_yearly 
-          : PRICES.studius_monthly;
-        break;
-      case "agents":
-      default:
-        priceId = billingPeriod === "yearly" 
-          ? PRICES.agents_yearly 
-          : PRICES.agents_monthly;
-        break;
-    }
-    
-    logStep("Price selected", { priceId, product, billingPeriod });
+    const priceId = billingPeriod === "yearly" ? PRICES.agents_yearly : PRICES.agents_monthly;
+    logStep("Price selected", { priceId, billingPeriod });
 
     const sessionConfig: any = {
       customer: customerId,
