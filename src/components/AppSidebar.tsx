@@ -21,6 +21,7 @@ import {
   LifeBuoy,
 } from "lucide-react";
 import { SUPPORT_CHAT_EVENT } from "@/components/SupportChat";
+import { LogoMark } from "@/components/LogoMark";
 import {
   Sidebar,
   SidebarContent,
