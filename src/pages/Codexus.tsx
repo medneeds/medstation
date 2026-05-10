@@ -8,7 +8,7 @@ export default function Codexus() {
 
   return (
     <PremiumAgentGuard agentName="CODexus">
-      <div className="h-full -m-3 md:-m-6">
+      <div className="h-[calc(100dvh-3.5rem)] -m-4 md:-m-6 lg:-m-8">
         <AgentChat
           agentName="CODexus"
           agentIcon={<FileText className="h-8 w-8" />}
