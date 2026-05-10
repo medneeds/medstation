@@ -146,6 +146,7 @@ export default function PublicExaminusChat() {
   const [clinicalImpression, setClinicalImpression] = useState(false);
   const [compactMode, setCompactMode] = useState(false);
   const [fingerprint, setFingerprint] = useState<string>("");
+  const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -156,6 +157,38 @@ export default function PublicExaminusChat() {
     const fp = recoverFingerprint();
     setFingerprint(fp);
   }, []);
+
+  // Restaurar cooldown ao montar (resiste a refresh)
+  useEffect(() => {
+    try {
+      const until = Number(sessionStorage.getItem(COOLDOWN_KEY) || 0);
+      const left = Math.max(0, Math.ceil((until - Date.now()) / 1000));
+      if (left > 0) setCooldownRemaining(left);
+    } catch {}
+  }, []);
+
+  // Tick do cooldown
+  useEffect(() => {
+    if (cooldownRemaining <= 0) return;
+    const id = setInterval(() => {
+      setCooldownRemaining((s) => {
+        const next = s - 1;
+        if (next <= 0) {
+          try { sessionStorage.removeItem(COOLDOWN_KEY); } catch {}
+          return 0;
+        }
+        return next;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [cooldownRemaining]);
+
+  const startCooldown = () => {
+    const until = Date.now() + COOLDOWN_SECONDS * 1000;
+    try { sessionStorage.setItem(COOLDOWN_KEY, String(until)); } catch {}
+    setCooldownRemaining(COOLDOWN_SECONDS);
+  };
+
 
   useEffect(() => {
     if (scrollRef.current) {
