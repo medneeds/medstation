@@ -139,26 +139,26 @@ export default function Auth() {
           initial={{ opacity: 0, x: -24 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="relative hidden lg:flex flex-col justify-between p-14 xl:p-20 border-r border-hairline"
+          className="relative hidden lg:flex flex-col p-10 xl:p-14 border-r border-hairline"
         >
-          <Logo size="lg" />
+          <Logo size="md" />
 
-          <div className="space-y-10 max-w-xl">
-            <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-muted-foreground">
+          <div className="mt-10 space-y-6 max-w-xl">
+            <div className="inline-flex items-center gap-2 text-[0.7rem] uppercase tracking-[0.25em] text-muted-foreground">
               <span className="h-px w-8 bg-primary" />
               Para médicos ocupados
             </div>
-            <h1 className="font-display text-6xl xl:text-7xl leading-[0.95] tracking-tight text-foreground">
+            <h1 className="font-display text-5xl xl:text-6xl leading-[0.95] tracking-tight text-foreground">
               Produza mais.
               <br />
               <span className="italic text-primary">Digite menos.</span>
             </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed max-w-md">
+            <p className="text-base text-muted-foreground leading-relaxed max-w-md">
               Dez assistentes clínicos especializados em IA. Anamnese, exames, prescrição,
               gasometria, scores — em segundos, no seu fluxo.
             </p>
 
-            <ul className="space-y-3 pt-4">
+            <ul className="space-y-2.5 pt-2">
               {[
                 "Examinus, Clínicus, Gasometrus e mais 7",
                 "Documentação automatizada com rigor clínico",
@@ -178,8 +178,8 @@ export default function Auth() {
             </ul>
           </div>
 
-          <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} MedStation AI · LGPD compliant
+          <p className="mt-auto pt-10 text-[0.7rem] uppercase tracking-[0.18em] font-mono text-muted-foreground">
+            © {new Date().getFullYear()} MedStation AI · LGPD
           </p>
         </motion.aside>
 
