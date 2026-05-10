@@ -18,8 +18,10 @@ const PRICES: Record<string, string> = {
   agents_yearly: "price_1TVe5RACiwQRloW4KsjZ5QsK",
   agents_upgrade: "price_1TVgZWACiwQRloW4VxjohmIG",
   consultorio_monthly: "price_1TVgYdACiwQRloW4w2R2GJ2i",
+  consultorio_yearly: "price_1TVgq1ACiwQRloW4w3EKIaBC",
   consultorio_upgrade: "price_1TVgZ8ACiwQRloW4WfmIx87N",
   pro2_bundle: "price_1TVga8ACiwQRloW4fPGUzAF9",
+  pro2_bundle_yearly: "price_1TVgqWACiwQRloW4BwMkM74x",
 };
 
 const AGENTS_PRODUCT_IDS = [
