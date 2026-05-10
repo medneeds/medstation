@@ -326,18 +326,41 @@ export default function Pricing() {
                 )}
               </div>
 
-              <Button
-                size="lg"
-                className="w-full h-12 md:h-13 text-sm md:text-base"
-                onClick={handleSubscribe}
-                disabled={loading}
-              >
-                {loading ? "Processando..." : "Assinar agora"}
-                {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
-              </Button>
+              <form onSubmit={handleSubscribe} className="space-y-2">
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="h-12 pl-10 text-base"
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full h-12 md:h-13 text-sm md:text-base"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Processando...
+                    </>
+                  ) : (
+                    <>
+                      Assinar agora
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </form>
 
               <p className="text-[11px] md:text-xs text-center text-muted-foreground">
-                Cancele quando quiser • Sem taxas ocultas • Sem multa
+                Você criará sua senha no checkout • Cancele quando quiser • Sem multa
               </p>
             </div>
           </Card>
