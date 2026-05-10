@@ -345,7 +345,7 @@ VERSÃO DEMO: Esta é versão gratuita limitada. Crie conta para acesso completo
           ...userMessages
         ],
         temperature: 0,
-        max_tokens: 2000,
+        max_tokens: 800,
       }),
     });
 
