@@ -82,6 +82,25 @@ export default function Pricing() {
   };
 
   const agentsPlan: PlanSlug = billingPeriod === "yearly" ? "agents_yearly" : "agents_monthly";
+  const consultorioPlan: PlanSlug = billingPeriod === "yearly" ? "consultorio_yearly" : "consultorio_monthly";
+  const pro2Plan: PlanSlug = billingPeriod === "yearly" ? "pro2_bundle_yearly" : "pro2_bundle";
+
+  const isYearly = billingPeriod === "yearly";
+
+  // Display values per plan
+  const agentsPrice = isYearly ? "R$ 299,90" : "R$ 29,90";
+  const agentsSuffix = isYearly ? "/ano" : "/mês";
+  const agentsHint = isYearly ? "Equivale a R$ 24,99/mês — economize R$ 58,90" : null;
+
+  const consultorioPrice = isYearly ? "R$ 299,90" : "R$ 29,90";
+  const consultorioSuffix = isYearly ? "/ano" : "/mês";
+  const consultorioHint = isYearly ? "Equivale a R$ 24,99/mês — economize R$ 58,90" : null;
+
+  const pro2Price = isYearly ? "R$ 499,90" : "R$ 49,90";
+  const pro2Suffix = isYearly ? "/ano" : "/mês";
+  const pro2Hint = isYearly
+    ? "Equivale a R$ 41,66/mês — economize R$ 98,90"
+    : "Economize R$ 9,90/mês em vez de assinar separado";
 
   // Conditional cross-upgrade
   const upgradeBanner = (() => {
