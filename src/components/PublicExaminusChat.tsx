@@ -930,12 +930,13 @@ export default function PublicExaminusChat() {
               </Button>
               <Textarea
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => setInput(e.target.value.slice(0, 10000))}
                 onKeyPress={handleKeyPress}
                 placeholder={hasMessages ? "Cole mais exames aqui..." : "Cole os resultados de exames aqui (texto, imagem ou PDF)"}
-                aria-invalid={input.length > 0 && !input.trim() && selectedFiles.length === 0}
+                maxLength={10000}
+                aria-invalid={(input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= 10000}
                 className={`min-h-[48px] max-h-40 resize-none flex-1 rounded-xl transition-colors text-sm py-3 ${
-                  input.length > 0 && !input.trim() && selectedFiles.length === 0
+                  (input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= 10000
                     ? "border-destructive focus:border-destructive"
                     : "border-border/50 focus:border-primary/50"
                 }`}
@@ -943,7 +944,7 @@ export default function PublicExaminusChat() {
               />
               <Button
                 onClick={handleSend}
-                disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0) || isCoolingDown}
+                disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0) || isCoolingDown || input.length > 10000}
                 size="lg"
                 className="h-12 px-6 rounded-xl bg-gradient-primary hover:opacity-90 transition-all shadow-medical hover:shadow-elevated"
                 title={isCoolingDown ? `Aguarde ${cooldownRemaining}s — modo gratuito` : undefined}
@@ -962,6 +963,20 @@ export default function PublicExaminusChat() {
                   </>
                 )}
               </Button>
+            </div>
+            <div className="flex justify-end mt-1 px-1">
+              <span
+                className={`text-xs tabular-nums ${
+                  input.length >= 10000
+                    ? "text-destructive font-medium"
+                    : input.length >= 9000
+                    ? "text-amber-600 dark:text-amber-400"
+                    : "text-muted-foreground"
+                }`}
+                aria-live="polite"
+              >
+                {input.length.toLocaleString("pt-BR")}/10.000 caracteres
+              </span>
             </div>
           </div>
         </div>
