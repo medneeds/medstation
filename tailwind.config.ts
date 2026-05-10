@@ -134,6 +134,10 @@ export default {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
         },
+        "bounce-x": {
+          "0%, 100%": { transform: "translateX(0)" },
+          "50%": { transform: "translateX(4px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -141,6 +145,7 @@ export default {
         "fade-in": "fade-in 280ms cubic-bezier(0.32, 0.72, 0, 1)",
         "slide-up": "slide-up 360ms cubic-bezier(0.32, 0.72, 0, 1)",
         shimmer: "shimmer 3s linear infinite",
+        "bounce-x": "bounce-x 1.6s ease-in-out infinite",
       },
     },
   },
