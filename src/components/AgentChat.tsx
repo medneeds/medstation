@@ -1401,7 +1401,11 @@ export function AgentChat({
         <div className="flex items-center justify-between gap-2 mt-2">
           <div className="min-w-0 flex-1">
             {message.length > 0 && !message.trim() ? (
-              <p className="text-xs text-destructive truncate" role="alert">
+              <p
+                className="text-xs text-destructive truncate"
+                role="alert"
+                aria-live="assertive"
+              >
                 A mensagem contém apenas espaços. Digite algum texto para enviar.
               </p>
             ) : !isMobile ? (
@@ -1409,6 +1413,10 @@ export function AgentChat({
                 Pressione Enter para enviar, Shift+Enter para quebrar linha
               </p>
             ) : null}
+            {/* SR-only live region for blocked send attempts */}
+            <span role="status" aria-live="assertive" className="sr-only">
+              {validationAnnouncement}
+            </span>
           </div>
           <span
             className={`text-xs tabular-nums shrink-0 ${
