@@ -433,6 +433,20 @@ export default function PublicExaminusChat() {
 
       if (error) throw error;
 
+      if (data?.cooldown) {
+        // Server pediu cooldown — sincroniza relógio local
+        const secs = Number(data.cooldownRemaining) || COOLDOWN_SECONDS;
+        const until = Date.now() + secs * 1000;
+        try { sessionStorage.setItem(COOLDOWN_KEY, String(until)); } catch {}
+        setCooldownRemaining(secs);
+        setMessages(prev => prev.slice(0, -1)); // remove a mensagem do usuário
+        toast({
+          title: `Aguarde ${secs}s`,
+          description: "Modo gratuito: 30s entre extrações. Crie sua conta para uso instantâneo.",
+        });
+        return;
+      }
+
       if (data.error || data.limitReached) {
         setMessages(prev => [...prev, {
           role: "assistant",
@@ -441,6 +455,7 @@ export default function PublicExaminusChat() {
         window.dispatchEvent(new CustomEvent("demo:limit-reached"));
         return;
       }
+
 
       const assistantMessage: Message = {
         role: "assistant",
