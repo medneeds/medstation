@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import PublicExaminusChat from "@/components/PublicExaminusChat";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { InlineCheckout } from "@/components/QuickCheckout";
+import { Logo } from "@/components/Logo";
 
 // Definição centralizada dos agentes com descrições precisas
 const agents = [
