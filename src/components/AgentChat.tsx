@@ -281,6 +281,10 @@ export function AgentChat({
   const sendMessage = async () => {
     if (isLoading) return;
     if (!message.trim()) {
+      const msg = "Mensagem vazia. Digite algum texto antes de enviar.";
+      setValidationAnnouncement("");
+      // re-set on next tick so screen readers re-announce repeated attempts
+      setTimeout(() => setValidationAnnouncement(msg), 50);
       toast({
         title: "Mensagem vazia",
         description: "Digite algo antes de enviar.",
@@ -288,6 +292,7 @@ export function AgentChat({
       });
       return;
     }
+    setValidationAnnouncement("");
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
