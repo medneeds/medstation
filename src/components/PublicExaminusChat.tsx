@@ -903,12 +903,18 @@ export default function PublicExaminusChat() {
               />
               <Button
                 onClick={handleSend}
-                disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0)}
+                disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0) || isCoolingDown}
                 size="lg"
                 className="h-12 px-6 rounded-xl bg-gradient-primary hover:opacity-90 transition-all shadow-medical hover:shadow-elevated"
+                title={isCoolingDown ? `Aguarde ${cooldownRemaining}s — modo gratuito` : undefined}
               >
                 {isLoading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
+                ) : isCoolingDown ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin opacity-60" />
+                    Aguarde {cooldownRemaining}s
+                  </>
                 ) : (
                   <>
                     <Send className="w-4 h-4 mr-2" />
@@ -921,31 +927,29 @@ export default function PublicExaminusChat() {
         </div>
       </Card>
 
-      {/* CTA Banner - shown after first extraction */}
-      {hasMessages && remainingMessages !== null && remainingMessages <= 3 && remainingMessages > 0 && (
-        <div className="mt-4 mx-2 md:mx-0 p-4 bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20 rounded-xl animate-in fade-in slide-in-from-bottom-2">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-            <div className="text-center md:text-left">
-              <p className="font-medium text-sm">
-                Gostando do Examinus? 
-                <span className="text-muted-foreground ml-1">
-                  Você tem {remainingMessages} {remainingMessages === 1 ? 'extração restante' : 'extrações restantes'}
-                </span>
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Crie sua conta grátis para uso ilimitado + acesso aos outros 9 agentes
-              </p>
+      {/* Aviso de cooldown discreto */}
+      {hasMessages && isCoolingDown && (
+        <div className="mt-2 mx-2 md:mx-0 flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-muted/40 border border-border/40 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <div className="relative w-3 h-3">
+              <div className="absolute inset-0 rounded-full bg-primary/30 animate-ping" />
+              <div className="absolute inset-0 rounded-full bg-primary" />
             </div>
-            <Button 
-              onClick={() => navigate('/auth')}
-              className="shrink-0 bg-gradient-primary hover:opacity-90"
-            >
-              Criar Conta Grátis
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+            <span>
+              Modo gratuito: aguarde {cooldownRemaining}s para a próxima extração.
+            </span>
           </div>
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent("demo:open-upgrade"))}
+            className="text-primary hover:underline font-medium shrink-0"
+          >
+            Acelerar agora →
+          </button>
         </div>
       )}
+
+      {/* Engine de pop-ups promocionais (toasts/banners/modal rotativos) */}
+      <DemoPromoEngine observeTargetId="demo" />
     </div>
   );
 }
