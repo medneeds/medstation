@@ -1246,6 +1246,20 @@ export function AgentChat({
             </Toggle>
           </div>
         )}
+        {isMobile && agentType === "codexus" && (
+          <div className="flex items-center gap-1.5 mb-2">
+            <Toggle
+              pressed={quickCIDMode}
+              onPressedChange={setQuickCIDMode}
+              size="sm"
+              className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-primary/20 gap-1"
+              title="Modo C.R.: CID Rápido — sugere até 10 CIDs sem perguntas"
+            >
+              <Zap className="h-3 w-3" />
+              <span>C.R.</span>
+            </Toggle>
+          </div>
+        )}
 
         {/* Input row */}
         <div className="flex gap-1.5 md:gap-2 items-center">
