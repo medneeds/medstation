@@ -52,12 +52,14 @@ const agentModules = [
 
 const navItemClass = ({ isActive }: { isActive: boolean }) =>
   cn(
-    "group relative flex items-center gap-3 rounded-sm px-3 h-9 text-sm font-medium transition-colors duration-150 ease-precise outline-none",
+    "group relative flex items-center gap-3 rounded-md px-3 h-10 text-sm font-medium cursor-pointer outline-none",
     "border-l-2 border-transparent",
-    "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-    "focus-visible:bg-sidebar-accent focus-visible:text-sidebar-accent-foreground focus-visible:border-l-primary",
+    "transition-all duration-200 ease-precise",
+    "hover:bg-primary/10 hover:text-foreground hover:border-l-primary/70 hover:translate-x-0.5 hover:shadow-sm",
+    "[&_svg]:transition-transform [&_svg]:duration-200 hover:[&_svg]:scale-110 hover:[&_svg]:text-primary",
+    "focus-visible:bg-primary/10 focus-visible:text-foreground focus-visible:border-l-primary",
     isActive
-      ? "bg-sidebar-accent text-foreground border-l-primary font-semibold"
+      ? "bg-sidebar-accent text-foreground border-l-primary font-semibold [&_svg]:text-primary"
       : "text-sidebar-foreground/80",
   );
 
@@ -93,7 +95,7 @@ export function AppSidebar() {
         {/* Início */}
         <SidebarGroup className="py-3">
           <SidebarGroupContent>
-            <SidebarMenu className="gap-0.5">
+            <SidebarMenu className="gap-1.5">
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip={homeModule.title} className="p-0 h-auto bg-transparent hover:bg-transparent">
                   <NavLink to={homeModule.url} className={navItemClass}>
@@ -115,7 +117,7 @@ export function AppSidebar() {
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
-            <SidebarMenu className="gap-0.5">
+            <SidebarMenu className="gap-1.5">
               {agentModules.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title} className="p-0 h-auto bg-transparent hover:bg-transparent">
@@ -143,7 +145,7 @@ export function AppSidebar() {
             <SidebarGroupLabel className="label-mono px-4 mb-2 h-auto">Conta</SidebarGroupLabel>
           )}
           <SidebarGroupContent>
-            <SidebarMenu className="gap-0.5">
+            <SidebarMenu className="gap-1.5">
               <SidebarMenuItem>
                 <SidebarMenuButton
                   tooltip="Suporte MedPocket"
