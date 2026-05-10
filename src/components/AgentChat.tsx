@@ -754,7 +754,7 @@ export function AgentChat({
 
   return (
     <div 
-      className="flex flex-col h-full p-4 md:p-6"
+      className="flex flex-col h-full p-3 md:p-6"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -778,28 +778,110 @@ export function AgentChat({
         className="hidden"
       />
       
-      {/* Header with agent info and actions */}
-      <div className="flex flex-col gap-3 pb-4 border-b md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
-          <div className={`rounded-xl p-2 md:p-3 bg-gradient-to-br from-primary/10 to-primary/5 ${agentColor} shrink-0`}>
-            {agentIcon}
+      {/* Header — compact, single row on mobile */}
+      <div className="flex flex-col gap-2 pb-3 md:pb-4 border-b md:flex-row md:items-center md:justify-between md:gap-3">
+        <div className="flex items-center gap-2 md:gap-3 min-w-0">
+          <div className={`rounded-lg md:rounded-xl p-1.5 md:p-3 bg-gradient-to-br from-primary/10 to-primary/5 ${agentColor} shrink-0`}>
+            <span className="block [&>svg]:h-5 [&>svg]:w-5 md:[&>svg]:h-8 md:[&>svg]:w-8">
+              {agentIcon}
+            </span>
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-lg md:text-2xl font-bold truncate">{agentName}</h2>
+            <h2 className="text-base md:text-2xl font-bold truncate leading-tight">{agentName}</h2>
             {currentConversation && (
-              <p className="text-xs md:text-sm text-muted-foreground truncate">{currentConversation.name}</p>
+              <p className="text-[11px] md:text-sm text-muted-foreground truncate">{currentConversation.name}</p>
             )}
+          </div>
+
+          {/* Mobile inline actions */}
+          <div className="flex md:hidden gap-1 shrink-0">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={createNewConversation} title="Nova Conversa">
+              <Plus className="h-4 w-4" />
+            </Button>
+            <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8" title="Histórico">
+                  <History className="h-4 w-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent className="w-full sm:max-w-md">
+                <SheetHeader>
+                  <SheetTitle>Histórico de Conversas</SheetTitle>
+                </SheetHeader>
+                <ScrollArea className="h-[calc(100vh-8rem)] mt-4">
+                  <div className="space-y-2">
+                    {conversations.length === 0 ? (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <FolderOpen className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                        <p>Nenhuma conversa ainda</p>
+                      </div>
+                    ) : (
+                      conversations.map((conv) => (
+                        <Card
+                          key={conv.id}
+                          className={`p-3 cursor-pointer hover:bg-accent transition-colors ${
+                            currentConversation?.id === conv.id ? "bg-accent" : ""
+                          }`}
+                          onClick={() => loadConversation(conv)}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate">{conv.name}</p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {conv.last_message || "Sem mensagens"}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {new Date(conv.updated_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 w-7 p-0 text-destructive hover:text-destructive shrink-0"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Excluir conversa?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    A conversa "{conv.name}" será excluída permanentemente.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => deleteConversation(conv.id)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Excluir
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </Card>
+                      ))
+                    )}
+                  </div>
+                </ScrollArea>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
 
-        {/* Case selector - full width on mobile */}
+        {/* Case selector */}
         {cases.length > 0 && (
           <div className="w-full md:w-64">
             <Select
               value={selectedCaseId || "none"}
               onValueChange={(value) => setSelectedCaseId(value === "none" ? undefined : value)}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full h-9 md:h-10 text-xs md:text-sm">
                 <SelectValue placeholder="Selecionar caso" />
               </SelectTrigger>
               <SelectContent>
@@ -819,17 +901,18 @@ export function AgentChat({
           </div>
         )}
 
-        <div className="flex gap-2">
-          <Button variant="outline" size={isMobile ? "icon" : "sm"} onClick={createNewConversation} title="Nova Conversa">
+        {/* Desktop actions */}
+        <div className="hidden md:flex gap-2">
+          <Button variant="outline" size="sm" onClick={createNewConversation} title="Nova Conversa">
             <Plus className="h-4 w-4" />
-            {!isMobile && <span className="ml-2">Nova Conversa</span>}
+            <span className="ml-2">Nova Conversa</span>
           </Button>
 
           <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" size={isMobile ? "icon" : "sm"} title="Histórico">
+              <Button variant="outline" size="sm" title="Histórico">
                 <History className="h-4 w-4" />
-                {!isMobile && <span className="ml-2">Histórico</span>}
+                <span className="ml-2">Histórico</span>
               </Button>
             </SheetTrigger>
             <SheetContent className="w-full sm:max-w-md">
