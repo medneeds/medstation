@@ -271,11 +271,15 @@ export default function Home() {
                   </li>
                   <li className="flex items-start gap-2 text-muted-foreground">
                     <div className="w-1 h-1 rounded-full bg-primary mt-2"></div>
-                    <span>Aceita PDFs, fotos e textos confusos</span>
+                    <span>Aceita PDFs, fotos e textos confusos — qualquer formato</span>
                   </li>
                   <li className="flex items-start gap-2 text-muted-foreground">
                     <div className="w-1 h-1 rounded-full bg-amber-500/80 mt-2"></div>
-                    <span><strong className="text-foreground">Cota limitada</strong> e tempo de espera (cooldown) entre extrações</span>
+                    <span><strong className="text-foreground">Cota limitada por sessão:</strong> após poucas extrações, o uso é bloqueado temporariamente</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-muted-foreground">
+                    <div className="w-1 h-1 rounded-full bg-amber-500/80 mt-2"></div>
+                    <span><strong className="text-foreground">Tempo de espera entre extrações</strong> (cooldown) que aumenta conforme o volume</span>
                   </li>
                   <li className="flex items-start gap-2 text-muted-foreground">
                     <div className="w-1 h-1 rounded-full bg-amber-500/80 mt-2"></div>
@@ -314,21 +318,18 @@ export default function Home() {
 
               <div className="space-y-4 md:space-y-5 relative">
                 <div>
-                  <h3 className="font-display text-2xl md:text-3xl tracking-tight mb-1 text-primary">Pro</h3>
+                  <h3 className="font-display text-2xl md:text-3xl tracking-tight mb-1 text-primary">MedStation AI Pro</h3>
                   <p className="text-xs md:text-sm text-muted-foreground">10 assistentes IA — ilimitado de verdade, sem cooldown e sem pop-ups</p>
                 </div>
                 
                 {/* Pricing */}
                 <div className="my-4 md:my-6">
                   <div className="inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1 md:py-1.5 bg-primary/10 border border-primary/30 rounded-full mb-3">
-                    <span className="text-[0.65rem] uppercase tracking-[0.18em] font-mono text-primary">Oferta de lançamento</span>
+                    <span className="text-[0.65rem] uppercase tracking-[0.18em] font-mono text-primary">Oferta especial</span>
                   </div>
                   
                   <div className="flex items-end gap-2 md:gap-3">
                     <div className="flex flex-col">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm md:text-base text-muted-foreground line-through decoration-1">De R$ 59,90</span>
-                      </div>
                       <div className="flex items-baseline gap-1 md:gap-2">
                         <span className="font-display text-4xl md:text-5xl tracking-tight text-foreground">R$ 29,90</span>
                         <span className="text-base md:text-lg text-muted-foreground">/mês</span>
@@ -339,7 +340,7 @@ export default function Home() {
                   <div className="flex items-center gap-2 p-2 md:p-3 bg-muted/50 rounded-lg border border-hairline mt-3">
                     <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
                     <span className="text-[10px] md:text-xs text-muted-foreground">
-                      Ou <span className="font-medium text-foreground">R$ 299,90/ano</span> — economize R$ 58,90 (16%)
+                      Ou <span className="font-medium text-foreground">R$ 299,90/ano</span> (em vez de R$ 358,80) — economize <span className="font-medium text-foreground">R$ 58,90 (16%)</span>
                     </span>
                   </div>
                 </div>
