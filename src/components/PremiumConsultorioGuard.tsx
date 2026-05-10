@@ -75,7 +75,7 @@ export function PremiumConsultorioGuard({ children }: PremiumConsultorioGuardPro
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-0.5">✓</span>
-                  <span>Transcrição híbrida ao vivo (Scribe v2 + revisão final com Whisper)</span>
+                  <span>Transcrição em tempo real, com revisão final do áudio para máxima precisão</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-0.5">✓</span>

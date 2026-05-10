@@ -125,7 +125,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           </Button>
           <div>
             <h1 className="font-semibold text-sm md:text-base">Modo Consultório</h1>
-            <p className="text-[10px] md:text-xs text-muted-foreground">Clínicus · Scribe v2 ao vivo + Whisper revisão final</p>
+            <p className="text-[10px] md:text-xs text-muted-foreground">Clínicus · Transcrição ao vivo + revisão final do áudio</p>
           </div>
         </div>
 
@@ -215,7 +215,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
         {isFinalizing && (
           <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Revisão final com Whisper em andamento…</span>
+            <span>Revisão final do áudio em andamento…</span>
           </div>
         )}
 
@@ -302,7 +302,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                 <h2 className="font-semibold text-base md:text-lg">Consulta Finalizada</h2>
                 <p className="text-xs md:text-sm text-muted-foreground">
                   Duração: {formattedTime} • {segments.length} {segments.length === 1 ? 'segmento' : 'segmentos'}
-                  {isFinalizing && ' • revisando com Whisper…'}
+                  {isFinalizing && ' • revisando o áudio…'}
                 </p>
               </div>
             </div>

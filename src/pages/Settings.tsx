@@ -458,7 +458,7 @@ export default function Settings() {
                 <div className="flex-1">
                   <p className="font-medium text-foreground">Plano Gratuito</p>
                   <p className="text-sm text-muted-foreground">
-                    Apenas Examinus, com restrições: cota limitada, cooldown que aumenta com o uso, pop-ups de upgrade e os outros 9 assistentes bloqueados.
+                    Apenas Examinus, com restrições: limite de uso, tempo de espera entre mensagens que aumenta com o uso, pop-ups de upgrade e os outros 9 assistentes bloqueados.
                   </p>
                 </div>
                 <Button onClick={() => navigate("/pricing")}>
@@ -467,7 +467,7 @@ export default function Settings() {
                 </Button>
               </div>
               <div className="text-xs text-muted-foreground">
-                Desbloqueie os 10 assistentes ilimitados de verdade — sem cooldown e sem pop-ups — por R$ 29,90/mês ou R$ 299,90/ano (economize R$ 58,90, ~16%).
+                Desbloqueie os 10 assistentes liberados — sem restrições de uso e sem pop-ups — por R$ 29,90/mês ou R$ 299,90/ano (economize R$ 58,90, ~16%).
               </div>
             </div>
           )}
