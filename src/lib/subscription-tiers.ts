@@ -23,6 +23,11 @@ export const SUBSCRIPTION_TIERS = {
       productId: "prod_UUfuDkH9yfcfb3",
       price: 29.90,
     },
+    YEARLY: {
+      priceId: "price_1TVgq1ACiwQRloW4w3EKIaBC",
+      productId: "prod_UUfuDkH9yfcfb3",
+      price: 299.90,
+    },
     UPGRADE_FROM_AGENTS: {
       priceId: "price_1TVgZ8ACiwQRloW4WfmIx87N",
       productId: "prod_UUfu9AzBtaGsCW",
@@ -34,6 +39,11 @@ export const SUBSCRIPTION_TIERS = {
       priceId: "price_1TVga8ACiwQRloW4fPGUzAF9",
       productId: "prod_UUfw2uz4UPwkco",
       price: 49.90,
+    },
+    YEARLY: {
+      priceId: "price_1TVgqWACiwQRloW4BwMkM74x",
+      productId: "prod_UUfw2uz4UPwkco",
+      price: 499.90,
     },
   },
 } as const;
@@ -72,5 +82,7 @@ export type PlanSlug =
   | "agents_yearly"
   | "agents_upgrade"
   | "consultorio_monthly"
+  | "consultorio_yearly"
   | "consultorio_upgrade"
-  | "pro2_bundle";
+  | "pro2_bundle"
+  | "pro2_bundle_yearly";

@@ -82,6 +82,25 @@ export default function Pricing() {
   };
 
   const agentsPlan: PlanSlug = billingPeriod === "yearly" ? "agents_yearly" : "agents_monthly";
+  const consultorioPlan: PlanSlug = billingPeriod === "yearly" ? "consultorio_yearly" : "consultorio_monthly";
+  const pro2Plan: PlanSlug = billingPeriod === "yearly" ? "pro2_bundle_yearly" : "pro2_bundle";
+
+  const isYearly = billingPeriod === "yearly";
+
+  // Display values per plan
+  const agentsPrice = isYearly ? "R$ 299,90" : "R$ 29,90";
+  const agentsSuffix = isYearly ? "/ano" : "/mês";
+  const agentsHint = isYearly ? "Equivale a R$ 24,99/mês — economize R$ 58,90" : null;
+
+  const consultorioPrice = isYearly ? "R$ 299,90" : "R$ 29,90";
+  const consultorioSuffix = isYearly ? "/ano" : "/mês";
+  const consultorioHint = isYearly ? "Equivale a R$ 24,99/mês — economize R$ 58,90" : null;
+
+  const pro2Price = isYearly ? "R$ 499,90" : "R$ 49,90";
+  const pro2Suffix = isYearly ? "/ano" : "/mês";
+  const pro2Hint = isYearly
+    ? "Equivale a R$ 41,66/mês — economize R$ 98,90"
+    : "Economize R$ 9,90/mês em vez de assinar separado";
 
   // Conditional cross-upgrade
   const upgradeBanner = (() => {
@@ -120,8 +139,31 @@ export default function Pricing() {
             Produza mais. <span className="italic text-primary">Digite menos.</span>
           </h1>
           <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
-            Escolha entre os 10 Assistentes, o Modo Consultório com transcrição em tempo real, ou os dois no MedStation AI Pro 2.
+            Os 10 Assistentes e o Modo Consultório são <span className="text-foreground font-medium">produtos separados</span>. Assine só o que usa, ou junte os dois no MedStation AI Pro 2.
           </p>
+
+          {/* Shared billing toggle */}
+          <div className="inline-flex p-1 border border-hairline rounded-md bg-muted/40 mt-4">
+            <button
+              type="button"
+              onClick={() => setBillingPeriod("monthly")}
+              className={`px-4 py-2 rounded-sm text-xs font-mono uppercase tracking-[0.14em] transition-colors ${
+                billingPeriod === "monthly" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Mensal
+            </button>
+            <button
+              type="button"
+              onClick={() => setBillingPeriod("yearly")}
+              className={`relative px-4 py-2 rounded-sm text-xs font-mono uppercase tracking-[0.14em] transition-colors ${
+                billingPeriod === "yearly" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Anual
+              <span className="ml-1.5 text-[0.6rem] text-primary/90 font-semibold">−16%</span>
+            </button>
+          </div>
         </div>
 
         {/* Cross-upgrade banner */}
@@ -176,42 +218,15 @@ export default function Pricing() {
                 </p>
               </div>
 
-              {/* Billing toggle */}
-              <div className="inline-flex p-1 border border-hairline rounded-md bg-muted/40 self-start">
-                <button
-                  type="button"
-                  onClick={() => setBillingPeriod("monthly")}
-                  className={`px-3 py-1.5 rounded-sm text-xs font-mono uppercase tracking-[0.14em] transition-colors ${
-                    billingPeriod === "monthly" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Mensal
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setBillingPeriod("yearly")}
-                  className={`relative px-3 py-1.5 rounded-sm text-xs font-mono uppercase tracking-[0.14em] transition-colors ${
-                    billingPeriod === "yearly" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Anual
-                  <span className="ml-1.5 text-[0.6rem] text-primary/90 font-semibold">−16%</span>
-                </button>
-              </div>
-
               <div>
                 <div className="flex items-baseline gap-2">
                   <span className="font-display text-4xl md:text-5xl tracking-tight text-foreground">
-                    {billingPeriod === "monthly" ? "R$ 29,90" : "R$ 299,90"}
+                    {agentsPrice}
                   </span>
-                  <span className="text-base text-muted-foreground">
-                    {billingPeriod === "monthly" ? "/mês" : "/ano"}
-                  </span>
+                  <span className="text-base text-muted-foreground">{agentsSuffix}</span>
                 </div>
-                {billingPeriod === "yearly" && (
-                  <p className="text-[11px] text-muted-foreground mt-1.5">
-                    Equivale a <span className="text-foreground font-medium">R$ 24,99/mês</span> — economize R$ 58,90
-                  </p>
+                {agentsHint && (
+                  <p className="text-[11px] text-muted-foreground mt-1.5">{agentsHint}</p>
                 )}
               </div>
 
@@ -268,13 +283,11 @@ export default function Pricing() {
               <div>
                 <div className="flex items-baseline gap-2">
                   <span className="font-display text-4xl md:text-5xl tracking-tight text-foreground">
-                    R$ 49,90
+                    {pro2Price}
                   </span>
-                  <span className="text-base text-muted-foreground">/mês</span>
+                  <span className="text-base text-muted-foreground">{pro2Suffix}</span>
                 </div>
-                <p className="text-[11px] text-muted-foreground mt-1.5">
-                  Economize <span className="text-foreground font-medium">R$ 9,90/mês</span> em vez de assinar separado
-                </p>
+                <p className="text-[11px] text-muted-foreground mt-1.5">{pro2Hint}</p>
               </div>
 
               <ul className="space-y-2 text-xs md:text-sm flex-1">
@@ -299,12 +312,12 @@ export default function Pricing() {
               <Button
                 size="lg"
                 className="w-full h-12 mt-auto"
-                onClick={() => startCheckout("pro2_bundle")}
+                onClick={() => startCheckout(pro2Plan)}
                 disabled={anyLoading || (hasAgents && hasConsultorio)}
               >
                 {hasAgents && hasConsultorio ? (
                   "Plano ativo"
-                ) : isLoading("pro2_bundle") ? (
+                ) : isLoading(pro2Plan) ? (
                   <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processando...</>
                 ) : (
                   <>Assinar Pro 2 <ArrowRight className="ml-2 h-4 w-4" /></>
@@ -325,17 +338,20 @@ export default function Pricing() {
                 </div>
                 <h2 className="font-display text-2xl md:text-3xl tracking-tight">Modo Consultório</h2>
                 <p className="text-xs md:text-sm text-muted-foreground mt-1">
-                  Grave a consulta, receba a AHE pronta. Sem digitar.
+                  Produto separado dos Assistentes — pode ser assinado isoladamente ou somado a eles.
                 </p>
               </div>
 
               <div>
                 <div className="flex items-baseline gap-2">
                   <span className="font-display text-4xl md:text-5xl tracking-tight text-foreground">
-                    R$ 29,90
+                    {consultorioPrice}
                   </span>
-                  <span className="text-base text-muted-foreground">/mês</span>
+                  <span className="text-base text-muted-foreground">{consultorioSuffix}</span>
                 </div>
+                {consultorioHint && (
+                  <p className="text-[11px] text-muted-foreground mt-1.5">{consultorioHint}</p>
+                )}
                 <p className="text-[11px] text-muted-foreground mt-1.5">
                   Já assina os 10 Assistentes? Adicione por <span className="text-primary font-medium">R$ 19,90/mês</span>
                 </p>
@@ -354,12 +370,12 @@ export default function Pricing() {
                 size="lg"
                 variant="outline"
                 className="w-full h-12 mt-auto"
-                onClick={() => startCheckout("consultorio_monthly")}
+                onClick={() => startCheckout(consultorioPlan)}
                 disabled={anyLoading || hasConsultorio}
               >
                 {hasConsultorio ? (
                   "Plano ativo"
-                ) : isLoading("consultorio_monthly") ? (
+                ) : isLoading(consultorioPlan) ? (
                   <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processando...</>
                 ) : (
                   <>Assinar Consultório <ArrowRight className="ml-2 h-4 w-4" /></>

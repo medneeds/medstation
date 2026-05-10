@@ -117,6 +117,9 @@ export default function ConsultorioLanding() {
             <p className="text-sm md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Transcreva sua consulta em tempo real e receba a anamnese estruturada pronta no momento em que o paciente sai do consultório. Zero alucinação. Zero retrabalho.
             </p>
+            <p className="text-xs md:text-sm text-muted-foreground/80 max-w-2xl mx-auto">
+              Produto separado da MedStation, pode ser assinado isoladamente <span className="text-foreground">ou</span> somado aos 10 Assistentes (R$ 19,90/mês de upgrade) <span className="text-foreground">ou</span> contratado completo no Pro 2.
+            </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
               <Button
                 size="lg"
@@ -260,6 +263,7 @@ export default function ConsultorioLanding() {
                     <span className="font-display text-4xl tracking-tight">R$ 29,90</span>
                     <span className="text-sm text-muted-foreground">/mês</span>
                   </div>
+                  <p className="text-[11px] text-muted-foreground">ou R$ 299,90/ano (≈ R$ 24,99/mês)</p>
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> Transcrição em tempo real</li>
                     <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> Revisão final com Whisper</li>
@@ -294,6 +298,7 @@ export default function ConsultorioLanding() {
                     <span className="text-sm text-muted-foreground">/mês</span>
                   </div>
                   <p className="text-xs text-muted-foreground">Economize R$ 9,90 vs comprar separado</p>
+                  <p className="text-[11px] text-muted-foreground -mt-2">ou R$ 499,90/ano (≈ R$ 41,66/mês)</p>
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> <strong className="text-foreground">10 Assistentes</strong> (Clínicus, Examinus, etc.)</li>
                     <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> <strong className="text-foreground">Modo Consultório</strong> em tempo real</li>
