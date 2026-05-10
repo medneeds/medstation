@@ -514,7 +514,8 @@ export default function PublicExaminusChat() {
 
   const hasMessages = messages.length > 0;
   const messagesHeight = hasMessages ? Math.min(500, Math.max(200, messages.length * 80)) : 0;
-  const LIMIT = 5;
+  const LIMIT = 3;
+  const isCoolingDown = cooldownRemaining > 0;
 
   return (
     <div className="w-full max-w-5xl mx-auto px-2 md:px-4">
