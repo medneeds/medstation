@@ -301,7 +301,7 @@ export default function Pricing() {
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="w-3.5 h-3.5 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-muted-foreground">AHE estruturada e anti-alucinação em 3 camadas</span>
+                  <span className="text-muted-foreground">Anamnese estruturada automaticamente, sem invenções (3 camadas de proteção)</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="w-3.5 h-3.5 text-primary mt-0.5 flex-shrink-0" />

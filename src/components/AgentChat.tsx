@@ -1211,10 +1211,10 @@ export function AgentChat({
               onPressedChange={setDirectAHEMode}
               size="sm"
               className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-primary/20 gap-1"
-              title="Modo AHE"
+              title="Gerar anamnese estruturada direto"
             >
               <FileDown className="h-3 w-3" />
-              <span>AHE</span>
+              <span>Anamnese</span>
             </Toggle>
           </div>
         )}
@@ -1302,10 +1302,10 @@ export function AgentChat({
               onPressedChange={setDirectAHEMode}
               size="sm"
               className="shrink-0 data-[state=on]:bg-primary/20 gap-1"
-              title="Modo AHE: gerar anamnese hospitalar estruturada diretamente"
+              title="Gerar anamnese hospitalar estruturada diretamente"
             >
               <FileDown className="h-4 w-4" />
-              <span className="text-xs">AHE</span>
+              <span className="text-xs">Anamnese</span>
             </Toggle>
           )}
           {!isMobile && agentType === "prescriptus" && (

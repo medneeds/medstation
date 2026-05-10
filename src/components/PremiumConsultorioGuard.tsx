@@ -79,7 +79,7 @@ export function PremiumConsultorioGuard({ children }: PremiumConsultorioGuardPro
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-0.5">✓</span>
-                  <span><strong className="text-foreground">Anti-alucinação estrita</strong> — só transcreve o que foi dito</span>
+                  <span><strong className="text-foreground">Sem invenções</strong> — só registra o que foi dito</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-0.5">✓</span>
