@@ -51,10 +51,6 @@ const agentModules = [
   { title: "CODexus", url: "/codexus", icon: FileText, code: "10" },
 ];
 
-const settings = [
-  { title: "Assinatura", url: "/pricing", icon: CreditCard },
-];
-
 const navItemClass = ({ isActive }: { isActive: boolean }) =>
   cn(
     "group relative flex items-center gap-3 rounded-sm px-3 h-9 text-sm font-medium transition-colors duration-150 ease-precise outline-none",
