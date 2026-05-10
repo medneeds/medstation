@@ -63,25 +63,21 @@ All colors MUST be HSL.
     --sidebar-border: 150 12% 90%;
     --sidebar-ring: 158 45% 52%;
 
-    /* Studius Premium Colors - Green Theme */
-    --studius-primary: 165 60% 45%;
-    --studius-secondary: 145 50% 50%;
-    --studius-accent: 175 55% 42%;
-    --studius-bg: 150 15% 98%;
-    --studius-muted: 150 12% 95%;
-    --studius-border: 150 10% 88%;
+    /* Editorial accents — warm amber for premium emphasis */
+    --accent-warm: 35 85% 65%;
+    --accent-warm-foreground: 30 30% 12%;
+    --hairline: 150 12% 88%;
+    --surface-elevated: 0 0% 100%;
 
     /* Elegant pastel green gradients */
     --gradient-primary: linear-gradient(135deg, hsl(158 45% 52%), hsl(165 50% 60%));
     --gradient-clinical: linear-gradient(135deg, hsl(150 25% 96%), hsl(155 20% 98%));
     --gradient-hero: linear-gradient(135deg, hsl(158 45% 45%), hsl(165 50% 55%));
-    --gradient-studius: linear-gradient(135deg, hsl(165 60% 45%), hsl(155 50% 50%), hsl(175 55% 42%));
 
     /* Soft shadows with green undertone */
     --shadow-medical: 0 2px 8px hsl(150 20% 40% / 0.06);
     --shadow-elevated: 0 4px 16px hsl(150 20% 40% / 0.08);
     --shadow-critical: 0 8px 24px hsl(0 72% 51% / 0.12);
-    --shadow-studius: 0 8px 32px hsl(165 50% 40% / 0.15);
 
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
