@@ -805,7 +805,12 @@ export default function PublicExaminusChat() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder={hasMessages ? "Cole exames..." : "Cole exames aqui"}
-                className="min-h-[44px] max-h-32 resize-none flex-1 rounded-2xl border-border/50 focus:border-primary/50 text-base py-3"
+                aria-invalid={input.length > 0 && !input.trim() && selectedFiles.length === 0}
+                className={`min-h-[44px] max-h-32 resize-none flex-1 rounded-2xl text-base py-3 ${
+                  input.length > 0 && !input.trim() && selectedFiles.length === 0
+                    ? "border-destructive focus:border-destructive"
+                    : "border-border/50 focus:border-primary/50"
+                }`}
                 disabled={isLoading}
               />
               <Button
@@ -913,7 +918,12 @@ export default function PublicExaminusChat() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder={hasMessages ? "Cole mais exames aqui..." : "Cole os resultados de exames aqui (texto, imagem ou PDF)"}
-                className="min-h-[48px] max-h-40 resize-none flex-1 rounded-xl border-border/50 focus:border-primary/50 transition-colors text-sm py-3"
+                aria-invalid={input.length > 0 && !input.trim() && selectedFiles.length === 0}
+                className={`min-h-[48px] max-h-40 resize-none flex-1 rounded-xl transition-colors text-sm py-3 ${
+                  input.length > 0 && !input.trim() && selectedFiles.length === 0
+                    ? "border-destructive focus:border-destructive"
+                    : "border-border/50 focus:border-primary/50"
+                }`}
                 disabled={isLoading}
               />
               <Button
