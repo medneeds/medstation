@@ -18,7 +18,9 @@ import {
   Calculator,
   Moon,
   Sun,
+  LifeBuoy,
 } from "lucide-react";
+import { SUPPORT_CHAT_EVENT } from "@/components/SupportChat";
 import {
   Sidebar,
   SidebarContent,
@@ -192,6 +194,21 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  tooltip="Suporte MedPocket"
+                  onClick={() => window.dispatchEvent(new CustomEvent(SUPPORT_CHAT_EVENT))}
+                  className={cn(
+                    "group flex items-center gap-3 rounded-sm px-3 h-9 text-sm font-medium",
+                    "border-l-2 border-transparent text-sidebar-foreground/80",
+                    "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                    "transition-colors duration-150 ease-precise",
+                  )}
+                >
+                  <LifeBuoy className="h-4 w-4" />
+                  {!collapsed && <span className="flex-1">Suporte</span>}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   tooltip={theme === "dark" ? "Modo claro" : "Modo escuro"}

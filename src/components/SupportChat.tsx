@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from "react";
+
+export const SUPPORT_CHAT_EVENT = "open-support-chat";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
@@ -50,6 +52,13 @@ export function SupportChat() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Listen to global open event (triggered from sidebar)
+  useEffect(() => {
+    const handler = () => setIsOpen(true);
+    window.addEventListener(SUPPORT_CHAT_EVENT, handler);
+    return () => window.removeEventListener(SUPPORT_CHAT_EVENT, handler);
+  }, []);
 
   const handleClose = () => {
     // Save current conversation if it has more than just the initial message
@@ -179,20 +188,13 @@ export function SupportChat() {
 
   return (
     <>
-      {/* Floating Button */}
-      {!isOpen && (
-        <Button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:scale-110 transition-transform z-50"
-          size="icon"
-        >
-          <MessageCircle className="h-6 w-6" />
-        </Button>
-      )}
-
-      {/* Chat Window */}
+      {/* Chat Window — opens from the sidebar trigger; positioned at bottom-left to avoid overlapping the chat send button on the right */}
       {isOpen && (
-        <Card className="fixed bottom-6 right-6 w-[380px] h-[600px] shadow-2xl flex flex-col z-50 animate-in slide-in-from-bottom-4">
+        <Card
+          className="fixed z-50 flex flex-col shadow-2xl animate-in slide-in-from-bottom-4
+            inset-x-4 bottom-4 h-[80vh] max-h-[600px]
+            md:inset-x-auto md:bottom-6 md:left-[calc(var(--sidebar-width,16rem)+1rem)] md:w-[380px] md:h-[600px]"
+        >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground rounded-t-lg">
             <div className="flex items-center gap-2">
