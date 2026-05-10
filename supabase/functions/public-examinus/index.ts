@@ -69,7 +69,7 @@ serve(async (req) => {
     if (totalCount >= RATE_LIMIT) {
       return new Response(
         JSON.stringify({ 
-          error: "Você usou suas extrações gratuitas! Crie sua conta grátis para continuar usando o Examinus sem limites.",
+          error: "Você usou suas extrações gratuitas! Crie sua conta grátis para continuar.",
           limitReached: true,
           usedCount: totalCount,
           limit: RATE_LIMIT
@@ -79,6 +79,23 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" } 
         }
       );
+    }
+
+    // Cooldown server-side: 30s entre extrações para o mesmo IP/fingerprint
+    if (existingRecord?.updated_at) {
+      const last = new Date(existingRecord.updated_at).getTime();
+      const elapsed = Date.now() - last;
+      if (elapsed < COOLDOWN_MS) {
+        const cooldownRemaining = Math.ceil((COOLDOWN_MS - elapsed) / 1000);
+        return new Response(
+          JSON.stringify({
+            error: `Modo gratuito: aguarde ${cooldownRemaining}s para a próxima extração.`,
+            cooldown: true,
+            cooldownRemaining,
+          }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     // Validar mensagens
