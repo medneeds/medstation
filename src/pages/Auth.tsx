@@ -329,7 +329,10 @@ export default function Auth() {
             </TabsList>
 
             <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-5 mt-6">
+              <div className="mt-6">
+                <GoogleAuthButton label="Entrar com Google" />
+              </div>
+              <form onSubmit={handleSignIn} className="space-y-5 mt-5">
                 <div className="space-y-2 group/field">
                   <Label htmlFor="signin-email" className="text-sm font-medium">Email</Label>
                   <Input
