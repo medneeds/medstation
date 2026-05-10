@@ -11,6 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from "@/hooks/use-toast";
 import { Activity } from "lucide-react";
 import { signUpSchema, signInSchema } from "@/lib/validations";
+import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -328,7 +329,10 @@ export default function Auth() {
             </TabsList>
 
             <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-5 mt-6">
+              <div className="mt-6">
+                <GoogleAuthButton label="Entrar com Google" />
+              </div>
+              <form onSubmit={handleSignIn} className="space-y-5 mt-5">
                 <div className="space-y-2 group/field">
                   <Label htmlFor="signin-email" className="text-sm font-medium">Email</Label>
                   <Input
@@ -401,7 +405,10 @@ export default function Auth() {
             </TabsContent>
 
             <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4 mt-6">
+              <div className="mt-6">
+                <GoogleAuthButton label="Cadastrar com Google" />
+              </div>
+              <form onSubmit={handleSignUp} className="space-y-4 mt-5">
                 <div className="space-y-2">
                   <Label htmlFor="signup-name" className="text-sm font-medium">Nome Completo *</Label>
                   <Input
