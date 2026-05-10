@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import NotificationBell from "@/components/NotificationBell";
+import { HeaderUserMenu } from "@/components/HeaderUserMenu";
 import { SupportChat } from "@/components/SupportChat";
 
 interface DashboardLayoutProps {
@@ -76,8 +77,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 md:gap-2 hairline-l pl-2 md:pl-4 ml-2 md:ml-4">
+              <div className="flex items-center gap-2 md:gap-3 hairline-l pl-2 md:pl-4 ml-2 md:ml-4">
                 <NotificationBell />
+                <HeaderUserMenu />
               </div>
             </header>
 
