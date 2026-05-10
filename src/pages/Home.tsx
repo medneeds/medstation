@@ -162,20 +162,31 @@ export default function Home() {
           </div>
 
           {/* Agents Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 mb-10 md:mb-14 lg:mb-16">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3 mb-10 md:mb-14 lg:mb-16">
             {agents.map((agent, i) => {
               const Icon = agent.icon;
+              const code = String(i + 1).padStart(2, "0");
               return (
-                <div 
+                <div
                   key={agent.name}
-                  className="group relative p-3 md:p-4 rounded-xl md:rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/30 hover:bg-card/80 transition-all duration-300 cursor-pointer hover:shadow-lg hover:-translate-y-1"
+                  className="group relative p-4 md:p-5 rounded-md border border-hairline bg-card/60 backdrop-blur-sm hover:border-primary/40 hover:bg-card transition-all duration-300 cursor-pointer hover:-translate-y-0.5"
                   style={{ animationDelay: `${i * 50}ms` }}
                 >
-                  <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-gradient-to-br ${agent.color} flex items-center justify-center mb-2 md:mb-3 shadow-md group-hover:scale-110 transition-transform duration-300`}>
-                    <Icon className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                  {/* Mono code, top-right — matches LogoMark registration ticks */}
+                  <span className="absolute top-2 right-2.5 text-[0.55rem] uppercase tracking-[0.2em] font-mono text-muted-foreground/60">
+                    {code}
+                  </span>
+
+                  {/* Icon — hairline frame, mint stroke, no fill */}
+                  <div className="relative w-9 h-9 md:w-10 md:h-10 mb-3 rounded border border-hairline bg-background/40 flex items-center justify-center group-hover:border-primary/50 transition-colors duration-300">
+                    <Icon
+                      strokeWidth={1.5}
+                      className="w-4 h-4 md:w-[18px] md:h-[18px] text-primary transition-transform duration-300 group-hover:scale-110"
+                    />
                   </div>
-                  <h4 className="font-semibold text-xs md:text-sm mb-0.5">{agent.name}</h4>
-                  <p className="text-[10px] md:text-xs text-muted-foreground">{agent.shortDesc}</p>
+
+                  <h4 className="font-display text-sm md:text-base tracking-tight text-foreground">{agent.name}</h4>
+                  <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5">{agent.shortDesc}</p>
                 </div>
               );
             })}
