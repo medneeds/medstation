@@ -56,21 +56,18 @@ serve(async (req) => {
         product_ids: ['admin'],
         subscription_end: null,
         has_agents: true,
-        has_studius: true,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
     }
 
-    // Check for active courtesy access (manual grant by admin)
     const { data: hasCourtesy } = await supabaseClient.rpc('has_active_courtesy', {
       _user_id: user.id,
     });
 
     if (hasCourtesy) {
       logStep("User has active courtesy access, granting full access");
-      // Get expiration date if any
       const { data: courtesyData } = await supabaseClient
         .from('courtesy_access')
         .select('expires_at')
@@ -82,7 +79,6 @@ serve(async (req) => {
         product_ids: ['courtesy'],
         subscription_end: courtesyData?.expires_at || null,
         has_agents: true,
-        has_studius: true,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -94,11 +90,10 @@ serve(async (req) => {
     
     if (customers.data.length === 0) {
       logStep("No customer found, updating unsubscribed state");
-      return new Response(JSON.stringify({ 
+      return new Response(JSON.stringify({
         subscribed: false,
         product_ids: [],
         has_agents: false,
-        has_studius: false,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -126,34 +121,20 @@ serve(async (req) => {
 
     // Product IDs - LIVE MODE (Produção)
     const AGENTS_PRODUCT_ID = "prod_TgR7u5urUle7om"; // MedStation AI
-    const STUDIUS_PRODUCT_ID = "prod_TgR45WSvugMwLt"; // Studius AI
 
     if (hasActiveSub) {
-      logStep("Processing valid subscriptions", { 
+      logStep("Processing valid subscriptions", {
         count: validSubs.length,
         statuses: validSubs.map(s => s.status)
       });
-      
-      // Collect all product IDs from all valid subscriptions
+
       for (const subscription of validSubs) {
-        logStep("Processing subscription", { 
-          subscriptionId: subscription.id, 
-          status: subscription.status,
-          itemsCount: subscription.items.data.length 
-        });
-        
         for (const item of subscription.items.data) {
-          // item.price.product is always a string ID when not using expand
           const productId = item.price.product as string;
-          
-          logStep("Found product in subscription", { productId, priceId: item.price.id });
-          
           if (productId && !productIds.includes(productId)) {
             productIds.push(productId);
           }
         }
-        
-        // Get the latest subscription end date (handle potential undefined/null)
         if (subscription.current_period_end) {
           try {
             const endDate = new Date(subscription.current_period_end * 1000).toISOString();
@@ -166,26 +147,17 @@ serve(async (req) => {
         }
       }
       logStep("Valid subscriptions processed", { productIds, subscriptionEnd });
-    } else {
-      logStep("No valid subscription found", { 
-        totalSubs: subscriptions.data.length,
-        allStatuses: subscriptions.data.map(s => s.status)
-      });
     }
 
-    // Determine access levels
     const hasAgents = productIds.includes(AGENTS_PRODUCT_ID);
-    const hasStudius = productIds.includes(STUDIUS_PRODUCT_ID);
-
-    logStep("Access levels determined", { hasAgents, hasStudius });
+    logStep("Access levels determined", { hasAgents });
 
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
       product_ids: productIds,
-      product_id: productIds[0] || null, // Backwards compatibility
+      product_id: productIds[0] || null,
       subscription_end: subscriptionEnd,
       has_agents: hasAgents,
-      has_studius: hasStudius,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
