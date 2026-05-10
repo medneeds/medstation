@@ -236,6 +236,59 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Modo Consultório - novo produto */}
+      <section id="consultorio" className="py-12 md:py-20 px-4 md:px-6 relative overflow-hidden">
+        <div className="container mx-auto max-w-5xl relative">
+          <Card className="p-6 md:p-10 lg:p-14 border-2 border-primary/30 bg-gradient-to-br from-primary/8 via-card/80 to-card/60 backdrop-blur-sm relative overflow-hidden">
+            <div className="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
+            <div className="relative grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 items-center">
+              <div className="space-y-4">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary/15 border border-primary/40 rounded-full">
+                  <Sparkles className="w-3 h-3 text-primary" />
+                  <span className="text-[0.6rem] uppercase tracking-[0.2em] font-mono text-primary">Novo · Tempo real</span>
+                </div>
+                <h2 className="font-display text-3xl md:text-4xl lg:text-5xl tracking-tight leading-[1.05]">
+                  Modo Consultório.
+                  <br />
+                  <span className="italic text-primary">Em tempo real.</span>
+                </h2>
+                <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                  Atenda como sempre. Nós transcrevemos a consulta ao vivo e devolvemos a anamnese estruturada no momento em que o paciente sai.
+                </p>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> Transcrição híbrida (Scribe v2 + Whisper)</li>
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> Anti-alucinação estrita</li>
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> AHE estruturada automaticamente</li>
+                </ul>
+                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                  <Button size="lg" onClick={() => navigate('/consultorio-landing')}>
+                    Conhecer o Modo Consultório
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                  <span className="text-xs text-muted-foreground self-center">A partir de R$ 29,90/mês</span>
+                </div>
+              </div>
+              <div className="hidden md:flex items-center justify-center">
+                <div className="relative w-full max-w-sm aspect-square rounded-2xl border border-hairline bg-background/60 backdrop-blur-sm p-6 flex flex-col gap-3">
+                  <div className="flex items-center gap-2 text-xs font-mono text-primary">
+                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                    OUVINDO...
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="text-foreground">Paciente: Sinto dor torácica há 3 dias...</div>
+                    <div className="text-muted-foreground italic">irradia para o braço esquerdo</div>
+                  </div>
+                  <div className="mt-auto pt-4 border-t border-hairline">
+                    <div className="text-[0.6rem] uppercase tracking-[0.2em] font-mono text-primary mb-1">AHE gerada</div>
+                    <div className="text-xs text-muted-foreground">QP: Dor torácica há 3 dias com irradiação para MSE...</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </section>
+
       {/* Planos */}
       <section id="planos" className="py-12 md:py-20 lg:py-24 px-4 md:px-6 relative overflow-hidden">
         <div className="absolute inset-0 bg-muted/30 backdrop-blur-3xl"></div>

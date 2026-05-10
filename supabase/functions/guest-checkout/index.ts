@@ -12,9 +12,11 @@ const logStep = (step: string, details?: any) => {
 };
 
 // Price IDs - LIVE MODE (Produção)
-const PRICES = {
+const PRICES: Record<string, string> = {
   agents_monthly: "price_1Sj4FbACiwQRloW42xp6WqYH",
   agents_yearly: "price_1TVe5RACiwQRloW4KsjZ5QsK",
+  consultorio_monthly: "price_1TVgYdACiwQRloW4w2R2GJ2i",
+  pro2_bundle: "price_1TVga8ACiwQRloW4fPGUzAF9",
 };
 
 serve(async (req) => {
@@ -29,12 +31,21 @@ serve(async (req) => {
     const email = body.email?.trim().toLowerCase();
     const billingPeriod = body.billingPeriod || "monthly";
     const couponCode = body.couponCode?.trim();
+    let plan: string | undefined = body.plan;
+
+    if (!plan) {
+      plan = billingPeriod === "yearly" ? "agents_yearly" : "agents_monthly";
+    }
+
+    if (!PRICES[plan]) {
+      throw new Error(`Plano inválido para guest checkout: ${plan}`);
+    }
 
     if (!email) {
       throw new Error("Email é obrigatório");
     }
 
-    logStep("Request parameters", { email, billingPeriod, couponCode: couponCode || "none" });
+    logStep("Request parameters", { email, plan, couponCode: couponCode || "none" });
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil"
@@ -44,53 +55,34 @@ serve(async (req) => {
     let customerId;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
-      logStep("Found existing customer", { customerId });
     }
 
-    const priceId = billingPeriod === "yearly" ? PRICES.agents_yearly : PRICES.agents_monthly;
-    logStep("Price selected", { priceId, billingPeriod });
-
     const origin = req.headers.get("origin") || "https://medstation.ai";
-    
+
     const sessionConfig: any = {
       customer: customerId,
       customer_email: customerId ? undefined : email,
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
+      line_items: [{ price: PRICES[plan], quantity: 1 }],
       mode: "subscription",
       success_url: `${origin}/welcome?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?canceled=true`,
-      // Collect password for account creation
       custom_fields: [
         {
           key: "password",
-          label: {
-            type: "custom",
-            custom: "Crie sua senha de acesso",
-          },
+          label: { type: "custom", custom: "Crie sua senha de acesso" },
           type: "text",
         },
       ],
-      // Allow promo codes
       allow_promotion_codes: !couponCode,
-      metadata: {
-        product: "agents",
-        billingPeriod,
-      },
+      metadata: { plan, billingPeriod },
     };
 
-    // Add specific coupon if provided
     if (couponCode) {
       sessionConfig.discounts = [{ coupon: couponCode }];
-      logStep("Applying coupon", { coupon: couponCode });
     }
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
-    logStep("Checkout session created", { sessionId: session.id });
+    logStep("Checkout session created", { sessionId: session.id, plan });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

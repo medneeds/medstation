@@ -13,10 +13,25 @@ const logStep = (step: string, details?: any) => {
 };
 
 // Price IDs - LIVE MODE (Produção)
-const PRICES = {
+const PRICES: Record<string, string> = {
   agents_monthly: "price_1Sj4FbACiwQRloW42xp6WqYH",
   agents_yearly: "price_1TVe5RACiwQRloW4KsjZ5QsK",
+  agents_upgrade: "price_1TVgZWACiwQRloW4VxjohmIG",
+  consultorio_monthly: "price_1TVgYdACiwQRloW4w2R2GJ2i",
+  consultorio_upgrade: "price_1TVgZ8ACiwQRloW4WfmIx87N",
+  pro2_bundle: "price_1TVga8ACiwQRloW4fPGUzAF9",
 };
+
+const AGENTS_PRODUCT_IDS = [
+  "prod_TgR7u5urUle7om",
+  "prod_UUfvAeta3d1Rn5",
+  "prod_UUfw2uz4UPwkco",
+];
+const CONSULTORIO_PRODUCT_IDS = [
+  "prod_UUfuDkH9yfcfb3",
+  "prod_UUfu9AzBtaGsCW",
+  "prod_UUfw2uz4UPwkco",
+];
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -36,52 +51,83 @@ serve(async (req) => {
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
-    
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Get parameters from request body
     const body = await req.json().catch(() => ({}));
     const couponCode = body.couponCode?.trim();
     const billingPeriod = body.billingPeriod || "monthly";
-    logStep("Request parameters", { couponCode: couponCode || "none", billingPeriod });
+    // New: explicit plan slug. Falls back to legacy product/billingPeriod mapping for backward compat.
+    let plan: string | undefined = body.plan;
+
+    if (!plan) {
+      // Legacy compat: existing UI calls with billingPeriod only → agents
+      plan = billingPeriod === "yearly" ? "agents_yearly" : "agents_monthly";
+    }
+
+    if (!PRICES[plan]) {
+      throw new Error(`Invalid plan: ${plan}`);
+    }
+
+    logStep("Plan resolved", { plan, couponCode: couponCode || "none" });
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil"
     });
 
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId;
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-      logStep("Found existing customer", { customerId });
+    // Eligibility check for upgrade SKUs
+    if (plan === "consultorio_upgrade" || plan === "agents_upgrade") {
+      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+      if (customers.data.length === 0) {
+        throw new Error("Plano de upgrade indisponível: nenhuma assinatura ativa encontrada.");
+      }
+      const subs = await stripe.subscriptions.list({
+        customer: customers.data[0].id,
+        status: "all",
+        limit: 20,
+      });
+      const validSubs = subs.data.filter((s) =>
+        ["active", "trialing", "past_due"].includes(s.status)
+      );
+      const productIds: string[] = [];
+      for (const s of validSubs) {
+        for (const it of s.items.data) {
+          const pid = it.price.product as string;
+          if (pid && !productIds.includes(pid)) productIds.push(pid);
+        }
+      }
+      const hasAgents = productIds.some((id) => AGENTS_PRODUCT_IDS.includes(id));
+      const hasConsultorio = productIds.some((id) => CONSULTORIO_PRODUCT_IDS.includes(id));
+
+      if (plan === "consultorio_upgrade" && !hasAgents) {
+        throw new Error("Upgrade do Consultório requer assinatura ativa dos Assistentes.");
+      }
+      if (plan === "agents_upgrade" && !hasConsultorio) {
+        throw new Error("Upgrade dos Assistentes requer assinatura ativa do Modo Consultório.");
+      }
     }
 
-    const priceId = billingPeriod === "yearly" ? PRICES.agents_yearly : PRICES.agents_monthly;
-    logStep("Price selected", { priceId, billingPeriod });
+    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    let customerId: string | undefined;
+    if (customers.data.length > 0) {
+      customerId = customers.data[0].id;
+    }
 
     const sessionConfig: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
+      line_items: [{ price: PRICES[plan], quantity: 1 }],
       mode: "subscription",
-      success_url: `${req.headers.get("origin")}/dashboard?success=true`,
+      success_url: `${req.headers.get("origin")}/dashboard?success=true&plan=${plan}`,
       cancel_url: `${req.headers.get("origin")}/pricing?canceled=true`,
+      metadata: { plan, user_id: user.id },
     };
 
-    // Add coupon if provided
     if (couponCode) {
       sessionConfig.discounts = [{ coupon: couponCode }];
-      logStep("Applying coupon to checkout", { coupon: couponCode });
     }
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
-
-    logStep("Checkout session created", { sessionId: session.id });
+    logStep("Checkout session created", { sessionId: session.id, plan });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

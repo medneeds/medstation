@@ -1,12 +1,16 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+type AvailableUpgrade = "consultorio_upgrade" | "agents_upgrade" | null;
+
 interface SubscriptionContextType {
   subscribed: boolean;
   productId: string | null;
   productIds: string[];
   subscriptionEnd: string | null;
   hasAgents: boolean;
+  hasConsultorio: boolean;
+  availableUpgrade: AvailableUpgrade;
   loading: boolean;
   checkSubscription: () => Promise<void>;
 }
@@ -19,17 +23,25 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [productIds, setProductIds] = useState<string[]>([]);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [hasAgents, setHasAgents] = useState(false);
+  const [hasConsultorio, setHasConsultorio] = useState(false);
+  const [availableUpgrade, setAvailableUpgrade] = useState<AvailableUpgrade>(null);
   const [loading, setLoading] = useState(true);
+
+  const reset = () => {
+    setSubscribed(false);
+    setProductId(null);
+    setProductIds([]);
+    setSubscriptionEnd(null);
+    setHasAgents(false);
+    setHasConsultorio(false);
+    setAvailableUpgrade(null);
+  };
 
   const checkSubscription = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        setSubscribed(false);
-        setProductId(null);
-        setProductIds([]);
-        setSubscriptionEnd(null);
-        setHasAgents(false);
+        reset();
         setLoading(false);
         return;
       }
@@ -42,6 +54,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       setProductIds(data?.product_ids || []);
       setSubscriptionEnd(data?.subscription_end || null);
       setHasAgents(data?.has_agents === true);
+      setHasConsultorio(data?.has_consultorio === true);
+      setAvailableUpgrade((data?.available_upgrade as AvailableUpgrade) || null);
     } catch (error) {
       console.error("[SubscriptionContext] Error checking subscription:", error);
     } finally {
@@ -55,11 +69,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       if (session) {
         checkSubscription();
       } else {
-        setSubscribed(false);
-        setProductId(null);
-        setProductIds([]);
-        setSubscriptionEnd(null);
-        setHasAgents(false);
+        reset();
         setLoading(false);
       }
     });
@@ -72,7 +82,15 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
   return (
     <SubscriptionContext.Provider value={{
-      subscribed, productId, productIds, subscriptionEnd, hasAgents, loading, checkSubscription
+      subscribed,
+      productId,
+      productIds,
+      subscriptionEnd,
+      hasAgents,
+      hasConsultorio,
+      availableUpgrade,
+      loading,
+      checkSubscription,
     }}>
       {children}
     </SubscriptionContext.Provider>
