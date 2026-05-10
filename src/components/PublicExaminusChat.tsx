@@ -795,12 +795,15 @@ export default function PublicExaminusChat() {
               />
               <Button
                 onClick={handleSend}
-                disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0)}
-                size="icon"
-                className="h-10 w-10 rounded-full bg-gradient-primary hover:opacity-90 transition-all shrink-0 shadow-md"
+                disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0) || isCoolingDown}
+                size={isCoolingDown ? "sm" : "icon"}
+                className={`${isCoolingDown ? "h-10 px-3 text-[11px] rounded-full" : "h-10 w-10 rounded-full"} bg-gradient-primary hover:opacity-90 transition-all shrink-0 shadow-md`}
+                title={isCoolingDown ? `Aguarde ${cooldownRemaining}s — modo gratuito` : undefined}
               >
                 {isLoading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
+                ) : isCoolingDown ? (
+                  <span>{cooldownRemaining}s</span>
                 ) : (
                   <Send className="w-4 h-4" />
                 )}
