@@ -545,7 +545,6 @@ export default function PublicExaminusChat() {
           <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed px-2">
             Cole os resultados dos exames abaixo e veja a mágica acontecer.
           </p>
-        </div>
 
           <div className="hidden md:flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground pt-1">
             <div className="flex items-center gap-2">
