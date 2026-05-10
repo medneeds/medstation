@@ -44,13 +44,47 @@ function walk(dir: string, acc: string[] = []): string[] {
   return acc;
 }
 
-function stripIgnorable(line: string): string {
-  // remove import/export-from lines
+// Atributos JSX/objetos cujo valor é exibido ao usuário
+const USER_FACING_ATTRS = [
+  "title",
+  "placeholder",
+  "alt",
+  "aria-label",
+  "label",
+  "description",
+  "headline",
+  "subline",
+  "tooltip",
+  "message",
+  "text",
+  "content",
+];
+
+/**
+ * Extrai apenas trechos visíveis ao usuário de uma linha:
+ * - texto JSX entre `>` e `<`
+ * - valores de atributos visíveis (title="..." / label: "...")
+ * Retorna string vazia se nada visível na linha.
+ */
+function extractUserFacing(line: string): string {
+  // descarta imports e comentários de linha
   if (/^\s*(import|export)\s.+from\s+['"]/.test(line)) return "";
-  // remove single-line comments
   const c = line.indexOf("//");
-  if (c >= 0) return line.slice(0, c);
-  return line;
+  const noComment = c >= 0 ? line.slice(0, c) : line;
+
+  const parts: string[] = [];
+
+  // JSX text: >texto<
+  for (const m of noComment.matchAll(/>([^<>{}\n]+)</g)) parts.push(m[1]);
+
+  // Atributos JSX: attr="..." ou attr={"..."}
+  const attrRe = new RegExp(
+    `\\b(${USER_FACING_ATTRS.join("|")})\\s*[=:]\\s*\\{?\\s*["'\`]([^"'\`]+)["'\`]`,
+    "gi",
+  );
+  for (const m of noComment.matchAll(attrRe)) parts.push(m[2]);
+
+  return parts.join(" \u0000 ");
 }
 
 describe("vocabulário médico-amigável (UI)", () => {
@@ -65,7 +99,7 @@ describe("vocabulário médico-amigável (UI)", () => {
       const src = readFileSync(file, "utf8");
       const lines = src.split("\n");
       lines.forEach((rawLine, idx) => {
-        const line = stripIgnorable(rawLine);
+        const line = extractUserFacing(rawLine);
         if (!line.trim()) return;
         for (const { pattern, replacement } of FORBIDDEN) {
           if (pattern.test(line)) {
