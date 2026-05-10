@@ -684,6 +684,10 @@ export default function PublicExaminusChat() {
 
         {/* Input Area */}
         <div className={`p-3 md:p-5 bg-muted/20 backdrop-blur ${hasMessages ? 'border-t border-border/50 rounded-b-2xl' : 'rounded-2xl'}`}>
+          {/* SR-only live region for blocked send attempts */}
+          <span role="status" aria-live="assertive" className="sr-only">
+            {validationAnnouncement}
+          </span>
           {/* Files Preview */}
           {(selectedFiles.length > 0 || isExtracting) && (
             <div className="mb-3 space-y-2">
