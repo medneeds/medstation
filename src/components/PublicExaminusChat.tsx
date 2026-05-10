@@ -398,7 +398,15 @@ export default function PublicExaminusChat() {
 
   const handleSend = async () => {
     const hasFiles = selectedFiles.length > 0 && extractedText.trim().length > 0;
-    if ((!input.trim() && !hasFiles) || isLoading || isExtracting) return;
+    if (isLoading || isExtracting) return;
+    if (!input.trim() && !hasFiles) {
+      toast({
+        title: "Mensagem vazia",
+        description: "Digite algo ou anexe um arquivo antes de enviar.",
+        variant: "destructive",
+      });
+      return;
+    }
     if (cooldownRemaining > 0) {
       window.dispatchEvent(new CustomEvent("demo:cooldown-click"));
       return;
