@@ -12,11 +12,15 @@ import { Toggle } from "@/components/ui/toggle";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { pdfToImages } from "@/utils/pdfToImages";
+import { DemoPromoEngine } from "@/components/demo/DemoPromoEngine";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
+
+const COOLDOWN_SECONDS = 30;
+const COOLDOWN_KEY = "ms_demo_cooldown_until";
 
 // Gera fingerprint do navegador (combinação de características únicas)
 const generateFingerprint = (): string => {
@@ -142,6 +146,7 @@ export default function PublicExaminusChat() {
   const [clinicalImpression, setClinicalImpression] = useState(false);
   const [compactMode, setCompactMode] = useState(false);
   const [fingerprint, setFingerprint] = useState<string>("");
+  const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -152,6 +157,38 @@ export default function PublicExaminusChat() {
     const fp = recoverFingerprint();
     setFingerprint(fp);
   }, []);
+
+  // Restaurar cooldown ao montar (resiste a refresh)
+  useEffect(() => {
+    try {
+      const until = Number(sessionStorage.getItem(COOLDOWN_KEY) || 0);
+      const left = Math.max(0, Math.ceil((until - Date.now()) / 1000));
+      if (left > 0) setCooldownRemaining(left);
+    } catch {}
+  }, []);
+
+  // Tick do cooldown
+  useEffect(() => {
+    if (cooldownRemaining <= 0) return;
+    const id = setInterval(() => {
+      setCooldownRemaining((s) => {
+        const next = s - 1;
+        if (next <= 0) {
+          try { sessionStorage.removeItem(COOLDOWN_KEY); } catch {}
+          return 0;
+        }
+        return next;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [cooldownRemaining]);
+
+  const startCooldown = () => {
+    const until = Date.now() + COOLDOWN_SECONDS * 1000;
+    try { sessionStorage.setItem(COOLDOWN_KEY, String(until)); } catch {}
+    setCooldownRemaining(COOLDOWN_SECONDS);
+  };
+
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -362,6 +399,10 @@ export default function PublicExaminusChat() {
   const handleSend = async () => {
     const hasFiles = selectedFiles.length > 0 && extractedText.trim().length > 0;
     if ((!input.trim() && !hasFiles) || isLoading || isExtracting) return;
+    if (cooldownRemaining > 0) {
+      window.dispatchEvent(new CustomEvent("demo:cooldown-click"));
+      return;
+    }
 
     const userText = input.trim();
     const composed = hasFiles
@@ -392,23 +433,29 @@ export default function PublicExaminusChat() {
 
       if (error) throw error;
 
-      if (data.error || data.limitReached) {
-        setMessages(prev => [...prev, {
-          role: "assistant",
-          content: "🎯 Você usou suas extrações gratuitas!\n\n✨ Crie sua conta grátis agora e continue usando o Examinus sem limites — é rápido e sem cartão de crédito.\n\nAlém disso, você terá acesso aos outros 9 assistentes médicos especializados:\n\n• Clínicus — Anamneses estruturadas\n• Scorius — Cálculo de scores clínicos\n• Prescriptus — Prescrições inteligentes\n• E muito mais!"
-        }]);
-        
+      if (data?.cooldown) {
+        // Server pediu cooldown — sincroniza relógio local
+        const secs = Number(data.cooldownRemaining) || COOLDOWN_SECONDS;
+        const until = Date.now() + secs * 1000;
+        try { sessionStorage.setItem(COOLDOWN_KEY, String(until)); } catch {}
+        setCooldownRemaining(secs);
+        setMessages(prev => prev.slice(0, -1)); // remove a mensagem do usuário
         toast({
-          title: "Limite atingido",
-          description: "Crie sua conta grátis para continuar!",
-          action: (
-            <Button size="sm" onClick={() => navigate('/auth')} className="ml-2">
-              Criar Conta
-            </Button>
-          ),
+          title: `Aguarde ${secs}s`,
+          description: "Modo gratuito: 30s entre extrações. Crie sua conta para uso instantâneo.",
         });
         return;
       }
+
+      if (data.error || data.limitReached) {
+        setMessages(prev => [...prev, {
+          role: "assistant",
+          content: "🎯 Você usou suas extrações gratuitas!\n\n✨ Crie sua conta grátis agora e continue sem limites — é rápido e sem cartão de crédito.\n\nAlém disso, você desbloqueia os outros 9 assistentes médicos especializados."
+        }]);
+        window.dispatchEvent(new CustomEvent("demo:limit-reached"));
+        return;
+      }
+
 
       const assistantMessage: Message = {
         role: "assistant",
@@ -419,26 +466,28 @@ export default function PublicExaminusChat() {
       setRemainingMessages(data.remainingMessages);
       setUsedCount(data.usedCount || 0);
 
-      // CTAs progressivos baseados no uso
-      if (data.remainingMessages === 2) {
+      // Inicia cooldown de 30s após cada extração bem-sucedida
+      startCooldown();
+
+      // Notifica engine de pop-ups
+      const newCount = (data.usedCount as number) || 0;
+      window.dispatchEvent(
+        new CustomEvent("demo:extraction-completed", { detail: { count: newCount } })
+      );
+
+      // Última extração: aviso direto
+      if (data.remainingMessages === 1) {
         setTimeout(() => {
           toast({
-            title: "2 extrações restantes",
-            description: "Está gostando? Crie sua conta grátis para uso ilimitado!",
-          });
-        }, 1500);
-      } else if (data.remainingMessages === 1) {
-        setTimeout(() => {
-          toast({
-            title: "Última extração!",
-            description: "Crie sua conta grátis agora para não perder acesso.",
+            title: "Última extração gratuita",
+            description: "Crie sua conta agora para continuar.",
             action: (
               <Button size="sm" onClick={() => navigate('/auth')} className="ml-2">
                 Criar Conta
               </Button>
             ),
           });
-        }, 1000);
+        }, 1200);
       }
 
     } catch (error) {
@@ -480,7 +529,8 @@ export default function PublicExaminusChat() {
 
   const hasMessages = messages.length > 0;
   const messagesHeight = hasMessages ? Math.min(500, Math.max(200, messages.length * 80)) : 0;
-  const LIMIT = 5;
+  const LIMIT = 3;
+  const isCoolingDown = cooldownRemaining > 0;
 
   return (
     <div className="w-full max-w-5xl mx-auto px-2 md:px-4">
@@ -760,12 +810,15 @@ export default function PublicExaminusChat() {
               />
               <Button
                 onClick={handleSend}
-                disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0)}
-                size="icon"
-                className="h-10 w-10 rounded-full bg-gradient-primary hover:opacity-90 transition-all shrink-0 shadow-md"
+                disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0) || isCoolingDown}
+                size={isCoolingDown ? "sm" : "icon"}
+                className={`${isCoolingDown ? "h-10 px-3 text-[11px] rounded-full" : "h-10 w-10 rounded-full"} bg-gradient-primary hover:opacity-90 transition-all shrink-0 shadow-md`}
+                title={isCoolingDown ? `Aguarde ${cooldownRemaining}s — modo gratuito` : undefined}
               >
                 {isLoading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
+                ) : isCoolingDown ? (
+                  <span>{cooldownRemaining}s</span>
                 ) : (
                   <Send className="w-4 h-4" />
                 )}
@@ -865,12 +918,18 @@ export default function PublicExaminusChat() {
               />
               <Button
                 onClick={handleSend}
-                disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0)}
+                disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0) || isCoolingDown}
                 size="lg"
                 className="h-12 px-6 rounded-xl bg-gradient-primary hover:opacity-90 transition-all shadow-medical hover:shadow-elevated"
+                title={isCoolingDown ? `Aguarde ${cooldownRemaining}s — modo gratuito` : undefined}
               >
                 {isLoading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
+                ) : isCoolingDown ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin opacity-60" />
+                    Aguarde {cooldownRemaining}s
+                  </>
                 ) : (
                   <>
                     <Send className="w-4 h-4 mr-2" />
@@ -883,31 +942,29 @@ export default function PublicExaminusChat() {
         </div>
       </Card>
 
-      {/* CTA Banner - shown after first extraction */}
-      {hasMessages && remainingMessages !== null && remainingMessages <= 3 && remainingMessages > 0 && (
-        <div className="mt-4 mx-2 md:mx-0 p-4 bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20 rounded-xl animate-in fade-in slide-in-from-bottom-2">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-            <div className="text-center md:text-left">
-              <p className="font-medium text-sm">
-                Gostando do Examinus? 
-                <span className="text-muted-foreground ml-1">
-                  Você tem {remainingMessages} {remainingMessages === 1 ? 'extração restante' : 'extrações restantes'}
-                </span>
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Crie sua conta grátis para uso ilimitado + acesso aos outros 9 agentes
-              </p>
+      {/* Aviso de cooldown discreto */}
+      {hasMessages && isCoolingDown && (
+        <div className="mt-2 mx-2 md:mx-0 flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-muted/40 border border-border/40 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <div className="relative w-3 h-3">
+              <div className="absolute inset-0 rounded-full bg-primary/30 animate-ping" />
+              <div className="absolute inset-0 rounded-full bg-primary" />
             </div>
-            <Button 
-              onClick={() => navigate('/auth')}
-              className="shrink-0 bg-gradient-primary hover:opacity-90"
-            >
-              Criar Conta Grátis
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+            <span>
+              Modo gratuito: aguarde {cooldownRemaining}s para a próxima extração.
+            </span>
           </div>
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent("demo:open-upgrade"))}
+            className="text-primary hover:underline font-medium shrink-0"
+          >
+            Acelerar agora →
+          </button>
         </div>
       )}
+
+      {/* Engine de pop-ups promocionais (toasts/banners/modal rotativos) */}
+      <DemoPromoEngine observeTargetId="demo" />
     </div>
   );
 }
