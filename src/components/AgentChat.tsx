@@ -1364,7 +1364,12 @@ export function AgentChat({
               }
             }}
             placeholder={isMobile ? "Mensagem..." : placeholder}
-            className="flex-1 text-base md:text-base h-11 md:h-10"
+            aria-invalid={message.length > 0 && !message.trim()}
+            className={`flex-1 text-base md:text-base h-11 md:h-10 ${
+              message.length > 0 && !message.trim()
+                ? "border-destructive focus-visible:ring-destructive"
+                : ""
+            }`}
             disabled={isLoading}
           />
           <AgentVoiceInput 
@@ -1377,7 +1382,7 @@ export function AgentChat({
             disabled={!message.trim() || isLoading}
             size="icon"
             className="shrink-0 h-9 w-9 md:h-10 md:w-10 rounded-full md:rounded-md"
-            title="Enviar mensagem"
+            title={!message.trim() ? "Digite uma mensagem para enviar" : "Enviar mensagem"}
           >
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -1386,11 +1391,15 @@ export function AgentChat({
             )}
           </Button>
         </div>
-        {!isMobile && (
+        {message.length > 0 && !message.trim() ? (
+          <p className="text-xs text-destructive mt-2" role="alert">
+            A mensagem contém apenas espaços. Digite algum texto para enviar.
+          </p>
+        ) : !isMobile ? (
           <p className="text-xs text-muted-foreground mt-2">
             Pressione Enter para enviar, Shift+Enter para quebrar linha
           </p>
-        )}
+        ) : null}
       </div>
     </div>
   );
