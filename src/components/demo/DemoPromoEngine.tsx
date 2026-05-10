@@ -91,7 +91,10 @@ export function DemoPromoEngine({ observeTargetId }: DemoPromoEngineProps) {
       action: promo.cta
         ? {
             label: promo.cta,
-            onClick: () => navigate("/auth"),
+            onClick: () => {
+              const dest = /plano|preç|preco|assinatura/i.test(promo.cta!) ? "/pricing" : "/auth";
+              navigate(dest);
+            },
           }
         : undefined,
       onDismiss: () => dismiss(promo.id),
