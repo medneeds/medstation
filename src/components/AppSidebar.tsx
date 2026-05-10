@@ -95,7 +95,7 @@ export function AppSidebar() {
         {/* Início */}
         <SidebarGroup className="py-3">
           <SidebarGroupContent>
-            <SidebarMenu className="gap-0.5">
+            <SidebarMenu className="gap-1.5">
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip={homeModule.title} className="p-0 h-auto bg-transparent hover:bg-transparent">
                   <NavLink to={homeModule.url} className={navItemClass}>
@@ -117,7 +117,7 @@ export function AppSidebar() {
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
-            <SidebarMenu className="gap-0.5">
+            <SidebarMenu className="gap-1.5">
               {agentModules.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title} className="p-0 h-auto bg-transparent hover:bg-transparent">
@@ -145,7 +145,7 @@ export function AppSidebar() {
             <SidebarGroupLabel className="label-mono px-4 mb-2 h-auto">Conta</SidebarGroupLabel>
           )}
           <SidebarGroupContent>
-            <SidebarMenu className="gap-0.5">
+            <SidebarMenu className="gap-1.5">
               <SidebarMenuItem>
                 <SidebarMenuButton
                   tooltip="Suporte MedPocket"
