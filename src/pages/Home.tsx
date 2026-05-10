@@ -28,6 +28,7 @@ const agents = [
 export default function Home() {
   const navigate = useNavigate();
   const [activeAssistant, setActiveAssistant] = useState<string | null>(null);
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
 
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
