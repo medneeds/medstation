@@ -130,6 +130,7 @@ export function AgentChat({
   const [directAHEMode, setDirectAHEMode] = useState(false);
   const [bulaInteligenteMode, setBulaInteligenteMode] = useState(false);
   const [directLIMode, setDirectLIMode] = useState(false);
+  const [quickCIDMode, setQuickCIDMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
