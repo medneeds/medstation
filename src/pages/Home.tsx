@@ -244,48 +244,42 @@ export default function Home() {
             </Card>
 
             {/* Plano Pro */}
-            <Card className="p-5 md:p-6 lg:p-8 text-left border-2 border-primary relative overflow-hidden shadow-[0_20px_70px_-15px_rgba(168,85,247,0.4)] animate-in fade-in duration-700 hover:shadow-[0_25px_80px_-15px_rgba(168,85,247,0.5)] transition-all">
-              {/* Animated gradient background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-purple-500/5 to-pink-500/10 animate-pulse"></div>
-              
-              {/* Popular badge with glow */}
+            <Card className="p-5 md:p-6 lg:p-8 text-left border-2 border-primary relative overflow-hidden animate-in fade-in duration-700 transition-all">
+              {/* Popular badge */}
               <div className="absolute -top-1 -right-1">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-primary blur-lg opacity-70 animate-pulse"></div>
-                  <Badge className="relative bg-gradient-primary text-primary-foreground border-0 px-4 py-1.5 text-xs font-bold shadow-lg">
-                    RECOMENDADO
-                  </Badge>
-                </div>
+                <Badge className="bg-primary text-primary-foreground border-0 px-4 py-1.5 text-[0.65rem] uppercase tracking-[0.18em] font-mono">
+                  Recomendado
+                </Badge>
               </div>
 
               <div className="space-y-4 md:space-y-5 relative">
                 <div>
-                  <h3 className="text-xl md:text-2xl font-bold mb-1 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">Pro</h3>
+                  <h3 className="font-display text-2xl md:text-3xl tracking-tight mb-1 text-primary">Pro</h3>
                   <p className="text-xs md:text-sm text-muted-foreground">10 assistentes IA especializados</p>
                 </div>
                 
                 {/* Pricing */}
                 <div className="my-4 md:my-6">
-                  <div className="inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1 md:py-1.5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-full mb-3">
-                    <span className="text-[10px] md:text-xs font-bold text-green-600 dark:text-green-400">OFERTA DE LANÇAMENTO</span>
+                  <div className="inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1 md:py-1.5 bg-primary/10 border border-primary/30 rounded-full mb-3">
+                    <span className="text-[0.65rem] uppercase tracking-[0.18em] font-mono text-primary">Oferta de lançamento</span>
                   </div>
                   
                   <div className="flex items-end gap-2 md:gap-3">
                     <div className="flex flex-col">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm md:text-base lg:text-lg text-muted-foreground line-through decoration-2">De R$ 59,90</span>
+                        <span className="text-sm md:text-base text-muted-foreground line-through decoration-1">De R$ 59,90</span>
                       </div>
                       <div className="flex items-baseline gap-1 md:gap-2">
-                        <span className="text-3xl md:text-4xl lg:text-5xl font-black bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">R$ 29,90</span>
-                        <span className="text-base md:text-lg lg:text-xl text-muted-foreground font-medium">/mês</span>
+                        <span className="font-display text-4xl md:text-5xl tracking-tight text-foreground">R$ 29,90</span>
+                        <span className="text-base md:text-lg text-muted-foreground">/mês</span>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-2 p-2 md:p-3 bg-muted/50 rounded-lg border border-border/50 mt-3">
-                    <div className="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-primary animate-pulse"></div>
+                  <div className="flex items-center gap-2 p-2 md:p-3 bg-muted/50 rounded-lg border border-hairline mt-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
                     <span className="text-[10px] md:text-xs text-muted-foreground">
-                      Ou <span className="font-bold text-foreground">R$ 199,90/ano</span> — economize 2 meses
+                      Ou <span className="font-medium text-foreground">R$ 199,90/ano</span> — economize 2 meses
                     </span>
                   </div>
                 </div>
