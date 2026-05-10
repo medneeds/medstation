@@ -20,6 +20,8 @@ import Pricing from "./pages/Pricing";
 import Welcome from "./pages/Welcome";
 import Onboarding from "./pages/Onboarding";
 import Clinicus from "./pages/Clinicus";
+import Consultorio from "./pages/Consultorio";
+import ConsultorioLanding from "./pages/ConsultorioLanding";
 import Examinus from "./pages/Examinus";
 import Scorius from "./pages/Scorius";
 import Numerus from "./pages/Numerus";
@@ -55,6 +57,17 @@ const App = () => (
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/consultorio-landing" element={<ConsultorioLanding />} />
+            <Route
+              path="/consultorio"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <Consultorio />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
             <Route path="/welcome" element={<Welcome />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route

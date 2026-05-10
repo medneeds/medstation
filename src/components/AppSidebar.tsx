@@ -19,6 +19,7 @@ import {
   Moon,
   Sun,
   LifeBuoy,
+  Mic,
 } from "lucide-react";
 import { SUPPORT_CHAT_EVENT } from "@/components/SupportChat";
 import { LogoMark } from "@/components/LogoMark";
@@ -49,6 +50,8 @@ const agentModules = [
   { title: "Orientus", url: "/orientus", icon: Compass, code: "09" },
   { title: "CODexus", url: "/codexus", icon: FileText, code: "10" },
 ];
+
+const consultorioModule = { title: "Modo Consultório", url: "/consultorio", icon: Mic, code: "C" };
 
 const navItemClass = ({ isActive }: { isActive: boolean }) =>
   cn(
@@ -135,6 +138,32 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Modo Consultório - destaque */}
+        <SidebarGroup className="py-3 hairline-t">
+          {!collapsed && (
+            <SidebarGroupLabel className="label-mono px-4 mb-2 h-auto">Tempo Real</SidebarGroupLabel>
+          )}
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-1.5">
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip={consultorioModule.title} className="p-0 h-auto bg-transparent hover:bg-transparent">
+                  <NavLink to={consultorioModule.url} className={navItemClass}>
+                    <consultorioModule.icon className="h-4 w-4 shrink-0" />
+                    {!collapsed && (
+                      <>
+                        <span className="flex-1">{consultorioModule.title}</span>
+                        <span className="font-mono text-2xs text-primary/80 group-hover:text-primary">
+                          {consultorioModule.code}
+                        </span>
+                      </>
+                    )}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
