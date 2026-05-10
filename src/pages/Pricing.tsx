@@ -110,7 +110,7 @@ export default function Pricing() {
             Comece grátis, <span className="italic text-primary">evolua quando quiser</span>
           </h1>
           <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
-            Examinus sempre grátis. Pro desbloqueia os 10 assistentes especializados.
+            Examinus grátis para experimentar (com restrições). Pro libera os 10 assistentes <span className="italic text-foreground">verdadeiramente ilimitados</span>, sem espera e sem pop-ups.
           </p>
         </div>
 
@@ -124,7 +124,7 @@ export default function Pricing() {
                 </span>
                 <h2 className="font-display text-2xl md:text-3xl tracking-tight mt-1.5">Grátis</h2>
                 <p className="text-xs md:text-sm text-muted-foreground mt-1">
-                  Examinus ilimitado para sempre
+                  Examinus para experimentar — com restrições
                 </p>
               </div>
 
@@ -137,13 +137,29 @@ export default function Pricing() {
                 <li className="flex items-start gap-2 text-muted-foreground">
                   <div className="w-1 h-1 rounded-full bg-primary mt-2 flex-shrink-0" />
                   <span>
-                    <strong className="text-foreground">Examinus ilimitado:</strong>{" "}
-                    extração e formatação inteligente de exames laboratoriais e de imagem
+                    <strong className="text-foreground">Apenas Examinus:</strong>{" "}
+                    extração e formatação de exames laboratoriais e de imagem
                   </span>
                 </li>
                 <li className="flex items-start gap-2 text-muted-foreground">
                   <div className="w-1 h-1 rounded-full bg-primary mt-2 flex-shrink-0" />
-                  <span>Aceita PDFs, fotos, textos confusos — qualquer formato</span>
+                  <span>Aceita PDFs, fotos e textos confusos — qualquer formato</span>
+                </li>
+                <li className="flex items-start gap-2 text-muted-foreground">
+                  <div className="w-1 h-1 rounded-full bg-amber-500/80 mt-2 flex-shrink-0" />
+                  <span><strong className="text-foreground">Cota limitada por sessão:</strong> após poucas extrações, o uso é bloqueado temporariamente</span>
+                </li>
+                <li className="flex items-start gap-2 text-muted-foreground">
+                  <div className="w-1 h-1 rounded-full bg-amber-500/80 mt-2 flex-shrink-0" />
+                  <span><strong className="text-foreground">Tempo de espera entre extrações</strong> (cooldown) que aumenta conforme o volume</span>
+                </li>
+                <li className="flex items-start gap-2 text-muted-foreground">
+                  <div className="w-1 h-1 rounded-full bg-amber-500/80 mt-2 flex-shrink-0" />
+                  <span><strong className="text-foreground">Pop-ups de upgrade</strong> e processamento mais lento em horário de pico</span>
+                </li>
+                <li className="flex items-start gap-2 text-muted-foreground">
+                  <div className="w-1 h-1 rounded-full bg-amber-500/80 mt-2 flex-shrink-0" />
+                  <span>Os outros 9 assistentes ficam <strong className="text-foreground">bloqueados</strong></span>
                 </li>
               </ul>
 
@@ -179,7 +195,7 @@ export default function Pricing() {
                   MedStation AI Pro
                 </h2>
                 <p className="text-xs md:text-sm text-muted-foreground mt-1">
-                  10 assistentes IA especializados
+                  10 assistentes IA — ilimitado de verdade, sem cooldown e sem pop-ups
                 </p>
               </div>
 

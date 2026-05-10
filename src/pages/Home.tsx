@@ -248,7 +248,7 @@ export default function Home() {
               Comece grátis, <span className="italic text-primary">evolua quando quiser</span>
             </h2>
             <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
-              Examinus sempre grátis. Pro desbloqueia todos os 10 assistentes.
+              Examinus grátis para experimentar (com restrições). Pro libera os 10 assistentes <span className="italic text-foreground">verdadeiramente ilimitados</span>.
             </p>
           </div>
 
@@ -258,7 +258,7 @@ export default function Home() {
               <div className="space-y-4 md:space-y-5 flex-1 flex flex-col">
                 <div>
                   <h3 className="font-display text-2xl md:text-3xl tracking-tight mb-1">Grátis</h3>
-                  <p className="text-xs md:text-sm text-muted-foreground">Examinus ilimitado para sempre</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">Examinus para experimentar — com restrições</p>
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className="font-display text-4xl md:text-5xl tracking-tight">R$ 0</span>
@@ -267,11 +267,23 @@ export default function Home() {
                 <ul className="space-y-2.5 text-sm flex-1">
                   <li className="flex items-start gap-2 text-muted-foreground">
                     <div className="w-1 h-1 rounded-full bg-primary mt-2"></div>
-                    <span><strong className="text-foreground">Examinus ilimitado:</strong> extração e formatação inteligente de exames laboratoriais e de imagem</span>
+                    <span><strong className="text-foreground">Apenas Examinus:</strong> extração e formatação de exames laboratoriais e de imagem</span>
                   </li>
                   <li className="flex items-start gap-2 text-muted-foreground">
                     <div className="w-1 h-1 rounded-full bg-primary mt-2"></div>
-                    <span>Aceita PDFs, fotos, textos confusos — qualquer formato</span>
+                    <span>Aceita PDFs, fotos e textos confusos</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-muted-foreground">
+                    <div className="w-1 h-1 rounded-full bg-amber-500/80 mt-2"></div>
+                    <span><strong className="text-foreground">Cota limitada</strong> e tempo de espera (cooldown) entre extrações</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-muted-foreground">
+                    <div className="w-1 h-1 rounded-full bg-amber-500/80 mt-2"></div>
+                    <span><strong className="text-foreground">Pop-ups de upgrade</strong> e processamento mais lento em horário de pico</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-muted-foreground">
+                    <div className="w-1 h-1 rounded-full bg-amber-500/80 mt-2"></div>
+                    <span>Os outros 9 assistentes ficam <strong className="text-foreground">bloqueados</strong></span>
                   </li>
                 </ul>
                 
@@ -303,7 +315,7 @@ export default function Home() {
               <div className="space-y-4 md:space-y-5 relative">
                 <div>
                   <h3 className="font-display text-2xl md:text-3xl tracking-tight mb-1 text-primary">Pro</h3>
-                  <p className="text-xs md:text-sm text-muted-foreground">10 assistentes IA especializados</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">10 assistentes IA — ilimitado de verdade, sem cooldown e sem pop-ups</p>
                 </div>
                 
                 {/* Pricing */}
