@@ -1,0 +1,14 @@
+<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .front { fill: none; stroke: #0F172A; }
+    .back-fill { fill: #A7E8C7; opacity: 0.9; }
+    .back-stroke { stroke: #5BBF8A; }
+    @media (prefers-color-scheme: dark) {
+      .front { stroke: #F8FAFC; }
+      .back-fill { fill: #5BBF8A; opacity: 0.95; }
+      .back-stroke { stroke: #A7E8C7; }
+    }
+  </style>
+  <path class="back-fill back-stroke" d="M14 24 L20 11 L26 24 Z" stroke-width="1.75" stroke-linejoin="miter"/>
+  <path class="front" d="M5 24 L13 6 L21 24 Z" stroke-width="2.5" stroke-linejoin="miter" stroke-linecap="square"/>
+</svg>
