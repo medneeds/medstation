@@ -117,6 +117,9 @@ export default function ConsultorioLanding() {
             <p className="text-sm md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Transcreva sua consulta em tempo real e receba a anamnese estruturada pronta no momento em que o paciente sai do consultório. Zero alucinação. Zero retrabalho.
             </p>
+            <p className="text-xs md:text-sm text-muted-foreground/80 max-w-2xl mx-auto">
+              Produto separado da MedStation, pode ser assinado isoladamente <span className="text-foreground">ou</span> somado aos 10 Assistentes (R$ 19,90/mês de upgrade) <span className="text-foreground">ou</span> contratado completo no Pro 2.
+            </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
               <Button
                 size="lg"
