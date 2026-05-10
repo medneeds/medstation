@@ -21,6 +21,7 @@ import {
   LifeBuoy,
 } from "lucide-react";
 import { SUPPORT_CHAT_EVENT } from "@/components/SupportChat";
+import { LogoMark } from "@/components/LogoMark";
 import {
   Sidebar,
   SidebarContent,
@@ -96,14 +97,15 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r border-hairline bg-sidebar">
       <SidebarContent className="gap-0 bg-sidebar">
         {/* Brand mark */}
-        <div className={cn("flex items-center gap-2 hairline-b px-4 h-14", collapsed && "px-3 justify-center")}>
-          <div className="h-6 w-6 border border-hairline grid place-items-center">
-            <div className="h-1.5 w-1.5 bg-primary" />
-          </div>
+        <div className={cn("flex items-center gap-2.5 hairline-b px-4 h-16", collapsed && "px-2 justify-center")}>
+          <LogoMark className={cn(collapsed ? "h-9 w-9" : "h-10 w-10", "shrink-0")} />
           {!collapsed && (
             <div className="flex flex-col leading-none">
-              <span className="font-display text-sm font-semibold tracking-tightest text-foreground">MedStation</span>
-              <span className="font-mono text-2xs uppercase tracking-mono text-muted-foreground mt-0.5">Clinic OS</span>
+              <span className="font-display text-base font-semibold tracking-tightest text-foreground">
+                MedStation
+                <span className="font-mono uppercase tracking-[0.18em] text-primary ml-1 text-[0.6em] align-middle">AI</span>
+              </span>
+              <span className="font-mono text-2xs uppercase tracking-mono text-muted-foreground mt-1">Clinic OS</span>
             </div>
           )}
         </div>
