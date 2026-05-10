@@ -204,7 +204,7 @@ export default function Pricing() {
                   }`}
                 >
                   Anual
-                  <span className="ml-1.5 text-[0.6rem] text-primary/90 font-semibold">−17%</span>
+                  <span className="ml-1.5 text-[0.6rem] text-primary/90 font-semibold">−16%</span>
                 </button>
               </div>
 
@@ -212,17 +212,19 @@ export default function Pricing() {
               <div>
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 border border-primary/30 rounded-full mb-3">
                   <span className="text-[0.65rem] uppercase tracking-[0.18em] font-mono text-primary">
-                    Oferta de lançamento
+                    {billingPeriod === "yearly" ? "Oferta especial anual" : "Oferta especial"}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-sm text-muted-foreground line-through decoration-1">
-                    De {billingPeriod === "monthly" ? "R$ 59,90" : "R$ 239,90"}
-                  </span>
-                </div>
+                {billingPeriod === "yearly" && (
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm text-muted-foreground line-through decoration-1">
+                      De R$ 358,80/ano (12 × R$ 29,90)
+                    </span>
+                  </div>
+                )}
                 <div className="flex items-baseline gap-2">
                   <span className="font-display text-4xl md:text-5xl tracking-tight text-foreground">
-                    {billingPeriod === "monthly" ? "R$ 29,90" : "R$ 199,90"}
+                    {billingPeriod === "monthly" ? "R$ 29,90" : "R$ 299,90"}
                   </span>
                   <span className="text-base text-muted-foreground">
                     {billingPeriod === "monthly" ? "/mês" : "/ano"}
@@ -232,8 +234,8 @@ export default function Pricing() {
                   <div className="w-1.5 h-1.5 rounded-full bg-primary" />
                   <span className="text-[11px] md:text-xs text-muted-foreground">
                     {billingPeriod === "yearly"
-                      ? <>Equivale a <span className="font-medium text-foreground">R$ 16,66/mês</span> — economize 2 meses</>
-                      : <>Ou <span className="font-medium text-foreground">R$ 199,90/ano</span> — economize 2 meses</>}
+                      ? <>Equivale a <span className="font-medium text-foreground">R$ 24,99/mês</span> — economize <span className="font-medium text-foreground">R$ 58,90</span></>
+                      : <>Ou <span className="font-medium text-foreground">R$ 299,90/ano</span> — economize R$ 58,90</>}
                   </span>
                 </div>
               </div>
