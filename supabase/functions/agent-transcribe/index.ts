@@ -31,12 +31,12 @@ serve(async (req) => {
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     
-    // Use Lovable AI Gateway - no external API key needed!
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!lovableApiKey) {
-      console.error("[AGENT-TRANSCRIBE] LOVABLE_API_KEY not configured");
+    // ElevenLabs Scribe - high-fidelity medical transcription
+    const elevenLabsKey = Deno.env.get("ELEVENLABS_API_KEY");
+    if (!elevenLabsKey) {
+      console.error("[AGENT-TRANSCRIBE] ELEVENLABS_API_KEY not configured");
       return new Response(
-        JSON.stringify({ error: "Serviço de IA não configurado" }),
+        JSON.stringify({ error: "Serviço de transcrição não configurado" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -126,93 +126,60 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[AGENT-TRANSCRIBE] Processing audio with Lovable AI (Gemini), context: ${context || 'none'}, mimeType: ${clientMimeType || 'not specified'}`);
+    console.log(`[AGENT-TRANSCRIBE] Processing audio with ElevenLabs Scribe, context: ${context || 'none'}, mimeType: ${clientMimeType || 'not specified'}`);
     console.log(`[AGENT-TRANSCRIBE] Audio base64 length: ${audio.length}`);
 
-    // Determine MIME type
-    const getMimeType = (mime: string | undefined): string => {
-      if (!mime) return 'audio/webm';
-      if (mime.includes('mp4') || mime.includes('m4a')) return 'audio/mp4';
-      if (mime.includes('ogg')) return 'audio/ogg';
-      if (mime.includes('wav')) return 'audio/wav';
-      if (mime.includes('mpeg') || mime.includes('mp3')) return 'audio/mpeg';
-      return 'audio/webm';
-    };
+    // Decode base64 -> binary
+    const binaryString = atob(audio);
+    const audioBytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      audioBytes[i] = binaryString.charCodeAt(i);
+    }
 
-    const audioMimeType = getMimeType(clientMimeType);
-    console.log(`[AGENT-TRANSCRIBE] Using MIME type: ${audioMimeType}`);
+    // Determine extension/mime
+    const mime = clientMimeType || "audio/webm";
+    let ext = "webm";
+    if (mime.includes("mp4") || mime.includes("m4a")) ext = "m4a";
+    else if (mime.includes("ogg")) ext = "ogg";
+    else if (mime.includes("wav")) ext = "wav";
+    else if (mime.includes("mpeg") || mime.includes("mp3")) ext = "mp3";
 
-    // Build data URL for Gemini multimodal input
-    const audioDataUrl = `data:${audioMimeType};base64,${audio}`;
+    const audioBlob = new Blob([audioBytes], { type: mime.split(";")[0] });
 
-    // Use Gemini for audio transcription via Lovable AI Gateway
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    // Map language to ISO 639-3 for ElevenLabs
+    const langMap: Record<string, string> = { pt: "por", en: "eng", es: "spa" };
+    const languageCode = langMap[language] || "por";
+
+    const formData = new FormData();
+    formData.append("file", audioBlob, `audio.${ext}`);
+    formData.append("model_id", "scribe_v2");
+    formData.append("language_code", languageCode);
+    formData.append("tag_audio_events", "false");
+    formData.append("diarize", "false");
+
+    const aiResponse = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
       method: "POST",
-      headers: {
-        "Authorization": `Bearer ${lovableApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          {
-            role: "system",
-            content: `Você é um assistente médico especializado em transcrever áudios clínicos em português brasileiro.
-
-INSTRUÇÕES CRÍTICAS:
-1. Transcreva o áudio EXATAMENTE como foi falado
-2. Preserve todos os termos médicos e técnicos com precisão
-3. Mantenha nomes de medicamentos, dosagens e valores exatos
-4. Use pontuação adequada para refletir pausas e entonações
-5. NÃO adicione interpretações, resumos ou comentários
-6. Se o áudio estiver inaudível/silêncio, retorne string vazia.
-7. Retorne APENAS a transcrição
-
-Vocabulário médico comum:
-- Sinais vitais: pressão arterial, frequência cardíaca, saturação, temperatura, glicemia
-- Exames: hemograma, creatinina, ureia, sódio, potássio, TGO, TGP, bilirrubina, TSH, gasometria
-- Medicamentos: omeprazol, losartana, metformina, sinvastatina, AAS, dipirona, paracetamol, ibuprofeno
-- Termos: anamnese, hipótese diagnóstica, conduta, prescrição, evolução, prognóstico`
-          },
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: "Transcreva o áudio a seguir com precisão médica. Retorne APENAS a transcrição (ou vazio se não der para entender):"
-              },
-              {
-                type: "audio_url",
-                audio_url: {
-                  url: audioDataUrl
-                }
-              }
-            ]
-          }
-        ],
-        temperature: 0, // minimize hallucinations
-        max_tokens: 4000,
-      }),
+      headers: { "xi-api-key": elevenLabsKey },
+      body: formData,
     });
 
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
-      console.error("[AGENT-TRANSCRIBE] Lovable AI error:", aiResponse.status, errorText);
-      
+      console.error("[AGENT-TRANSCRIBE] ElevenLabs error:", aiResponse.status, errorText);
+
       if (aiResponse.status === 429) {
         return new Response(
           JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns segundos." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-
-      if (aiResponse.status === 402) {
+      if (aiResponse.status === 401) {
         return new Response(
-          JSON.stringify({ error: "Créditos de IA esgotados. Adicione créditos para continuar." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ error: "Chave de transcrição inválida" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      
+
       return new Response(
         JSON.stringify({ error: "Erro na transcrição de áudio" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -220,7 +187,7 @@ Vocabulário médico comum:
     }
 
     const aiResult = await aiResponse.json();
-    const transcription = aiResult.choices?.[0]?.message?.content?.trim() || "";
+    const transcription = (aiResult.text || "").trim();
 
     const processingTime = Date.now() - startTime;
     console.log(`[AGENT-TRANSCRIBE] Transcription complete in ${processingTime}ms`);
