@@ -859,9 +859,12 @@ export default function PublicExaminusChat() {
                 )}
               </Button>
             </div>
-            <div className="flex justify-end mt-1 px-1">
+            <div className="flex items-center justify-between gap-2 mt-1 px-1">
+              <span className="text-[10px] text-muted-foreground/80 truncate">
+                Demo: até 10.000 caracteres • Plataforma: 30.000
+              </span>
               <span
-                className={`text-[10px] tabular-nums ${
+                className={`text-[10px] tabular-nums shrink-0 ${
                   input.length >= 10000
                     ? "text-destructive font-medium"
                     : input.length >= 9000
@@ -993,9 +996,12 @@ export default function PublicExaminusChat() {
                 )}
               </Button>
             </div>
-            <div className="flex justify-end mt-1 px-1">
+            <div className="flex items-center justify-between gap-2 mt-1 px-1">
+              <span className="text-xs text-muted-foreground/80">
+                Modo demonstração: até 10.000 caracteres por mensagem • Usuários da plataforma: até 30.000
+              </span>
               <span
-                className={`text-xs tabular-nums ${
+                className={`text-xs tabular-nums shrink-0 ${
                   input.length >= 10000
                     ? "text-destructive font-medium"
                     : input.length >= 9000
