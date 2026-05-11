@@ -25,6 +25,7 @@ import {
 import { Link } from "react-router-dom";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { QuickActionsHero } from "@/components/QuickActionsHero";
+import { hasSeenWelcomeTour } from "@/pages/WelcomeTour";
 
 interface Stats {
   totalPatients: number;
