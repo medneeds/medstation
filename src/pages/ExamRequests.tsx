@@ -211,22 +211,19 @@ export default function ExamRequests() {
         </div>
       ) : filteredExamRequests.length === 0 ? (
         <Card>
-          <CardContent className="py-12">
-            <div className="text-center">
-              <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <h3 className="text-lg font-semibold mb-2">Nenhuma solicitação encontrada</h3>
-              <p className="text-muted-foreground mb-6">
-                {searchQuery
-                  ? "Tente ajustar os filtros de busca"
-                  : "Comece criando sua primeira solicitação de exames"}
-              </p>
-              {!searchQuery && (
-                <Button onClick={() => navigate("/exames/novo")}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Criar Primeira Solicitação
-                </Button>
-              )}
-            </div>
+          <CardContent className="py-2">
+            <EmptyState
+              icon={FileText}
+              title={searchQuery ? "Nenhuma solicitação bate com a busca" : "Nenhuma solicitação ainda"}
+              description={
+                searchQuery
+                  ? "Tente outro paciente ou exame."
+                  : "Solicite seus primeiros exames em segundos — texto, imagem ou PDF."
+              }
+              actionLabel={searchQuery ? undefined : "Criar primeira solicitação"}
+              actionIcon={searchQuery ? undefined : Plus}
+              onAction={searchQuery ? undefined : () => navigate("/exames/novo")}
+            />
           </CardContent>
         </Card>
       ) : (
