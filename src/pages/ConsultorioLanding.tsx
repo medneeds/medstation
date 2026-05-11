@@ -21,15 +21,46 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { GuestEmailDialog } from "@/components/GuestEmailDialog";
+
+type ConsultorioPlan = "consultorio_monthly" | "consultorio_upgrade" | "pro2_bundle" | "agents_upgrade";
+
+const PLAN_META: Record<ConsultorioPlan, { label: string; price: string }> = {
+  consultorio_monthly: { label: "Modo Consultório", price: "R$ 29,90/mês" },
+  consultorio_upgrade: { label: "Modo Consultório (upgrade)", price: "R$ 19,90/mês" },
+  pro2_bundle: { label: "MedStation AI Pro 2", price: "R$ 49,90/mês" },
+  agents_upgrade: { label: "10 Assistentes (upgrade)", price: "R$ 19,90/mês" },
+};
 
 export default function ConsultorioLanding() {
   const navigate = useNavigate();
   const { hasAgents, hasConsultorio } = useSubscription();
   const { toast } = useToast();
-  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState<string | null>(null);
+  const [pendingPlan, setPendingPlan] = useState<ConsultorioPlan | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
-  const startCheckout = async (plan: "consultorio_monthly" | "consultorio_upgrade" | "pro2_bundle" | "agents_upgrade") => {
+  const runGuestCheckout = async (plan: ConsultorioPlan, email: string) => {
+    setLoading(plan);
+    try {
+      // Guests can only buy standalone or bundle (upgrades require existing sub)
+      const guestPlan = plan === "consultorio_upgrade" || plan === "agents_upgrade" ? "consultorio_monthly" : plan;
+      const { data, error } = await supabase.functions.invoke("guest-checkout", {
+        body: { email, plan: guestPlan },
+      });
+      if (error) throw error;
+      if (data?.url) window.location.href = data.url;
+    } catch (err: any) {
+      toast({
+        title: "Erro no checkout",
+        description: err.message || "Não foi possível iniciar.",
+        variant: "destructive",
+      });
+      setLoading(null);
+    }
+  };
+
+  const startCheckout = async (plan: ConsultorioPlan) => {
     setLoading(plan);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -43,29 +74,16 @@ export default function ConsultorioLanding() {
         return;
       }
 
-      const trimmed = email.trim().toLowerCase();
-      if (!trimmed.includes("@")) {
-        toast({
-          title: "Email necessário",
-          description: "Digite seu email para iniciar a assinatura.",
-          variant: "destructive",
-        });
-        return;
-      }
-      // Guests can only buy standalone or bundle (upgrades require existing sub)
-      const guestPlan = plan === "consultorio_upgrade" || plan === "agents_upgrade" ? "consultorio_monthly" : plan;
-      const { data, error } = await supabase.functions.invoke("guest-checkout", {
-        body: { email: trimmed, plan: guestPlan },
-      });
-      if (error) throw error;
-      if (data?.url) window.location.href = data.url;
+      // Visitante: abre diálogo pedindo o email
+      setPendingPlan(plan);
+      setDialogOpen(true);
+      setLoading(null);
     } catch (err: any) {
       toast({
         title: "Erro no checkout",
         description: err.message || "Não foi possível iniciar.",
         variant: "destructive",
       });
-    } finally {
       setLoading(null);
     }
   };
