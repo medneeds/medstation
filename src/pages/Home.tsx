@@ -532,7 +532,30 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
+      {/* FAQ */}
+      <section id="faq" className="py-16 md:py-24 px-4 md:px-6 relative">
+        <div className="container mx-auto max-w-3xl">
+          <div className="text-center mb-10 md:mb-14">
+            <Badge variant="outline" className="mb-4 text-[10px] md:text-xs">FAQ</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">Perguntas frequentes</h2>
+            <p className="text-sm md:text-base text-muted-foreground">
+              Tudo que médicos costumam perguntar antes de começar.
+            </p>
+          </div>
+          <Accordion type="single" collapsible className="w-full">
+            {faqs.map((item, i) => (
+              <AccordionItem key={i} value={`faq-${i}`} className="border-border/50">
+                <AccordionTrigger className="text-left text-sm md:text-base font-medium hover:no-underline">
+                  {item.q}
+                </AccordionTrigger>
+                <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
+                  {item.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      </section>
       <footer className="border-t border-border/50 py-6 md:py-8 px-4 md:px-6 relative">
         <div className="container mx-auto flex flex-col md:flex-row flex-wrap justify-between gap-3 md:gap-4 items-center text-[10px] md:text-xs text-muted-foreground">
           <p>© 2025 MedStation AI</p>
