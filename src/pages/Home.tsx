@@ -11,6 +11,7 @@ import { Logo } from "@/components/Logo";
 import { AssistantShowcaseDialog } from "@/components/AssistantShowcaseDialog";
 import { assistantSlides } from "@/lib/assistantSlides";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { TimeSavingsComparison } from "@/components/TimeSavingsComparison";
 
 const faqs = [
   {
@@ -319,6 +320,13 @@ export default function Home() {
               </div>
             </div>
           </Card>
+        </div>
+      </section>
+
+      {/* Comparativo de tempo — vende benefício antes do preço */}
+      <section className="py-10 md:py-14 px-4 md:px-6 relative">
+        <div className="container mx-auto max-w-6xl relative">
+          <TimeSavingsComparison />
         </div>
       </section>
 

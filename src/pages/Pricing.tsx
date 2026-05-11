@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { GuestEmailDialog } from "@/components/GuestEmailDialog";
 import type { PlanSlug } from "@/lib/subscription-tiers";
+import { TimeSavingsComparison } from "@/components/TimeSavingsComparison";
 
 const proAgents = [
   "Examinus", "Clínicus", "Scorius", "Numerus", "Prescriptus",
@@ -174,6 +175,11 @@ export default function Pricing() {
               <span className="ml-1.5 text-[0.6rem] text-primary/90 font-semibold">−16%</span>
             </button>
           </div>
+        </div>
+
+        {/* Comparativo de tempo — vende benefício antes do preço */}
+        <div className="mb-10 md:mb-14">
+          <TimeSavingsComparison />
         </div>
 
         {/* Cross-upgrade banner */}
