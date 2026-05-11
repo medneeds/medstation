@@ -366,23 +366,11 @@ export default function ConsultorioLanding() {
               </Card>
             </div>
 
-            {/* Email field for guests */}
+            {/* Email é solicitado em diálogo ao clicar em qualquer botão de assinatura */}
             {!hasAgents && !hasConsultorio && (
-              <div className="mt-8 max-w-md mx-auto">
-                <p className="text-xs text-center text-muted-foreground mb-2">
-                  Não tem conta? Digite seu email e crie a senha no checkout
-                </p>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    type="email"
-                    placeholder="seu@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="h-12 pl-10"
-                  />
-                </div>
-              </div>
+              <p className="mt-6 text-xs text-center text-muted-foreground">
+                Visitantes só precisam do email para começar — a senha é criada após o pagamento.
+              </p>
             )}
 
             {/* Garantia */}
