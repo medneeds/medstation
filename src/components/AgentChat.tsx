@@ -541,8 +541,8 @@ export function AgentChat({
       await navigator.clipboard.writeText(text);
       setCopiedMessageId(messageId);
       toast({
-        title: "Copiado!",
-        description: "Texto copiado para a área de transferência.",
+        title: "Copiado 👏",
+        description: "Cole direto no prontuário.",
       });
       setTimeout(() => setCopiedMessageId(null), 2000);
     } catch (error) {
