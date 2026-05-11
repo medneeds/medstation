@@ -13,6 +13,7 @@ import { assistantSlides } from "@/lib/assistantSlides";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { TimeSavingsComparison } from "@/components/TimeSavingsComparison";
 import { FAQMiniDemo } from "@/components/FAQMiniDemo";
+import { HeroVideo } from "@/components/HeroVideo";
 
 type FAQItem = {
   q: string;
