@@ -128,7 +128,7 @@ export function AgentChat({
   const [onlyAltered, setOnlyAltered] = useState(false);
   const [clinicalImpression, setClinicalImpression] = useState(false);
   const [directAHEMode, setDirectAHEMode] = useState(false);
-  const [aheTemplate, setAheTemplate] = useState<"v1" | "v2">("v1");
+  const [aheTemplate, setAheTemplate] = useState<"v1" | "v2" | "v3">("v1");
   const [bulaInteligenteMode, setBulaInteligenteMode] = useState(false);
   const [directLIMode, setDirectLIMode] = useState(false);
   const [quickCIDMode, setQuickCIDMode] = useState(false);
