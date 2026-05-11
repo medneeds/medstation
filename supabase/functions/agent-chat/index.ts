@@ -106,7 +106,7 @@ serve(async (req) => {
 
     console.log(`Rate limit check passed for user ${user.id}`);
 
-    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, aheTemplate, bulaInteligenteMode, directLIMode, onlyAltered, clinicalImpression, quickCIDMode } = await req.json();
+    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, aheTemplate, bulaInteligenteMode, directLIMode, onlyAltered, clinicalImpression, quickCIDMode, compactMode } = await req.json();
 
     // Validate input
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -481,6 +481,22 @@ IMPRESSÃO CLÍNICA
 • Se todos os exames forem normais: "Exames dentro dos parâmetros de normalidade. Sem alterações que demandem intervenção imediata."
 
 FORMATAÇÃO: Sem asteriscos, sem markdown. Títulos em CAIXA ALTA. Bullet points com •
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━` : ''}
+${compactMode ? `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗜️ MODO COMPACTO ATIVADO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+REGRAS OBRIGATÓRIAS DE OMISSÃO:
+• Do hemograma, incluir SOMENTE: Hb, Ht, Leuco (total), Pqt
+• PROIBIDO incluir: VCM, HCM, CHCM, RDW, eritrócitos, reticulócitos, diferencial leucocitário (Seg, Bast, Linf, Mon, Eos, Baso)
+• Omitir índices secundários e parâmetros calculados pouco usados na beira-leito
+• Manter todas as demais regras de formatação LSL/LSI
+• Ordem preferencial da linha: Hb → Ht → Leuco → Pqt → Ur → Cr → Na → K → Ca → Mg → P → TP (RNI) → TTPa → demais presentes
+
+EXEMPLO COMPACTO:
+20/11 14:30: Hb 10,8 Ht 32,7 Leuco 17.800 Pqt 163.000 Ur 36 Cr 0,48 Na 139 K 2,68 Ca 7,87 Mg 1,78 P 1,43 TP 16,1 (RNI 1,31) TTPa 25,0
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━` : ''}
 

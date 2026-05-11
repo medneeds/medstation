@@ -27,7 +27,8 @@ import {
   Clock,
   Pill,
   ListChecks,
-  Zap
+  Zap,
+  Minimize2
 } from "lucide-react";
 import {
   Sheet,
@@ -127,6 +128,7 @@ export function AgentChat({
   const [includeTime, setIncludeTime] = useState(true);
   const [onlyAltered, setOnlyAltered] = useState(false);
   const [clinicalImpression, setClinicalImpression] = useState(false);
+  const [compactMode, setCompactMode] = useState(true);
   const [directAHEMode, setDirectAHEMode] = useState(false);
   const [aheTemplate, setAheTemplate] = useState<"v1" | "v2" | "v3">("v1");
   const [bulaInteligenteMode, setBulaInteligenteMode] = useState(false);
@@ -377,7 +379,7 @@ export function AgentChat({
           })),
           agentType,
           caseId: selectedCaseId,
-          ...(agentType === "examinus" && { usePipeSeparator, includeTime, onlyAltered, clinicalImpression }),
+          ...(agentType === "examinus" && { usePipeSeparator, includeTime, onlyAltered, clinicalImpression, compactMode }),
           ...(agentType === "clinicus" && { directAHEMode, aheTemplate }),
           ...(agentType === "prescriptus" && { bulaInteligenteMode }),
           ...(agentType === "gasometrus" && { directLIMode }),
@@ -1201,6 +1203,16 @@ export function AgentChat({
               <Stethoscope className="w-3 h-3 mr-1" />
               <span>Impressão</span>
             </Toggle>
+            <Toggle
+              pressed={compactMode}
+              onPressedChange={setCompactMode}
+              size="sm"
+              className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-emerald-500/20 data-[state=on]:text-emerald-600 dark:data-[state=on]:text-emerald-400"
+              title="Modo compacto: omite VCM, HCM, CHCM, RDW e diferencial"
+            >
+              <Minimize2 className="w-3 h-3 mr-1" />
+              <span>Compacto</span>
+            </Toggle>
           </div>
         )}
 
@@ -1445,6 +1457,16 @@ export function AgentChat({
               >
                 <Stethoscope className="h-4 w-4" />
                 <span className="text-xs ml-1">Impressão</span>
+              </Toggle>
+              <Toggle
+                pressed={compactMode}
+                onPressedChange={setCompactMode}
+                size="sm"
+                className="shrink-0 data-[state=on]:bg-emerald-500/20 data-[state=on]:text-emerald-600 dark:data-[state=on]:text-emerald-400"
+                title="Modo compacto: omite VCM, HCM, CHCM, RDW, diferencial e índices secundários"
+              >
+                <Minimize2 className="h-4 w-4" />
+                <span className="text-xs ml-1">Compacto</span>
               </Toggle>
             </>
           )}
