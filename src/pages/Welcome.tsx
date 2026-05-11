@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Activity, CheckCircle2, Loader2, PartyPopper, ArrowRight, Mail } from "lucide-react";
+import { CheckCircle2, Loader2, ArrowRight, Mail, Sparkles } from "lucide-react";
+import { LogoMark } from "@/components/LogoMark";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 
