@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { EmptyState } from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -245,22 +246,19 @@ export default function Prescriptions() {
         </div>
       ) : filteredPrescriptions.length === 0 ? (
         <Card>
-          <CardContent className="py-12">
-            <div className="text-center">
-              <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <h3 className="text-lg font-semibold mb-2">Nenhuma prescrição encontrada</h3>
-              <p className="text-muted-foreground mb-6">
-                {searchQuery
-                  ? "Tente ajustar os filtros de busca"
-                  : "Comece criando sua primeira prescrição médica"}
-              </p>
-              {!searchQuery && (
-                <Button onClick={() => navigate("/prescricoes/nova")}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Criar Primeira Prescrição
-                </Button>
-              )}
-            </div>
+          <CardContent className="py-2">
+            <EmptyState
+              icon={FileText}
+              title={searchQuery ? "Nenhuma prescrição bate com a busca" : "Nenhuma prescrição ainda"}
+              description={
+                searchQuery
+                  ? "Tente outro paciente, medicamento ou data."
+                  : "Crie sua primeira prescrição médica em segundos."
+              }
+              actionLabel={searchQuery ? undefined : "Criar primeira prescrição"}
+              actionIcon={searchQuery ? undefined : Plus}
+              onAction={searchQuery ? undefined : () => navigate("/prescricoes/nova")}
+            />
           </CardContent>
         </Card>
       ) : (

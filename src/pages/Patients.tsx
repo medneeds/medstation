@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Search, User, Calendar, Phone, Mail, MoreVertical, Folder } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { EmptyState } from "@/components/EmptyState";
 import { patientSchema } from "@/lib/validations";
 import {
   Dialog,
@@ -313,11 +314,18 @@ export default function Patients() {
           {loading ? (
             <div className="text-center py-12 text-muted-foreground">Carregando...</div>
           ) : filteredPatients.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <User className="h-12 w-12 mx-auto mb-4 opacity-30" />
-              <p>Nenhum paciente encontrado</p>
-              <p className="text-sm mt-1">Crie um novo paciente para começar</p>
-            </div>
+            <EmptyState
+              icon={User}
+              title={searchQuery ? "Nenhum paciente bate com a busca" : "Nenhum paciente ainda"}
+              description={
+                searchQuery
+                  ? "Tente outro nome, CPF ou email."
+                  : "Cadastre seu primeiro paciente — leva menos de 1 minuto."
+              }
+              actionLabel={searchQuery ? undefined : "Cadastrar primeiro paciente"}
+              actionIcon={searchQuery ? undefined : Plus}
+              onAction={searchQuery ? undefined : () => { resetForm(); setDialogOpen(true); }}
+            />
           ) : (
             <div className="grid gap-4">
               {filteredPatients.map((patient) => {
