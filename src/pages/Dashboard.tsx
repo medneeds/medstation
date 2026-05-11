@@ -164,8 +164,13 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Redireciona apenas no primeiro acesso para o tour de 3 telas
+    if (!hasSeenWelcomeTour()) {
+      navigate("/welcome-tour", { replace: true });
+      return;
+    }
     fetchStats();
-  }, []);
+  }, [navigate]);
 
   const fetchStats = async () => {
     try {
