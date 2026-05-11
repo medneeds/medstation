@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Activity, ArrowRight, ArrowLeft, CheckCircle2, Sparkles, Stethoscope, GraduationCap, User } from "lucide-react";
+import { ArrowRight, ArrowLeft, CheckCircle2, Sparkles, Stethoscope, User } from "lucide-react";
+import { LogoMark } from "@/components/LogoMark";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -123,7 +124,7 @@ export default function Onboarding() {
 
   const handleComplete = () => {
     toast({
-      title: "🎉 Configuração completa!",
+      title: "Configuração completa",
       description: "Você está pronto para usar o MedStation AI.",
     });
     navigate("/dashboard");
@@ -136,11 +137,11 @@ export default function Onboarding() {
   const CurrentIcon = STEPS[currentStep].icon;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4 relative overflow-hidden">
-      {/* Animated background */}
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
+      {/* Subtle brand glows */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/4 left-1/4 w-[28rem] h-[28rem] bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-[28rem] h-[28rem] bg-accent/30 rounded-full blur-3xl" />
       </div>
 
       <div className="w-full max-w-lg relative z-10">
@@ -169,12 +170,12 @@ export default function Onboarding() {
             return (
               <div
                 key={step.id}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all border ${
                   index === currentStep
-                    ? "bg-primary text-primary-foreground scale-110 shadow-lg"
+                    ? "bg-primary text-primary-foreground border-primary scale-110"
                     : index < currentStep
-                    ? "bg-green-500 text-white"
-                    : "bg-muted text-muted-foreground"
+                    ? "bg-primary/15 text-primary border-primary/40"
+                    : "bg-muted text-muted-foreground border-hairline"
                 }`}
               >
                 {index < currentStep ? (
@@ -187,7 +188,7 @@ export default function Onboarding() {
           })}
         </div>
 
-        <Card className="p-8 border-2 relative overflow-hidden">
+        <Card className="p-8 border border-hairline bg-card/80 backdrop-blur-sm relative overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentStep}
@@ -199,24 +200,19 @@ export default function Onboarding() {
               {/* Step 0: Welcome */}
               {currentStep === 0 && (
                 <div className="text-center space-y-6">
-                  <div className="relative inline-block">
-                    <div className="absolute inset-0 bg-gradient-primary rounded-3xl blur-xl opacity-50 animate-pulse"></div>
-                    <div className="relative w-20 h-20 rounded-3xl bg-gradient-primary flex items-center justify-center shadow-medical">
-                      <Activity className="w-10 h-10 text-primary-foreground" />
-                    </div>
+                  <div className="flex justify-center">
+                    <LogoMark className="w-16 h-16" />
                   </div>
                   
                   <div className="space-y-3">
-                    <h1 className="text-3xl font-bold">
+                    <h1 className="text-3xl font-semibold tracking-tight">
                       Bem-vindo ao{" "}
-                      <span className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                        MedStation AI
-                      </span>
+                      <span className="text-primary">MedStation AI</span>
                     </h1>
-                    <p className="text-muted-foreground text-lg">
+                    <p className="text-muted-foreground">
                       Vamos configurar sua conta em poucos passos.
                       <br />
-                      <span className="text-sm">Todos os campos são opcionais.</span>
+                      <span className="text-xs text-muted-foreground/70">Todos os campos são opcionais.</span>
                     </p>
                   </div>
 
@@ -352,23 +348,23 @@ export default function Onboarding() {
               {currentStep === 3 && (
                 <div className="text-center space-y-6">
                   <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                    initial={{ scale: 0.6, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 18 }}
                   >
                     <div className="relative inline-block">
-                      <div className="absolute inset-0 bg-green-500/30 rounded-full blur-xl animate-pulse"></div>
-                      <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-lg">
-                        <CheckCircle2 className="w-12 h-12 text-white" />
+                      <div className="absolute inset-0 bg-primary/25 rounded-full blur-2xl" />
+                      <div className="relative w-20 h-20 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center">
+                        <CheckCircle2 className="w-10 h-10 text-primary" strokeWidth={1.75} />
                       </div>
                     </div>
                   </motion.div>
                   
                   <div className="space-y-3">
-                    <h1 className="text-3xl font-bold text-green-600">
-                      Tudo pronto! 🎉
+                    <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                      Tudo pronto
                     </h1>
-                    <p className="text-muted-foreground text-lg">
+                    <p className="text-muted-foreground">
                       Sua conta está configurada e pronta para usar.
                     </p>
                   </div>

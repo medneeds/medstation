@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Activity, CheckCircle2, Loader2, PartyPopper, ArrowRight, Mail } from "lucide-react";
+import { CheckCircle2, Loader2, ArrowRight, Mail, Sparkles } from "lucide-react";
+import { LogoMark } from "@/components/LogoMark";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 
@@ -94,33 +95,24 @@ export default function Welcome() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4 relative overflow-hidden">
-      {/* Animated background */}
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
+      {/* Subtle brand glows */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-green-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/4 left-1/4 w-[28rem] h-[28rem] bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-[28rem] h-[28rem] bg-accent/30 rounded-full blur-3xl" />
       </div>
 
       <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
         className="w-full max-w-md relative z-10"
       >
-        <Card className="p-8 border-2 relative overflow-hidden">
-          {/* Success glow */}
-          {status === "success" && (
-            <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-transparent to-emerald-500/10 animate-pulse"></div>
-          )}
-          
+        <Card className="p-8 border border-hairline bg-card/80 backdrop-blur-sm relative overflow-hidden">
           <div className="relative space-y-6">
-            {/* Logo */}
+            {/* Brand mark */}
             <div className="flex justify-center">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-primary rounded-2xl blur-xl opacity-50"></div>
-                <div className="relative w-16 h-16 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-medical">
-                  <Activity className="w-8 h-8 text-primary-foreground" />
-                </div>
-              </div>
+              <LogoMark className="w-14 h-14" />
             </div>
 
             {/* Processing State */}
@@ -130,11 +122,11 @@ export default function Welcome() {
                 animate={{ opacity: 1 }}
                 className="text-center space-y-4"
               >
-                <Loader2 className="w-12 h-12 mx-auto text-primary animate-spin" />
+                <Loader2 className="w-10 h-10 mx-auto text-primary animate-spin" />
                 <div>
-                  <h2 className="text-2xl font-bold">Processando...</h2>
-                  <p className="text-muted-foreground mt-2">
-                    Estamos finalizando seu pagamento e criando sua conta.
+                  <h2 className="text-2xl font-semibold tracking-tight">Processando</h2>
+                  <p className="text-muted-foreground mt-2 text-sm">
+                    Estamos finalizando seu pagamento e preparando sua conta.
                   </p>
                 </div>
               </motion.div>
@@ -143,24 +135,19 @@ export default function Welcome() {
             {/* Success State */}
             {status === "success" && (
               <motion.div 
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="text-center space-y-4"
               >
-                <div className="relative">
-                  <PartyPopper className="w-16 h-16 mx-auto text-green-500" />
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="absolute -top-2 -right-2"
-                  >
-                    <CheckCircle2 className="w-8 h-8 text-green-500" />
-                  </motion.div>
+                <div className="relative inline-flex">
+                  <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl" />
+                  <div className="relative w-16 h-16 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center">
+                    <CheckCircle2 className="w-9 h-9 text-primary" strokeWidth={1.75} />
+                  </div>
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-green-600">Pagamento Confirmado!</h2>
-                  <p className="text-muted-foreground mt-2">
+                  <h2 className="text-2xl font-semibold tracking-tight text-foreground">Pagamento confirmado</h2>
+                  <p className="text-muted-foreground mt-2 text-sm">
                     {message}
                   </p>
                 </div>
@@ -175,14 +162,16 @@ export default function Welcome() {
                 className="space-y-6"
               >
                 <div className="text-center">
-                  <CheckCircle2 className="w-12 h-12 mx-auto text-green-500 mb-4" />
-                  <h2 className="text-2xl font-bold">
-                    {userExists ? "Bem-vindo de volta!" : "Conta Criada!"}
+                  <div className="inline-flex w-12 h-12 rounded-full bg-primary/10 border border-primary/30 items-center justify-center mb-4">
+                    <Sparkles className="w-6 h-6 text-primary" strokeWidth={1.75} />
+                  </div>
+                  <h2 className="text-2xl font-semibold tracking-tight">
+                    {userExists ? "Bem-vindo de volta" : "Conta criada"}
                   </h2>
-                  <p className="text-muted-foreground mt-2">
+                  <p className="text-muted-foreground mt-2 text-sm">
                     {userExists 
                       ? "Faça login para acessar sua assinatura." 
-                      : "Entre com a senha que você criou no checkout."}
+                      : "Entre com a senha que você definiu no checkout."}
                   </p>
                 </div>
 
@@ -242,12 +231,12 @@ export default function Welcome() {
                 animate={{ opacity: 1 }}
                 className="text-center space-y-4"
               >
-                <div className="w-16 h-16 mx-auto rounded-full bg-destructive/10 flex items-center justify-center">
-                  <span className="text-3xl">😕</span>
+                <div className="w-14 h-14 mx-auto rounded-full bg-destructive/10 border border-destructive/30 flex items-center justify-center">
+                  <span className="text-destructive text-2xl font-light">!</span>
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-destructive">Ops!</h2>
-                  <p className="text-muted-foreground mt-2">{message}</p>
+                  <h2 className="text-2xl font-semibold tracking-tight text-destructive">Algo deu errado</h2>
+                  <p className="text-muted-foreground mt-2 text-sm">{message}</p>
                 </div>
                 <div className="flex flex-col gap-2">
                   <Button onClick={() => navigate("/")} variant="outline">
