@@ -12,11 +12,19 @@ import { AssistantShowcaseDialog } from "@/components/AssistantShowcaseDialog";
 import { assistantSlides } from "@/lib/assistantSlides";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { TimeSavingsComparison } from "@/components/TimeSavingsComparison";
+import { FAQMiniDemo } from "@/components/FAQMiniDemo";
 
-const faqs = [
+type FAQItem = {
+  q: string;
+  a: string;
+  demo?: "consultorio" | "seguranca" | "teste";
+};
+
+const faqs: FAQItem[] = [
   {
     q: "Os meus dados e dos meus pacientes ficam protegidos?",
     a: "Sim. Toda a infraestrutura segue a LGPD, com criptografia em trânsito e em repouso. Nenhuma informação clínica é usada para treinar modelos e o acesso é restrito à sua conta autenticada.",
+    demo: "seguranca",
   },
   {
     q: "Preciso instalar algo ou baixar aplicativo?",
@@ -25,10 +33,12 @@ const faqs = [
   {
     q: "Como funciona o Modo Consultório?",
     a: "Você grava a conversa com o paciente direto pelo navegador e a plataforma transcreve em tempo real, separando fala do médico e do paciente, e organiza tudo em uma anamnese estruturada pronta para revisar e copiar para o seu prontuário.",
+    demo: "consultorio",
   },
   {
     q: "Posso testar antes de assinar?",
     a: "Pode. O Examinus tem versão gratuita com restrições direto na página inicial, sem precisar criar conta. Os planos pagos ainda têm 7 dias de garantia incondicional: se não gostar, devolvemos 100% do valor.",
+    demo: "teste",
   },
   {
     q: "Funciona para qualquer especialidade?",
