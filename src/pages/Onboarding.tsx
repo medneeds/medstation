@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Activity, ArrowRight, ArrowLeft, CheckCircle2, Sparkles, Stethoscope, GraduationCap, User } from "lucide-react";
+import { ArrowRight, ArrowLeft, CheckCircle2, Sparkles, Stethoscope, User } from "lucide-react";
+import { LogoMark } from "@/components/LogoMark";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
