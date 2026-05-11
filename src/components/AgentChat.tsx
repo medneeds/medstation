@@ -128,7 +128,7 @@ export function AgentChat({
   const [onlyAltered, setOnlyAltered] = useState(false);
   const [clinicalImpression, setClinicalImpression] = useState(false);
   const [directAHEMode, setDirectAHEMode] = useState(false);
-  const [aheTemplate, setAheTemplate] = useState<"v1" | "v2">("v1");
+  const [aheTemplate, setAheTemplate] = useState<"v1" | "v2" | "v3">("v1");
   const [bulaInteligenteMode, setBulaInteligenteMode] = useState(false);
   const [directLIMode, setDirectLIMode] = useState(false);
   const [quickCIDMode, setQuickCIDMode] = useState(false);
@@ -1233,6 +1233,13 @@ export function AgentChat({
                 >
                   Modelo 2 · Emergência
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setAheTemplate("v3")}
+                  className={`px-2 h-6 rounded-full transition-colors ${aheTemplate === "v3" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  Modelo 3 · Admissão UTI
+                </button>
               </div>
             )}
           </div>
@@ -1344,6 +1351,14 @@ export function AgentChat({
                     title="Modelo 2: admissão hospitalar para Medicina de Emergência"
                   >
                     Modelo 2 · Emergência
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAheTemplate("v3")}
+                    className={`px-2.5 h-7 rounded-full transition-colors ${aheTemplate === "v3" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+                    title="Modelo 3: admissão de paciente crítico em UTI/urgência"
+                  >
+                    Modelo 3 · Admissão UTI
                   </button>
                 </div>
               )}
