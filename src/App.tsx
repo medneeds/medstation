@@ -19,6 +19,7 @@ import Home from "./pages/Home";
 import Pricing from "./pages/Pricing";
 import Welcome from "./pages/Welcome";
 import Onboarding from "./pages/Onboarding";
+import WelcomeTour from "./pages/WelcomeTour";
 import Clinicus from "./pages/Clinicus";
 import Consultorio from "./pages/Consultorio";
 import ConsultorioLanding from "./pages/ConsultorioLanding";
@@ -70,6 +71,7 @@ const App = () => (
             />
             <Route path="/welcome" element={<Welcome />} />
             <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/welcome-tour" element={<ProtectedRoute><WelcomeTour /></ProtectedRoute>} />
             <Route
               path="/dashboard"
               element={
