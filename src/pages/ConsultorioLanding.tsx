@@ -173,7 +173,7 @@ export default function ConsultorioLanding() {
                 {
                   n: "02",
                   title: "Conversa naturalmente",
-                  desc: "Atenda como sempre. Transcrição aparece em tempo real, com VAD que respeita pausas.",
+                  desc: "Atenda como sempre. A transcrição aparece em tempo real e respeita as pausas naturais da conversa.",
                   icon: Brain,
                 },
                 {
