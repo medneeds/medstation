@@ -101,7 +101,7 @@ export const signInSchema = z.object({
 export const agentChatRequestSchema = z.object({
   messages: z.array(z.object({
     role: z.enum(["user", "assistant", "system"]),
-    content: z.string().max(10000, "Mensagem muito longa"),
+    content: z.string().max(30000, "Mensagem muito longa"),
   })).min(1, "Pelo menos uma mensagem é necessária"),
   agentType: z.enum(["clinicus", "examinus", "scorius", "numerus", "prescriptus", "codexus"]),
   caseId: z.string().uuid("ID de caso inválido").optional(),

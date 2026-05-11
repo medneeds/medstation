@@ -152,6 +152,26 @@ export default function PublicExaminusChat() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const truncateToastShownRef = useRef(false);
+
+  const DEMO_MAX_CHARS = 10000;
+  const handleInputChange = (value: string) => {
+    if (value.length > DEMO_MAX_CHARS) {
+      const truncated = value.slice(0, DEMO_MAX_CHARS);
+      setInput(truncated);
+      if (!truncateToastShownRef.current) {
+        truncateToastShownRef.current = true;
+        toast({
+          title: "Limite de caracteres atingido",
+          description: `O modo demonstração aceita até ${DEMO_MAX_CHARS.toLocaleString("pt-BR")} caracteres. Usuários da plataforma têm até 30.000.`,
+          variant: "destructive",
+        });
+        setTimeout(() => { truncateToastShownRef.current = false; }, 4000);
+      }
+      return;
+    }
+    setInput(value);
+  };
 
   // Inicializar fingerprint
   useEffect(() => {
@@ -811,7 +831,7 @@ export default function PublicExaminusChat() {
               </Button>
               <Textarea
                 value={input}
-                onChange={(e) => setInput(e.target.value.slice(0, 10000))}
+                onChange={(e) => handleInputChange(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder={hasMessages ? "Cole exames..." : "Cole exames aqui"}
                 maxLength={10000}
@@ -839,9 +859,12 @@ export default function PublicExaminusChat() {
                 )}
               </Button>
             </div>
-            <div className="flex justify-end mt-1 px-1">
+            <div className="flex items-center justify-between gap-2 mt-1 px-1">
+              <span className="text-[10px] text-muted-foreground/80 truncate">
+                Demo: até 10.000 caracteres • Plataforma: 30.000
+              </span>
               <span
-                className={`text-[10px] tabular-nums ${
+                className={`text-[10px] tabular-nums shrink-0 ${
                   input.length >= 10000
                     ? "text-destructive font-medium"
                     : input.length >= 9000
@@ -939,7 +962,7 @@ export default function PublicExaminusChat() {
               </Button>
               <Textarea
                 value={input}
-                onChange={(e) => setInput(e.target.value.slice(0, 10000))}
+                onChange={(e) => handleInputChange(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder={hasMessages ? "Cole mais exames aqui..." : "Cole os resultados de exames aqui (texto, imagem ou PDF)"}
                 maxLength={10000}
@@ -973,9 +996,12 @@ export default function PublicExaminusChat() {
                 )}
               </Button>
             </div>
-            <div className="flex justify-end mt-1 px-1">
+            <div className="flex items-center justify-between gap-2 mt-1 px-1">
+              <span className="text-xs text-muted-foreground/80">
+                Modo demonstração: até 10.000 caracteres por mensagem • Usuários da plataforma: até 30.000
+              </span>
               <span
-                className={`text-xs tabular-nums ${
+                className={`text-xs tabular-nums shrink-0 ${
                   input.length >= 10000
                     ? "text-destructive font-medium"
                     : input.length >= 9000
