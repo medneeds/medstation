@@ -177,6 +177,11 @@ export default function Pricing() {
           </div>
         </div>
 
+        {/* Comparativo de tempo — vende benefício antes do preço */}
+        <div className="mb-10 md:mb-14">
+          <TimeSavingsComparison />
+        </div>
+
         {/* Cross-upgrade banner */}
         {upgradeBanner && (
           <Card className="mb-8 md:mb-10 p-5 md:p-6 border border-primary/40 bg-primary/5 backdrop-blur-sm">
