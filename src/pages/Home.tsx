@@ -280,7 +280,7 @@ export default function Home() {
                     <div className="text-muted-foreground italic">irradia para o braço esquerdo</div>
                   </div>
                   <div className="mt-auto pt-4 border-t border-hairline">
-                    <div className="text-[0.6rem] uppercase tracking-[0.2em] font-mono text-primary mb-1">AHE gerada</div>
+                    <div className="text-[0.6rem] uppercase tracking-[0.2em] font-mono text-primary mb-1">Anamnese gerada</div>
                     <div className="text-xs text-muted-foreground">QP: Dor torácica há 3 dias com irradiação para MSE...</div>
                   </div>
                 </div>
@@ -406,7 +406,7 @@ export default function Home() {
                 <ul className="space-y-1.5 text-xs text-muted-foreground">
                   <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> <span className="text-foreground"><strong>10 Assistentes</strong> ilimitados</span></li>
                   <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> <span className="text-foreground"><strong>Modo Consultório</strong> em tempo real</span></li>
-                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> AHE estruturada automática</li>
+                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Anamnese estruturada automaticamente</li>
                   <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Suporte prioritário · Garantia 7 dias</li>
                 </ul>
               </div>
