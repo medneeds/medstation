@@ -152,6 +152,26 @@ export default function PublicExaminusChat() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const truncateToastShownRef = useRef(false);
+
+  const DEMO_MAX_CHARS = 10000;
+  const handleInputChange = (value: string) => {
+    if (value.length > DEMO_MAX_CHARS) {
+      const truncated = value.slice(0, DEMO_MAX_CHARS);
+      setInput(truncated);
+      if (!truncateToastShownRef.current) {
+        truncateToastShownRef.current = true;
+        toast({
+          title: "Limite de caracteres atingido",
+          description: `O modo demonstração aceita até ${DEMO_MAX_CHARS.toLocaleString("pt-BR")} caracteres. Usuários da plataforma têm até 30.000.`,
+          variant: "destructive",
+        });
+        setTimeout(() => { truncateToastShownRef.current = false; }, 4000);
+      }
+      return;
+    }
+    setInput(value);
+  };
 
   // Inicializar fingerprint
   useEffect(() => {
