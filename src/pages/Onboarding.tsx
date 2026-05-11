@@ -124,7 +124,7 @@ export default function Onboarding() {
 
   const handleComplete = () => {
     toast({
-      title: "🎉 Configuração completa!",
+      title: "Configuração completa",
       description: "Você está pronto para usar o MedStation AI.",
     });
     navigate("/dashboard");
