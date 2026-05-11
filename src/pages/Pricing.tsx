@@ -473,6 +473,33 @@ export default function Pricing() {
           ))}
         </div>
       </div>
+
+      <GuestEmailDialog
+        open={dialogOpen}
+        onOpenChange={(o) => { setDialogOpen(o); if (!o) setPendingPlan(null); }}
+        planLabel={pendingPlan ? planLabelFor(pendingPlan) : ""}
+        priceLabel={pendingPlan ? planPriceFor(pendingPlan, billingPeriod) : ""}
+        loading={loadingPlan !== null}
+        onConfirm={(email) => { if (pendingPlan) runGuestCheckout(pendingPlan, email); }}
+      />
     </div>
   );
+}
+
+function planLabelFor(plan: PlanSlug): string {
+  if (plan.startsWith("agents")) return "MedStation AI Pro · 10 Assistentes";
+  if (plan.startsWith("pro2")) return "MedStation AI Pro 2 · Tudo incluso";
+  if (plan.startsWith("consultorio")) return "Modo Consultório";
+  return "Assinatura";
+}
+
+function planPriceFor(plan: PlanSlug, billing: "monthly" | "yearly"): string {
+  const yearly = billing === "yearly";
+  if (plan === "agents_monthly") return "R$ 29,90/mês";
+  if (plan === "agents_yearly") return "R$ 299,90/ano";
+  if (plan === "consultorio_monthly") return "R$ 29,90/mês";
+  if (plan === "consultorio_yearly") return "R$ 299,90/ano";
+  if (plan === "pro2_bundle") return "R$ 49,90/mês";
+  if (plan === "pro2_bundle_yearly") return "R$ 499,90/ano";
+  return yearly ? "Plano anual" : "Plano mensal";
 }
