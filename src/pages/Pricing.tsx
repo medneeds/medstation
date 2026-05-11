@@ -395,28 +395,25 @@ export default function Pricing() {
           </Card>
         </div>
 
-        {/* Guest email + coupon */}
+        {/* Visitor hint + cupom */}
         <Card className="mt-8 md:mt-10 p-5 md:p-6 border border-hairline bg-card/50 backdrop-blur-sm max-w-3xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 md:gap-6 items-end">
-            <div>
-              <label className="text-[0.65rem] uppercase tracking-[0.22em] font-mono text-muted-foreground">
-                Novo por aqui? Comece pelo email
-              </label>
-              <div className="relative mt-2">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="h-12 pl-10 text-base"
-                />
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex-1">
+              <div className="text-[0.65rem] uppercase tracking-[0.22em] font-mono text-muted-foreground">
+                Novo por aqui?
               </div>
-              <p className="text-[11px] text-muted-foreground mt-2">
-                Você criará a senha no checkout. Já tem conta? Faça login antes para destravar os preços de upgrade.
+              <p className="text-sm text-foreground mt-1">
+                Clique em <span className="font-medium">Assinar</span> no plano desejado — pediremos só o seu email para continuar. A senha você cria após o pagamento.
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-1.5">
+                Já tem conta?{" "}
+                <button type="button" onClick={() => navigate("/auth")} className="text-primary hover:underline">
+                  Faça login
+                </button>{" "}
+                antes para destravar os preços de upgrade.
               </p>
             </div>
-            <div className="md:pb-1">
+            <div className="md:pb-1 md:pl-6 md:border-l md:border-hairline">
               {!showCoupon ? (
                 <button
                   type="button"
