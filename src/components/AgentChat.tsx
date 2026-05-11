@@ -27,7 +27,8 @@ import {
   Clock,
   Pill,
   ListChecks,
-  Zap
+  Zap,
+  Minimize2
 } from "lucide-react";
 import {
   Sheet,
@@ -127,6 +128,7 @@ export function AgentChat({
   const [includeTime, setIncludeTime] = useState(true);
   const [onlyAltered, setOnlyAltered] = useState(false);
   const [clinicalImpression, setClinicalImpression] = useState(false);
+  const [compactMode, setCompactMode] = useState(true);
   const [directAHEMode, setDirectAHEMode] = useState(false);
   const [aheTemplate, setAheTemplate] = useState<"v1" | "v2" | "v3">("v1");
   const [bulaInteligenteMode, setBulaInteligenteMode] = useState(false);
@@ -377,7 +379,7 @@ export function AgentChat({
           })),
           agentType,
           caseId: selectedCaseId,
-          ...(agentType === "examinus" && { usePipeSeparator, includeTime, onlyAltered, clinicalImpression }),
+          ...(agentType === "examinus" && { usePipeSeparator, includeTime, onlyAltered, clinicalImpression, compactMode }),
           ...(agentType === "clinicus" && { directAHEMode, aheTemplate }),
           ...(agentType === "prescriptus" && { bulaInteligenteMode }),
           ...(agentType === "gasometrus" && { directLIMode }),
