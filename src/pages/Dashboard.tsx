@@ -25,6 +25,7 @@ import {
 import { Link } from "react-router-dom";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { QuickActionsHero } from "@/components/QuickActionsHero";
+import { hasSeenWelcomeTour } from "@/pages/WelcomeTour";
 
 interface Stats {
   totalPatients: number;
@@ -163,8 +164,13 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Redireciona apenas no primeiro acesso para o tour de 3 telas
+    if (!hasSeenWelcomeTour()) {
+      navigate("/welcome-tour", { replace: true });
+      return;
+    }
     fetchStats();
-  }, []);
+  }, [navigate]);
 
   const fetchStats = async () => {
     try {
