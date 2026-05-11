@@ -13,6 +13,7 @@ import { assistantSlides } from "@/lib/assistantSlides";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { TimeSavingsComparison } from "@/components/TimeSavingsComparison";
 import { FAQMiniDemo } from "@/components/FAQMiniDemo";
+import { HeroVideo } from "@/components/HeroVideo";
 
 type FAQItem = {
   q: string;
@@ -156,6 +157,9 @@ export default function Home() {
                 <ArrowDown className="inline-block w-3.5 h-3.5 text-primary ml-1 translate-y-[2px] animate-bounce" />
               </p>
             </div>
+
+            {/* Hero video — 15s, IA + narração + música */}
+            <HeroVideo />
 
             {/* Demo Card — pulso sutil para chamar interação */}
             <div className="relative group">
