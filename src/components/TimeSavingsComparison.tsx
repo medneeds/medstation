@@ -28,7 +28,7 @@ export function TimeSavingsComparison({ className }: { className?: string }) {
               Quanto tempo você ganha
             </span>
             <h3 className="font-display text-xl md:text-3xl font-semibold tracking-tight">
-              Pare de vender o produto. <span className="italic text-primary">Compre seu tempo de volta.</span>
+              Otimize sua relação médico-paciente. <span className="italic text-primary">Compre seu tempo de volta.</span>
             </h3>
           </div>
 

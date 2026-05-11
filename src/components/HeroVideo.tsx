@@ -10,8 +10,7 @@ export interface HeroSlide {
 }
 
 const DEFAULT_SLIDES: HeroSlide[] = [
-  { id: "consultorio", label: "Modo Consultório", src: "/hero/hero.mp4",   poster: "/hero/hero-poster.jpg" },
-  { id: "exames",      label: "Modo Exames",      src: "/hero/exames.mp4", poster: "/hero/exames-poster.jpg" },
+  { id: "exames", label: "Modo Exames", src: "/hero/exames.mp4", poster: "/hero/exames-poster.jpg" },
 ];
 
 interface HeroVideoProps {
