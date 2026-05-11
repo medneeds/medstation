@@ -188,7 +188,7 @@ export default function Onboarding() {
           })}
         </div>
 
-        <Card className="p-8 border-2 relative overflow-hidden">
+        <Card className="p-8 border border-hairline bg-card/80 backdrop-blur-sm relative overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentStep}
@@ -200,24 +200,19 @@ export default function Onboarding() {
               {/* Step 0: Welcome */}
               {currentStep === 0 && (
                 <div className="text-center space-y-6">
-                  <div className="relative inline-block">
-                    <div className="absolute inset-0 bg-gradient-primary rounded-3xl blur-xl opacity-50 animate-pulse"></div>
-                    <div className="relative w-20 h-20 rounded-3xl bg-gradient-primary flex items-center justify-center shadow-medical">
-                      <Activity className="w-10 h-10 text-primary-foreground" />
-                    </div>
+                  <div className="flex justify-center">
+                    <LogoMark className="w-16 h-16" />
                   </div>
                   
                   <div className="space-y-3">
-                    <h1 className="text-3xl font-bold">
+                    <h1 className="text-3xl font-semibold tracking-tight">
                       Bem-vindo ao{" "}
-                      <span className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                        MedStation AI
-                      </span>
+                      <span className="text-primary">MedStation AI</span>
                     </h1>
-                    <p className="text-muted-foreground text-lg">
+                    <p className="text-muted-foreground">
                       Vamos configurar sua conta em poucos passos.
                       <br />
-                      <span className="text-sm">Todos os campos são opcionais.</span>
+                      <span className="text-xs text-muted-foreground/70">Todos os campos são opcionais.</span>
                     </p>
                   </div>
 
