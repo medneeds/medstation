@@ -57,7 +57,7 @@ const faqs: FAQItem[] = [
 
 // Definição centralizada dos agentes com descrições precisas
 const agents = [
-  { name: "Examinus", icon: TestTube2, shortDesc: "Exames", fullDesc: "Peça exames em segundos", color: "from-purple-500 to-purple-600" },
+  { name: "Examinus", icon: TestTube2, shortDesc: "Exames", fullDesc: "Resuma exames em segundos", color: "from-purple-500 to-purple-600" },
   { name: "Clínicus", icon: Stethoscope, shortDesc: "Anamnese", fullDesc: "Sua anamnese pronta", color: "from-blue-500 to-blue-600" },
   { name: "Scorius", icon: Calculator, shortDesc: "Scores", fullDesc: "Calcule scores e risco em segundos", color: "from-red-500 to-red-600" },
   { name: "Numerus", icon: Sigma, shortDesc: "Cálculos", fullDesc: "Calculadoras médicas instantâneas", color: "from-green-500 to-green-600" },
