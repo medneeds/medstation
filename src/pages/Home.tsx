@@ -316,21 +316,10 @@ export default function Home() {
                   <span className="text-xs text-muted-foreground self-center">A partir de R$ 29,90/mês</span>
                 </div>
               </div>
-              <div className="hidden md:flex items-center justify-center">
-                <div className="relative w-full max-w-sm aspect-square rounded-2xl border border-hairline bg-background/60 backdrop-blur-sm p-6 flex flex-col gap-3">
-                  <div className="flex items-center gap-2 text-xs font-mono text-primary">
-                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                    OUVINDO...
-                  </div>
-                  <div className="space-y-2 text-sm">
-                    <div className="text-foreground">Paciente: Sinto dor torácica há 3 dias...</div>
-                    <div className="text-muted-foreground italic">irradia para o braço esquerdo</div>
-                  </div>
-                  <div className="mt-auto pt-4 border-t border-hairline">
-                    <div className="text-[0.6rem] uppercase tracking-[0.2em] font-mono text-primary mb-1">Anamnese gerada</div>
-                    <div className="text-xs text-muted-foreground">QP: Dor torácica há 3 dias com irradiação para MSE...</div>
-                  </div>
-                </div>
+              <div className="hidden md:block">
+                <HeroVideo
+                  slides={[{ id: "consultorio", label: "Modo Consultório", src: "/hero/hero.mp4", poster: "/hero/hero-poster.jpg" }]}
+                />
               </div>
             </div>
           </Card>
