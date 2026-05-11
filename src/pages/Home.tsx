@@ -280,7 +280,7 @@ export default function Home() {
                     <div className="text-muted-foreground italic">irradia para o braço esquerdo</div>
                   </div>
                   <div className="mt-auto pt-4 border-t border-hairline">
-                    <div className="text-[0.6rem] uppercase tracking-[0.2em] font-mono text-primary mb-1">AHE gerada</div>
+                    <div className="text-[0.6rem] uppercase tracking-[0.2em] font-mono text-primary mb-1">Anamnese gerada</div>
                     <div className="text-xs text-muted-foreground">QP: Dor torácica há 3 dias com irradiação para MSE...</div>
                   </div>
                 </div>
