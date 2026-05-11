@@ -260,7 +260,9 @@ export default function Dashboard() {
         </Button> */}
       </div>
 
-      {/* Prática Médica Section - HIDDEN */}
+      {/* Hero de ações rápidas — o que o médico quer fazer agora */}
+      <QuickActionsHero />
+
       {/* <div>
         <div className="flex items-center gap-2 mb-4">
           <Stethoscope className="h-5 w-5 md:h-6 md:w-6 text-primary" />
