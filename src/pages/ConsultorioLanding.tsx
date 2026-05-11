@@ -3,16 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import {
   ArrowRight,
   Mic,
   Sparkles,
   ShieldCheck,
-  Clock,
   Brain,
   Loader2,
-  Mail,
   Check,
   ArrowLeft,
 } from "lucide-react";
