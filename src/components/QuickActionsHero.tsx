@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
-import { Mic, FlaskConical, Pill, Stethoscope, ArrowRight } from "lucide-react";
+import { Mic, FlaskConical, Pill, FileText, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
  * Hero de ações rápidas para a tela inicial do médico.
  * 4 cartões grandes com linguagem de ação direta — não de produto.
- * Item 4 do plano "Simples, sexy e surpreendente".
+ * Paleta unificada em torno de primary (Pastel Green) + Clinical Gray,
+ * mantendo a identidade visual da plataforma.
  */
 
 const actions = [
@@ -14,7 +15,7 @@ const actions = [
     helper: "Grave a consulta e receba a anamnese pronta",
     icon: Mic,
     url: "/consultorio",
-    accent: "from-primary/25 via-primary/15 to-primary/5",
+    accent: "from-primary/25 via-primary/12 to-transparent",
     iconBg: "bg-primary/15 text-primary",
     border: "hover:border-primary/50",
   },
@@ -23,27 +24,27 @@ const actions = [
     helper: "Cole, fotografe ou envie o PDF e receba o resumo",
     icon: FlaskConical,
     url: "/examinus",
-    accent: "from-purple-500/20 via-purple-500/10 to-transparent",
-    iconBg: "bg-purple-500/15 text-purple-500",
-    border: "hover:border-purple-500/50",
+    accent: "from-primary/18 via-primary/8 to-transparent",
+    iconBg: "bg-primary/10 text-primary",
+    border: "hover:border-primary/40",
   },
   {
     label: "Dúvidas de prescrição",
     helper: "Tire dúvidas de medicamentos com bula inteligente",
     icon: Pill,
     url: "/prescriptus",
-    accent: "from-orange-500/20 via-orange-500/10 to-transparent",
-    iconBg: "bg-orange-500/15 text-orange-500",
-    border: "hover:border-orange-500/50",
+    accent: "from-muted/40 via-muted/20 to-transparent",
+    iconBg: "bg-muted text-foreground/80",
+    border: "hover:border-foreground/30",
   },
   {
-    label: "Tirar dúvida clínica",
-    helper: "Pergunte ao Clínicus sobre conduta, raciocínio ou caso",
-    icon: Stethoscope,
+    label: "Estruturar anamnese",
+    helper: "Discuta o caso ou gere a anamnese hospitalar com o Clínicus",
+    icon: FileText,
     url: "/clinicus",
-    accent: "from-blue-500/20 via-blue-500/10 to-transparent",
-    iconBg: "bg-blue-500/15 text-blue-500",
-    border: "hover:border-blue-500/50",
+    accent: "from-primary/22 via-primary/10 to-transparent",
+    iconBg: "bg-primary/12 text-primary",
+    border: "hover:border-primary/45",
   },
 ];
 
