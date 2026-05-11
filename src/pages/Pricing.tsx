@@ -46,6 +46,21 @@ export default function Pricing() {
     toast({ title: "Cupom aplicado!", description: `Código ${trimmedCode} será aplicado no checkout.` });
   };
 
+  const runGuestCheckout = async (plan: PlanSlug, email: string) => {
+    setLoadingPlan(plan);
+    try {
+      const { data, error } = await supabase.functions.invoke("guest-checkout", {
+        body: { email, plan, couponCode: couponApplied ? couponCode.trim() : undefined },
+      });
+      if (error) throw error;
+      if (data?.url) window.location.href = data.url;
+    } catch (error: any) {
+      console.error("Checkout error:", error);
+      toast({ title: "Erro no checkout", description: error.message || "Não foi possível iniciar o checkout.", variant: "destructive" });
+      setLoadingPlan(null);
+    }
+  };
+
   const startCheckout = async (plan: PlanSlug) => {
     setLoadingPlan(plan);
     try {
@@ -65,20 +80,13 @@ export default function Pricing() {
         navigate("/auth");
         return;
       }
-      const trimmedEmail = email.trim().toLowerCase();
-      if (!trimmedEmail || !trimmedEmail.includes("@")) {
-        toast({ title: "Email necessário", description: "Digite seu email para iniciar a assinatura.", variant: "destructive" });
-        return;
-      }
-      const { data, error } = await supabase.functions.invoke("guest-checkout", {
-        body: { email: trimmedEmail, plan, couponCode: couponApplied ? couponCode.trim() : undefined },
-      });
-      if (error) throw error;
-      if (data?.url) window.location.href = data.url;
+      // Visitante: abre diálogo pedindo o email
+      setPendingPlan(plan);
+      setDialogOpen(true);
+      setLoadingPlan(null);
     } catch (error: any) {
       console.error("Checkout error:", error);
       toast({ title: "Erro no checkout", description: error.message || "Não foi possível iniciar o checkout.", variant: "destructive" });
-    } finally {
       setLoadingPlan(null);
     }
   };
