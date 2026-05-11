@@ -323,6 +323,13 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Comparativo de tempo — vende benefício antes do preço */}
+      <section className="py-10 md:py-14 px-4 md:px-6 relative">
+        <div className="container mx-auto max-w-6xl relative">
+          <TimeSavingsComparison />
+        </div>
+      </section>
+
       {/* Planos */}
       <section id="planos" className="py-12 md:py-20 lg:py-24 px-4 md:px-6 relative overflow-hidden">
         <div className="absolute inset-0 bg-muted/30 backdrop-blur-3xl"></div>
