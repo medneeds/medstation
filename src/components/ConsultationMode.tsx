@@ -73,7 +73,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
   const handleGenerateStructure = useCallback(async () => {
     try {
       await updateStructure();
-      toast.success('Estruturação gerada a partir da transcrição completa');
+      toast.success('Pronto 👏 Sua anamnese está estruturada acima.');
       setActiveTab('structure');
       setShowFinishDialog(false);
     } catch {
@@ -112,7 +112,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
       .join('\n\n');
 
     navigator.clipboard.writeText(text);
-    toast.success('Copiado para a área de transferência');
+    toast.success('Copiado 👏 Cole direto no prontuário.');
   }, [structure]);
 
   return (

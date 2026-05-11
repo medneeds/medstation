@@ -45,16 +45,16 @@ const faqs = [
 
 // Definição centralizada dos agentes com descrições precisas
 const agents = [
-  { name: "Examinus", icon: TestTube2, shortDesc: "Exames", fullDesc: "Extração e formatação de exames laboratoriais e de imagem", color: "from-purple-500 to-purple-600" },
-  { name: "Clínicus", icon: Stethoscope, shortDesc: "Anamnese", fullDesc: "Anamneses hospitalares estruturadas e passagem de plantão", color: "from-blue-500 to-blue-600" },
-  { name: "Scorius", icon: Calculator, shortDesc: "Scores", fullDesc: "Cálculo e interpretação de scores clínicos e escalas prognósticas", color: "from-red-500 to-red-600" },
-  { name: "Numerus", icon: Sigma, shortDesc: "Cálculos", fullDesc: "Calculadoras médicas e conversão de unidades", color: "from-green-500 to-green-600" },
-  { name: "Prescriptus", icon: Pill, shortDesc: "Prescrição", fullDesc: "Prescrições estruturadas com Bula Inteligente integrada", color: "from-orange-500 to-orange-600" },
-  { name: "CODexus", icon: FileCode, shortDesc: "CID-10", fullDesc: "Codificação CID-10, TISS e procedimentos médicos", color: "from-indigo-500 to-indigo-600" },
-  { name: "Gasometrus", icon: Wind, shortDesc: "Gasometria", fullDesc: "Análise completa e interpretação de gasometria arterial", color: "from-cyan-500 to-cyan-600" },
-  { name: "Atestus", icon: FileCheck, shortDesc: "Atestados", fullDesc: "Geração de atestados médicos e declarações", color: "from-emerald-500 to-emerald-600" },
-  { name: "Protocolus", icon: BookOpen, shortDesc: "Protocolos", fullDesc: "Consulta a protocolos e guidelines nacionais e internacionais", color: "from-amber-500 to-amber-600" },
-  { name: "Orientus", icon: Compass, shortDesc: "Orientações", fullDesc: "Orientações ao paciente e instruções de alta hospitalar", color: "from-rose-500 to-rose-600" },
+  { name: "Examinus", icon: TestTube2, shortDesc: "Exames", fullDesc: "Peça exames em segundos", color: "from-purple-500 to-purple-600" },
+  { name: "Clínicus", icon: Stethoscope, shortDesc: "Anamnese", fullDesc: "Sua anamnese pronta", color: "from-blue-500 to-blue-600" },
+  { name: "Scorius", icon: Calculator, shortDesc: "Scores", fullDesc: "Calcule scores e risco em segundos", color: "from-red-500 to-red-600" },
+  { name: "Numerus", icon: Sigma, shortDesc: "Cálculos", fullDesc: "Calculadoras médicas instantâneas", color: "from-green-500 to-green-600" },
+  { name: "Prescriptus", icon: Pill, shortDesc: "Medicamentos", fullDesc: "Bula inteligente e consulta de medicamentos", color: "from-orange-500 to-orange-600" },
+  { name: "CODexus", icon: FileCode, shortDesc: "CID-10", fullDesc: "Encontre o CID-10 certo na hora", color: "from-indigo-500 to-indigo-600" },
+  { name: "Gasometrus", icon: Wind, shortDesc: "Gasometria", fullDesc: "Leia gasometria na hora", color: "from-cyan-500 to-cyan-600" },
+  { name: "Atestus", icon: FileCheck, shortDesc: "Atestados", fullDesc: "Atestados prontos em um clique", color: "from-emerald-500 to-emerald-600" },
+  { name: "Protocolus", icon: BookOpen, shortDesc: "Protocolos", fullDesc: "Protocolos atualizados na hora", color: "from-amber-500 to-amber-600" },
+  { name: "Orientus", icon: Compass, shortDesc: "Orientações", fullDesc: "Orientações claras para o paciente", color: "from-rose-500 to-rose-600" },
 ];
 
 export default function Home() {
