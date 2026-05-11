@@ -1352,6 +1352,14 @@ export function AgentChat({
                   >
                     Modelo 2 · Emergência
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setAheTemplate("v3")}
+                    className={`px-2.5 h-7 rounded-full transition-colors ${aheTemplate === "v3" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+                    title="Modelo 3: admissão de paciente crítico em UTI/urgência"
+                  >
+                    Modelo 3 · Admissão UTI
+                  </button>
                 </div>
               )}
             </>
