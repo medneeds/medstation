@@ -9,6 +9,7 @@ import { HeaderUserMenu } from "@/components/HeaderUserMenu";
 import { HeaderThemeToggle } from "@/components/HeaderThemeToggle";
 import { SupportChat } from "@/components/SupportChat";
 import { FloatingConsultationButton } from "@/components/FloatingConsultationButton";
+import { OnboardingTour } from "@/components/OnboardingTour";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -95,6 +96,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </SidebarProvider>
       <SupportChat />
       <FloatingConsultationButton />
+      <OnboardingTour />
     </>
   );
 }
