@@ -123,8 +123,8 @@ serve(async (req) => {
       );
     }
 
-    // Validate individual message content size (max 10,000 characters per message)
-    const MAX_MESSAGE_LENGTH = 10000;
+    // Validate individual message content size (max 30,000 characters per message)
+    const MAX_MESSAGE_LENGTH = 30000;
     for (const message of messages) {
       if (message.content && typeof message.content === 'string' && message.content.length > MAX_MESSAGE_LENGTH) {
         return new Response(

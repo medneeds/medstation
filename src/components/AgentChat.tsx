@@ -1450,7 +1450,7 @@ export function AgentChat({
           )}
           <Input
             value={message}
-            onChange={(e) => setMessage(e.target.value.slice(0, 10000))}
+            onChange={(e) => setMessage(e.target.value.slice(0, 30000))}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -1458,10 +1458,10 @@ export function AgentChat({
               }
             }}
             placeholder={isMobile ? "Mensagem..." : placeholder}
-            maxLength={10000}
-            aria-invalid={(message.length > 0 && !message.trim()) || message.length >= 10000}
+            maxLength={30000}
+            aria-invalid={(message.length > 0 && !message.trim()) || message.length >= 30000}
             className={`flex-1 text-base md:text-base h-11 md:h-10 ${
-              (message.length > 0 && !message.trim()) || message.length >= 10000
+              (message.length > 0 && !message.trim()) || message.length >= 30000
                 ? "border-destructive focus-visible:ring-destructive"
                 : ""
             }`}
@@ -1474,7 +1474,7 @@ export function AgentChat({
           />
           <Button 
             onClick={sendMessage}
-            disabled={!message.trim() || isLoading || message.length > 10000}
+            disabled={!message.trim() || isLoading || message.length > 30000}
             size="icon"
             className="shrink-0 h-9 w-9 md:h-10 md:w-10 rounded-full md:rounded-md"
             title={!message.trim() ? "Digite uma mensagem para enviar" : "Enviar mensagem"}
@@ -1508,7 +1508,7 @@ export function AgentChat({
           </div>
           <span
             className={`text-xs tabular-nums shrink-0 ${
-              message.length >= 10000
+              message.length >= 30000
                 ? "text-destructive font-medium"
                 : message.length >= 9000
                 ? "text-amber-600 dark:text-amber-400"
@@ -1516,7 +1516,7 @@ export function AgentChat({
             }`}
             aria-live="polite"
           >
-            {message.length.toLocaleString("pt-BR")}/10.000
+            {message.length.toLocaleString("pt-BR")}/30.000
           </span>
         </div>
       </div>
