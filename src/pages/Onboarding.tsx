@@ -170,12 +170,12 @@ export default function Onboarding() {
             return (
               <div
                 key={step.id}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all border ${
                   index === currentStep
-                    ? "bg-primary text-primary-foreground scale-110 shadow-lg"
+                    ? "bg-primary text-primary-foreground border-primary scale-110"
                     : index < currentStep
-                    ? "bg-green-500 text-white"
-                    : "bg-muted text-muted-foreground"
+                    ? "bg-primary/15 text-primary border-primary/40"
+                    : "bg-muted text-muted-foreground border-hairline"
                 }`}
               >
                 {index < currentStep ? (
