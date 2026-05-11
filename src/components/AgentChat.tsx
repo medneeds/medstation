@@ -1345,7 +1345,7 @@ export function AgentChat({
                     className={`px-2.5 h-7 rounded-full transition-colors ${aheTemplate === "v1" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
                     title="Modelo 1: anamnese hospitalar padrão (discussão e documentação Clínicus)"
                   >
-                    Modelo 1
+                    Modelo 1 · Padrão
                   </button>
                   <button
                     type="button"
