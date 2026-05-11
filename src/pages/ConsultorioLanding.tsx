@@ -422,6 +422,17 @@ export default function ConsultorioLanding() {
             <p>© {new Date().getFullYear()} MedStation. Produza mais. Digite menos.</p>
           </div>
         </footer>
+
+        <GuestEmailDialog
+          open={dialogOpen}
+          onOpenChange={(o) => { setDialogOpen(o); if (!o) setPendingPlan(null); }}
+          planLabel={pendingPlan ? PLAN_META[pendingPlan].label : ""}
+          priceLabel={pendingPlan ? PLAN_META[pendingPlan].price : ""}
+          loading={loading !== null}
+          onConfirm={(email) => {
+            if (pendingPlan) runGuestCheckout(pendingPlan, email);
+          }}
+        />
       </div>
     </div>
   );
