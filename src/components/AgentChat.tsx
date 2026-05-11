@@ -128,6 +128,7 @@ export function AgentChat({
   const [onlyAltered, setOnlyAltered] = useState(false);
   const [clinicalImpression, setClinicalImpression] = useState(false);
   const [directAHEMode, setDirectAHEMode] = useState(false);
+  const [aheTemplate, setAheTemplate] = useState<"v1" | "v2">("v1");
   const [bulaInteligenteMode, setBulaInteligenteMode] = useState(false);
   const [directLIMode, setDirectLIMode] = useState(false);
   const [quickCIDMode, setQuickCIDMode] = useState(false);
@@ -377,7 +378,7 @@ export function AgentChat({
           agentType,
           caseId: selectedCaseId,
           ...(agentType === "examinus" && { usePipeSeparator, includeTime, onlyAltered, clinicalImpression }),
-          ...(agentType === "clinicus" && { directAHEMode }),
+          ...(agentType === "clinicus" && { directAHEMode, aheTemplate }),
           ...(agentType === "prescriptus" && { bulaInteligenteMode }),
           ...(agentType === "gasometrus" && { directLIMode }),
           ...(agentType === "codexus" && { quickCIDMode })
