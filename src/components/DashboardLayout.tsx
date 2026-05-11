@@ -8,6 +8,7 @@ import NotificationBell from "@/components/NotificationBell";
 import { HeaderUserMenu } from "@/components/HeaderUserMenu";
 import { HeaderThemeToggle } from "@/components/HeaderThemeToggle";
 import { SupportChat } from "@/components/SupportChat";
+import { FloatingConsultationButton } from "@/components/FloatingConsultationButton";
 
 interface DashboardLayoutProps {
   children: ReactNode;
