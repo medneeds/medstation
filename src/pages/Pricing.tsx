@@ -30,7 +30,8 @@ export default function Pricing() {
   const [couponCode, setCouponCode] = useState("");
   const [couponApplied, setCouponApplied] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
-  const [email, setEmail] = useState("");
+  const [pendingPlan, setPendingPlan] = useState<PlanSlug | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { hasAgents, hasConsultorio, availableUpgrade, loading: subLoading } = useSubscription();
