@@ -231,12 +231,12 @@ export default function Welcome() {
                 animate={{ opacity: 1 }}
                 className="text-center space-y-4"
               >
-                <div className="w-16 h-16 mx-auto rounded-full bg-destructive/10 flex items-center justify-center">
-                  <span className="text-3xl">😕</span>
+                <div className="w-14 h-14 mx-auto rounded-full bg-destructive/10 border border-destructive/30 flex items-center justify-center">
+                  <span className="text-destructive text-2xl font-light">!</span>
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-destructive">Ops!</h2>
-                  <p className="text-muted-foreground mt-2">{message}</p>
+                  <h2 className="text-2xl font-semibold tracking-tight text-destructive">Algo deu errado</h2>
+                  <p className="text-muted-foreground mt-2 text-sm">{message}</p>
                 </div>
                 <div className="flex flex-col gap-2">
                   <Button onClick={() => navigate("/")} variant="outline">
