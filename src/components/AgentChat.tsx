@@ -128,6 +128,7 @@ export function AgentChat({
   const [onlyAltered, setOnlyAltered] = useState(false);
   const [clinicalImpression, setClinicalImpression] = useState(false);
   const [directAHEMode, setDirectAHEMode] = useState(false);
+  const [aheTemplate, setAheTemplate] = useState<"v1" | "v2">("v1");
   const [bulaInteligenteMode, setBulaInteligenteMode] = useState(false);
   const [directLIMode, setDirectLIMode] = useState(false);
   const [quickCIDMode, setQuickCIDMode] = useState(false);
@@ -377,7 +378,7 @@ export function AgentChat({
           agentType,
           caseId: selectedCaseId,
           ...(agentType === "examinus" && { usePipeSeparator, includeTime, onlyAltered, clinicalImpression }),
-          ...(agentType === "clinicus" && { directAHEMode }),
+          ...(agentType === "clinicus" && { directAHEMode, aheTemplate }),
           ...(agentType === "prescriptus" && { bulaInteligenteMode }),
           ...(agentType === "gasometrus" && { directLIMode }),
           ...(agentType === "codexus" && { quickCIDMode })
@@ -1205,7 +1206,7 @@ export function AgentChat({
 
         {/* Mobile: Other agent toggles row */}
         {isMobile && agentType === "clinicus" && (
-          <div className="flex items-center gap-1.5 mb-2">
+          <div className="flex items-center gap-1.5 mb-2 flex-wrap">
             <Toggle
               pressed={directAHEMode}
               onPressedChange={setDirectAHEMode}
@@ -1216,6 +1217,24 @@ export function AgentChat({
               <FileDown className="h-3 w-3" />
               <span>Anamnese</span>
             </Toggle>
+            {directAHEMode && (
+              <div className="inline-flex items-center rounded-full border border-border bg-card/60 p-0.5 text-[10px]">
+                <button
+                  type="button"
+                  onClick={() => setAheTemplate("v1")}
+                  className={`px-2 h-6 rounded-full transition-colors ${aheTemplate === "v1" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  Modelo 1
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAheTemplate("v2")}
+                  className={`px-2 h-6 rounded-full transition-colors ${aheTemplate === "v2" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  Modelo 2 · Emergência
+                </button>
+              </div>
+            )}
           </div>
         )}
         {isMobile && agentType === "prescriptus" && (
@@ -1297,16 +1316,38 @@ export function AgentChat({
           )}
           {/* Desktop-only agent toggles inline */}
           {!isMobile && agentType === "clinicus" && (
-            <Toggle
-              pressed={directAHEMode}
-              onPressedChange={setDirectAHEMode}
-              size="sm"
-              className="shrink-0 data-[state=on]:bg-primary/20 gap-1"
-              title="Gerar anamnese hospitalar estruturada diretamente"
-            >
-              <FileDown className="h-4 w-4" />
-              <span className="text-xs">Anamnese</span>
-            </Toggle>
+            <>
+              <Toggle
+                pressed={directAHEMode}
+                onPressedChange={setDirectAHEMode}
+                size="sm"
+                className="shrink-0 data-[state=on]:bg-primary/20 gap-1"
+                title="Gerar anamnese hospitalar estruturada diretamente"
+              >
+                <FileDown className="h-4 w-4" />
+                <span className="text-xs">Anamnese</span>
+              </Toggle>
+              {directAHEMode && (
+                <div className="inline-flex items-center rounded-full border border-border bg-card/60 p-0.5 text-xs shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setAheTemplate("v1")}
+                    className={`px-2.5 h-7 rounded-full transition-colors ${aheTemplate === "v1" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+                    title="Modelo 1: anamnese hospitalar padrão (discussão e documentação Clínicus)"
+                  >
+                    Modelo 1
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAheTemplate("v2")}
+                    className={`px-2.5 h-7 rounded-full transition-colors ${aheTemplate === "v2" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+                    title="Modelo 2: admissão hospitalar para Medicina de Emergência"
+                  >
+                    Modelo 2 · Emergência
+                  </button>
+                </div>
+              )}
+            </>
           )}
           {!isMobile && agentType === "prescriptus" && (
             <Toggle
