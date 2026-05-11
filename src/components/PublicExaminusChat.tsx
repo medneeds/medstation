@@ -831,7 +831,7 @@ export default function PublicExaminusChat() {
               </Button>
               <Textarea
                 value={input}
-                onChange={(e) => setInput(e.target.value.slice(0, 10000))}
+                onChange={(e) => handleInputChange(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder={hasMessages ? "Cole exames..." : "Cole exames aqui"}
                 maxLength={10000}
@@ -959,7 +959,7 @@ export default function PublicExaminusChat() {
               </Button>
               <Textarea
                 value={input}
-                onChange={(e) => setInput(e.target.value.slice(0, 10000))}
+                onChange={(e) => handleInputChange(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder={hasMessages ? "Cole mais exames aqui..." : "Cole os resultados de exames aqui (texto, imagem ou PDF)"}
                 maxLength={10000}
