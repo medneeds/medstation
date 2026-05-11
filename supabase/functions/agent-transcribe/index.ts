@@ -31,12 +31,12 @@ serve(async (req) => {
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     
-    // Use Lovable AI Gateway - no external API key needed!
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!lovableApiKey) {
-      console.error("[AGENT-TRANSCRIBE] LOVABLE_API_KEY not configured");
+    // ElevenLabs Scribe - high-fidelity medical transcription
+    const elevenLabsKey = Deno.env.get("ELEVENLABS_API_KEY");
+    if (!elevenLabsKey) {
+      console.error("[AGENT-TRANSCRIBE] ELEVENLABS_API_KEY not configured");
       return new Response(
-        JSON.stringify({ error: "Serviço de IA não configurado" }),
+        JSON.stringify({ error: "Serviço de transcrição não configurado" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
