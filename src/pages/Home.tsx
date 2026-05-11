@@ -568,6 +568,7 @@ export default function Home() {
                 </AccordionTrigger>
                 <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
                   {item.a}
+                  {item.demo && <FAQMiniDemo kind={item.demo} />}
                 </AccordionContent>
               </AccordionItem>
             ))}
