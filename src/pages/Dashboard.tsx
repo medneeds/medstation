@@ -80,7 +80,7 @@ const agentModules = [
   },
   {
     title: "Examinus",
-    description: "Peça exames em segundos",
+    description: "Resuma exames em segundos",
     icon: FlaskConical,
     url: "/examinus",
     color: "text-examinus",
