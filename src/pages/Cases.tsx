@@ -609,11 +609,14 @@ export default function Cases() {
           {loading ? (
             <div className="text-center py-12 text-muted-foreground">Carregando...</div>
           ) : cases.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <FolderOpen className="h-12 w-12 mx-auto mb-4 opacity-30" />
-              <p>Nenhum caso encontrado</p>
-              <p className="text-sm mt-1">Crie um novo caso ou arraste um documento acima</p>
-            </div>
+            <EmptyState
+              icon={FolderOpen}
+              title="Nenhum caso clínico ainda"
+              description="Crie um caso novo ou arraste um documento clínico aqui em cima — o assistente extrai os dados pra você."
+              actionLabel="Criar primeiro caso"
+              actionIcon={Plus}
+              onAction={() => { resetForm(); setDialogOpen(true); }}
+            />
           ) : (
             <div className="grid gap-4">
               {cases.map((caseItem) => {
