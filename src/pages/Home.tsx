@@ -11,6 +11,7 @@ import { Logo } from "@/components/Logo";
 import { AssistantShowcaseDialog } from "@/components/AssistantShowcaseDialog";
 import { assistantSlides } from "@/lib/assistantSlides";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { TimeSavingsComparison } from "@/components/TimeSavingsComparison";
 
 const faqs = [
   {
