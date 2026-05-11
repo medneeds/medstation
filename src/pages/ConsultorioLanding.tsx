@@ -3,16 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import {
   ArrowRight,
   Mic,
   Sparkles,
   ShieldCheck,
-  Clock,
   Brain,
   Loader2,
-  Mail,
   Check,
   ArrowLeft,
 } from "lucide-react";
@@ -21,15 +18,46 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { GuestEmailDialog } from "@/components/GuestEmailDialog";
+
+type ConsultorioPlan = "consultorio_monthly" | "consultorio_upgrade" | "pro2_bundle" | "agents_upgrade";
+
+const PLAN_META: Record<ConsultorioPlan, { label: string; price: string }> = {
+  consultorio_monthly: { label: "Modo Consultório", price: "R$ 29,90/mês" },
+  consultorio_upgrade: { label: "Modo Consultório (upgrade)", price: "R$ 19,90/mês" },
+  pro2_bundle: { label: "MedStation AI Pro 2", price: "R$ 49,90/mês" },
+  agents_upgrade: { label: "10 Assistentes (upgrade)", price: "R$ 19,90/mês" },
+};
 
 export default function ConsultorioLanding() {
   const navigate = useNavigate();
   const { hasAgents, hasConsultorio } = useSubscription();
   const { toast } = useToast();
-  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState<string | null>(null);
+  const [pendingPlan, setPendingPlan] = useState<ConsultorioPlan | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
-  const startCheckout = async (plan: "consultorio_monthly" | "consultorio_upgrade" | "pro2_bundle" | "agents_upgrade") => {
+  const runGuestCheckout = async (plan: ConsultorioPlan, email: string) => {
+    setLoading(plan);
+    try {
+      // Guests can only buy standalone or bundle (upgrades require existing sub)
+      const guestPlan = plan === "consultorio_upgrade" || plan === "agents_upgrade" ? "consultorio_monthly" : plan;
+      const { data, error } = await supabase.functions.invoke("guest-checkout", {
+        body: { email, plan: guestPlan },
+      });
+      if (error) throw error;
+      if (data?.url) window.location.href = data.url;
+    } catch (err: any) {
+      toast({
+        title: "Erro no checkout",
+        description: err.message || "Não foi possível iniciar.",
+        variant: "destructive",
+      });
+      setLoading(null);
+    }
+  };
+
+  const startCheckout = async (plan: ConsultorioPlan) => {
     setLoading(plan);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -43,29 +71,16 @@ export default function ConsultorioLanding() {
         return;
       }
 
-      const trimmed = email.trim().toLowerCase();
-      if (!trimmed.includes("@")) {
-        toast({
-          title: "Email necessário",
-          description: "Digite seu email para iniciar a assinatura.",
-          variant: "destructive",
-        });
-        return;
-      }
-      // Guests can only buy standalone or bundle (upgrades require existing sub)
-      const guestPlan = plan === "consultorio_upgrade" || plan === "agents_upgrade" ? "consultorio_monthly" : plan;
-      const { data, error } = await supabase.functions.invoke("guest-checkout", {
-        body: { email: trimmed, plan: guestPlan },
-      });
-      if (error) throw error;
-      if (data?.url) window.location.href = data.url;
+      // Visitante: abre diálogo pedindo o email
+      setPendingPlan(plan);
+      setDialogOpen(true);
+      setLoading(null);
     } catch (err: any) {
       toast({
         title: "Erro no checkout",
         description: err.message || "Não foi possível iniciar.",
         variant: "destructive",
       });
-    } finally {
       setLoading(null);
     }
   };
@@ -158,7 +173,7 @@ export default function ConsultorioLanding() {
                 {
                   n: "02",
                   title: "Conversa naturalmente",
-                  desc: "Atenda como sempre. Transcrição aparece em tempo real, com VAD que respeita pausas.",
+                  desc: "Atenda como sempre. A transcrição aparece em tempo real e respeita as pausas naturais da conversa.",
                   icon: Brain,
                 },
                 {
@@ -348,23 +363,11 @@ export default function ConsultorioLanding() {
               </Card>
             </div>
 
-            {/* Email field for guests */}
+            {/* Email é solicitado em diálogo ao clicar em qualquer botão de assinatura */}
             {!hasAgents && !hasConsultorio && (
-              <div className="mt-8 max-w-md mx-auto">
-                <p className="text-xs text-center text-muted-foreground mb-2">
-                  Não tem conta? Digite seu email e crie a senha no checkout
-                </p>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    type="email"
-                    placeholder="seu@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="h-12 pl-10"
-                  />
-                </div>
-              </div>
+              <p className="mt-6 text-xs text-center text-muted-foreground">
+                Visitantes só precisam do email para começar — a senha é criada após o pagamento.
+              </p>
             )}
 
             {/* Garantia */}
@@ -419,6 +422,17 @@ export default function ConsultorioLanding() {
             <p>© {new Date().getFullYear()} MedStation. Produza mais. Digite menos.</p>
           </div>
         </footer>
+
+        <GuestEmailDialog
+          open={dialogOpen}
+          onOpenChange={(o) => { setDialogOpen(o); if (!o) setPendingPlan(null); }}
+          planLabel={pendingPlan ? PLAN_META[pendingPlan].label : ""}
+          priceLabel={pendingPlan ? PLAN_META[pendingPlan].price : ""}
+          loading={loading !== null}
+          onConfirm={(email) => {
+            if (pendingPlan) runGuestCheckout(pendingPlan, email);
+          }}
+        />
       </div>
     </div>
   );

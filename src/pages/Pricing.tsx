@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, Check, ShieldCheck, Mail, Loader2, Sparkles, Mic, Layers } from "lucide-react";
+import { ArrowRight, Check, ShieldCheck, Loader2, Sparkles, Mic, Layers } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useSubscription } from "@/contexts/SubscriptionContext";
+import { GuestEmailDialog } from "@/components/GuestEmailDialog";
 import type { PlanSlug } from "@/lib/subscription-tiers";
 
 const proAgents = [
@@ -29,7 +30,8 @@ export default function Pricing() {
   const [couponCode, setCouponCode] = useState("");
   const [couponApplied, setCouponApplied] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
-  const [email, setEmail] = useState("");
+  const [pendingPlan, setPendingPlan] = useState<PlanSlug | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { hasAgents, hasConsultorio, availableUpgrade, loading: subLoading } = useSubscription();
@@ -42,6 +44,21 @@ export default function Pricing() {
     }
     setCouponApplied(true);
     toast({ title: "Cupom aplicado!", description: `Código ${trimmedCode} será aplicado no checkout.` });
+  };
+
+  const runGuestCheckout = async (plan: PlanSlug, email: string) => {
+    setLoadingPlan(plan);
+    try {
+      const { data, error } = await supabase.functions.invoke("guest-checkout", {
+        body: { email, plan, couponCode: couponApplied ? couponCode.trim() : undefined },
+      });
+      if (error) throw error;
+      if (data?.url) window.location.href = data.url;
+    } catch (error: any) {
+      console.error("Checkout error:", error);
+      toast({ title: "Erro no checkout", description: error.message || "Não foi possível iniciar o checkout.", variant: "destructive" });
+      setLoadingPlan(null);
+    }
   };
 
   const startCheckout = async (plan: PlanSlug) => {
@@ -63,20 +80,13 @@ export default function Pricing() {
         navigate("/auth");
         return;
       }
-      const trimmedEmail = email.trim().toLowerCase();
-      if (!trimmedEmail || !trimmedEmail.includes("@")) {
-        toast({ title: "Email necessário", description: "Digite seu email para iniciar a assinatura.", variant: "destructive" });
-        return;
-      }
-      const { data, error } = await supabase.functions.invoke("guest-checkout", {
-        body: { email: trimmedEmail, plan, couponCode: couponApplied ? couponCode.trim() : undefined },
-      });
-      if (error) throw error;
-      if (data?.url) window.location.href = data.url;
+      // Visitante: abre diálogo pedindo o email
+      setPendingPlan(plan);
+      setDialogOpen(true);
+      setLoadingPlan(null);
     } catch (error: any) {
       console.error("Checkout error:", error);
       toast({ title: "Erro no checkout", description: error.message || "Não foi possível iniciar o checkout.", variant: "destructive" });
-    } finally {
       setLoadingPlan(null);
     }
   };
@@ -385,28 +395,25 @@ export default function Pricing() {
           </Card>
         </div>
 
-        {/* Guest email + coupon */}
+        {/* Visitor hint + cupom */}
         <Card className="mt-8 md:mt-10 p-5 md:p-6 border border-hairline bg-card/50 backdrop-blur-sm max-w-3xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 md:gap-6 items-end">
-            <div>
-              <label className="text-[0.65rem] uppercase tracking-[0.22em] font-mono text-muted-foreground">
-                Novo por aqui? Comece pelo email
-              </label>
-              <div className="relative mt-2">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="h-12 pl-10 text-base"
-                />
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex-1">
+              <div className="text-[0.65rem] uppercase tracking-[0.22em] font-mono text-muted-foreground">
+                Novo por aqui?
               </div>
-              <p className="text-[11px] text-muted-foreground mt-2">
-                Você criará a senha no checkout. Já tem conta? Faça login antes para destravar os preços de upgrade.
+              <p className="text-sm text-foreground mt-1">
+                Clique em <span className="font-medium">Assinar</span> no plano desejado — pediremos só o seu email para continuar. A senha você cria após o pagamento.
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-1.5">
+                Já tem conta?{" "}
+                <button type="button" onClick={() => navigate("/auth")} className="text-primary hover:underline">
+                  Faça login
+                </button>{" "}
+                antes para destravar os preços de upgrade.
               </p>
             </div>
-            <div className="md:pb-1">
+            <div className="md:pb-1 md:pl-6 md:border-l md:border-hairline">
               {!showCoupon ? (
                 <button
                   type="button"
@@ -466,6 +473,33 @@ export default function Pricing() {
           ))}
         </div>
       </div>
+
+      <GuestEmailDialog
+        open={dialogOpen}
+        onOpenChange={(o) => { setDialogOpen(o); if (!o) setPendingPlan(null); }}
+        planLabel={pendingPlan ? planLabelFor(pendingPlan) : ""}
+        priceLabel={pendingPlan ? planPriceFor(pendingPlan, billingPeriod) : ""}
+        loading={loadingPlan !== null}
+        onConfirm={(email) => { if (pendingPlan) runGuestCheckout(pendingPlan, email); }}
+      />
     </div>
   );
+}
+
+function planLabelFor(plan: PlanSlug): string {
+  if (plan.startsWith("agents")) return "MedStation AI Pro · 10 Assistentes";
+  if (plan.startsWith("pro2")) return "MedStation AI Pro 2 · Tudo incluso";
+  if (plan.startsWith("consultorio")) return "Modo Consultório";
+  return "Assinatura";
+}
+
+function planPriceFor(plan: PlanSlug, billing: "monthly" | "yearly"): string {
+  const yearly = billing === "yearly";
+  if (plan === "agents_monthly") return "R$ 29,90/mês";
+  if (plan === "agents_yearly") return "R$ 299,90/ano";
+  if (plan === "consultorio_monthly") return "R$ 29,90/mês";
+  if (plan === "consultorio_yearly") return "R$ 299,90/ano";
+  if (plan === "pro2_bundle") return "R$ 49,90/mês";
+  if (plan === "pro2_bundle_yearly") return "R$ 499,90/ano";
+  return yearly ? "Plano anual" : "Plano mensal";
 }
