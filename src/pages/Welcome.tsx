@@ -162,14 +162,16 @@ export default function Welcome() {
                 className="space-y-6"
               >
                 <div className="text-center">
-                  <CheckCircle2 className="w-12 h-12 mx-auto text-green-500 mb-4" />
-                  <h2 className="text-2xl font-bold">
-                    {userExists ? "Bem-vindo de volta!" : "Conta Criada!"}
+                  <div className="inline-flex w-12 h-12 rounded-full bg-primary/10 border border-primary/30 items-center justify-center mb-4">
+                    <Sparkles className="w-6 h-6 text-primary" strokeWidth={1.75} />
+                  </div>
+                  <h2 className="text-2xl font-semibold tracking-tight">
+                    {userExists ? "Bem-vindo de volta" : "Conta criada"}
                   </h2>
-                  <p className="text-muted-foreground mt-2">
+                  <p className="text-muted-foreground mt-2 text-sm">
                     {userExists 
                       ? "Faça login para acessar sua assinatura." 
-                      : "Entre com a senha que você criou no checkout."}
+                      : "Entre com a senha que você definiu no checkout."}
                   </p>
                 </div>
 
