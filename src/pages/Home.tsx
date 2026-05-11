@@ -158,6 +158,9 @@ export default function Home() {
               </p>
             </div>
 
+            {/* Hero video — 15s, IA + narração + música */}
+            <HeroVideo />
+
             {/* Demo Card — pulso sutil para chamar interação */}
             <div className="relative group">
               {/* Glow pulsante */}
