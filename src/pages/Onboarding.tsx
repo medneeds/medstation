@@ -348,23 +348,23 @@ export default function Onboarding() {
               {currentStep === 3 && (
                 <div className="text-center space-y-6">
                   <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                    initial={{ scale: 0.6, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 18 }}
                   >
                     <div className="relative inline-block">
-                      <div className="absolute inset-0 bg-green-500/30 rounded-full blur-xl animate-pulse"></div>
-                      <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-lg">
-                        <CheckCircle2 className="w-12 h-12 text-white" />
+                      <div className="absolute inset-0 bg-primary/25 rounded-full blur-2xl" />
+                      <div className="relative w-20 h-20 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center">
+                        <CheckCircle2 className="w-10 h-10 text-primary" strokeWidth={1.75} />
                       </div>
                     </div>
                   </motion.div>
                   
                   <div className="space-y-3">
-                    <h1 className="text-3xl font-bold text-green-600">
-                      Tudo pronto! 🎉
+                    <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                      Tudo pronto
                     </h1>
-                    <p className="text-muted-foreground text-lg">
+                    <p className="text-muted-foreground">
                       Sua conta está configurada e pronta para usar.
                     </p>
                   </div>
