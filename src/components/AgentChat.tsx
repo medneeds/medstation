@@ -1510,7 +1510,7 @@ export function AgentChat({
             className={`text-xs tabular-nums shrink-0 ${
               message.length >= 30000
                 ? "text-destructive font-medium"
-                : message.length >= 9000
+                : message.length >= 27000
                 ? "text-amber-600 dark:text-amber-400"
                 : "text-muted-foreground"
             }`}
