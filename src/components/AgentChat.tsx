@@ -1218,27 +1218,30 @@ export function AgentChat({
               <span>Anamnese</span>
             </Toggle>
             {directAHEMode && (
-              <div className="inline-flex items-center rounded-full border border-border bg-card/60 p-0.5 text-[10px]">
+              <div className="inline-flex flex-wrap items-center gap-0.5 rounded-full border border-border bg-card/60 p-0.5 text-[10px]">
                 <button
                   type="button"
                   onClick={() => setAheTemplate("v1")}
+                  title="Modelo 1: anamnese hospitalar padrão"
                   className={`px-2 h-6 rounded-full transition-colors ${aheTemplate === "v1" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
                 >
-                  Modelo 1
+                  M1 · Padrão
                 </button>
                 <button
                   type="button"
                   onClick={() => setAheTemplate("v2")}
+                  title="Modelo 2: admissão hospitalar para Medicina de Emergência"
                   className={`px-2 h-6 rounded-full transition-colors ${aheTemplate === "v2" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
                 >
-                  Modelo 2 · Emergência
+                  M2 · Emergência
                 </button>
                 <button
                   type="button"
                   onClick={() => setAheTemplate("v3")}
+                  title="Modelo 3: admissão de paciente crítico em UTI/urgência"
                   className={`px-2 h-6 rounded-full transition-colors ${aheTemplate === "v3" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
                 >
-                  Modelo 3 · Admissão UTI
+                  M3 · UTI
                 </button>
               </div>
             )}
