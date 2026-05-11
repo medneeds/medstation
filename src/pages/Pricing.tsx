@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { GuestEmailDialog } from "@/components/GuestEmailDialog";
 import type { PlanSlug } from "@/lib/subscription-tiers";
+import { TimeSavingsComparison } from "@/components/TimeSavingsComparison";
 
 const proAgents = [
   "Examinus", "Clínicus", "Scorius", "Numerus", "Prescriptus",
