@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSubscription } from "@/contexts/SubscriptionContext";
+import { QuickActionsHero } from "@/components/QuickActionsHero";
 
 interface Stats {
   totalPatients: number;
