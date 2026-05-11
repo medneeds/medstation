@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, FolderOpen, ChevronRight, Search, Upload, FileText, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { EmptyState } from "@/components/EmptyState";
 import { SearchDialog } from "@/components/SearchDialog";
 import { TagInput } from "@/components/TagInput";
 import { caseSchema } from "@/lib/validations";
