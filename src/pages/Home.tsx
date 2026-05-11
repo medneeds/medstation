@@ -10,6 +10,38 @@ import { InlineCheckout } from "@/components/QuickCheckout";
 import { Logo } from "@/components/Logo";
 import { AssistantShowcaseDialog } from "@/components/AssistantShowcaseDialog";
 import { assistantSlides } from "@/lib/assistantSlides";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+
+const faqs = [
+  {
+    q: "Os meus dados e dos meus pacientes ficam protegidos?",
+    a: "Sim. Toda a infraestrutura segue a LGPD, com criptografia em trânsito e em repouso. Nenhuma informação clínica é usada para treinar modelos e o acesso é restrito à sua conta autenticada.",
+  },
+  {
+    q: "Preciso instalar algo ou baixar aplicativo?",
+    a: "Não. A MedStation AI roda direto no navegador, no computador, tablet ou celular. Basta entrar com seu e-mail e começar a usar.",
+  },
+  {
+    q: "Como funciona o Modo Consultório?",
+    a: "Você grava a conversa com o paciente direto pelo navegador e a plataforma transcreve em tempo real, separando fala do médico e do paciente, e organiza tudo em uma anamnese estruturada pronta para revisar e copiar para o seu prontuário.",
+  },
+  {
+    q: "Posso testar antes de assinar?",
+    a: "Pode. O Examinus tem versão gratuita com restrições direto na página inicial, sem precisar criar conta. Os planos pagos ainda têm 7 dias de garantia incondicional: se não gostar, devolvemos 100% do valor.",
+  },
+  {
+    q: "Funciona para qualquer especialidade?",
+    a: "Sim. Os assistentes foram desenhados para o raciocínio clínico geral e atendem clínica médica, emergência, UTI, ambulatório e a maioria das especialidades. Você adapta o estilo de redação aos seus padrões.",
+  },
+  {
+    q: "Posso cancelar a assinatura quando quiser?",
+    a: "Sim, a qualquer momento, direto no portal de assinatura. Sem multa, sem fidelidade e sem ligação para o SAC.",
+  },
+  {
+    q: "Qual a diferença entre os planos?",
+    a: "O Pro 1 dá acesso ao ecossistema dos 10 assistentes para o trabalho clínico do dia a dia. O Pro 2 inclui o Modo Consultório com transcrição da consulta. Você ainda pode combinar com o Studius para estudo médico contínuo.",
+  },
+];
 
 // Definição centralizada dos agentes com descrições precisas
 const agents = [
