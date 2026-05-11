@@ -232,24 +232,19 @@ export default function Notes() {
         </div>
       ) : filteredNotes.length === 0 ? (
         <Card>
-          <CardContent className="py-12">
-            <div className="text-center">
-              <StickyNote className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <h3 className="text-lg font-semibold mb-2">
-                {searchQuery ? "Nenhuma nota encontrada" : "Nenhuma nota ainda"}
-              </h3>
-              <p className="text-muted-foreground mb-6">
-                {searchQuery
-                  ? "Tente ajustar sua busca"
-                  : "Crie sua primeira nota para começar"}
-              </p>
-              {!searchQuery && (
-                <Button onClick={createNewNote}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Criar Primeira Nota
-                </Button>
-              )}
-            </div>
+          <CardContent className="py-2">
+            <EmptyState
+              icon={StickyNote}
+              title={searchQuery ? "Nada por aqui com esse termo" : "Nenhuma nota ainda"}
+              description={
+                searchQuery
+                  ? "Tente outras palavras-chave."
+                  : "Crie sua primeira nota — anote uma ideia, lembrete ou rascunho clínico em segundos."
+              }
+              actionLabel={searchQuery ? undefined : "Criar primeira nota"}
+              actionIcon={searchQuery ? undefined : Plus}
+              onAction={searchQuery ? undefined : createNewNote}
+            />
           </CardContent>
         </Card>
       ) : (
