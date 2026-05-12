@@ -83,6 +83,12 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
   const [elapsedTime, setElapsedTime] = useState(0);
   const [audioLevel, setAudioLevel] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [currentSpeaker, setCurrentSpeakerState] = useState<SpeakerType>('doctor');
+  const currentSpeakerRef = useRef<SpeakerType>('doctor');
+  const setCurrentSpeaker = useCallback((s: SpeakerType) => {
+    currentSpeakerRef.current = s;
+    setCurrentSpeakerState(s);
+  }, []);
 
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -110,7 +116,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
         ...prev,
         {
           id: crypto.randomUUID(),
-          speaker: 'doctor',
+          speaker: currentSpeakerRef.current,
           text,
           timestamp: new Date(),
           confidence: 0.95,
@@ -430,7 +436,8 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     startTime,
     elapsedTime,
     formattedTime: formatElapsedTime(),
-    currentSpeaker: 'doctor' as SpeakerType,
+    currentSpeaker,
+    setCurrentSpeaker,
     audioLevel,
     error,
     scribeConnected: scribe.isConnected,
