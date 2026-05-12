@@ -1108,8 +1108,8 @@ export function AgentChat({
                 subtitle: "Pode falar livre — sintomas soltos, exame físico, áudio do plantão. Eu organizo, estruturo e devolvo a anamnese pronta para colar no prontuário.",
               },
               examinus: {
-                title: "Laboratório aberto. Pode mandar os exames.",
-                subtitle: "Cole, digite ou envie a foto. Em segundos eu separo o que está alterado, ignoro o ruído e entrego só o que muda a sua conduta.",
+                title: "Laboratório e imagem na mesa. Pode mandar.",
+                subtitle: "Cole resultados, envie PDF ou foto — laboratoriais ou laudos de imagem (TC, RM, USG, RX). Devolvo em segundos só o que está alterado e muda a sua conduta.",
               },
               prescriptus: {
                 title: "Receituário pronto. Qual o cenário?",
