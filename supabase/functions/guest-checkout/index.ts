@@ -68,13 +68,21 @@ serve(async (req) => {
       mode: "subscription",
       success_url: `${origin}/welcome?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?canceled=true`,
+      // Senha agora é OPCIONAL: Apple Pay / Google Pay / Link não preenchem
+      // custom_fields. Se o usuário pagar via wallet, criamos a conta sem
+      // senha e oferecemos definir depois pelo fluxo de recuperação.
       custom_fields: [
         {
           key: "password",
-          label: { type: "custom", custom: "Crie sua senha de acesso" },
+          label: { type: "custom", custom: "Crie sua senha (opcional — pode definir depois)" },
           type: "text",
+          optional: true,
         },
       ],
+      // Maximiza disponibilidade de wallets (Apple Pay, Google Pay, Link).
+      payment_method_collection: "always",
+      phone_number_collection: { enabled: false },
+      billing_address_collection: "auto",
       allow_promotion_codes: !couponCode,
       metadata: { plan, billingPeriod },
     };
