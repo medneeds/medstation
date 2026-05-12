@@ -83,6 +83,12 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
   const [elapsedTime, setElapsedTime] = useState(0);
   const [audioLevel, setAudioLevel] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [currentSpeaker, setCurrentSpeakerState] = useState<SpeakerType>('doctor');
+  const currentSpeakerRef = useRef<SpeakerType>('doctor');
+  const setCurrentSpeaker = useCallback((s: SpeakerType) => {
+    currentSpeakerRef.current = s;
+    setCurrentSpeakerState(s);
+  }, []);
 
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
