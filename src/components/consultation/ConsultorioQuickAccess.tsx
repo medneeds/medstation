@@ -22,33 +22,6 @@ type RecentCase = {
   patient_name: string | null;
 };
 
-const QUICK_LINKS = [
-  {
-    key: "patients",
-    label: "Pacientes",
-    description: "Cadastrar e gerenciar a sua base de pacientes.",
-    href: "/patients",
-    Icon: UsersRound,
-    accent: "text-emerald-500",
-  },
-  {
-    key: "cases",
-    label: "Casos clínicos",
-    description: "Acompanhe casos abertos e adicione anotações.",
-    href: "/cases",
-    Icon: FolderOpen,
-    accent: "text-sky-500",
-  },
-  {
-    key: "prescriptions",
-    label: "Prescrições",
-    description: "Banco pessoal de prescrições com paciente vinculado.",
-    href: "/prescricoes",
-    Icon: Pill,
-    accent: "text-amber-500",
-  },
-] as const;
-
 function openInNewTab(href: string) {
   window.open(href, "_blank", "noopener,noreferrer");
 }
