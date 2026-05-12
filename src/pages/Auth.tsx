@@ -404,6 +404,11 @@ export default function Auth() {
                         <Input
                           id="signup-email"
                           type="email"
+                          inputMode="email"
+                          autoComplete="email"
+                          autoCapitalize="none"
+                          autoCorrect="off"
+                          spellCheck={false}
                           placeholder="seu@email.com"
                           value={signUpEmail}
                           onChange={(e) => setSignUpEmail(e.target.value)}
@@ -411,13 +416,14 @@ export default function Auth() {
                           required
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                         <div className="space-y-1.5">
                           <Label htmlFor="signup-password" className="text-xs uppercase tracking-wider text-muted-foreground">Senha *</Label>
                           <Input
                             id="signup-password"
                             type="password"
-                            placeholder="••••••••"
+                            autoComplete="new-password"
+                            placeholder="Mínimo 8 caracteres"
                             value={signUpPassword}
                             onChange={(e) => setSignUpPassword(e.target.value)}
                             className="h-12 rounded-xl border-hairline bg-transparent text-base"
@@ -430,7 +436,8 @@ export default function Auth() {
                           <Input
                             id="signup-confirm"
                             type="password"
-                            placeholder="••••••••"
+                            autoComplete="new-password"
+                            placeholder="Repita a senha"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             className="h-12 rounded-xl border-hairline bg-transparent text-base"
