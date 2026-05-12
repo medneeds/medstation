@@ -1,9 +1,9 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { SearchDialog } from "@/components/SearchDialog";
 import NotificationBell from "@/components/NotificationBell";
 import { HeaderUserMenu } from "@/components/HeaderUserMenu";
 import { HeaderThemeToggle } from "@/components/HeaderThemeToggle";
@@ -42,6 +42,18 @@ function getCrumb(pathname: string) {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { pathname } = useLocation();
   const crumb = getCrumb(pathname);
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen((o) => !o);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   return (
     <>
@@ -67,17 +79,21 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   </span>
                 </div>
 
-                {/* Search */}
-                <div className="relative hidden lg:block ml-auto w-full max-w-xs">
-                  <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/60" />
-                  <Input
-                    placeholder="Buscar..."
-                    className="h-8 pl-8 pr-12 text-sm bg-transparent"
-                  />
-                  <kbd className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-2xs text-muted-foreground/60 border border-hairline rounded-sm px-1.5 py-0.5 leading-none">
+                {/* Search trigger — opens command palette */}
+                <button
+                  type="button"
+                  onClick={() => setSearchOpen(true)}
+                  aria-label="Buscar"
+                  className="ml-auto flex items-center gap-2 h-8 rounded-sm border border-hairline bg-transparent text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors px-2 md:px-3 md:w-full md:max-w-xs"
+                >
+                  <Search className="h-3.5 w-3.5 shrink-0" />
+                  <span className="hidden md:inline text-sm flex-1 text-left truncate">
+                    Buscar pacientes, casos, assistentes...
+                  </span>
+                  <kbd className="hidden md:inline font-mono text-2xs border border-hairline rounded-sm px-1.5 py-0.5 leading-none">
                     ⌘K
                   </kbd>
-                </div>
+                </button>
               </div>
 
               <div className="flex items-center gap-2 md:gap-3 hairline-l pl-2 md:pl-4 ml-2 md:ml-4">
@@ -94,6 +110,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </div>
       </SidebarProvider>
+      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
       <SupportChat />
       <OnboardingTour />
     </>
