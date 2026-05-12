@@ -37,6 +37,15 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
   const isMobile = useIsMobile();
   const [showFinishDialog, setShowFinishDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("transcription");
+  const [unifiedMode, setUnifiedMode] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('consultorio-unified-mode') === '1';
+  });
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('consultorio-unified-mode', unifiedMode ? '1' : '0');
+    }
+  }, [unifiedMode]);
 
   const {
     segments,
