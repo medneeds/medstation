@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Plus, UsersRound, FolderOpen, Pill, X, History, Loader2, ExternalLink } from "lucide-react";
+import { motion } from "framer-motion";
+import { UsersRound, FolderOpen, Pill, History, Loader2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -21,33 +21,6 @@ type RecentCase = {
   updated_at: string;
   patient_name: string | null;
 };
-
-const QUICK_LINKS = [
-  {
-    key: "patients",
-    label: "Pacientes",
-    description: "Cadastrar e gerenciar a sua base de pacientes.",
-    href: "/patients",
-    Icon: UsersRound,
-    accent: "text-emerald-500",
-  },
-  {
-    key: "cases",
-    label: "Casos clínicos",
-    description: "Acompanhe casos abertos e adicione anotações.",
-    href: "/cases",
-    Icon: FolderOpen,
-    accent: "text-sky-500",
-  },
-  {
-    key: "prescriptions",
-    label: "Prescrições",
-    description: "Banco pessoal de prescrições com paciente vinculado.",
-    href: "/prescricoes",
-    Icon: Pill,
-    accent: "text-amber-500",
-  },
-] as const;
 
 function openInNewTab(href: string) {
   window.open(href, "_blank", "noopener,noreferrer");
@@ -185,10 +158,19 @@ export function ConsultorioHistoryButton() {
   );
 }
 
+type EmbedTab = "patients" | "cases" | "prescriptions";
+
+const EMBED_TABS: { key: EmbedTab; label: string; href: string; Icon: typeof UsersRound; accent: string }[] = [
+  { key: "patients", label: "Pacientes", href: "/patients?embed=1", Icon: UsersRound, accent: "text-emerald-500" },
+  { key: "cases", label: "Casos", href: "/cases?embed=1", Icon: FolderOpen, accent: "text-sky-500" },
+  { key: "prescriptions", label: "Prescrições", href: "/prescricoes?embed=1", Icon: Pill, accent: "text-amber-500" },
+];
+
 export function ConsultorioQuickAccessFAB() {
   const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState<EmbedTab>("patients");
+  const [loadedTabs, setLoadedTabs] = useState<Set<EmbedTab>>(new Set(["patients"]));
 
-  // ESC fecha
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
@@ -197,79 +179,99 @@ export function ConsultorioQuickAccessFAB() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  return (
-    <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-40">
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: 8, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.96 }}
-            transition={{ duration: 0.18, ease: "easeOut" }}
-            className="absolute bottom-14 right-0 w-72 rounded-xl border border-border/60 bg-card/95 backdrop-blur-md shadow-xl p-2"
-          >
-            <div className="px-3 pt-2 pb-1">
-              <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
-                Prontuário
-              </p>
-            </div>
-            <ul className="space-y-0.5">
-              {QUICK_LINKS.map(({ key, label, description, href, Icon, accent }) => (
-                <li key={key}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      openInNewTab(href);
-                      setOpen(false);
-                    }}
-                    className="w-full text-left flex items-start gap-3 p-3 rounded-lg hover:bg-muted/60 transition-colors"
-                  >
-                    <span
-                      className={cn(
-                        "shrink-0 inline-flex items-center justify-center h-8 w-8 rounded-md bg-muted/60",
-                        accent
-                      )}
-                    >
-                      <Icon className="h-4 w-4" />
-                    </span>
-                    <span className="flex-1 min-w-0">
-                      <span className="block text-sm font-medium leading-tight flex items-center gap-1.5">
-                        {label}
-                        <ExternalLink className="h-3 w-3 text-muted-foreground/60" />
-                      </span>
-                      <span className="block text-[11px] text-muted-foreground mt-0.5 leading-snug">
-                        {description}
-                      </span>
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-        )}
-      </AnimatePresence>
+  const switchTab = (next: EmbedTab) => {
+    setTab(next);
+    setLoadedTabs((prev) => {
+      if (prev.has(next)) return prev;
+      const updated = new Set(prev);
+      updated.add(next);
+      return updated;
+    });
+  };
 
+  const activeMeta = EMBED_TABS.find((t) => t.key === tab)!;
+  const ActiveIcon = activeMeta.Icon;
+
+  return (
+    <>
       <motion.button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen(true)}
         whileTap={{ scale: 0.94 }}
-        aria-expanded={open}
-        aria-label="Abrir acesso rápido ao prontuário"
+        aria-label="Abrir prontuário (Pacientes, Casos, Prescrições)"
+        title="Prontuário · Pacientes, Casos, Prescrições"
         className={cn(
-          "relative inline-flex items-center justify-center h-12 w-12 md:h-14 md:w-14 rounded-full",
+          "fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50",
+          "inline-flex items-center justify-center h-12 w-12 md:h-14 md:w-14 rounded-full",
           "bg-gradient-to-b from-primary to-primary/85 text-primary-foreground",
           "shadow-[0_10px_30px_-8px_hsl(var(--primary)/0.55)] ring-1 ring-primary/30",
           "hover:shadow-[0_14px_36px_-10px_hsl(var(--primary)/0.7)] transition-shadow"
         )}
       >
-        <motion.span
-          animate={{ rotate: open ? 45 : 0 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
-          className="inline-flex"
-        >
-          {open ? <X className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
-        </motion.span>
+        <FolderOpen className="h-5 w-5 md:h-6 md:w-6" />
       </motion.button>
-    </div>
+
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl p-0 flex flex-col"
+        >
+          <SheetHeader className="px-4 md:px-6 pt-5 pb-3 border-b border-border/60">
+            <SheetTitle className="flex items-center gap-2">
+              <ActiveIcon className={cn("h-4 w-4", activeMeta.accent)} />
+              Prontuário · {activeMeta.label}
+            </SheetTitle>
+            <SheetDescription>
+              Cadastre pacientes, casos e prescrições sem sair da consulta.
+            </SheetDescription>
+
+            <div className="mt-3 flex items-center gap-1 p-1 rounded-lg bg-muted/50 ring-1 ring-border/60 w-fit">
+              {EMBED_TABS.map(({ key, label, Icon, accent }) => {
+                const active = tab === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => switchTab(key)}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                      active
+                        ? "bg-background shadow-sm text-foreground ring-1 ring-border/60"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Icon className={cn("h-3.5 w-3.5", active && accent)} />
+                    {label}
+                  </button>
+                );
+              })}
+              <a
+                href={activeMeta.href.replace("?embed=1", "")}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Abrir em página inteira"
+                className="ml-1 inline-flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            </div>
+          </SheetHeader>
+
+          <div className="flex-1 relative bg-background">
+            {EMBED_TABS.map(({ key, href, label }) => (
+              <iframe
+                key={key}
+                title={label}
+                src={loadedTabs.has(key) ? href : undefined}
+                className={cn(
+                  "absolute inset-0 w-full h-full border-0 bg-background",
+                  tab === key ? "block" : "hidden"
+                )}
+              />
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }

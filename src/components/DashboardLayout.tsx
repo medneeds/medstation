@@ -42,9 +42,20 @@ function getCrumb(pathname: string) {
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const crumb = getCrumb(pathname);
   const [searchOpen, setSearchOpen] = useState(false);
+  const isEmbed =
+    typeof window !== "undefined" &&
+    new URLSearchParams(search || window.location.search).get("embed") === "1";
+
+  if (isEmbed) {
+    return (
+      <main className="min-h-screen w-full bg-background overflow-x-hidden p-3 md:p-4">
+        {children}
+      </main>
+    );
+  }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
