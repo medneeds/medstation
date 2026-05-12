@@ -808,7 +808,11 @@ export function AgentChat({
 
   return (
     <div 
-      className="flex flex-col h-full p-3 md:p-6"
+      className={
+        focusMode
+          ? "fixed inset-0 z-[60] bg-background flex flex-col p-4 md:p-8 overflow-hidden animate-fade-in"
+          : "flex flex-col h-full p-3 md:p-6"
+      }
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
