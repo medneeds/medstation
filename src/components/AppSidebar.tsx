@@ -179,6 +179,32 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        {/* Prontuário */}
+        <SidebarGroup className="py-3 hairline-t">
+          {!collapsed && (
+            <SidebarGroupLabel className="label-mono px-4 mb-2 h-auto flex items-center justify-between">
+              <span>Prontuário</span>
+              <span className="font-mono text-2xs text-muted-foreground/60">
+                {recordsModules.length.toString().padStart(2, "0")}
+              </span>
+            </SidebarGroupLabel>
+          )}
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-1.5">
+              {recordsModules.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild tooltip={item.title} className="p-0 h-auto bg-transparent hover:bg-transparent">
+                    <NavLink to={item.url} className={navItemClass}>
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      {!collapsed && <span className="flex-1">{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
         {/* Settings + actions */}
         <SidebarGroup className="mt-auto py-3 hairline-t">
           {!collapsed && (
