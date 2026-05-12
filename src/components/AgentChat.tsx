@@ -337,28 +337,18 @@ export function AgentChat({
     }
     setValidationAnnouncement("");
 
-    // Grab session synchronously from local storage — no network round-trip
-    const { data: { session } } = await supabase.auth.getSession();
-    const user = session?.user;
-    if (!user) {
-      toast({
-        title: "Sessão expirada",
-        description: "Faça login novamente para continuar a conversa.",
-        variant: "destructive",
-      });
-      navigate("/auth");
-      return;
-    }
-
     const messageContent = message;
     const baseConversation = currentConversation;
 
-    // OPTIMISTIC UI: clear input + show user bubble + "Pensando..." instantly
+    // OPTIMISTIC UI: clear input + show user bubble + thinking instantly
+    // (BEFORE any await — so the first paint happens in the same frame as the click)
+    const optimisticUserId = `optimistic-user-${Date.now()}`;
     const optimisticUserMessage: Message = {
-      id: `optimistic-user-${Date.now()}`,
+      id: optimisticUserId,
       role: "user",
       content: messageContent,
       created_at: new Date().toISOString(),
+      pending: true,
     };
     const thinkingMessage: Message = {
       id: "streaming-temp",
@@ -367,17 +357,44 @@ export function AgentChat({
       created_at: new Date().toISOString(),
     };
 
-    // Batch UI updates so React paints in a single frame
+    // Temporary local conversation shell so the bubble renders even before
+    // the real conversation row is created in the backend.
+    const optimisticConversation: Conversation = baseConversation
+      ? {
+          ...baseConversation,
+          messages: [...baseConversation.messages, optimisticUserMessage, thinkingMessage],
+        }
+      : {
+          id: `optimistic-conv-${Date.now()}`,
+          name: `Conversa ${conversations.length + 1}`,
+          last_message: messageContent,
+          updated_at: new Date().toISOString(),
+          agent_type: agentType,
+          case_id: selectedCaseId || null,
+          messages: [optimisticUserMessage, thinkingMessage],
+        };
+
     flushSync(() => {
       setMessage("");
       setIsLoading(true);
-      if (baseConversation) {
-        setCurrentConversation({
-          ...baseConversation,
-          messages: [...baseConversation.messages, optimisticUserMessage, thinkingMessage],
-        });
-      }
+      setCurrentConversation(optimisticConversation);
     });
+
+    // Now do the async work (session check, persistence, AI call) — UI is already painted.
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
+    if (!user) {
+      // rollback optimistic UI
+      setCurrentConversation(baseConversation);
+      setIsLoading(false);
+      toast({
+        title: "Sessão expirada",
+        description: "Faça login novamente para continuar a conversa.",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
 
     let conversation = baseConversation;
 
@@ -399,10 +416,10 @@ export function AgentChat({
 
         conversation = { ...data, messages: [] };
         setConversations((prev) => [conversation!, ...prev]);
-        setCurrentConversation({
-          ...conversation,
-          messages: [optimisticUserMessage, thinkingMessage],
-        });
+        setCurrentConversation((prev) => ({
+          ...conversation!,
+          messages: prev?.messages ?? [optimisticUserMessage, thinkingMessage],
+        }));
       }
 
       // Persist user message in background; do NOT block UI
@@ -416,18 +433,19 @@ export function AgentChat({
         .select()
         .single();
 
-      // Reconcile optimistic ID once persisted (non-blocking)
+      // Reconcile optimistic ID once persisted (non-blocking) and clear pending state
       userInsertPromise.then(({ data: userMsgData, error: userError }) => {
-        if (userError || !userMsgData) return;
         setCurrentConversation((prev) => {
           if (!prev) return prev;
           return {
             ...prev,
-            messages: prev.messages.map((m) =>
-              m.id === optimisticUserMessage.id
-                ? { ...userMsgData, role: userMsgData.role as "user" | "assistant" }
-                : m
-            ),
+            messages: prev.messages.map((m) => {
+              if (m.id !== optimisticUserId) return m;
+              if (userError || !userMsgData) {
+                return { ...m, pending: false };
+              }
+              return { ...userMsgData, role: userMsgData.role as "user" | "assistant", pending: false };
+            }),
           };
         });
       });
