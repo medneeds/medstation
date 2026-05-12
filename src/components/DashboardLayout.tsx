@@ -110,6 +110,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </div>
       </SidebarProvider>
+      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
       <SupportChat />
       <OnboardingTour />
     </>
