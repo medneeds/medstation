@@ -42,7 +42,7 @@ export default function Indicar() {
     })();
   }, [toast]);
 
-  const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const baseUrl = "https://medstation-ai.com.br";
   const shareLink = code ? `${baseUrl}/r/${code}` : "";
 
   const stats = {
