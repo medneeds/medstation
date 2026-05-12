@@ -13,6 +13,7 @@ interface TranscriptionPaneProps {
   isRecording?: boolean;
   onChangeSpeaker: (segmentId: string, newSpeaker: SpeakerType) => void;
   onDeleteSegment: (segmentId: string) => void;
+  unifiedMode?: boolean;
 }
 
 // Typing animation component for new text
