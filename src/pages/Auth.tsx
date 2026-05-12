@@ -205,15 +205,19 @@ export default function Auth() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-          className="flex items-center justify-center p-5 sm:p-10 lg:p-16"
+          className="flex items-start lg:items-center justify-center px-5 pt-8 pb-10 sm:p-10 lg:p-16"
+          style={{ paddingBottom: "max(2.5rem, env(safe-area-inset-bottom))" }}
         >
-          <div className="w-full max-w-md space-y-8">
-            <div className="lg:hidden flex justify-center">
+          <div className="w-full max-w-md space-y-6 lg:space-y-8">
+            <div className="lg:hidden flex flex-col items-center gap-3 text-center">
               <Logo size="md" />
+              <p className="text-[0.65rem] uppercase tracking-[0.22em] text-muted-foreground">
+                Produza mais. <span className="text-primary">Digite menos.</span>
+              </p>
             </div>
 
-            <div className="space-y-2">
-              <h2 className="font-display text-3xl tracking-tight text-foreground">
+            <div className="space-y-1.5 lg:space-y-2 text-center lg:text-left">
+              <h2 className="font-display text-2xl lg:text-3xl tracking-tight text-foreground">
                 Bem-vindo
               </h2>
               <p className="text-sm text-muted-foreground">
@@ -222,7 +226,7 @@ export default function Auth() {
             </div>
 
             <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 rounded-full">
+              <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 rounded-full h-11">
                 <TabsTrigger value="signin" className="rounded-full data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
                   Entrar
                 </TabsTrigger>
@@ -237,7 +241,7 @@ export default function Auth() {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
-                    className="mt-8 space-y-5"
+                    className="mt-6 lg:mt-8 space-y-4 lg:space-y-5"
                   >
                     <GoogleAuthButton label="Continuar com Google" />
 
@@ -247,6 +251,11 @@ export default function Auth() {
                         <Input
                           id="signin-email"
                           type="email"
+                          inputMode="email"
+                          autoComplete="email"
+                          autoCapitalize="none"
+                          autoCorrect="off"
+                          spellCheck={false}
                           placeholder="seu@email.com"
                           value={signInEmail}
                           onChange={(e) => setSignInEmail(e.target.value)}
@@ -289,6 +298,7 @@ export default function Auth() {
                         <Input
                           id="signin-password"
                           type="password"
+                          autoComplete="current-password"
                           placeholder="••••••••"
                           value={signInPassword}
                           onChange={(e) => setSignInPassword(e.target.value)}
@@ -312,7 +322,7 @@ export default function Auth() {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
-                    className="mt-8 space-y-5"
+                    className="mt-6 lg:mt-8 space-y-4 lg:space-y-5"
                   >
                     <GoogleAuthButton label="Cadastrar com Google" />
 
@@ -322,6 +332,8 @@ export default function Auth() {
                         <Input
                           id="signup-name"
                           type="text"
+                          autoComplete="name"
+                          autoCapitalize="words"
                           placeholder="Dr. João Silva"
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
@@ -330,7 +342,7 @@ export default function Auth() {
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
                         <div className="space-y-1.5">
                           <Label className="text-xs uppercase tracking-wider text-muted-foreground">Sexo</Label>
                           <Select value={gender} onValueChange={(v: "M" | "F" | "Outro") => setGender(v)}>
@@ -349,6 +361,7 @@ export default function Auth() {
                           <Input
                             id="signup-crm"
                             type="text"
+                            inputMode="numeric"
                             placeholder="123456"
                             value={crm}
                             onChange={(e) => setCrm(e.target.value)}
@@ -357,7 +370,7 @@ export default function Auth() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
                         <div className="space-y-1.5">
                           <Label className="text-xs uppercase tracking-wider text-muted-foreground">UF</Label>
                           <Select value={crmState} onValueChange={setCrmState}>
@@ -391,6 +404,11 @@ export default function Auth() {
                         <Input
                           id="signup-email"
                           type="email"
+                          inputMode="email"
+                          autoComplete="email"
+                          autoCapitalize="none"
+                          autoCorrect="off"
+                          spellCheck={false}
                           placeholder="seu@email.com"
                           value={signUpEmail}
                           onChange={(e) => setSignUpEmail(e.target.value)}
@@ -398,13 +416,14 @@ export default function Auth() {
                           required
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                         <div className="space-y-1.5">
                           <Label htmlFor="signup-password" className="text-xs uppercase tracking-wider text-muted-foreground">Senha *</Label>
                           <Input
                             id="signup-password"
                             type="password"
-                            placeholder="••••••••"
+                            autoComplete="new-password"
+                            placeholder="Mínimo 8 caracteres"
                             value={signUpPassword}
                             onChange={(e) => setSignUpPassword(e.target.value)}
                             className="h-12 rounded-xl border-hairline bg-transparent text-base"
@@ -417,7 +436,8 @@ export default function Auth() {
                           <Input
                             id="signup-confirm"
                             type="password"
-                            placeholder="••••••••"
+                            autoComplete="new-password"
+                            placeholder="Repita a senha"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             className="h-12 rounded-xl border-hairline bg-transparent text-base"
