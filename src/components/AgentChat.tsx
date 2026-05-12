@@ -30,7 +30,9 @@ import {
   Pill,
   ListChecks,
   Zap,
-  Minimize2
+  Minimize2,
+  Maximize2,
+  ChevronDown
 } from "lucide-react";
 import {
   Sheet,
