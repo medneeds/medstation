@@ -1631,8 +1631,8 @@ export function AgentChat({
 
       {/* Reading dialog: per-message expanded view */}
       <Dialog open={!!readingMessage} onOpenChange={(o) => !o && setReadingMessage(null)}>
-        <DialogContent className="max-w-3xl w-[95vw] max-h-[90vh] flex flex-col">
-          <DialogHeader>
+        <DialogContent className="max-w-[min(1200px,96vw)] w-[96vw] h-[92vh] sm:h-[92vh] flex flex-col p-4 md:p-6 gap-3">
+          <DialogHeader className="shrink-0">
             <DialogTitle className="flex items-center gap-2">
               <BookOpen className="h-4 w-4 text-primary" />
               Leitura ampliada
@@ -1640,11 +1640,11 @@ export function AgentChat({
           </DialogHeader>
           {readingMessage && (
             <>
-              <ScrollArea className="flex-1 pr-2">
-                <p className="text-base md:text-lg leading-relaxed whitespace-pre-wrap">
+              <div className="flex-1 min-h-0 overflow-y-auto pr-2 rounded-lg bg-muted/30 p-4 md:p-6">
+                <p className="text-base md:text-xl leading-[1.7] whitespace-pre-wrap max-w-[80ch] mx-auto">
                   {agentType === "clinicus" ? readingMessage.content.replace(/\*\*/g, "") : readingMessage.content}
                 </p>
-              </ScrollArea>
+              </div>
               <div className="flex justify-end gap-2 pt-2 border-t">
                 <Button
                   variant="outline"
