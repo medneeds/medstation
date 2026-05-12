@@ -345,6 +345,35 @@ VERSÃO DEMO: Esta é versão gratuita limitada. Crie conta para acesso completo
     // Call Lovable AI API
     console.log("Calling Lovable AI with messages:", messages.length);
     
+    // SHIELD: bloqueia tentativa de extração na entrada do usuário
+    const lastUserText = (() => {
+      const last = [...userMessages].reverse().find((m: any) => m?.role === "user");
+      if (!last) return "";
+      if (typeof last.content === "string") return last.content;
+      if (Array.isArray(last.content)) return last.content.map((p: any) => p?.text || "").join(" ");
+      return "";
+    })();
+    const extractionMatch = findExtractionMatch(lastUserText);
+    if (extractionMatch) {
+      console.warn("[shield] public-examinus extraction attempt blocked");
+      try {
+        await supabase.from("security_events").insert({
+          function_name: "public-examinus",
+          event_type: "prompt_extraction_attempt",
+          ip_address: clientIp,
+          fingerprint: fingerprint || null,
+          pattern_matched: extractionMatch,
+          excerpt: lastUserText.slice(0, 200),
+        });
+      } catch (e) {
+        console.error("[security_events] failed to log", e);
+      }
+      return new Response(JSON.stringify({ response: SHIELD_REFUSAL_TEXT }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
