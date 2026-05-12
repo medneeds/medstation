@@ -299,16 +299,27 @@ export default function Auth() {
                             </AlertDialogContent>
                           </AlertDialog>
                         </div>
-                        <Input
-                          id="signin-password"
-                          type="password"
-                          autoComplete="current-password"
-                          placeholder="••••••••"
-                          value={signInPassword}
-                          onChange={(e) => setSignInPassword(e.target.value)}
-                          className="h-12 rounded-xl border-hairline bg-transparent text-base focus-visible:ring-1 focus-visible:ring-primary transition-all"
-                          required
-                        />
+                        <div className="relative">
+                          <Input
+                            id="signin-password"
+                            type={showSignInPassword ? "text" : "password"}
+                            autoComplete="current-password"
+                            placeholder="••••••••"
+                            value={signInPassword}
+                            onChange={(e) => setSignInPassword(e.target.value)}
+                            className="h-12 pr-12 rounded-xl border-hairline bg-transparent text-base focus-visible:ring-1 focus-visible:ring-primary transition-all"
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowSignInPassword((v) => !v)}
+                            aria-label={showSignInPassword ? "Ocultar senha" : "Mostrar senha"}
+                            aria-pressed={showSignInPassword}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 inline-flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                          >
+                            {showSignInPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
                       </div>
                       <Button
                         type="submit"
