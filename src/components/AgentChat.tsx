@@ -347,67 +347,89 @@ export function AgentChat({
       return;
     }
 
-    let conversation = currentConversation;
-    
-    // Create new conversation if none exists
-    if (!conversation) {
-      const { data, error } = await supabase
-        .from("conversations")
-        .insert({
-          user_id: user.id,
-          agent_type: agentType,
-          name: `Conversa ${conversations.length + 1}`,
-          case_id: selectedCaseId || null
-        })
-        .select()
-        .single();
-
-      if (error) {
-        toast({
-          title: "Erro",
-          description: "Não foi possível criar a conversa.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      conversation = { ...data, messages: [] };
-      setConversations([conversation, ...conversations]);
-      setCurrentConversation(conversation);
-    }
-
     const messageContent = message;
+    const baseConversation = currentConversation;
+
+    // OPTIMISTIC UI: clear input + show user bubble + "Pensando..." instantly
+    const optimisticUserMessage: Message = {
+      id: `optimistic-user-${Date.now()}`,
+      role: "user",
+      content: messageContent,
+      created_at: new Date().toISOString(),
+    };
+    const thinkingMessage: Message = {
+      id: "streaming-temp",
+      role: "assistant",
+      content: "Pensando...",
+      created_at: new Date().toISOString(),
+    };
+
     setMessage("");
     setIsLoading(true);
 
+    // If we already have a conversation, paint immediately
+    if (baseConversation) {
+      setCurrentConversation({
+        ...baseConversation,
+        messages: [...baseConversation.messages, optimisticUserMessage, thinkingMessage],
+      });
+    }
+
+    let conversation = baseConversation;
+
     try {
-      // Save user message
-      const { data: userMsgData, error: userError } = await supabase
+      // Create conversation if it doesn't exist (background)
+      if (!conversation) {
+        const { data, error } = await supabase
+          .from("conversations")
+          .insert({
+            user_id: user.id,
+            agent_type: agentType,
+            name: `Conversa ${conversations.length + 1}`,
+            case_id: selectedCaseId || null,
+          })
+          .select()
+          .single();
+
+        if (error) throw new Error("Não foi possível criar a conversa.");
+
+        conversation = { ...data, messages: [] };
+        setConversations((prev) => [conversation!, ...prev]);
+        setCurrentConversation({
+          ...conversation,
+          messages: [optimisticUserMessage, thinkingMessage],
+        });
+      }
+
+      // Persist user message in background; do NOT block UI
+      const userInsertPromise = supabase
         .from("messages")
         .insert({
           conversation_id: conversation.id,
           role: "user",
-          content: messageContent
+          content: messageContent,
         })
         .select()
         .single();
 
-      if (userError) throw userError;
+      // Reconcile optimistic ID once persisted (non-blocking)
+      userInsertPromise.then(({ data: userMsgData, error: userError }) => {
+        if (userError || !userMsgData) return;
+        setCurrentConversation((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            messages: prev.messages.map((m) =>
+              m.id === optimisticUserMessage.id
+                ? { ...userMsgData, role: userMsgData.role as "user" | "assistant" }
+                : m
+            ),
+          };
+        });
+      });
 
-      const userMessage: Message = {
-        ...userMsgData,
-        role: userMsgData.role as "user" | "assistant"
-      };
+      const userMessage: Message = optimisticUserMessage;
 
-      // Add user message and "Pensando..." message
-      const thinkingMessage: Message = {
-        id: "streaming-temp",
-        role: "assistant",
-        content: "Pensando...",
-        created_at: new Date().toISOString()
-      };
-      const updatedMessages = [...conversation.messages, userMessage, thinkingMessage];
-      setCurrentConversation({ ...conversation, messages: updatedMessages });
 
       // Call AI agent with streaming
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/agent-chat`, {
