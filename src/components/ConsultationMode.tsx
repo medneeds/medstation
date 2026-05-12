@@ -80,7 +80,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
 
   // Keyboard shortcuts: 1=Médico, 2=Paciente, 3=Acompanhante (durante gravação)
   useEffect(() => {
-    if (!isRecording || isPaused) return;
+    if (!isRecording || isPaused || unifiedMode) return;
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
