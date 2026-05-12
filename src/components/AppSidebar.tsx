@@ -176,14 +176,11 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Prontuário */}
+        {/* Notas */}
         <SidebarGroup className="py-3 hairline-t">
           {!collapsed && (
-            <SidebarGroupLabel className="label-mono px-4 mb-2 h-auto flex items-center justify-between">
-              <span>Prontuário</span>
-              <span className="font-mono text-2xs text-muted-foreground/60">
-                {recordsModules.length.toString().padStart(2, "0")}
-              </span>
+            <SidebarGroupLabel className="label-mono px-4 mb-2 h-auto">
+              <span>Notas</span>
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
