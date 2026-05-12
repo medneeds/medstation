@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { User, LogOut, CreditCard, Settings as SettingsIcon } from "lucide-react";
+import { User, LogOut, CreditCard, Settings as SettingsIcon, Gift } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
