@@ -14,12 +14,14 @@ export default function Welcome() {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   
-  const [status, setStatus] = useState<"processing" | "success" | "login" | "error">("processing");
+  const [status, setStatus] = useState<"processing" | "success" | "login" | "set-password" | "error">("processing");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [userExists, setUserExists] = useState(false);
   const [message, setMessage] = useState("");
+  const [passwordWasSkipped, setPasswordWasSkipped] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   const sessionId = searchParams.get("session_id");
 
@@ -43,16 +45,22 @@ export default function Welcome() {
       if (data.success) {
         setEmail(data.email);
         setUserExists(data.userExists);
-        
+        setPasswordWasSkipped(!!data.passwordWasSkipped);
+
+        // Pagamento via Apple Pay / Google Pay / Link: o wallet não preencheu
+        // o campo de senha. Encaminha para fluxo de definição por email.
+        if (data.passwordWasSkipped && !data.userExists) {
+          setStatus("set-password");
+          setMessage("Pagamento confirmado! Vamos definir sua senha de acesso.");
+          return;
+        }
+
         if (data.userExists) {
           setStatus("login");
           setMessage("Sua conta já existe! Faça login para continuar.");
         } else {
           setStatus("success");
           setMessage("Conta criada com sucesso!");
-          
-          // Try auto-login with the email and stored password
-          // Since we can't auto-login here, show login form
           setTimeout(() => setStatus("login"), 2000);
         }
       } else {
@@ -62,6 +70,29 @@ export default function Welcome() {
       console.error("Checkout error:", error);
       setStatus("error");
       setMessage(error.message || "Erro ao processar seu pagamento");
+    }
+  };
+
+  const handleSendPasswordEmail = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setResetSent(true);
+      toast({
+        title: "Link enviado",
+        description: `Verifique ${email} para definir sua senha.`,
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Não foi possível enviar o link",
+        description: error.message || "Tente novamente em instantes.",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
