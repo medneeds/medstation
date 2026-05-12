@@ -151,6 +151,16 @@ export function AgentChat({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [inputExpanded, setInputExpanded] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
+  const [readingMessage, setReadingMessage] = useState<Message | null>(null);
+
+  // ESC to exit focus mode
+  useEffect(() => {
+    if (!focusMode) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setFocusMode(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [focusMode]);
 
   // Auto-resize textarea based on content
   useEffect(() => {
