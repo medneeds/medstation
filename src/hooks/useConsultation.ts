@@ -116,7 +116,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
         ...prev,
         {
           id: crypto.randomUUID(),
-          speaker: 'doctor',
+          speaker: currentSpeakerRef.current,
           text,
           timestamp: new Date(),
           confidence: 0.95,
