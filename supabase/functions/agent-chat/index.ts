@@ -1885,7 +1885,7 @@ ${contextData}`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3-flash-preview",
         messages: messagesForAI,
         temperature: agentType === "examinus" ? 0 : undefined,
         stream: true,
