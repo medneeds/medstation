@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { flushSync } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -335,7 +336,9 @@ export function AgentChat({
     }
     setValidationAnnouncement("");
 
-    const { data: { user } } = await supabase.auth.getUser();
+    // Grab session synchronously from local storage — no network round-trip
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
     if (!user) {
       toast({
         title: "Sessão expirada",
@@ -363,16 +366,17 @@ export function AgentChat({
       created_at: new Date().toISOString(),
     };
 
-    setMessage("");
-    setIsLoading(true);
-
-    // If we already have a conversation, paint immediately
-    if (baseConversation) {
-      setCurrentConversation({
-        ...baseConversation,
-        messages: [...baseConversation.messages, optimisticUserMessage, thinkingMessage],
-      });
-    }
+    // Batch UI updates so React paints in a single frame
+    flushSync(() => {
+      setMessage("");
+      setIsLoading(true);
+      if (baseConversation) {
+        setCurrentConversation({
+          ...baseConversation,
+          messages: [...baseConversation.messages, optimisticUserMessage, thinkingMessage],
+        });
+      }
+    });
 
     let conversation = baseConversation;
 
