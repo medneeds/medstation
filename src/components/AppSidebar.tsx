@@ -57,6 +57,13 @@ const agentModules = [
 
 const consultorioModule = { title: "Modo Consultório", url: "/consultorio", icon: Mic, code: "C" };
 
+const recordsModules = [
+  { title: "Pacientes", url: "/patients", icon: UsersRound },
+  { title: "Casos clínicos", url: "/cases", icon: FolderOpen },
+  { title: "Prescrições", url: "/prescricoes", icon: Pill },
+  { title: "Notas", url: "/notes", icon: NotebookPen },
+];
+
 const navItemClass = ({ isActive }: { isActive: boolean }) =>
   cn(
     "group relative flex items-center gap-3 rounded-md px-3 h-10 text-sm font-medium cursor-pointer outline-none",
