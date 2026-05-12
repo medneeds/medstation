@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -122,6 +123,7 @@ export function AgentChat({
   actionButtons = []
 }: AgentChatProps) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [message, setMessage] = useState("");
   const [validationAnnouncement, setValidationAnnouncement] = useState("");
@@ -334,7 +336,15 @@ export function AgentChat({
     setValidationAnnouncement("");
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: "Sessão expirada",
+        description: "Faça login novamente para continuar a conversa.",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
 
     let conversation = currentConversation;
     
