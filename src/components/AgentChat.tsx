@@ -82,6 +82,7 @@ interface Message {
   audioBlob?: Blob;
   audioUrl?: string;
   transcription?: string;
+  pending?: boolean;
 }
 
 interface Conversation {
