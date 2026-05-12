@@ -40,6 +40,9 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
   const isMobile = useIsMobile();
   const [showFinishDialog, setShowFinishDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("transcription");
+  const [caseName, setCaseName] = useState<string>("");
+  const [isSavingCase, setIsSavingCase] = useState(false);
+  const [savedCaseId, setSavedCaseId] = useState<string | null>(null);
   const [unifiedMode, setUnifiedMode] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem('consultorio-unified-mode') === '1';
