@@ -714,6 +714,75 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          blocked_reason: string | null
+          code: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          referred_crm: string | null
+          referred_email: string | null
+          referred_user_id: string | null
+          referrer_id: string
+          reward_applied_at: string | null
+          reward_credit_days: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          blocked_reason?: string | null
+          code: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          referred_crm?: string | null
+          referred_email?: string | null
+          referred_user_id?: string | null
+          referrer_id: string
+          reward_applied_at?: string | null
+          reward_credit_days?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          blocked_reason?: string | null
+          code?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          referred_crm?: string | null
+          referred_email?: string | null
+          referred_user_id?: string | null
+          referrer_id?: string
+          reward_applied_at?: string | null
+          reward_credit_days?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       security_events: {
         Row: {
           created_at: string
