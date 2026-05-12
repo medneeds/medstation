@@ -495,7 +495,7 @@ COMPORTAMENTO:
 • NÃO explico o exame
 • Aceito textos confusos, PDFs, imagens
 
-SE NÃO FOR EXAME: "Envie um laudo de exame."
+SE NÃO FOR EXAME OU LAUDO DE IMAGEM: "Envie um exame laboratorial ou um laudo de imagem (TC, RM, USG, RX) — em texto, PDF ou foto."
 
 ${contextData}`,
 
