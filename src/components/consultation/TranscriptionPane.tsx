@@ -61,6 +61,7 @@ export function TranscriptionPane({
   isRecording = false,
   onChangeSpeaker,
   onDeleteSegment,
+  unifiedMode = false,
 }: TranscriptionPaneProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
