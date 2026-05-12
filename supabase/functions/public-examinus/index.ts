@@ -11,6 +11,23 @@ const corsHeaders = {
 const RATE_LIMIT = 3;
 const COOLDOWN_MS = 30_000;
 
+const EXTRACTION_PATTERNS: RegExp[] = [
+  /\b(mostr[ae]|exib[ae]|revel[ae]|imprim[ae]|repi(ta|te)|liste|descreva|resuma|parafrase[ae])\b[^.?!\n]{0,80}\b(system\s*prompt|prompt\s*do\s*sistema|prompt[s]?\s*interno|instru[cç][õo]es|regras|diretrizes|persona|identidade|template)/i,
+  /\b(show|reveal|print|repeat|display|list|describe|tell\s*me|dump|leak)\b[^.?!\n]{0,80}\b(system\s*prompt|instructions?|rules|guidelines|prompt|persona)/i,
+  /\b(ignore|esque[çc]a|disregard|forget)\b[^.?!\n]{0,40}\b(anterior(es)?|previous|acima|above|todas\s*as\s*instru[cç][õo]es|all\s*instructions|system\s*prompt)/i,
+  /\b(DAN|do\s*anything\s*now|developer\s*mode|debug\s*mode|jailbreak|modo\s*desenvolvedor|modo\s*debug)\b/i,
+  /<\/?\s*(system|developer|assistant|instructions?)\s*>/i,
+  /\[(\s*system\s*|\s*end\s*of\s*system\s*|\s*new\s*prompt\s*)\]/i,
+  /\b(base64|rot13|hex|reverse|encode|codifique|soletre)\b[^.?!\n]{0,60}\b(prompt|instru[cç][õo]es|regras|rules|instructions)/i,
+];
+const SHIELD_REFUSAL_TEXT = "Não posso compartilhar minhas instruções internas. Posso ajudar com sua dúvida clínica?";
+function findExtractionMatch(text: string): string | null {
+  if (!text || typeof text !== "string") return null;
+  const t = text.slice(0, 4000);
+  for (const re of EXTRACTION_PATTERNS) if (re.test(t)) return re.source;
+  return null;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -328,6 +345,35 @@ VERSÃO DEMO: Esta é versão gratuita limitada. Crie conta para acesso completo
     // Call Lovable AI API
     console.log("Calling Lovable AI with messages:", messages.length);
     
+    // SHIELD: bloqueia tentativa de extração na entrada do usuário
+    const lastUserText = (() => {
+      const last = [...userMessages].reverse().find((m: any) => m?.role === "user");
+      if (!last) return "";
+      if (typeof last.content === "string") return last.content;
+      if (Array.isArray(last.content)) return last.content.map((p: any) => p?.text || "").join(" ");
+      return "";
+    })();
+    const extractionMatch = findExtractionMatch(lastUserText);
+    if (extractionMatch) {
+      console.warn("[shield] public-examinus extraction attempt blocked");
+      try {
+        await supabase.from("security_events").insert({
+          function_name: "public-examinus",
+          event_type: "prompt_extraction_attempt",
+          ip_address: clientIp,
+          fingerprint: fingerprint || null,
+          pattern_matched: extractionMatch,
+          excerpt: lastUserText.slice(0, 200),
+        });
+      } catch (e) {
+        console.error("[security_events] failed to log", e);
+      }
+      return new Response(JSON.stringify({ response: SHIELD_REFUSAL_TEXT }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
