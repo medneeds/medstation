@@ -1104,12 +1104,12 @@ export function AgentChat({
           (() => {
             const greetings: Record<string, { title: string; subtitle: string }> = {
               clinicus: {
-                title: "Às ordens, doutor(a). Por onde começamos?",
-                subtitle: "Solte os sintomas, exame físico ou áudio do plantão — eu organizo o caso e entrego a anamnese pronta.",
+                title: "Às ordens, doutor(a). O caso é seu, a digitação é minha.",
+                subtitle: "Pode falar livre — sintomas soltos, exame físico, áudio do plantão. Eu organizo, estruturo e devolvo a anamnese pronta para colar no prontuário.",
               },
               examinus: {
-                title: "De jaleco e calculadora à mão.",
-                subtitle: "Cole ou envie os exames. Eu separo o que é alterado, comento o que importa e entrego em segundos.",
+                title: "Laboratório aberto. Pode mandar os exames.",
+                subtitle: "Cole, digite ou envie a foto. Em segundos eu separo o que está alterado, ignoro o ruído e entrego só o que muda a sua conduta.",
               },
               prescriptus: {
                 title: "Receituário pronto. Qual o cenário?",
