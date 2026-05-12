@@ -14,12 +14,14 @@ export default function Welcome() {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   
-  const [status, setStatus] = useState<"processing" | "success" | "login" | "error">("processing");
+  const [status, setStatus] = useState<"processing" | "success" | "login" | "set-password" | "error">("processing");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [userExists, setUserExists] = useState(false);
   const [message, setMessage] = useState("");
+  const [passwordWasSkipped, setPasswordWasSkipped] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   const sessionId = searchParams.get("session_id");
 
@@ -43,16 +45,22 @@ export default function Welcome() {
       if (data.success) {
         setEmail(data.email);
         setUserExists(data.userExists);
-        
+        setPasswordWasSkipped(!!data.passwordWasSkipped);
+
+        // Pagamento via Apple Pay / Google Pay / Link: o wallet não preencheu
+        // o campo de senha. Encaminha para fluxo de definição por email.
+        if (data.passwordWasSkipped && !data.userExists) {
+          setStatus("set-password");
+          setMessage("Pagamento confirmado! Vamos definir sua senha de acesso.");
+          return;
+        }
+
         if (data.userExists) {
           setStatus("login");
           setMessage("Sua conta já existe! Faça login para continuar.");
         } else {
           setStatus("success");
           setMessage("Conta criada com sucesso!");
-          
-          // Try auto-login with the email and stored password
-          // Since we can't auto-login here, show login form
           setTimeout(() => setStatus("login"), 2000);
         }
       } else {
@@ -62,6 +70,29 @@ export default function Welcome() {
       console.error("Checkout error:", error);
       setStatus("error");
       setMessage(error.message || "Erro ao processar seu pagamento");
+    }
+  };
+
+  const handleSendPasswordEmail = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setResetSent(true);
+      toast({
+        title: "Link enviado",
+        description: `Verifique ${email} para definir sua senha.`,
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Não foi possível enviar o link",
+        description: error.message || "Tente novamente em instantes.",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -151,6 +182,58 @@ export default function Welcome() {
                     {message}
                   </p>
                 </div>
+              </motion.div>
+            )}
+
+            {/* Set Password State (Apple Pay / Google Pay / Link) */}
+            {status === "set-password" && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6 text-center"
+              >
+                <div className="inline-flex w-14 h-14 rounded-full bg-primary/10 border border-primary/30 items-center justify-center">
+                  <CheckCircle2 className="w-7 h-7 text-primary" strokeWidth={1.75} />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-semibold tracking-tight">Pagamento confirmado</h2>
+                  <p className="text-muted-foreground mt-2 text-sm">
+                    Sua conta foi criada com {email}. Como você pagou via carteira digital,
+                    enviaremos um link seguro para você definir sua senha.
+                  </p>
+                </div>
+
+                {!resetSent ? (
+                  <Button
+                    onClick={handleSendPasswordEmail}
+                    disabled={loading}
+                    className="w-full h-12 shadow-md"
+                  >
+                    {loading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>Receber link por email <ArrowRight className="w-4 h-4 ml-2" /></>
+                    )}
+                  </Button>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-center gap-2 p-3 bg-muted/50 rounded-lg border text-sm">
+                      <Mail className="w-4 h-4 text-primary" />
+                      <span>Link enviado para {email}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Não chegou? Verifique a caixa de spam ou{" "}
+                      <Button
+                        variant="link"
+                        className="h-auto p-0 text-xs"
+                        onClick={handleSendPasswordEmail}
+                        disabled={loading}
+                      >
+                        reenviar
+                      </Button>.
+                    </p>
+                  </div>
+                )}
               </motion.div>
             )}
 

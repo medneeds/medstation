@@ -53,40 +53,50 @@ serve(async (req) => {
       throw new Error("Email não encontrado na sessão");
     }
     
-    // Get password from custom fields
+    // Senha vinda do custom_field (preenchida em fluxos cartão).
+    // Em pagamentos via Apple Pay / Google Pay / Link, o wallet não preenche
+    // custom_fields, então a senha pode vir vazia — geramos uma temporária
+    // e sinalizamos ao frontend para acionar definição de senha.
     const passwordField = session.custom_fields?.find((f: { key: string; text?: { value: string } }) => f.key === 'password');
-    const password = passwordField?.text?.value;
-    
-    if (!password) {
-      throw new Error("Senha não fornecida");
-    }
-    
-    logStep("Creating user account", { email });
-    
+    const providedPassword = passwordField?.text?.value?.trim();
+    const passwordWasSkipped = !providedPassword;
+
+    // Senha forte aleatória usada quando o usuário pagou via wallet.
+    const generateTempPassword = () => {
+      const bytes = new Uint8Array(18);
+      crypto.getRandomValues(bytes);
+      return btoa(String.fromCharCode(...bytes)).replace(/[^A-Za-z0-9]/g, '') + 'A1!';
+    };
+
+    const password = providedPassword || generateTempPassword();
+
+    logStep("Creating user account", { email, passwordWasSkipped });
+
     // Create Supabase client with service role
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } }
     );
-    
+
     // Check if user already exists
     const { data: existingUser } = await supabaseAdmin.auth.admin.listUsers();
     const userExists = existingUser?.users?.some(u => u.email === email);
-    
+
     if (userExists) {
       logStep("User already exists, returning success");
-      return new Response(JSON.stringify({ 
-        success: true, 
+      return new Response(JSON.stringify({
+        success: true,
         message: "Usuário já existe. Faça login com sua senha.",
         userExists: true,
         email,
+        passwordWasSkipped,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
     }
-    
+
     // Create new user
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
@@ -95,17 +105,19 @@ serve(async (req) => {
       user_metadata: {
         checkout_session_id: sessionId,
         stripe_customer_id: typeof session.customer === 'string' ? session.customer : session.customer?.id,
+        password_pending_setup: passwordWasSkipped,
       },
     });
-    
+
     if (createError) {
       logStep("Error creating user", { error: createError.message });
       throw new Error(`Erro ao criar conta: ${createError.message}`);
     }
-    
-    logStep("User created successfully", { userId: newUser.user.id });
-    
-    // Generate a session token for auto-login
+
+    logStep("User created successfully", { userId: newUser.user.id, passwordWasSkipped });
+
+    // Magic link para autologin (sempre tenta — útil tanto para wallet quanto
+    // para usuários que digitaram senha em outro device).
     const { data: sessionData, error: sessionError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'magiclink',
       email,
@@ -113,20 +125,21 @@ serve(async (req) => {
         redirectTo: `${req.headers.get("origin")}/onboarding`,
       }
     });
-    
+
     if (sessionError) {
       logStep("Could not generate auto-login link", { error: sessionError.message });
     }
-    
-    return new Response(JSON.stringify({ 
-      success: true, 
+
+    return new Response(JSON.stringify({
+      success: true,
       message: "Conta criada com sucesso!",
       userExists: false,
       email,
       userId: newUser.user.id,
-      // Return magic link token for auto-login if available
-      autoLoginUrl: sessionData?.properties?.hashed_token ? 
-        `${req.headers.get("origin")}/auth/callback?token=${sessionData.properties.hashed_token}` : 
+      passwordWasSkipped,
+      // Para wallets: o frontend pode disparar email de "definir senha".
+      autoLoginUrl: sessionData?.properties?.hashed_token ?
+        `${req.headers.get("origin")}/auth/callback?token=${sessionData.properties.hashed_token}` :
         null,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
