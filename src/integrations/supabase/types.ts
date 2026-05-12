@@ -714,6 +714,45 @@ export type Database = {
         }
         Relationships: []
       }
+      security_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          excerpt: string | null
+          fingerprint: string | null
+          function_name: string
+          id: string
+          ip_address: string | null
+          metadata: Json
+          pattern_matched: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type?: string
+          excerpt?: string | null
+          fingerprint?: string | null
+          function_name: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json
+          pattern_matched?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          excerpt?: string | null
+          fingerprint?: string | null
+          function_name?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json
+          pattern_matched?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
