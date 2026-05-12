@@ -25,10 +25,7 @@ import { useConsultation } from "@/hooks/useConsultation";
 import { AudioVisualizer } from "@/components/consultation/AudioVisualizer";
 import { TranscriptionPane } from "@/components/consultation/TranscriptionPane";
 import { StructuredPane } from "@/components/consultation/StructuredPane";
-import {
-  ConsultorioHistoryButton,
-  ConsultorioQuickAccessFAB,
-} from "@/components/consultation/ConsultorioQuickAccess";
+import { ConsultorioHistoryButton } from "@/components/consultation/ConsultorioQuickAccess";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -522,8 +519,6 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
         </div>
       )}
 
-      {/* Atalho flutuante para Pacientes / Casos / Prescrições */}
-      <ConsultorioQuickAccessFAB />
     </div>
   );
 }
