@@ -853,6 +853,9 @@ export function AgentChat({
 
           {/* Mobile inline actions */}
           <div className="flex md:hidden gap-1 shrink-0">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setFocusMode(v => !v)} title={focusMode ? "Sair do modo foco" : "Modo foco — expandir leitura"}>
+              {focusMode ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
+            </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={createNewConversation} title="Nova Conversa">
               <Plus className="h-4 w-4" />
             </Button>
