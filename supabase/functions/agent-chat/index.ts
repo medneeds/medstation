@@ -1835,6 +1835,28 @@ ${contextData}`;
       systemPrompt = aheV3AdmissaoUTIPrompt;
     }
 
+    // SHIELD: blinda o system prompt com regras absolutas anti-extração
+    systemPrompt = PROMPT_SHIELD_PREAMBLE + systemPrompt;
+
+    // SHIELD: detecta tentativa de extração na última mensagem do usuário
+    const lastUserMsg = [...messages].reverse().find((m: any) => m?.role === "user");
+    const lastUserText = typeof lastUserMsg?.content === "string"
+      ? lastUserMsg.content
+      : Array.isArray(lastUserMsg?.content)
+        ? lastUserMsg.content.map((p: any) => p?.text || "").join(" ")
+        : "";
+    if (detectExtractionAttempt(lastUserText)) {
+      console.warn("[shield] extraction attempt blocked", { agentType, userId: user?.id });
+      return new Response(buildShieldRefusalSSE(), {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
+        },
+      });
+    }
+
     // Prepare messages for AI
     const messagesForAI = [
       { role: "system", content: systemPrompt },
