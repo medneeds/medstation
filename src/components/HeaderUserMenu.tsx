@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { User, LogOut, CreditCard, Settings as SettingsIcon } from "lucide-react";
+import { User, LogOut, CreditCard, Settings as SettingsIcon, Gift } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -70,6 +70,11 @@ export function HeaderUserMenu() {
         <DropdownMenuItem onClick={() => navigate("/pricing")}>
           <CreditCard className="mr-2 h-4 w-4" />
           Assinatura
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate("/indicar")}>
+          <Gift className="mr-2 h-4 w-4 text-primary" />
+          <span className="flex-1">Indicar e ganhar</span>
+          <span className="font-mono text-2xs text-primary/80">+30d</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
