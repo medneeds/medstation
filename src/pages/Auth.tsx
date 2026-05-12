@@ -251,6 +251,11 @@ export default function Auth() {
                         <Input
                           id="signin-email"
                           type="email"
+                          inputMode="email"
+                          autoComplete="email"
+                          autoCapitalize="none"
+                          autoCorrect="off"
+                          spellCheck={false}
                           placeholder="seu@email.com"
                           value={signInEmail}
                           onChange={(e) => setSignInEmail(e.target.value)}
