@@ -1,11 +1,15 @@
 import { useEffect, useState, useCallback } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useInactivityLogout } from "@/hooks/useInactivityLogout";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   const location = useLocation();
+
+  // Auto logout após 30 minutos de inatividade
+  useInactivityLogout(authenticated);
 
   const checkAuth = useCallback(async () => {
     try {
