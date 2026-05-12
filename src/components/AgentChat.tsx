@@ -320,7 +320,6 @@ export function AgentChat({
   };
 
   const sendMessage = async () => {
-    console.log("[AgentChat] sendMessage called", { agentType, messageLen: message.length, isLoading });
     if (isLoading) return;
     if (!message.trim()) {
       const msg = "Mensagem vazia. Digite algum texto antes de enviar.";
