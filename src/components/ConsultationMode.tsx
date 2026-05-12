@@ -426,6 +426,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               isRecording={isRecording && !isPaused}
               onChangeSpeaker={changeSpeaker}
               onDeleteSegment={deleteSegment}
+              unifiedMode={unifiedMode}
             />
           </TabsContent>
           <TabsContent value="structure" className="flex-1 m-0 overflow-hidden">
@@ -445,6 +446,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               isRecording={isRecording && !isPaused}
               onChangeSpeaker={changeSpeaker}
               onDeleteSegment={deleteSegment}
+              unifiedMode={unifiedMode}
             />
           </Card>
           <Card className="rounded-none border-0 h-full overflow-hidden">
