@@ -227,7 +227,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
         <div className="flex items-center border-b px-4">
           <Search className="h-5 w-5 text-muted-foreground shrink-0" />
           <Input
-            placeholder="Buscar casos, pacientes, agentes ou comandos..."
+            placeholder="Buscar assistente, consulta salva ou nota…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="border-0 focus-visible:ring-0 text-base h-14"
@@ -242,7 +242,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
             {filteredAgents.length > 0 && (
               <div className="mb-4">
                 <p className="text-xs font-medium text-muted-foreground px-2 py-1.5">
-                  Assistentes IA
+                  Assistentes
                 </p>
                 <div className="space-y-0.5">
                   {filteredAgents.map((agent) => {
@@ -343,8 +343,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                           <div className="flex items-center gap-2">
                             <p className="font-medium text-sm truncate">{result.title}</p>
                             <Badge variant="secondary" className="text-[10px] shrink-0">
-                              {result.type === "case" && "Caso"}
-                              {result.type === "patient" && "Paciente"}
+                              {result.type === "case" && "Consulta"}
                               {result.type === "note" && "Nota"}
                             </Badge>
                           </div>
