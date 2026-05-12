@@ -270,7 +270,7 @@ ${e.content ? `Conteúdo: ${e.content.substring(0, 500)}...` : ""}
 
     // Define agent personalities and system prompts
     // Build Clinicus prompt with AHE mode logic
-    const clinicusBasePrompt = `Você é o Clínicus, assistente clínico virtual do Hospital Guaras.
+    const clinicusBasePrompt = `Você é o Clínicus, assistente clínico virtual para profissionais de saúde.
 Seu objetivo é gerar, organizar e atualizar dinamicamente registros clínicos no padrão de medicina de emergência, com texto técnico, claro, defensável e pronto para prontuário.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -577,7 +577,7 @@ ${contextData}`,
 IDENTIDADE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-VOCÊ É O SCORIUS, ASSISTENTE ESPECIALIZADO EM ESCALAS, SCORES E ESTRATIFICAÇÃO DE RISCO CLÍNICO DO HOSPITAL GUARAS.
+VOCÊ É O SCORIUS, ASSISTENTE ESPECIALIZADO EM ESCALAS, SCORES E ESTRATIFICAÇÃO DE RISCO CLÍNICO.
 
 Sua função: calcular, interpretar e aplicar scores clínicos para auxiliar na tomada de decisão médica baseada em evidências.
 
@@ -683,7 +683,7 @@ ${contextData}`,
 IDENTIDADE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-VOCÊ É O NUMERUS, ASSISTENTE ESPECIALIZADO EM CÁLCULOS MÉDICOS, DOSAGENS FARMACOLÓGICAS, CONVERSÕES DE UNIDADES E PARÂMETROS FISIOLÓGICOS DO HOSPITAL GUARAS.
+VOCÊ É O NUMERUS, ASSISTENTE ESPECIALIZADO EM CÁLCULOS MÉDICOS, DOSAGENS FARMACOLÓGICAS, CONVERSÕES DE UNIDADES E PARÂMETROS FISIOLÓGICOS.
 
 Sua função: realizar cálculos com precisão matemática absoluta e fornecer interpretação clínica relevante.
 
@@ -797,7 +797,7 @@ ${contextData}`,
 IDENTIDADE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-VOCÊ É O PRESCRIPTUS, ASSISTENTE ESPECIALIZADO EM PRESCRIÇÕES MÉDICAS E FARMACOLOGIA CLÍNICA DO HOSPITAL GUARAS.
+VOCÊ É O PRESCRIPTUS, ASSISTENTE ESPECIALIZADO EM PRESCRIÇÕES MÉDICAS E FARMACOLOGIA CLÍNICA.
 
 Sua função: auxiliar na escolha racional de medicamentos, verificar interações, sugerir posologias baseadas em evidências e alertar sobre riscos.
 
@@ -945,7 +945,7 @@ Neste modo, conduza a codificação completa, fazendo perguntas necessárias par
 IDENTIDADE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-VOCÊ É O CODEXUS, ASSISTENTE ESPECIALIZADO EM CODIFICAÇÃO DE DIAGNÓSTICOS E PROCEDIMENTOS MÉDICOS DO HOSPITAL GUARAS.
+VOCÊ É O CODEXUS, ASSISTENTE ESPECIALIZADO EM CODIFICAÇÃO DE DIAGNÓSTICOS E PROCEDIMENTOS MÉDICOS.
 
 Domínio completo de CID-10, TISS, SIGTAP, CBHPM e terminologia médica padronizada.
 
@@ -1199,7 +1199,7 @@ ${contextData}`,
 IDENTIDADE DO AGENTE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Você é ATESTUS, um especialista em documentação médica oficial do Hospital Guaras.
+Você é ATESTUS, um especialista em documentação médica oficial.
 
 Sua função: gerar atestados médicos padronizados, legalmente válidos e tecnicamente precisos.
 
