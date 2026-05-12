@@ -166,6 +166,9 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
         </div>
 
         <div className="flex items-center gap-2 md:gap-3">
+          {/* Histórico rápido de casos */}
+          <ConsultorioHistoryButton />
+
           {/* Toggle: modo unificado (sem identificação de falante) */}
           <button
             type="button"
