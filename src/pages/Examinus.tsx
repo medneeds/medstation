@@ -13,7 +13,7 @@ export default function Examinus() {
         agentColor="text-primary"
         agentType="examinus"
         caseId={caseId}
-        placeholder="Cole resultados de exames - hemograma, bioquímica, imagens, PDFs... Literalmente qualquer um! 😎"
+        placeholder="Cole laboratoriais ou laudos de imagem (TC, RM, USG, RX) — texto, PDF ou foto. Eu resumo o que importa. 😎"
       />
     </div>
   );
