@@ -250,12 +250,12 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           <AudioVisualizer
             level={audioLevel}
             isActive={isRecording && !isPaused}
-            currentSpeaker={isRecording && !isPaused ? currentSpeaker : undefined}
+            currentSpeaker={isRecording && !isPaused && !unifiedMode ? currentSpeaker : undefined}
             className="w-full max-w-sm"
           />
 
           {/* Speaker switcher — quem está falando agora (afeta os próximos segmentos) */}
-          {isRecording && !isPaused && (
+          {isRecording && !isPaused && !unifiedMode && (
             <motion.div
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
