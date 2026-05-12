@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Plus, UsersRound, FolderOpen, Pill, X, History, Loader2, ExternalLink } from "lucide-react";
+import { motion } from "framer-motion";
+import { UsersRound, FolderOpen, Pill, History, Loader2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
