@@ -56,8 +56,26 @@ serve(async (req) => {
     logStep("User authenticated", { userId: user.id, email: user.email });
 
     const body = await req.json().catch(() => ({}));
-    const couponCode = body.couponCode?.trim();
+    let couponCode = body.couponCode?.trim();
     const billingPeriod = body.billingPeriod || "monthly";
+
+    // Auto-apply referral coupon if this user has a pending referral and no other coupon was provided
+    if (!couponCode) {
+      try {
+        const { data: pendingRef } = await supabaseClient
+          .from("referrals")
+          .select("id")
+          .eq("referred_user_id", user.id)
+          .eq("status", "pending")
+          .maybeSingle();
+        if (pendingRef) {
+          couponCode = "XzP9db0s"; // MedStation Referral 50% off 1º mês
+          logStep("Auto-applying referral coupon");
+        }
+      } catch (e) {
+        console.error("[CREATE-CHECKOUT] referral lookup failed", e);
+      }
+    }
     // New: explicit plan slug. Falls back to legacy product/billingPeriod mapping for backward compat.
     let plan: string | undefined = body.plan;
 

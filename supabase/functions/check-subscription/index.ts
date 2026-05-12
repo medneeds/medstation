@@ -152,6 +152,32 @@ serve(async (req) => {
 
     logStep("Access levels determined", { hasAgents, hasConsultorio, availableUpgrade });
 
+    // Trigger referral reward if this user was referred and is now a paying subscriber
+    if (hasActiveSub) {
+      try {
+        const { data: pendingRef } = await supabaseClient
+          .from("referrals")
+          .select("id")
+          .eq("referred_user_id", user.id)
+          .eq("status", "pending")
+          .maybeSingle();
+        if (pendingRef) {
+          logStep("Triggering referral reward", { referralId: pendingRef.id });
+          // Fire-and-forget: don't block subscription check
+          fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/referral-reward`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+            },
+            body: JSON.stringify({ referred_user_id: user.id }),
+          }).catch((e) => console.error("[CHECK-SUBSCRIPTION] reward dispatch failed", e));
+        }
+      } catch (e) {
+        console.error("[CHECK-SUBSCRIPTION] referral check failed", e);
+      }
+    }
+
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
       product_ids: productIds,
