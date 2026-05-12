@@ -1075,16 +1075,21 @@ export function AgentChat({
           </div>
         ) : (
           <div className="space-y-4">
-            {currentConversation.messages.map((msg) => (
+            {currentConversation.messages.map((msg) => {
+              const isThinking = msg.role === "assistant" && msg.id === "streaming-temp" && (msg.content === "Pensando..." || msg.content === "");
+              const isStreaming = msg.role === "assistant" && msg.id === "streaming-temp" && !isThinking;
+              return (
               <div
                 key={msg.id}
-                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                className={`flex animate-fade-in ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
                   className={`max-w-[85%] md:max-w-[80%] rounded-2xl px-3 md:px-4 relative group ${
                     msg.role === "user"
                       ? "bg-primary text-primary-foreground py-2 md:py-3"
-                      : "bg-muted pt-2 md:pt-3 pb-8 md:pb-10"
+                      : isThinking
+                        ? "bg-muted/60 py-2 md:py-2.5"
+                        : "bg-muted pt-2 md:pt-3 pb-8 md:pb-10"
                   }`}
                 >
                   {msg.audioBlob && msg.audioUrl ? (
@@ -1100,8 +1105,15 @@ export function AgentChat({
                         setCurrentConversation({ ...currentConversation!, messages: updatedMessages });
                       }}
                     />
+                  ) : isThinking ? (
+                    <ThinkingIndicator />
                   ) : (
-                    <p className="text-sm whitespace-pre-wrap">{msg.role === "assistant" && agentType === "clinicus" ? msg.content.replace(/\*\*/g, "") : msg.content}</p>
+                    <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                      {msg.role === "assistant" && agentType === "clinicus" ? msg.content.replace(/\*\*/g, "") : msg.content}
+                      {isStreaming && (
+                        <span className="inline-block w-[2px] h-3.5 ml-0.5 align-[-2px] bg-primary animate-stream-cursor" />
+                      )}
+                    </p>
                   )}
                   <p className="text-xs opacity-70 mt-1">
                     {new Date(msg.created_at).toLocaleTimeString([], { 
