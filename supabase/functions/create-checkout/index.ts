@@ -121,6 +121,10 @@ serve(async (req) => {
       mode: "subscription",
       success_url: `${req.headers.get("origin")}/dashboard?success=true&plan=${plan}`,
       cancel_url: `${req.headers.get("origin")}/pricing?canceled=true`,
+      // Maximiza disponibilidade de Apple Pay / Google Pay / Link
+      payment_method_collection: "always",
+      phone_number_collection: { enabled: false },
+      billing_address_collection: "auto",
       metadata: { plan, user_id: user.id },
     };
 
