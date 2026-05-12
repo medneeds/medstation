@@ -334,7 +334,15 @@ export function AgentChat({
     setValidationAnnouncement("");
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: "Sessão expirada",
+        description: "Faça login novamente para continuar a conversa.",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
 
     let conversation = currentConversation;
     
