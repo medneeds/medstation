@@ -540,6 +540,54 @@ export type Database = {
         }
         Relationships: []
       }
+      prescription_library: {
+        Row: {
+          cid_code: string | null
+          content: string
+          created_at: string
+          id: string
+          indication: string | null
+          is_favorite: boolean
+          source: string | null
+          source_assistant: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          use_count: number
+          user_id: string
+        }
+        Insert: {
+          cid_code?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          indication?: string | null
+          is_favorite?: boolean
+          source?: string | null
+          source_assistant?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          use_count?: number
+          user_id: string
+        }
+        Update: {
+          cid_code?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          indication?: string | null
+          is_favorite?: boolean
+          source?: string | null
+          source_assistant?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          use_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       prescriptions: {
         Row: {
           case_id: string | null
