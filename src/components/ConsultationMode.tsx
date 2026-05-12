@@ -25,7 +25,9 @@ import { useConsultation } from "@/hooks/useConsultation";
 import { AudioVisualizer } from "@/components/consultation/AudioVisualizer";
 import { TranscriptionPane } from "@/components/consultation/TranscriptionPane";
 import { StructuredPane } from "@/components/consultation/StructuredPane";
-import { ConsultorioHistoryButton } from "@/components/consultation/ConsultorioQuickAccess";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -38,6 +40,9 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
   const isMobile = useIsMobile();
   const [showFinishDialog, setShowFinishDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("transcription");
+  const [caseName, setCaseName] = useState<string>("");
+  const [isSavingCase, setIsSavingCase] = useState(false);
+  const [savedCaseId, setSavedCaseId] = useState<string | null>(null);
   const [unifiedMode, setUnifiedMode] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem('consultorio-unified-mode') === '1';
@@ -143,6 +148,58 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     toast.success('Copiado 👏 Cole direto no prontuário.');
   }, [structure]);
 
+  const buildStructuredText = useCallback(() => {
+    const labels: Record<string, string> = {
+      chiefComplaint: 'QUEIXA PRINCIPAL',
+      historyPresentIllness: 'HISTÓRIA DA DOENÇA ATUAL',
+      pastMedicalHistory: 'HISTÓRIA PATOLÓGICA PREGRESSA',
+      familyHistory: 'HISTÓRIA FAMILIAR',
+      medications: 'MEDICAMENTOS EM USO',
+      allergies: 'ALERGIAS',
+      socialHistory: 'HÁBITOS DE VIDA',
+      reviewOfSystems: 'REVISÃO DE SISTEMAS',
+      physicalExam: 'EXAME FÍSICO',
+      diagnosticHypotheses: 'HIPÓTESES DIAGNÓSTICAS',
+      plan: 'CONDUTA',
+    };
+    return Object.entries(structure)
+      .filter(([_, v]) => v?.trim())
+      .map(([k, v]) => `${labels[k] || k}:\n${v}`)
+      .join('\n\n');
+  }, [structure]);
+
+  const handleSaveCase = useCallback(async () => {
+    const name = caseName.trim();
+    if (!name) {
+      toast.error('Dê um nome ao caso para salvar.');
+      return;
+    }
+    setIsSavingCase(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Sessão expirada.');
+      const notes = buildStructuredText();
+      const { data, error: insertError } = await supabase
+        .from('cases')
+        .insert({
+          user_id: user.id,
+          title: name,
+          chief_complaint: structure.chiefComplaint || null,
+          notes: notes || null,
+          status: 'active',
+        })
+        .select('id')
+        .single();
+      if (insertError) throw insertError;
+      setSavedCaseId(data.id);
+      toast.success('Caso salvo 👏');
+    } catch (e: any) {
+      toast.error(e.message || 'Não foi possível salvar o caso.');
+    } finally {
+      setIsSavingCase(false);
+    }
+  }, [caseName, buildStructuredText, structure.chiefComplaint]);
+
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
@@ -163,9 +220,6 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
         </div>
 
         <div className="flex items-center gap-2 md:gap-3">
-          {/* Histórico rápido de casos */}
-          <ConsultorioHistoryButton />
-
           {/* Toggle: modo unificado (sem identificação de falante) */}
           <button
             type="button"
@@ -497,15 +551,40 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                 <Copy className="h-4 w-4" />
                 <span className="text-xs md:text-sm">Copiar</span>
               </Button>
-              <Button variant="outline" size="sm" className="gap-2 flex-1 sm:flex-none" disabled>
-                <Download className="h-4 w-4" />
-                <span className="text-xs md:text-sm">PDF</span>
-              </Button>
-              <Button variant="outline" size="sm" className="gap-2 flex-1 sm:flex-none" disabled>
-                <Save className="h-4 w-4" />
-                <span className="text-xs md:text-sm">Salvar</span>
-              </Button>
             </div>
+
+            {/* Salvar caso — única ação de persistência */}
+            <div className="space-y-2 pt-2 border-t">
+              <Label htmlFor="case-name" className="text-xs md:text-sm">
+                Salvar este caso no seu histórico
+              </Label>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Input
+                  id="case-name"
+                  placeholder="Dê um nome ao caso (ex.: Sr. João — dor torácica)"
+                  value={caseName}
+                  onChange={(e) => setCaseName(e.target.value)}
+                  disabled={isSavingCase || !!savedCaseId}
+                  maxLength={120}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleSaveCase(); }}
+                />
+                <Button
+                  size="sm"
+                  onClick={handleSaveCase}
+                  disabled={isSavingCase || !caseName.trim() || !!savedCaseId || segments.length === 0}
+                  className="gap-2 sm:w-auto"
+                >
+                  {isSavingCase ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                  <span className="text-xs md:text-sm">
+                    {savedCaseId ? 'Salvo' : isSavingCase ? 'Salvando...' : 'Salvar caso'}
+                  </span>
+                </Button>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Tudo o que foi transcrito e estruturado será guardado com esse nome.
+              </p>
+            </div>
+
 
             <div className="flex flex-col sm:flex-row justify-end gap-2 pt-2 border-t">
               <Button variant="ghost" size="sm" onClick={() => setShowFinishDialog(false)} className="w-full sm:w-auto">
