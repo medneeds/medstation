@@ -13,6 +13,7 @@ interface TranscriptionPaneProps {
   isRecording?: boolean;
   onChangeSpeaker: (segmentId: string, newSpeaker: SpeakerType) => void;
   onDeleteSegment: (segmentId: string) => void;
+  unifiedMode?: boolean;
 }
 
 // Typing animation component for new text
@@ -60,6 +61,7 @@ export function TranscriptionPane({
   isRecording = false,
   onChangeSpeaker,
   onDeleteSegment,
+  unifiedMode = false,
 }: TranscriptionPaneProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
@@ -181,27 +183,37 @@ export function TranscriptionPane({
                       stiffness: 300,
                       damping: 25,
                     }}
-                    drag="x"
+                    drag={unifiedMode ? false : "x"}
                     dragConstraints={{ left: 0, right: 0 }}
                     dragElastic={0.25}
                     onDragEnd={(_, info) => {
+                      if (unifiedMode) return;
                       if (info.offset.x > 60) cycleSpeaker(1);
                       else if (info.offset.x < -60) cycleSpeaker(-1);
                     }}
                     className={cn(
-                      "group relative p-2 md:p-3 rounded-lg border-l-4 bg-card transition-all duration-200 touch-pan-y cursor-grab active:cursor-grabbing",
-                      getSpeakerBorderColor(segment.speaker),
+                      "group relative p-2 md:p-3 rounded-lg bg-card transition-all duration-200",
+                      unifiedMode
+                        ? "border border-border/50"
+                        : "border-l-4 touch-pan-y cursor-grab active:cursor-grabbing",
+                      !unifiedMode && getSpeakerBorderColor(segment.speaker),
                       segment.isEdited && "ring-1 ring-primary/30",
                       isLatest && isRecording && "shadow-md"
                     )}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <SpeakerIndicator
-                        speaker={segment.speaker}
-                        confidence={segment.confidence}
-                        timestamp={segment.timestamp}
-                        onChangeSpeaker={(newSpeaker) => onChangeSpeaker(segment.id, newSpeaker)}
-                      />
+                      {unifiedMode ? (
+                        <span className="text-[10px] md:text-xs text-muted-foreground font-mono tabular-nums">
+                          {segment.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </span>
+                      ) : (
+                        <SpeakerIndicator
+                          speaker={segment.speaker}
+                          confidence={segment.confidence}
+                          timestamp={segment.timestamp}
+                          onChangeSpeaker={(newSpeaker) => onChangeSpeaker(segment.id, newSpeaker)}
+                        />
+                      )}
                       <Button
                         variant="ghost"
                         size="icon"
@@ -211,7 +223,7 @@ export function TranscriptionPane({
                         <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
-                    <p className="mt-1.5 md:mt-2 text-xs md:text-sm leading-relaxed text-foreground/90">
+                    <p className={cn("mt-1.5 md:mt-2 leading-relaxed text-foreground/90", unifiedMode ? "text-sm md:text-base" : "text-xs md:text-sm")}>
                       <TypingText text={segment.text} isNew={isNew} />
                     </p>
                   </motion.div>

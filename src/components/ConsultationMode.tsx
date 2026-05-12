@@ -37,6 +37,15 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
   const isMobile = useIsMobile();
   const [showFinishDialog, setShowFinishDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("transcription");
+  const [unifiedMode, setUnifiedMode] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('consultorio-unified-mode') === '1';
+  });
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('consultorio-unified-mode', unifiedMode ? '1' : '0');
+    }
+  }, [unifiedMode]);
 
   const {
     segments,
@@ -71,7 +80,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
 
   // Keyboard shortcuts: 1=Médico, 2=Paciente, 3=Acompanhante (durante gravação)
   useEffect(() => {
-    if (!isRecording || isPaused) return;
+    if (!isRecording || isPaused || unifiedMode) return;
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
@@ -81,7 +90,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [isRecording, isPaused, setCurrentSpeaker]);
+  }, [isRecording, isPaused, unifiedMode, setCurrentSpeaker]);
 
   const handleFinish = useCallback(async () => {
     await stopRecording();
@@ -153,6 +162,23 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
         </div>
 
         <div className="flex items-center gap-2 md:gap-3">
+          {/* Toggle: modo unificado (sem identificação de falante) */}
+          <button
+            type="button"
+            onClick={() => setUnifiedMode((v) => !v)}
+            aria-pressed={unifiedMode}
+            title={unifiedMode ? 'Voltar para identificação de falantes' : 'Transcrever tudo como um único bloco, sem identificar falantes'}
+            className={cn(
+              "hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] md:text-xs font-medium ring-1 transition-colors",
+              unifiedMode
+                ? "bg-primary/15 ring-primary/30 text-primary"
+                : "bg-muted/50 ring-border/60 text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <MessageSquare className="h-3 w-3 md:h-3.5 md:w-3.5" />
+            <span>{unifiedMode ? 'Transcrição contínua' : 'Identificar falantes'}</span>
+          </button>
+
           <div className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm px-2.5 py-1 rounded-full bg-muted/50 ring-1 ring-border/60">
             <Clock className="h-3 w-3 md:h-3.5 md:w-3.5 text-muted-foreground" />
             <span className="font-mono tabular-nums tracking-tight">{formattedTime}</span>
@@ -224,12 +250,12 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           <AudioVisualizer
             level={audioLevel}
             isActive={isRecording && !isPaused}
-            currentSpeaker={isRecording && !isPaused ? currentSpeaker : undefined}
+            currentSpeaker={isRecording && !isPaused && !unifiedMode ? currentSpeaker : undefined}
             className="w-full max-w-sm"
           />
 
           {/* Speaker switcher — quem está falando agora (afeta os próximos segmentos) */}
-          {isRecording && !isPaused && (
+          {isRecording && !isPaused && !unifiedMode && (
             <motion.div
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
@@ -400,6 +426,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               isRecording={isRecording && !isPaused}
               onChangeSpeaker={changeSpeaker}
               onDeleteSegment={deleteSegment}
+              unifiedMode={unifiedMode}
             />
           </TabsContent>
           <TabsContent value="structure" className="flex-1 m-0 overflow-hidden">
@@ -419,6 +446,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               isRecording={isRecording && !isPaused}
               onChangeSpeaker={changeSpeaker}
               onDeleteSegment={deleteSegment}
+              unifiedMode={unifiedMode}
             />
           </Card>
           <Card className="rounded-none border-0 h-full overflow-hidden">
