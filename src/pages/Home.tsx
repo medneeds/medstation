@@ -14,6 +14,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { TimeSavingsComparison } from "@/components/TimeSavingsComparison";
 import { FAQMiniDemo } from "@/components/FAQMiniDemo";
 import { HeroVideo } from "@/components/HeroVideo";
+import { useReferralCapture } from "@/hooks/useReferralCapture";
 
 type FAQItem = {
   q: string;
@@ -73,6 +74,7 @@ export default function Home() {
   const navigate = useNavigate();
   const [activeAssistant, setActiveAssistant] = useState<string | null>(null);
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+  useReferralCapture();
 
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
