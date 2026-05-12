@@ -20,6 +20,7 @@ import {
   Sun,
   LifeBuoy,
   Mic,
+  Gift,
 } from "lucide-react";
 import { SUPPORT_CHAT_EVENT } from "@/components/SupportChat";
 import { LogoMark } from "@/components/LogoMark";
@@ -175,6 +176,19 @@ export function AppSidebar() {
           )}
           <SidebarGroupContent>
             <SidebarMenu className="gap-1.5">
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Indicar e ganhar" className="p-0 h-auto bg-transparent hover:bg-transparent">
+                  <NavLink to="/indicar" className={navItemClass}>
+                    <Gift className="h-4 w-4 shrink-0 text-primary" />
+                    {!collapsed && (
+                      <>
+                        <span className="flex-1">Indicar e ganhar</span>
+                        <span className="font-mono text-2xs text-primary/80">+30d</span>
+                      </>
+                    )}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   tooltip="Suporte MedPocket"
