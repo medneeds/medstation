@@ -521,6 +521,9 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           </Card>
         </div>
       )}
+
+      {/* Atalho flutuante para Pacientes / Casos / Prescrições */}
+      <ConsultorioQuickAccessFAB />
     </div>
   );
 }
