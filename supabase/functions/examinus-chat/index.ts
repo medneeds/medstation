@@ -177,14 +177,8 @@ SE NÃO FOR EXAME: "Envie um laudo de exame."`;
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          { 
-            role: "system", 
-            content: systemPrompt 
-          },
-          {
-            role: "user",
-            content: "RESPONDA SEM INTRODUÇÃO. Comece DIRETO com a data ou tipo de exame."
-          },
+          { role: "system", content: PROMPT_SHIELD_PREAMBLE + systemPrompt },
+          { role: "user", content: "RESPONDA SEM INTRODUÇÃO. Comece DIRETO com a data ou tipo de exame." },
           ...userMessages,
         ],
         temperature: 0,
