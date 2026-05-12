@@ -140,6 +140,17 @@ export function AgentChat({
   const [quickCIDMode, setQuickCIDMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [inputExpanded, setInputExpanded] = useState(false);
+
+  // Auto-resize textarea based on content
+  useEffect(() => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    ta.style.height = "auto";
+    const max = inputExpanded ? 400 : 200;
+    ta.style.height = Math.min(ta.scrollHeight, max) + "px";
+  }, [message, inputExpanded]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
