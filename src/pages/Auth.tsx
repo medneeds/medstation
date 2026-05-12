@@ -101,7 +101,7 @@ export default function Auth() {
         setLoading(false);
         return;
       }
-      navigate("/dashboard");
+      navigate(destination, { replace: true });
     } catch (error: any) {
       toast({ variant: "destructive", title: "Dados inválidos", description: error.errors?.[0]?.message || error.message });
     } finally {
