@@ -1,9 +1,9 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { SearchDialog } from "@/components/SearchDialog";
 import NotificationBell from "@/components/NotificationBell";
 import { HeaderUserMenu } from "@/components/HeaderUserMenu";
 import { HeaderThemeToggle } from "@/components/HeaderThemeToggle";
