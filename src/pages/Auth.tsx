@@ -332,6 +332,8 @@ export default function Auth() {
                         <Input
                           id="signup-name"
                           type="text"
+                          autoComplete="name"
+                          autoCapitalize="words"
                           placeholder="Dr. João Silva"
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
