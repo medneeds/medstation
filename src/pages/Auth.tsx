@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { Logo } from "@/components/Logo";
 
 export default function Auth() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
@@ -32,15 +33,19 @@ export default function Auth() {
   const [crmState, setCrmState] = useState("");
   const [specialty, setSpecialty] = useState("");
 
+  // Destino pós-login: respeita rota pretendida (vinda de ProtectedRoute) ou /dashboard
+  const fromPath = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
+  const destination = fromPath && fromPath !== "/auth" ? fromPath : "/dashboard";
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) navigate("/dashboard");
+      if (session) navigate(destination, { replace: true });
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) navigate("/dashboard");
+      if (session) navigate(destination, { replace: true });
     });
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, destination]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,7 +101,7 @@ export default function Auth() {
         setLoading(false);
         return;
       }
-      navigate("/dashboard");
+      navigate(destination, { replace: true });
     } catch (error: any) {
       toast({ variant: "destructive", title: "Dados inválidos", description: error.errors?.[0]?.message || error.message });
     } finally {
