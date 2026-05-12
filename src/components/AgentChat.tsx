@@ -32,7 +32,10 @@ import {
   Zap,
   Minimize2,
   Maximize2,
-  ChevronDown
+  ChevronDown,
+  Expand,
+  Shrink,
+  BookOpen
 } from "lucide-react";
 import {
   Sheet,
@@ -61,6 +64,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Toggle } from "@/components/ui/toggle";
 
 interface Message {
@@ -142,6 +151,16 @@ export function AgentChat({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [inputExpanded, setInputExpanded] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
+  const [readingMessage, setReadingMessage] = useState<Message | null>(null);
+
+  // ESC to exit focus mode
+  useEffect(() => {
+    if (!focusMode) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setFocusMode(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [focusMode]);
 
   // Auto-resize textarea based on content
   useEffect(() => {
@@ -789,7 +808,11 @@ export function AgentChat({
 
   return (
     <div 
-      className="flex flex-col h-full p-3 md:p-6"
+      className={
+        focusMode
+          ? "fixed inset-0 z-[60] bg-background flex flex-col p-4 md:p-8 overflow-hidden animate-fade-in"
+          : "flex flex-col h-full p-3 md:p-6"
+      }
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -830,6 +853,9 @@ export function AgentChat({
 
           {/* Mobile inline actions */}
           <div className="flex md:hidden gap-1 shrink-0">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setFocusMode(v => !v)} title={focusMode ? "Sair do modo foco" : "Modo foco — expandir leitura"}>
+              {focusMode ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
+            </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={createNewConversation} title="Nova Conversa">
               <Plus className="h-4 w-4" />
             </Button>
@@ -938,6 +964,10 @@ export function AgentChat({
 
         {/* Desktop actions */}
         <div className="hidden md:flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => setFocusMode(v => !v)} title={focusMode ? "Sair do modo foco (Esc)" : "Modo foco — expandir área de leitura"}>
+            {focusMode ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
+            <span className="ml-2">{focusMode ? "Sair do foco" : "Foco"}</span>
+          </Button>
           <Button variant="outline" size="sm" onClick={createNewConversation} title="Nova Conversa">
             <Plus className="h-4 w-4" />
             <span className="ml-2">Nova Conversa</span>
@@ -1099,7 +1129,7 @@ export function AgentChat({
                 className={`flex animate-fade-in ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[85%] md:max-w-[80%] rounded-2xl px-3 md:px-4 relative group ${
+                  className={`${focusMode ? "max-w-[95%] md:max-w-4xl" : "max-w-[85%] md:max-w-[80%]"} rounded-2xl px-3 md:px-4 relative group ${
                     msg.role === "user"
                       ? "bg-primary text-primary-foreground py-2 md:py-3"
                       : isThinking
@@ -1123,7 +1153,7 @@ export function AgentChat({
                   ) : isThinking ? (
                     <ThinkingIndicator />
                   ) : (
-                    <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                    <p className={`whitespace-pre-wrap leading-relaxed ${focusMode ? "text-base md:text-lg" : "text-sm"}`}>
                       {msg.role === "assistant" && agentType === "clinicus" ? msg.content.replace(/\*\*/g, "") : msg.content}
                       {isStreaming && (
                         <span className="inline-block w-[2px] h-3.5 ml-0.5 align-[-2px] bg-primary animate-stream-cursor" />
@@ -1138,6 +1168,16 @@ export function AgentChat({
                   </p>
                   {msg.role === "assistant" && (
                     <div className="absolute bottom-2 right-2 flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setReadingMessage(msg)}
+                        className="h-7 px-2 gap-1.5 text-xs"
+                        title="Abrir em leitura ampliada"
+                      >
+                        <BookOpen className="h-3 w-3" />
+                        <span className="hidden md:inline">Ler</span>
+                      </Button>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -1588,6 +1628,49 @@ export function AgentChat({
           </span>
         </div>
       </div>
+
+      {/* Reading dialog: per-message expanded view */}
+      <Dialog open={!!readingMessage} onOpenChange={(o) => !o && setReadingMessage(null)}>
+        <DialogContent className="max-w-3xl w-[95vw] max-h-[90vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4 text-primary" />
+              Leitura ampliada
+            </DialogTitle>
+          </DialogHeader>
+          {readingMessage && (
+            <>
+              <ScrollArea className="flex-1 pr-2">
+                <p className="text-base md:text-lg leading-relaxed whitespace-pre-wrap">
+                  {agentType === "clinicus" ? readingMessage.content.replace(/\*\*/g, "") : readingMessage.content}
+                </p>
+              </ScrollArea>
+              <div className="flex justify-end gap-2 pt-2 border-t">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(readingMessage.content.toUpperCase());
+                    toast({ description: "Texto em caixa alta copiado!" });
+                  }}
+                  className="gap-1.5"
+                >
+                  <FileUp className="h-3.5 w-3.5" />
+                  Maiúscula
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => copyToClipboard(readingMessage.content, readingMessage.id)}
+                  className="gap-1.5"
+                >
+                  {copiedMessageId === readingMessage.id ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  Copiar
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
