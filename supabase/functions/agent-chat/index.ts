@@ -345,19 +345,7 @@ SEMPRE começar DIRETO com:
 20/11 14:30: Hb 12,5... (para LSL)
 19/11 10:45 (TC Crânio): Hipodensidade... (para LSI)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-REGRAS DE FORMATAÇÃO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-PROIBIDO usar asteriscos:
-- NÃO usar ** (negrito)
-- NÃO usar * (itálico)
-- NÃO usar # (títulos markdown)
-
-Formatação permitida:
-- Títulos de seção em CAIXA ALTA
-- Use • para listas quando necessário
-- Separe seções com linhas em branco
+FORMATO: Sem ** * #. Títulos em CAIXA ALTA, listas com •, seções separadas por linha em branco.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 LSL - LABORATORIAIS
@@ -499,19 +487,7 @@ VOCÊ É O SCORIUS, ASSISTENTE ESPECIALIZADO EM ESCALAS, SCORES E ESTRATIFICAÇ�
 
 Sua função: calcular, interpretar e aplicar scores clínicos para auxiliar na tomada de decisão médica baseada em evidências.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-REGRAS DE FORMATAÇÃO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-PROIBIDO usar asteriscos:
-- NÃO usar ** (negrito)
-- NÃO usar * (itálico)
-- NÃO usar # (títulos markdown)
-
-Formatação permitida:
-- Títulos de seção em CAIXA ALTA
-- Use • para listas quando necessário
-- Separe seções com linhas em branco
+FORMATO: Sem ** * #. Títulos em CAIXA ALTA, listas com •, seções separadas por linha em branco.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SCORES DISPONÍVEIS
@@ -617,19 +593,7 @@ VOCÊ É O NUMERUS, ASSISTENTE ESPECIALIZADO EM CÁLCULOS MÉDICOS, DOSAGENS FAR
 
 Sua função: realizar cálculos com precisão matemática absoluta e fornecer interpretação clínica relevante.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-REGRAS DE FORMATAÇÃO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-PROIBIDO usar asteriscos:
-• NÃO usar ** (negrito)
-• NÃO usar * (itálico)
-• NÃO usar # (títulos markdown)
-
-Formatação permitida:
-• Títulos de seção em CAIXA ALTA
-• Use • para listas quando necessário
-• Separe seções com linhas em branco
+FORMATO: Sem ** * #. Títulos em CAIXA ALTA, listas com •, seções separadas por linha em branco.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CÁLCULOS DISPONÍVEIS
@@ -817,19 +781,7 @@ Você pode perguntar:
 • Medicamentos em uso
 • Comorbidades relevantes`}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-REGRAS DE FORMATAÇÃO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-PROIBIDO usar asteriscos:
-• NÃO usar ** (negrito)
-• NÃO usar * (itálico)
-• NÃO usar # (títulos markdown)
-
-Formatação permitida:
-• Títulos de seção em CAIXA ALTA
-• Use • para listas quando necessário
-• Separe seções com linhas em branco
+FORMATO: Sem ** * #. Títulos em CAIXA ALTA, listas com •, seções separadas por linha em branco.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ÁREAS DE ATUAÇÃO
@@ -903,19 +855,7 @@ VOCÊ É O CODEXUS, ASSISTENTE ESPECIALIZADO EM CODIFICAÇÃO DE DIAGNÓSTICOS E
 
 Domínio completo de CID-10, TISS, SIGTAP, CBHPM e terminologia médica padronizada.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-REGRAS DE FORMATAÇÃO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-PROIBIDO usar asteriscos:
-• NÃO usar ** (negrito)
-• NÃO usar * (itálico)
-• NÃO usar # (títulos markdown)
-
-Formatação permitida:
-• Títulos de seção em CAIXA ALTA
-• Use • para listas quando necessário
-• Separe seções com linhas em branco
+FORMATO: Sem ** * #. Títulos em CAIXA ALTA, listas com •, seções separadas por linha em branco.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SISTEMAS DE CODIFICAÇÃO
@@ -1036,19 +976,7 @@ REGRAS DO MODO L.I.:
 
 Neste modo, você deve fornecer a análise completa com todas as seções, ensinamentos e sugestões.`}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-REGRAS DE FORMATAÇÃO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-PROIBIDO usar asteriscos:
-• NÃO usar ** (negrito)
-• NÃO usar * (itálico)
-• NÃO usar # (títulos markdown)
-
-Formatação permitida:
-• Títulos de seção em CAIXA ALTA
-• Use • para listas quando necessário
-• Separe seções com linhas em branco
+FORMATO: Sem ** * #. Títulos em CAIXA ALTA, listas com •, seções separadas por linha em branco.
 
 ${!directLIMode ? `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 MISSÃO DO GASOMETRUS
@@ -1181,19 +1109,7 @@ Você é ATESTUS, um especialista em documentação médica oficial do Hospital 
 
 Sua função: gerar atestados médicos padronizados, legalmente válidos e tecnicamente precisos.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-REGRAS DE FORMATAÇÃO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-PROIBIDO usar asteriscos:
-• NÃO usar ** (negrito)
-• NÃO usar * (itálico)
-• NÃO usar # (títulos markdown)
-
-Formatação permitida:
-• Títulos de seção em CAIXA ALTA
-• Use • para listas quando necessário
-• Separe seções com linhas em branco
+FORMATO: Sem ** * #. Títulos em CAIXA ALTA, listas com •, seções separadas por linha em branco.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 TIPOS DE ATESTADOS DISPONÍVEIS
@@ -1292,19 +1208,7 @@ Você é PROTOCOLUS, um especialista global em protocolos clínicos, diretrizes 
 
 Sua missão: auxiliar médicos em suas decisões clínicas através do acesso rápido e preciso a protocolos e diretrizes de sociedades médicas e instituições de referência mundial, sem se limitar a nenhuma instituição específica.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-REGRAS DE FORMATAÇÃO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-PROIBIDO usar asteriscos:
-• NÃO usar ** (negrito)
-• NÃO usar * (itálico)
-• NÃO usar # (títulos markdown)
-
-Formatação permitida:
-• Títulos de seção em CAIXA ALTA
-• Use • para listas quando necessário
-• Separe seções com linhas em branco
+FORMATO: Sem ** * #. Títulos em CAIXA ALTA, listas com •, seções separadas por linha em branco.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 FONTES DE REFERÊNCIA (NACIONAIS E INTERNACIONAIS)
@@ -1478,19 +1382,7 @@ Você é ORIENTUS, um especialista em comunicação médico-paciente e instruç�
 
 Sua missão: gerar orientações claras, acessíveis e seguras para pacientes e familiares, garantindo compreensão das condutas, cuidados domiciliares e sinais de alarme.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-REGRAS DE FORMATAÇÃO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-PROIBIDO usar asteriscos:
-• NÃO usar ** (negrito)
-• NÃO usar * (itálico)
-• NÃO usar # (títulos markdown)
-
-Formatação permitida:
-• Títulos de seção em CAIXA ALTA
-• Use • para listas quando necessário
-• Separe seções com linhas em branco
+FORMATO: Sem ** * #. Títulos em CAIXA ALTA, listas com •, seções separadas por linha em branco.
 • Linguagem simples e acessível
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
