@@ -241,7 +241,7 @@ export default function Auth() {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
-                    className="mt-8 space-y-5"
+                    className="mt-6 lg:mt-8 space-y-4 lg:space-y-5"
                   >
                     <GoogleAuthButton label="Continuar com Google" />
 
@@ -322,7 +322,7 @@ export default function Auth() {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
-                    className="mt-8 space-y-5"
+                    className="mt-6 lg:mt-8 space-y-4 lg:space-y-5"
                   >
                     <GoogleAuthButton label="Cadastrar com Google" />
 
