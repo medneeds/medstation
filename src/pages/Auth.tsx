@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { signUpSchema, signInSchema } from "@/lib/validations";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { Logo } from "@/components/Logo";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -19,6 +20,9 @@ export default function Auth() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
+  const [showSignInPassword, setShowSignInPassword] = useState(false);
+  const [showSignUpPassword, setShowSignUpPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [signInEmail, setSignInEmail] = useState("");
   const [signInPassword, setSignInPassword] = useState("");
@@ -295,16 +299,27 @@ export default function Auth() {
                             </AlertDialogContent>
                           </AlertDialog>
                         </div>
-                        <Input
-                          id="signin-password"
-                          type="password"
-                          autoComplete="current-password"
-                          placeholder="••••••••"
-                          value={signInPassword}
-                          onChange={(e) => setSignInPassword(e.target.value)}
-                          className="h-12 rounded-xl border-hairline bg-transparent text-base focus-visible:ring-1 focus-visible:ring-primary transition-all"
-                          required
-                        />
+                        <div className="relative">
+                          <Input
+                            id="signin-password"
+                            type={showSignInPassword ? "text" : "password"}
+                            autoComplete="current-password"
+                            placeholder="••••••••"
+                            value={signInPassword}
+                            onChange={(e) => setSignInPassword(e.target.value)}
+                            className="h-12 pr-12 rounded-xl border-hairline bg-transparent text-base focus-visible:ring-1 focus-visible:ring-primary transition-all"
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowSignInPassword((v) => !v)}
+                            aria-label={showSignInPassword ? "Ocultar senha" : "Mostrar senha"}
+                            aria-pressed={showSignInPassword}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 inline-flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                          >
+                            {showSignInPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
                       </div>
                       <Button
                         type="submit"
@@ -419,31 +434,53 @@ export default function Auth() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                         <div className="space-y-1.5">
                           <Label htmlFor="signup-password" className="text-xs uppercase tracking-wider text-muted-foreground">Senha *</Label>
-                          <Input
-                            id="signup-password"
-                            type="password"
-                            autoComplete="new-password"
-                            placeholder="Mínimo 8 caracteres"
-                            value={signUpPassword}
-                            onChange={(e) => setSignUpPassword(e.target.value)}
-                            className="h-12 rounded-xl border-hairline bg-transparent text-base"
-                            required
-                            minLength={8}
-                          />
+                          <div className="relative">
+                            <Input
+                              id="signup-password"
+                              type={showSignUpPassword ? "text" : "password"}
+                              autoComplete="new-password"
+                              placeholder="Mínimo 8 caracteres"
+                              value={signUpPassword}
+                              onChange={(e) => setSignUpPassword(e.target.value)}
+                              className="h-12 pr-12 rounded-xl border-hairline bg-transparent text-base"
+                              required
+                              minLength={8}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowSignUpPassword((v) => !v)}
+                              aria-label={showSignUpPassword ? "Ocultar senha" : "Mostrar senha"}
+                              aria-pressed={showSignUpPassword}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 inline-flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                            >
+                              {showSignUpPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
                         </div>
                         <div className="space-y-1.5">
                           <Label htmlFor="signup-confirm" className="text-xs uppercase tracking-wider text-muted-foreground">Confirmar *</Label>
-                          <Input
-                            id="signup-confirm"
-                            type="password"
-                            autoComplete="new-password"
-                            placeholder="Repita a senha"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="h-12 rounded-xl border-hairline bg-transparent text-base"
-                            required
-                            minLength={8}
-                          />
+                          <div className="relative">
+                            <Input
+                              id="signup-confirm"
+                              type={showConfirmPassword ? "text" : "password"}
+                              autoComplete="new-password"
+                              placeholder="Repita a senha"
+                              value={confirmPassword}
+                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              className="h-12 pr-12 rounded-xl border-hairline bg-transparent text-base"
+                              required
+                              minLength={8}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowConfirmPassword((v) => !v)}
+                              aria-label={showConfirmPassword ? "Ocultar confirmação de senha" : "Mostrar confirmação de senha"}
+                              aria-pressed={showConfirmPassword}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 inline-flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                            >
+                              {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
                         </div>
                       </div>
                       {confirmPassword && signUpPassword !== confirmPassword && (
