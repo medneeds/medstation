@@ -118,125 +118,210 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <header className="flex items-center justify-between px-3 md:px-4 py-2 md:py-3 border-b bg-card">
+      <header className="flex items-center justify-between px-3 md:px-4 py-2 md:py-3 border-b border-border/60 bg-gradient-to-r from-card via-card to-card/80 backdrop-blur-sm">
         <div className="flex items-center gap-2 md:gap-3">
-          <Button variant="ghost" size="icon" onClick={handleExit} className="h-8 w-8 md:h-10 md:w-10">
+          <Button variant="ghost" size="icon" onClick={handleExit} className="h-8 w-8 md:h-10 md:w-10 rounded-full">
             <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
           </Button>
           <div>
-            <h1 className="font-semibold text-sm md:text-base">Modo Consultório</h1>
+            <h1 className="font-semibold text-sm md:text-base tracking-tight flex items-center gap-2">
+              Modo Consultório
+              <span className="hidden sm:inline-flex items-center gap-1 text-[9px] md:text-[10px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-gradient-to-r from-primary/20 to-primary/10 text-primary ring-1 ring-primary/20">
+                Premium
+              </span>
+            </h1>
             <p className="text-[10px] md:text-xs text-muted-foreground">Clínicus · Transcrição ao vivo + revisão final do áudio</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 md:gap-4">
-          <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
-            <Clock className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
-            <span className="font-mono">{formattedTime}</span>
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm px-2.5 py-1 rounded-full bg-muted/50 ring-1 ring-border/60">
+            <Clock className="h-3 w-3 md:h-3.5 md:w-3.5 text-muted-foreground" />
+            <span className="font-mono tabular-nums tracking-tight">{formattedTime}</span>
           </div>
 
           {isRecording && (
-            <div className="flex items-center gap-1 md:gap-2">
-              <div className={cn(
-                "w-2 h-2 rounded-full",
-                isPaused ? "bg-yellow-500" : "bg-red-500 animate-pulse"
-              )} />
-              <span className="text-[10px] md:text-xs text-muted-foreground hidden sm:inline">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className={cn(
+                "flex items-center gap-1.5 md:gap-2 px-2.5 py-1 rounded-full ring-1 transition-colors",
+                isPaused
+                  ? "bg-yellow-500/10 ring-yellow-500/30 text-yellow-600 dark:text-yellow-400"
+                  : "bg-red-500/10 ring-red-500/30 text-red-600 dark:text-red-400"
+              )}
+            >
+              <span className="relative flex h-2 w-2">
+                {!isPaused && (
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping" />
+                )}
+                <span className={cn(
+                  "relative inline-flex rounded-full h-2 w-2",
+                  isPaused ? "bg-yellow-500" : "bg-red-500"
+                )} />
+              </span>
+              <span className="text-[10px] md:text-xs font-medium uppercase tracking-wider hidden sm:inline">
                 {isPaused ? 'Pausado' : 'Gravando'}
               </span>
-            </div>
+            </motion.div>
           )}
         </div>
       </header>
 
-      {/* Audio Control Bar */}
-      <div className="flex flex-col items-center gap-4 md:gap-6 px-3 md:px-4 py-6 md:py-8 border-b bg-gradient-to-b from-muted/50 to-background relative overflow-hidden">
+      {/* Audio Control Bar — premium surface */}
+      <div className="relative overflow-hidden border-b border-border/60">
+        {/* Layered ambient background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-muted/40 via-background/60 to-background pointer-events-none" />
+        <div
+          className="absolute inset-0 opacity-[0.35] pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(60% 80% at 50% 0%, hsl(var(--primary) / 0.18), transparent 70%)",
+          }}
+        />
         {isRecording && !isPaused && (
-          <div className="absolute inset-0 bg-primary/5 animate-pulse pointer-events-none" />
+          <>
+            <motion.div
+              className="absolute inset-x-0 top-0 h-px pointer-events-none"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent, hsl(var(--primary) / 0.6), transparent)",
+              }}
+              animate={{ opacity: [0.3, 0.9, 0.3] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <motion.div
+              className="absolute -inset-x-10 -top-20 h-40 blur-3xl pointer-events-none"
+              style={{
+                background:
+                  "radial-gradient(50% 50% at 50% 50%, hsl(var(--primary) / 0.25), transparent 70%)",
+              }}
+              animate={{ opacity: [0.4, 0.7, 0.4] }}
+              transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+            />
+          </>
         )}
 
-        <AudioVisualizer
-          level={audioLevel}
-          isActive={isRecording && !isPaused}
-          currentSpeaker={isRecording && !isPaused ? currentSpeaker : undefined}
-          className="w-full max-w-sm"
-        />
+        <div className="relative flex flex-col items-center gap-4 md:gap-6 px-3 md:px-4 py-6 md:py-8">
+          <AudioVisualizer
+            level={audioLevel}
+            isActive={isRecording && !isPaused}
+            currentSpeaker={isRecording && !isPaused ? currentSpeaker : undefined}
+            className="w-full max-w-sm"
+          />
 
-        {/* Live partial transcript indicator */}
-        {isRecording && !isPaused && (
-          <div className="text-center min-h-[1.5rem] max-w-md px-3">
-            {partialTranscription ? (
-              <p className="text-sm text-muted-foreground italic">{partialTranscription}</p>
+          {/* Live partial transcript indicator */}
+          {isRecording && !isPaused && (
+            <div className="text-center min-h-[1.5rem] max-w-md px-3">
+              {partialTranscription ? (
+                <motion.p
+                  key={partialTranscription}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-sm text-foreground/80 italic leading-relaxed"
+                >
+                  {partialTranscription}
+                </motion.p>
+              ) : (
+                <p className="text-xs text-muted-foreground/70 inline-flex items-center gap-1.5">
+                  <span className="inline-flex gap-0.5">
+                    <span className="animate-thinking-dot text-base leading-none">•</span>
+                    <span className="animate-thinking-dot [animation-delay:0.18s] text-base leading-none">•</span>
+                    <span className="animate-thinking-dot [animation-delay:0.36s] text-base leading-none">•</span>
+                  </span>
+                  {isTranscribing ? 'Ouvindo' : 'Aguardando fala'}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Control Buttons */}
+          <div className="flex items-center gap-3">
+            {!isRecording ? (
+              <div className="relative group">
+                {/* Premium halo behind start button */}
+                <span
+                  className="absolute -inset-1.5 rounded-full opacity-60 blur-md group-hover:opacity-90 transition-opacity pointer-events-none"
+                  style={{
+                    background:
+                      "conic-gradient(from 0deg, hsl(var(--primary) / 0), hsl(var(--primary) / 0.55), hsl(var(--primary) / 0), hsl(var(--primary) / 0.4), hsl(var(--primary) / 0))",
+                  }}
+                />
+                <Button
+                  onClick={startRecording}
+                  disabled={isConnecting}
+                  size={isMobile ? "default" : "lg"}
+                  className="relative gap-2 px-7 rounded-full shadow-[0_8px_30px_-8px_hsl(var(--primary)/0.6)] bg-gradient-to-b from-primary to-primary/90 hover:from-primary hover:to-primary transition-all hover:shadow-[0_12px_36px_-10px_hsl(var(--primary)/0.7)] active:scale-[0.98]"
+                >
+                  {isConnecting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" />
+                      <span className="text-sm md:text-base font-medium">Conectando…</span>
+                    </>
+                  ) : (
+                    <>
+                      <Mic className="h-4 w-4 md:h-5 md:w-5" />
+                      <span className="text-sm md:text-base font-medium">Iniciar Gravação</span>
+                    </>
+                  )}
+                </Button>
+              </div>
             ) : (
-              <p className="text-xs text-muted-foreground/60">
-                {isTranscribing ? 'Ouvindo…' : 'Aguardando fala…'}
-              </p>
+              <>
+                {isPaused ? (
+                  <Button onClick={resumeRecording} variant="outline" size={isMobile ? "default" : "lg"} className="gap-2 rounded-full px-5 backdrop-blur-sm bg-background/60">
+                    <Play className="h-4 w-4 md:h-5 md:w-5" />
+                    <span className="text-sm md:text-base">Continuar</span>
+                  </Button>
+                ) : (
+                  <Button onClick={pauseRecording} variant="outline" size={isMobile ? "default" : "lg"} className="gap-2 rounded-full px-5 backdrop-blur-sm bg-background/60">
+                    <Pause className="h-4 w-4 md:h-5 md:w-5" />
+                    <span className="text-sm md:text-base">Pausar</span>
+                  </Button>
+                )}
+                <Button
+                  onClick={handleFinish}
+                  variant="default"
+                  size={isMobile ? "default" : "lg"}
+                  className="gap-2 px-6 rounded-full shadow-[0_8px_24px_-8px_hsl(var(--primary)/0.55)] active:scale-[0.98]"
+                >
+                  <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5" />
+                  <span className="text-sm md:text-base font-medium">Finalizar</span>
+                </Button>
+              </>
             )}
           </div>
-        )}
 
-        {/* Control Buttons */}
-        <div className="flex items-center gap-3">
-          {!isRecording ? (
-            <Button onClick={startRecording} disabled={isConnecting} size={isMobile ? "default" : "lg"} className="gap-2 px-6">
-              {isConnecting ? (
-                <>
-                  <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" />
-                  <span className="text-sm md:text-base">Conectando…</span>
-                </>
-              ) : (
-                <>
-                  <Mic className="h-4 w-4 md:h-5 md:w-5" />
-                  <span className="text-sm md:text-base">Iniciar Gravação</span>
-                </>
-              )}
-            </Button>
-          ) : (
-            <>
-              {isPaused ? (
-                <Button onClick={resumeRecording} variant="outline" size={isMobile ? "default" : "lg"} className="gap-2">
-                  <Play className="h-4 w-4 md:h-5 md:w-5" />
-                  <span className="text-sm md:text-base">Continuar</span>
-                </Button>
-              ) : (
-                <Button onClick={pauseRecording} variant="outline" size={isMobile ? "default" : "lg"} className="gap-2">
-                  <Pause className="h-4 w-4 md:h-5 md:w-5" />
-                  <span className="text-sm md:text-base">Pausar</span>
-                </Button>
-              )}
-              <Button onClick={handleFinish} variant="default" size={isMobile ? "default" : "lg"} className="gap-2 px-6">
-                <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5" />
-                <span className="text-sm md:text-base">Finalizar</span>
+          {isFinalizing && (
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground px-3 py-1.5 rounded-full bg-muted/40 ring-1 ring-border/60"
+            >
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+              <span>Revisão final do áudio em andamento…</span>
+            </motion.div>
+          )}
+
+          {segments.length > 0 && !isRecording && !isFinalizing && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-3"
+            >
+              <Button
+                onClick={handleGenerateStructure}
+                disabled={isStructuring}
+                size="lg"
+                variant="secondary"
+                className="gap-2 px-6 rounded-full bg-gradient-to-b from-primary/15 to-primary/5 hover:from-primary/25 hover:to-primary/10 text-primary ring-1 ring-primary/25 shadow-[0_6px_20px_-8px_hsl(var(--primary)/0.4)]"
+              >
+                <FileText className="h-5 w-5" />
+                <span className="font-medium">{isStructuring ? 'Estruturando...' : 'Gerar Estruturação Clínica'}</span>
               </Button>
-            </>
+            </motion.div>
           )}
         </div>
-
-        {isFinalizing && (
-          <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Revisão final do áudio em andamento…</span>
-          </div>
-        )}
-
-        {segments.length > 0 && !isRecording && !isFinalizing && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3"
-          >
-            <Button
-              onClick={handleGenerateStructure}
-              disabled={isStructuring}
-              size="lg"
-              variant="secondary"
-              className="gap-2 px-6 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20"
-            >
-              <FileText className="h-5 w-5" />
-              <span>{isStructuring ? 'Estruturando...' : 'Gerar Estruturação Clínica'}</span>
-            </Button>
-          </motion.div>
-        )}
       </div>
 
       {/* Main Content */}
