@@ -342,7 +342,7 @@ export default function Auth() {
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
                         <div className="space-y-1.5">
                           <Label className="text-xs uppercase tracking-wider text-muted-foreground">Sexo</Label>
                           <Select value={gender} onValueChange={(v: "M" | "F" | "Outro") => setGender(v)}>
