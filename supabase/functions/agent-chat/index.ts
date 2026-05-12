@@ -465,6 +465,28 @@ EXEMPLO COMPACTO:
 20/11 14:30: Hb 10,8 Ht 32,7 Leuco 17.800 Pqt 163.000 Ur 36 Cr 0,48 Na 139 K 2,68 Ca 7,87 Mg 1,78 P 1,43 TP 16,1 (RNI 1,31) TTPa 25,0
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━` : ''}
+${usePipeSeparator ? `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+| MODO PIPE ATIVADO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+REGRA OBRIGATÓRIA: Separar TODOS os exames da mesma linha com " | " (espaço-pipe-espaço) ao invés de espaço simples. Vale para LSL, LSI, modo compacto e modo alterados.
+
+EXEMPLO:
+20/11 14:30: Hb 10,8 | Ht 32,7 | Leuco 17.800 | Pqt 163.000 | Ur 36 | Cr 0,48 | Na 139 | K 2,68
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━` : ''}
+${includeTime === false ? `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🕐 HORÁRIO DESATIVADO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+REGRA: Omitir o horário (HH:MM) do cabeçalho de cada exame. Manter APENAS a data DD/MM.
+
+EXEMPLO SEM HORA:
+20/11: Hb 10,8 Ht 32,7 Leuco 17.800
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━` : ''}
 
 COMPORTAMENTO:
 • Identifico automaticamente LSL ou LSI
