@@ -58,9 +58,6 @@ const agents = [
 ];
 
 const quickActions = [
-  { name: "Novo Paciente", path: "/patients", icon: User, description: "Cadastrar novo paciente" },
-  { name: "Novo Caso", path: "/cases", icon: Folder, description: "Criar novo caso clínico" },
-  { name: "Nova Prescrição", path: "/prescriptions/new", icon: Pill, description: "Criar nova prescrição" },
   { name: "Nova Nota", path: "/notes", icon: StickyNote, description: "Criar nova nota" },
 ];
 
