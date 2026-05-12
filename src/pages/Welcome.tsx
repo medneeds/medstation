@@ -185,6 +185,58 @@ export default function Welcome() {
               </motion.div>
             )}
 
+            {/* Set Password State (Apple Pay / Google Pay / Link) */}
+            {status === "set-password" && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6 text-center"
+              >
+                <div className="inline-flex w-14 h-14 rounded-full bg-primary/10 border border-primary/30 items-center justify-center">
+                  <CheckCircle2 className="w-7 h-7 text-primary" strokeWidth={1.75} />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-semibold tracking-tight">Pagamento confirmado</h2>
+                  <p className="text-muted-foreground mt-2 text-sm">
+                    Sua conta foi criada com {email}. Como você pagou via carteira digital,
+                    enviaremos um link seguro para você definir sua senha.
+                  </p>
+                </div>
+
+                {!resetSent ? (
+                  <Button
+                    onClick={handleSendPasswordEmail}
+                    disabled={loading}
+                    className="w-full h-12 shadow-md"
+                  >
+                    {loading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>Receber link por email <ArrowRight className="w-4 h-4 ml-2" /></>
+                    )}
+                  </Button>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-center gap-2 p-3 bg-muted/50 rounded-lg border text-sm">
+                      <Mail className="w-4 h-4 text-primary" />
+                      <span>Link enviado para {email}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Não chegou? Verifique a caixa de spam ou{" "}
+                      <Button
+                        variant="link"
+                        className="h-auto p-0 text-xs"
+                        onClick={handleSendPasswordEmail}
+                        disabled={loading}
+                      >
+                        reenviar
+                      </Button>.
+                    </p>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
             {/* Login State */}
             {status === "login" && (
               <motion.div 
