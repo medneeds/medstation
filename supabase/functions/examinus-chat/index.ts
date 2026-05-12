@@ -168,6 +168,21 @@ SE NÃO FOR EXAME: "Envie um laudo de exame."`;
       ];
     }
 
+    // SHIELD: bloqueia tentativas de extração de prompt na última msg do usuário
+    const lastUserMsg = [...(messages || [])].reverse().find((m: any) => m?.role === "user");
+    const lastUserText = typeof lastUserMsg?.content === "string"
+      ? lastUserMsg.content
+      : Array.isArray(lastUserMsg?.content)
+        ? lastUserMsg.content.map((p: any) => p?.text || "").join(" ")
+        : "";
+    if (detectExtractionAttempt(lastUserText)) {
+      console.warn("[shield] examinus-chat extraction attempt blocked");
+      return new Response(JSON.stringify({ response: SHIELD_REFUSAL_TEXT }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
