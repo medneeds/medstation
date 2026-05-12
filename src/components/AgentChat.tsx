@@ -1101,23 +1101,73 @@ export function AgentChat({
       {/* Chat messages */}
       <ScrollArea className="flex-1 py-4">
         {!currentConversation || currentConversation.messages.length === 0 ? (
-          <div className="text-center py-8 md:py-12 text-muted-foreground">
-            <div className={`rounded-full p-4 md:p-6 bg-gradient-to-br from-primary/10 to-primary/5 inline-block ${agentColor} mb-4`}>
-              {agentIcon}
-            </div>
-            <p className="text-base md:text-lg font-medium">Olá! Como posso ajudar?</p>
-            <p className="text-xs md:text-sm mt-2">Envie uma mensagem para começar</p>
-            {lastConversation && (
-              <Button
-                onClick={restoreLastConversation}
-                variant="outline"
-                size="sm"
-                className="mt-4"
-              >
-                Continuar última conversa
-              </Button>
-            )}
-          </div>
+          (() => {
+            const greetings: Record<string, { title: string; subtitle: string }> = {
+              clinicus: {
+                title: "Às ordens, doutor(a). Por onde começamos?",
+                subtitle: "Solte os sintomas, exame físico ou áudio do plantão — eu organizo o caso e entrego a anamnese pronta.",
+              },
+              examinus: {
+                title: "De jaleco e calculadora à mão.",
+                subtitle: "Cole ou envie os exames. Eu separo o que é alterado, comento o que importa e entrego em segundos.",
+              },
+              prescriptus: {
+                title: "Receituário pronto. Qual o cenário?",
+                subtitle: "Descreva o paciente — eu devolvo prescrição com dose, via, ajuste renal e a evidência por trás. Sem chute.",
+              },
+              gasometrus: {
+                title: "Pode soltar a gasometria.",
+                subtitle: "Em segundos: distúrbio, compensação esperada, ânion gap e a conduta à beira-leito.",
+              },
+              atestus: {
+                title: "Atestado em três linhas. Diga o essencial.",
+                subtitle: "CID e dias de afastamento — eu cuido da redação, sem floreio e sem descrever doença.",
+              },
+              codexus: {
+                title: "Sou rápido com CID. Pode descrever.",
+                subtitle: "Quadro clínico ou termo livre — devolvo os códigos candidatos prontos para colar no sistema.",
+              },
+              scorius: {
+                title: "Qual escore aplicamos hoje?",
+                subtitle: "CHA₂DS₂-VASc, qSOFA, NEWS, Wells… diga o cenário e eu pontuo com a interpretação clínica.",
+              },
+              numerus: {
+                title: "Calculadora afiada. O que precisa?",
+                subtitle: "Doses pediátricas, clearance, conversões, infusões — manda o dado bruto que eu entrego o número certo.",
+              },
+              protocolus: {
+                title: "Diretrizes na ponta. Qual condição?",
+                subtitle: "Trago o protocolo (AHA, ESC, WHO, SBC) com a recomendação atualizada e o nível de evidência.",
+              },
+              orientus: {
+                title: "Vamos traduzir isso para o paciente.",
+                subtitle: "Diga o quadro e o tratamento — escrevo a orientação de alta em linguagem clara, do jeito que ele entende em casa.",
+              },
+            };
+            const g = greetings[agentType] ?? {
+              title: `Pronto, doutor(a). ${agentName} à postos.`,
+              subtitle: "Pode começar — eu cuido do resto.",
+            };
+            return (
+              <div className="text-center py-8 md:py-12 text-muted-foreground max-w-xl mx-auto px-4">
+                <div className={`rounded-full p-4 md:p-6 bg-gradient-to-br from-primary/15 to-primary/5 ring-1 ring-primary/20 inline-block ${agentColor} mb-5 [&>svg]:stroke-[1.75]`}>
+                  {agentIcon}
+                </div>
+                <p className="text-base md:text-xl font-medium text-foreground tracking-tight">{g.title}</p>
+                <p className="text-xs md:text-sm mt-2 leading-relaxed">{g.subtitle}</p>
+                {lastConversation && (
+                  <Button
+                    onClick={restoreLastConversation}
+                    variant="outline"
+                    size="sm"
+                    className="mt-5"
+                  >
+                    Continuar última conversa
+                  </Button>
+                )}
+              </div>
+            );
+          })()
         ) : (
           <div className="space-y-4">
             {currentConversation.messages.map((msg) => {
