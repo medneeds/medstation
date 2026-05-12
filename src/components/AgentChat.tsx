@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AudioPlayer } from "@/components/AudioPlayer";
@@ -29,7 +30,9 @@ import {
   Pill,
   ListChecks,
   Zap,
-  Minimize2
+  Minimize2,
+  Maximize2,
+  ChevronDown
 } from "lucide-react";
 import {
   Sheet,
@@ -137,6 +140,17 @@ export function AgentChat({
   const [quickCIDMode, setQuickCIDMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [inputExpanded, setInputExpanded] = useState(false);
+
+  // Auto-resize textarea based on content
+  useEffect(() => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    ta.style.height = "auto";
+    const max = inputExpanded ? 400 : 200;
+    ta.style.height = Math.min(ta.scrollHeight, max) + "px";
+  }, [message, inputExpanded]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -1316,13 +1330,167 @@ export function AgentChat({
           </div>
         )}
 
-        {/* Input row */}
-        <div className="flex gap-1.5 md:gap-2 items-center">
+        {/* Toolbar row: attach + desktop toggles */}
+        {!isMobile && (
+          <div className="flex gap-2 items-center flex-wrap mb-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="shrink-0 h-8 gap-1.5 rounded-full"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingFile}
+              title="Anexar foto, PDF ou documento"
+            >
+              {uploadingFile ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Paperclip className="h-3.5 w-3.5" />
+              )}
+              <span className="text-xs">Anexar</span>
+            </Button>
+            {agentType === "clinicus" && (
+              <>
+                <Toggle
+                  pressed={directAHEMode}
+                  onPressedChange={setDirectAHEMode}
+                  size="sm"
+                  className="shrink-0 h-8 data-[state=on]:bg-primary/20 gap-1 rounded-full"
+                  title="Gerar anamnese hospitalar estruturada diretamente"
+                >
+                  <FileDown className="h-4 w-4" />
+                  <span className="text-xs">Anamnese</span>
+                </Toggle>
+                {directAHEMode && (
+                  <div className="inline-flex items-center rounded-full border border-border bg-card/60 p-0.5 text-xs shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setAheTemplate("v1")}
+                      className={`px-2.5 h-7 rounded-full transition-colors ${aheTemplate === "v1" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+                      title="Modelo 1: anamnese hospitalar padrão"
+                    >
+                      Modelo 1 · Padrão
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAheTemplate("v2")}
+                      className={`px-2.5 h-7 rounded-full transition-colors ${aheTemplate === "v2" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+                      title="Modelo 2: admissão hospitalar para Medicina de Emergência"
+                    >
+                      Modelo 2 · Emergência
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAheTemplate("v3")}
+                      className={`px-2.5 h-7 rounded-full transition-colors ${aheTemplate === "v3" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+                      title="Modelo 3: admissão de paciente crítico em UTI/urgência"
+                    >
+                      Modelo 3 · Admissão UTI
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+            {agentType === "prescriptus" && (
+              <Toggle
+                pressed={bulaInteligenteMode}
+                onPressedChange={setBulaInteligenteMode}
+                size="sm"
+                className="shrink-0 h-8 data-[state=on]:bg-primary/20 gap-1 rounded-full"
+                title="Modo B.I.: Bula Inteligente"
+              >
+                <Pill className="h-4 w-4" />
+                <span className="text-xs">B.I.</span>
+              </Toggle>
+            )}
+            {agentType === "gasometrus" && (
+              <Toggle
+                pressed={directLIMode}
+                onPressedChange={setDirectLIMode}
+                size="sm"
+                className="shrink-0 h-8 data-[state=on]:bg-primary/20 gap-1 rounded-full"
+                title="Modo L.I.: Leitura Sistemática"
+              >
+                <ListChecks className="h-4 w-4" />
+                <span className="text-xs">L.I.</span>
+              </Toggle>
+            )}
+            {agentType === "codexus" && (
+              <Toggle
+                pressed={quickCIDMode}
+                onPressedChange={setQuickCIDMode}
+                size="sm"
+                className="shrink-0 h-8 data-[state=on]:bg-primary/20 gap-1 rounded-full"
+                title="Modo C.R.: CID Rápido"
+              >
+                <Zap className="h-4 w-4" />
+                <span className="text-xs">C.R.</span>
+              </Toggle>
+            )}
+            {agentType === "examinus" && (
+              <>
+                <Toggle
+                  pressed={usePipeSeparator}
+                  onPressedChange={setUsePipeSeparator}
+                  size="sm"
+                  className="shrink-0 h-8 data-[state=on]:bg-primary/20 rounded-full"
+                  title="Separar exames com |"
+                >
+                  <SeparatorVertical className="h-4 w-4" />
+                </Toggle>
+                <div className="flex items-center gap-2 px-2 h-8 rounded-full bg-muted/40">
+                  <Switch
+                    id="include-time"
+                    checked={includeTime}
+                    onCheckedChange={setIncludeTime}
+                    className="data-[state=checked]:bg-primary"
+                  />
+                  <Label htmlFor="include-time" className="text-xs cursor-pointer flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    Horário
+                  </Label>
+                </div>
+                <Toggle
+                  pressed={onlyAltered}
+                  onPressedChange={setOnlyAltered}
+                  size="sm"
+                  className="shrink-0 h-8 data-[state=on]:bg-amber-500/20 data-[state=on]:text-amber-600 dark:data-[state=on]:text-amber-400 rounded-full"
+                  title="Mostrar apenas resultados alterados/críticos"
+                >
+                  <AlertTriangle className="h-4 w-4" />
+                  <span className="text-xs ml-1">Alterados</span>
+                </Toggle>
+                <Toggle
+                  pressed={clinicalImpression}
+                  onPressedChange={setClinicalImpression}
+                  size="sm"
+                  className="shrink-0 h-8 data-[state=on]:bg-blue-500/20 data-[state=on]:text-blue-600 dark:data-[state=on]:text-blue-400 rounded-full"
+                  title="Impressão clínica"
+                >
+                  <Stethoscope className="h-4 w-4" />
+                  <span className="text-xs ml-1">Impressão</span>
+                </Toggle>
+                <Toggle
+                  pressed={compactMode}
+                  onPressedChange={setCompactMode}
+                  size="sm"
+                  className="shrink-0 h-8 data-[state=on]:bg-emerald-500/20 data-[state=on]:text-emerald-600 dark:data-[state=on]:text-emerald-400 rounded-full"
+                  title="Modo compacto"
+                >
+                  <Minimize2 className="h-4 w-4" />
+                  <span className="text-xs ml-1">Compacto</span>
+                </Toggle>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Input row: textarea (auto-grow + manual expand) + voice + send */}
+        <div className="flex gap-1.5 md:gap-2 items-end">
           {isMobile && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="shrink-0 h-9 w-9 rounded-full hover:bg-primary/10"
+            <Button
+              variant="ghost"
+              size="icon"
+              className="shrink-0 h-10 w-10 rounded-full hover:bg-primary/10"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadingFile}
               title="Anexar arquivo"
@@ -1334,185 +1502,49 @@ export function AgentChat({
               )}
             </Button>
           )}
-          {!isMobile && (
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="shrink-0"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploadingFile}
-              title="Anexar foto, PDF ou documento (imagem, PDF, DOCX, PPTX, XLSX, TXT, MD)"
+          <div className="relative flex-1">
+            <Textarea
+              ref={textareaRef}
+              value={message}
+              onChange={(e) => setMessage(e.target.value.slice(0, 30000))}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage();
+                }
+              }}
+              placeholder={isMobile ? "Mensagem... (Shift+Enter para nova linha)" : `${placeholder}  ·  Shift+Enter para nova linha`}
+              maxLength={30000}
+              rows={1}
+              aria-invalid={(message.length > 0 && !message.trim()) || message.length >= 30000}
+              className={`w-full resize-none pr-10 py-2.5 text-base leading-relaxed min-h-[44px] rounded-2xl transition-all ${
+                (message.length > 0 && !message.trim()) || message.length >= 30000
+                  ? "border-destructive focus-visible:ring-destructive"
+                  : ""
+              }`}
+              style={{ maxHeight: inputExpanded ? 400 : 200 }}
+              disabled={isLoading}
+            />
+            <button
+              type="button"
+              onClick={() => setInputExpanded((v) => !v)}
+              className="absolute right-2 top-2 h-6 w-6 rounded-md inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              title={inputExpanded ? "Reduzir campo" : "Expandir campo"}
+              aria-label={inputExpanded ? "Reduzir campo de mensagem" : "Expandir campo de mensagem"}
             >
-              {uploadingFile ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Paperclip className="h-4 w-4" />
-              )}
-            </Button>
-          )}
-          {/* Desktop-only agent toggles inline */}
-          {!isMobile && agentType === "clinicus" && (
-            <>
-              <Toggle
-                pressed={directAHEMode}
-                onPressedChange={setDirectAHEMode}
-                size="sm"
-                className="shrink-0 data-[state=on]:bg-primary/20 gap-1"
-                title="Gerar anamnese hospitalar estruturada diretamente"
-              >
-                <FileDown className="h-4 w-4" />
-                <span className="text-xs">Anamnese</span>
-              </Toggle>
-              {directAHEMode && (
-                <div className="inline-flex items-center rounded-full border border-border bg-card/60 p-0.5 text-xs shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setAheTemplate("v1")}
-                    className={`px-2.5 h-7 rounded-full transition-colors ${aheTemplate === "v1" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
-                    title="Modelo 1: anamnese hospitalar padrão (discussão e documentação Clínicus)"
-                  >
-                    Modelo 1 · Padrão
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAheTemplate("v2")}
-                    className={`px-2.5 h-7 rounded-full transition-colors ${aheTemplate === "v2" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
-                    title="Modelo 2: admissão hospitalar para Medicina de Emergência"
-                  >
-                    Modelo 2 · Emergência
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAheTemplate("v3")}
-                    className={`px-2.5 h-7 rounded-full transition-colors ${aheTemplate === "v3" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
-                    title="Modelo 3: admissão de paciente crítico em UTI/urgência"
-                  >
-                    Modelo 3 · Admissão UTI
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-          {!isMobile && agentType === "prescriptus" && (
-            <Toggle
-              pressed={bulaInteligenteMode}
-              onPressedChange={setBulaInteligenteMode}
-              size="sm"
-              className="shrink-0 data-[state=on]:bg-primary/20 gap-1"
-              title="Modo B.I.: Bula Inteligente - resposta estruturada sobre medicamento"
-            >
-              <Pill className="h-4 w-4" />
-              <span className="text-xs">B.I.</span>
-            </Toggle>
-          )}
-          {!isMobile && agentType === "gasometrus" && (
-            <Toggle
-              pressed={directLIMode}
-              onPressedChange={setDirectLIMode}
-              size="sm"
-              className="shrink-0 data-[state=on]:bg-primary/20 gap-1"
-              title="Modo L.I.: Leitura Sistemática - análise objetiva focada"
-            >
-              <ListChecks className="h-4 w-4" />
-              <span className="text-xs">L.I.</span>
-            </Toggle>
-          )}
-          {!isMobile && agentType === "codexus" && (
-            <Toggle
-              pressed={quickCIDMode}
-              onPressedChange={setQuickCIDMode}
-              size="sm"
-              className="shrink-0 data-[state=on]:bg-primary/20 gap-1"
-              title="Modo C.R.: CID Rápido — retorna até 10 CIDs com base no termo, sem perguntas"
-            >
-              <Zap className="h-4 w-4" />
-              <span className="text-xs">C.R.</span>
-            </Toggle>
-          )}
-          {!isMobile && agentType === "examinus" && (
-            <>
-              <Toggle
-                pressed={usePipeSeparator}
-                onPressedChange={setUsePipeSeparator}
-                size="sm"
-                className="shrink-0 data-[state=on]:bg-primary/20"
-                title="Separar exames com |"
-              >
-                <SeparatorVertical className="h-4 w-4" />
-              </Toggle>
-              <div className="flex items-center gap-2 px-2">
-                <Switch
-                  id="include-time"
-                  checked={includeTime}
-                  onCheckedChange={setIncludeTime}
-                  className="data-[state=checked]:bg-primary"
-                />
-                <Label htmlFor="include-time" className="text-sm cursor-pointer flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  Horário
-                </Label>
-              </div>
-              <Toggle
-                pressed={onlyAltered}
-                onPressedChange={setOnlyAltered}
-                size="sm"
-                className="shrink-0 data-[state=on]:bg-amber-500/20 data-[state=on]:text-amber-600 dark:data-[state=on]:text-amber-400"
-                title="Mostrar apenas resultados alterados/críticos"
-              >
-                <AlertTriangle className="h-4 w-4" />
-                <span className="text-xs ml-1">Alterados</span>
-              </Toggle>
-              <Toggle
-                pressed={clinicalImpression}
-                onPressedChange={setClinicalImpression}
-                size="sm"
-                className="shrink-0 data-[state=on]:bg-blue-500/20 data-[state=on]:text-blue-600 dark:data-[state=on]:text-blue-400"
-                title="Impressão clínica: análise das alterações laboratoriais"
-              >
-                <Stethoscope className="h-4 w-4" />
-                <span className="text-xs ml-1">Impressão</span>
-              </Toggle>
-              <Toggle
-                pressed={compactMode}
-                onPressedChange={setCompactMode}
-                size="sm"
-                className="shrink-0 data-[state=on]:bg-emerald-500/20 data-[state=on]:text-emerald-600 dark:data-[state=on]:text-emerald-400"
-                title="Modo compacto: omite VCM, HCM, CHCM, RDW, diferencial e índices secundários"
-              >
-                <Minimize2 className="h-4 w-4" />
-                <span className="text-xs ml-1">Compacto</span>
-              </Toggle>
-            </>
-          )}
-          <Input
-            value={message}
-            onChange={(e) => setMessage(e.target.value.slice(0, 30000))}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-              }
-            }}
-            placeholder={isMobile ? "Mensagem..." : placeholder}
-            maxLength={30000}
-            aria-invalid={(message.length > 0 && !message.trim()) || message.length >= 30000}
-            className={`flex-1 text-base md:text-base h-11 md:h-10 ${
-              (message.length > 0 && !message.trim()) || message.length >= 30000
-                ? "border-destructive focus-visible:ring-destructive"
-                : ""
-            }`}
-            disabled={isLoading}
-          />
-          <AgentVoiceInput 
+              {inputExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+            </button>
+          </div>
+          <AgentVoiceInput
             onTranscription={handleVoiceTranscription}
             disabled={isLoading}
             context={agentType}
           />
-          <Button 
+          <Button
             onClick={sendMessage}
             disabled={!message.trim() || isLoading || message.length > 30000}
             size="icon"
-            className="shrink-0 h-9 w-9 md:h-10 md:w-10 rounded-full md:rounded-md"
+            className="shrink-0 h-10 w-10 rounded-full"
             title={!message.trim() ? "Digite uma mensagem para enviar" : "Enviar mensagem"}
           >
             {isLoading ? (
