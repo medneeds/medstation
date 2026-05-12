@@ -34,10 +34,51 @@ const EXTRACTION_PATTERNS: RegExp[] = [
   /\b(primeir[ao]s?|first|últim[ao]s?|last)\s+\d+\s+(palavras?|words?|caracteres?|characters?|linhas?|lines?)\b[^.?!\n]{0,40}\b(prompt|instru[cç][õo]es|system|regras|rules)/i,
   /\brepeat\b[^.?!\n]{0,40}\b(everything|tudo)\b[^.?!\n]{0,40}\b(above|acima|before|antes)/i,
 ];
-function detectExtractionAttempt(text: string): boolean {
-  if (!text || typeof text !== "string") return false;
+function findExtractionMatch(text: string): string | null {
+  if (!text || typeof text !== "string") return null;
   const t = text.slice(0, 4000);
-  return EXTRACTION_PATTERNS.some((re) => re.test(t));
+  for (const re of EXTRACTION_PATTERNS) {
+    if (re.test(t)) return re.source;
+  }
+  return null;
+}
+function detectExtractionAttempt(text: string): boolean {
+  return findExtractionMatch(text) !== null;
+}
+
+async function logSecurityEvent(params: {
+  functionName: string;
+  userId?: string | null;
+  ip?: string | null;
+  pattern: string | null;
+  excerpt: string;
+  metadata?: Record<string, unknown>;
+}) {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!supabaseUrl || !serviceKey) return;
+    await fetch(`${supabaseUrl}/rest/v1/security_events`, {
+      method: "POST",
+      headers: {
+        apikey: serviceKey,
+        Authorization: `Bearer ${serviceKey}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({
+        function_name: params.functionName,
+        event_type: "prompt_extraction_attempt",
+        user_id: params.userId ?? null,
+        ip_address: params.ip ?? null,
+        pattern_matched: params.pattern,
+        excerpt: params.excerpt.slice(0, 200),
+        metadata: params.metadata ?? {},
+      }),
+    });
+  } catch (e) {
+    console.error("[security_events] failed to log", e);
+  }
 }
 
 
@@ -175,8 +216,16 @@ SE NÃO FOR EXAME: "Envie um laudo de exame."`;
       : Array.isArray(lastUserMsg?.content)
         ? lastUserMsg.content.map((p: any) => p?.text || "").join(" ")
         : "";
-    if (detectExtractionAttempt(lastUserText)) {
+    const extractionMatch = findExtractionMatch(lastUserText);
+    if (extractionMatch) {
       console.warn("[shield] examinus-chat extraction attempt blocked");
+      const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || null;
+      logSecurityEvent({
+        functionName: "examinus-chat",
+        ip,
+        pattern: extractionMatch,
+        excerpt: lastUserText,
+      });
       return new Response(JSON.stringify({ response: SHIELD_REFUSAL_TEXT }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
