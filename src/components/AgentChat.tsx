@@ -32,7 +32,10 @@ import {
   Zap,
   Minimize2,
   Maximize2,
-  ChevronDown
+  ChevronDown,
+  Expand,
+  Shrink,
+  BookOpen
 } from "lucide-react";
 import {
   Sheet,
