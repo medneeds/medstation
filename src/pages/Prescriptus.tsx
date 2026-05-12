@@ -12,7 +12,7 @@ export default function Prescriptus() {
         <AgentChat
           agentName="Prescriptus"
           agentIcon={<Pill className="h-8 w-8" />}
-          agentColor="text-destructive"
+          agentColor="text-primary"
           agentType="prescriptus"
           caseId={caseId}
           placeholder="Prescrições estruturadas e guiadas por evidências científicas..."

@@ -12,7 +12,7 @@ export default function Numerus() {
         <AgentChat
           agentName="Numerus"
           agentIcon={<Calculator className="h-8 w-8" />}
-          agentColor="text-accent"
+          agentColor="text-primary"
           agentType="numerus"
           caseId={caseId}
           placeholder="Calculadoras médicas e conversores de unidades para seu dia a dia..."

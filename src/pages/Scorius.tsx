@@ -12,7 +12,7 @@ export default function Scorius() {
         <AgentChat
           agentName="Scorius"
           agentIcon={<Activity className="h-8 w-8" />}
-          agentColor="text-warning"
+          agentColor="text-primary"
           agentType="scorius"
           caseId={caseId}
           placeholder="Calcule scores e classificações de risco de forma rápida e precisa..."

@@ -10,7 +10,7 @@ export default function Examinus() {
       <AgentChat
         agentName="Examinus"
         agentIcon={<TestTube2 className="h-8 w-8" />}
-        agentColor="text-examinus"
+        agentColor="text-primary"
         agentType="examinus"
         caseId={caseId}
         placeholder="Cole resultados de exames - hemograma, bioquímica, imagens, PDFs... Literalmente qualquer um! 😎"
