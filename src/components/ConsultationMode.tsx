@@ -228,6 +228,44 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
             className="w-full max-w-sm"
           />
 
+          {/* Speaker switcher — quem está falando agora (afeta os próximos segmentos) */}
+          {isRecording && !isPaused && (
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center gap-1.5"
+            >
+              <div className="inline-flex items-center gap-1 p-1 rounded-full bg-card/60 ring-1 ring-border/60 backdrop-blur-sm shadow-sm">
+                {([
+                  { key: 'doctor' as const, label: 'Médico', short: '1', Icon: Stethoscope, active: 'bg-primary/15 text-primary ring-primary/30' },
+                  { key: 'patient' as const, label: 'Paciente', short: '2', Icon: User, active: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 ring-blue-500/30' },
+                  { key: 'companion' as const, label: 'Acompanhante', short: '3', Icon: Users, active: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-amber-500/30' },
+                ]).map(({ key, label, short, Icon, active }) => {
+                  const isActive = currentSpeaker === key;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => { setCurrentSpeaker(key); if (navigator.vibrate) navigator.vibrate(8); }}
+                      aria-pressed={isActive}
+                      aria-label={`Marcar fala como ${label}`}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 rounded-full text-xs md:text-sm font-medium transition-all ring-1",
+                        isActive
+                          ? `${active} shadow-sm scale-[1.02]`
+                          : "text-muted-foreground ring-transparent hover:text-foreground hover:bg-muted/60"
+                      )}
+                    >
+                      <Icon className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                      <span>{label}</span>
+                      <kbd className="hidden md:inline-flex items-center justify-center h-4 min-w-4 px-1 rounded bg-background/80 ring-1 ring-border/60 text-[9px] font-mono text-muted-foreground">{short}</kbd>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] text-muted-foreground/70 hidden md:block">Toque ou use 1 / 2 / 3 para trocar quem está falando</p>
+            </motion.div>
+          )}
           {/* Live partial transcript indicator */}
           {isRecording && !isPaused && (
             <div className="text-center min-h-[1.5rem] max-w-md px-3">
