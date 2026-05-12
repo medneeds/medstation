@@ -13,7 +13,6 @@ import {
   Search,
   Loader2,
   Folder,
-  User,
   Pill,
   FileText,
   Stethoscope,
@@ -25,13 +24,12 @@ import {
   BookOpen,
   Compass,
   StickyNote,
-  TestTube,
   ArrowRight,
 } from "lucide-react";
 
 interface SearchResult {
   id: string;
-  type: "case" | "patient" | "prescription" | "note" | "agent";
+  type: "case" | "note";
   title: string;
   subtitle?: string;
   tags?: string[];
@@ -57,9 +55,7 @@ const agents = [
   { name: "Orientus", path: "/orientus", icon: Compass, color: "text-rose-500", description: "Orientações ao paciente e instruções de alta hospitalar" },
 ];
 
-const quickActions = [
-  { name: "Nova Nota", path: "/notes", icon: StickyNote, description: "Criar nova nota" },
-];
+const quickActions: { name: string; path: string; icon: typeof StickyNote; description: string }[] = [];
 
 export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   const [query, setQuery] = useState("");
@@ -103,23 +99,16 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // Search cases
+        // Buscar consultas salvas (cases)
         const { data: cases } = await supabase
           .from("cases")
-          .select("id, title, chief_complaint, status, tags")
+          .select("id, title, chief_complaint, tags, updated_at")
           .eq("user_id", user.id)
           .or(`title.ilike.%${query}%,chief_complaint.ilike.%${query}%`)
-          .limit(5);
+          .order("updated_at", { ascending: false })
+          .limit(6);
 
-        // Search patients
-        const { data: patients } = await supabase
-          .from("patients")
-          .select("id, name, email, phone")
-          .eq("user_id", user.id)
-          .or(`name.ilike.%${query}%,email.ilike.%${query}%`)
-          .limit(5);
-
-        // Search notes
+        // Buscar notas
         const { data: notes } = await supabase
           .from("notes")
           .select("id, title, content")
@@ -129,7 +118,6 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 
         const searchResults: SearchResult[] = [];
 
-        // Add cases
         cases?.forEach((c) => {
           searchResults.push({
             id: c.id,
@@ -139,34 +127,18 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
             tags: c.tags || undefined,
             icon: <Folder className="h-4 w-4 text-primary" />,
             action: () => {
-              navigate(`/cases/${c.id}`);
+              navigate(`/consultorio?caseId=${c.id}`);
               onOpenChange(false);
             },
           });
         });
 
-        // Add patients
-        patients?.forEach((p) => {
-          searchResults.push({
-            id: p.id,
-            type: "patient",
-            title: p.name,
-            subtitle: p.email || p.phone || undefined,
-            icon: <User className="h-4 w-4 text-blue-500" />,
-            action: () => {
-              navigate(`/patients/${p.id}`);
-              onOpenChange(false);
-            },
-          });
-        });
-
-        // Add notes
         notes?.forEach((n) => {
           searchResults.push({
             id: n.id,
             type: "note",
             title: n.title,
-            subtitle: n.content?.substring(0, 60) + "..." || undefined,
+            subtitle: n.content ? n.content.substring(0, 60) + "..." : undefined,
             icon: <StickyNote className="h-4 w-4 text-yellow-500" />,
             action: () => {
               navigate(`/notes/${n.id}`);
@@ -174,7 +146,6 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
             },
           });
         });
-
         setResults(searchResults);
       } catch (error) {
         console.error("Search error:", error);
@@ -256,7 +227,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
         <div className="flex items-center border-b px-4">
           <Search className="h-5 w-5 text-muted-foreground shrink-0" />
           <Input
-            placeholder="Buscar casos, pacientes, agentes ou comandos..."
+            placeholder="Buscar assistente, consulta salva ou nota…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="border-0 focus-visible:ring-0 text-base h-14"
@@ -271,7 +242,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
             {filteredAgents.length > 0 && (
               <div className="mb-4">
                 <p className="text-xs font-medium text-muted-foreground px-2 py-1.5">
-                  Assistentes IA
+                  Assistentes
                 </p>
                 <div className="space-y-0.5">
                   {filteredAgents.map((agent) => {
@@ -372,8 +343,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                           <div className="flex items-center gap-2">
                             <p className="font-medium text-sm truncate">{result.title}</p>
                             <Badge variant="secondary" className="text-[10px] shrink-0">
-                              {result.type === "case" && "Caso"}
-                              {result.type === "patient" && "Paciente"}
+                              {result.type === "case" && "Consulta"}
                               {result.type === "note" && "Nota"}
                             </Badge>
                           </div>
