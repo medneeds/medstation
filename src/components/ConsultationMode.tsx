@@ -25,6 +25,10 @@ import { useConsultation } from "@/hooks/useConsultation";
 import { AudioVisualizer } from "@/components/consultation/AudioVisualizer";
 import { TranscriptionPane } from "@/components/consultation/TranscriptionPane";
 import { StructuredPane } from "@/components/consultation/StructuredPane";
+import {
+  ConsultorioHistoryButton,
+  ConsultorioQuickAccessFAB,
+} from "@/components/consultation/ConsultorioQuickAccess";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -162,6 +166,9 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
         </div>
 
         <div className="flex items-center gap-2 md:gap-3">
+          {/* Histórico rápido de casos */}
+          <ConsultorioHistoryButton />
+
           {/* Toggle: modo unificado (sem identificação de falante) */}
           <button
             type="button"
@@ -514,6 +521,9 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           </Card>
         </div>
       )}
+
+      {/* Atalho flutuante para Pacientes / Casos / Prescrições */}
+      <ConsultorioQuickAccessFAB />
     </div>
   );
 }
