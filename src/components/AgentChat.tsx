@@ -1628,6 +1628,49 @@ export function AgentChat({
           </span>
         </div>
       </div>
+
+      {/* Reading dialog: per-message expanded view */}
+      <Dialog open={!!readingMessage} onOpenChange={(o) => !o && setReadingMessage(null)}>
+        <DialogContent className="max-w-3xl w-[95vw] max-h-[90vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4 text-primary" />
+              Leitura ampliada
+            </DialogTitle>
+          </DialogHeader>
+          {readingMessage && (
+            <>
+              <ScrollArea className="flex-1 pr-2">
+                <p className="text-base md:text-lg leading-relaxed whitespace-pre-wrap">
+                  {agentType === "clinicus" ? readingMessage.content.replace(/\*\*/g, "") : readingMessage.content}
+                </p>
+              </ScrollArea>
+              <div className="flex justify-end gap-2 pt-2 border-t">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(readingMessage.content.toUpperCase());
+                    toast({ description: "Texto em caixa alta copiado!" });
+                  }}
+                  className="gap-1.5"
+                >
+                  <FileUp className="h-3.5 w-3.5" />
+                  Maiúscula
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => copyToClipboard(readingMessage.content, readingMessage.id)}
+                  className="gap-1.5"
+                >
+                  {copiedMessageId === readingMessage.id ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  Copiar
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
