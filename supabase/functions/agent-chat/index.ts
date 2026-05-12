@@ -58,10 +58,52 @@ const EXTRACTION_PATTERNS: RegExp[] = [
   /\brepeat\b[^.?!\n]{0,40}\b(everything|tudo)\b[^.?!\n]{0,40}\b(above|acima|before|antes)/i,
 ];
 
-function detectExtractionAttempt(userText: string): boolean {
-  if (!userText || typeof userText !== "string") return false;
+function findExtractionMatch(userText: string): string | null {
+  if (!userText || typeof userText !== "string") return null;
   const text = userText.slice(0, 4000);
-  return EXTRACTION_PATTERNS.some((re) => re.test(text));
+  for (const re of EXTRACTION_PATTERNS) {
+    if (re.test(text)) return re.source;
+  }
+  return null;
+}
+function detectExtractionAttempt(userText: string): boolean {
+  return findExtractionMatch(userText) !== null;
+}
+
+async function logSecurityEvent(params: {
+  supabaseUrl: string;
+  serviceKey: string;
+  functionName: string;
+  userId?: string | null;
+  ip?: string | null;
+  fingerprint?: string | null;
+  pattern: string | null;
+  excerpt: string;
+  metadata?: Record<string, unknown>;
+}) {
+  try {
+    await fetch(`${params.supabaseUrl}/rest/v1/security_events`, {
+      method: "POST",
+      headers: {
+        apikey: params.serviceKey,
+        Authorization: `Bearer ${params.serviceKey}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({
+        function_name: params.functionName,
+        event_type: "prompt_extraction_attempt",
+        user_id: params.userId ?? null,
+        ip_address: params.ip ?? null,
+        fingerprint: params.fingerprint ?? null,
+        pattern_matched: params.pattern,
+        excerpt: params.excerpt.slice(0, 200),
+        metadata: params.metadata ?? {},
+      }),
+    });
+  } catch (e) {
+    console.error("[security_events] failed to log", e);
+  }
 }
 
 function buildShieldRefusalSSE(): ReadableStream<Uint8Array> {
@@ -1845,8 +1887,20 @@ ${contextData}`;
       : Array.isArray(lastUserMsg?.content)
         ? lastUserMsg.content.map((p: any) => p?.text || "").join(" ")
         : "";
-    if (detectExtractionAttempt(lastUserText)) {
+    const extractionMatch = findExtractionMatch(lastUserText);
+    if (extractionMatch) {
       console.warn("[shield] extraction attempt blocked", { agentType, userId: user?.id });
+      const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || null;
+      logSecurityEvent({
+        supabaseUrl: Deno.env.get("SUPABASE_URL")!,
+        serviceKey: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+        functionName: "agent-chat",
+        userId: user?.id ?? null,
+        ip,
+        pattern: extractionMatch,
+        excerpt: lastUserText,
+        metadata: { agent_type: agentType },
+      });
       return new Response(buildShieldRefusalSSE(), {
         headers: {
           ...corsHeaders,
