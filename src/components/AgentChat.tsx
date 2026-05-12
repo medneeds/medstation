@@ -836,16 +836,17 @@ export function AgentChat({
         className="hidden"
       />
       
-      {/* Header — compact, single row on mobile */}
-      <div className="flex flex-col gap-2 pb-3 md:pb-4 border-b md:flex-row md:items-center md:justify-between md:gap-3">
-        <div className="flex items-center gap-2 md:gap-3 min-w-0">
-          <div className={`rounded-lg md:rounded-xl p-1.5 md:p-3 bg-gradient-to-br from-primary/10 to-primary/5 ${agentColor} shrink-0`}>
-            <span className="block [&>svg]:h-5 [&>svg]:w-5 md:[&>svg]:h-8 md:[&>svg]:w-8">
+      {/* Header — refined identity: glass card with gradient ring icon */}
+      <div className="relative flex flex-col gap-2 mb-3 md:mb-4 p-2.5 md:p-4 rounded-2xl border border-border/50 bg-gradient-to-br from-card/80 via-card/40 to-transparent backdrop-blur-sm shadow-sm md:flex-row md:items-center md:justify-between md:gap-3">
+        <div className="absolute inset-x-4 -bottom-px h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent pointer-events-none" />
+        <div className="flex items-center gap-3 md:gap-4 min-w-0">
+          <div className={`relative rounded-xl md:rounded-2xl p-2 md:p-3 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent ring-1 ring-primary/20 shadow-[0_0_24px_-8px_hsl(var(--primary)/0.45)] ${agentColor} shrink-0`}>
+            <span className="block [&>svg]:h-5 [&>svg]:w-5 md:[&>svg]:h-7 md:[&>svg]:w-7">
               {agentIcon}
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-base md:text-2xl font-bold truncate leading-tight">{agentName}</h2>
+            <h2 className="text-base md:text-2xl font-bold truncate leading-tight tracking-tight">{agentName}</h2>
             {currentConversation && (
               <p className="text-[11px] md:text-sm text-muted-foreground truncate">{currentConversation.name}</p>
             )}
