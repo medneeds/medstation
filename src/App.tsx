@@ -42,6 +42,8 @@ import MedicalDocuments from "@/pages/MedicalDocuments";
 import MedicalDocumentDetail from "@/pages/MedicalDocumentDetail";
 import Settings from "./pages/Settings";
 import AdminSubscribers from "./pages/AdminSubscribers";
+import Indicar from "./pages/Indicar";
+import ReferralRedirect from "./pages/ReferralRedirect";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -250,6 +252,17 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/indicar"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <Indicar />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/r/:code" element={<ReferralRedirect />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
