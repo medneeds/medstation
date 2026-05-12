@@ -123,6 +123,7 @@ export function AgentChat({
   actionButtons = []
 }: AgentChatProps) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [message, setMessage] = useState("");
   const [validationAnnouncement, setValidationAnnouncement] = useState("");
