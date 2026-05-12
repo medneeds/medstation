@@ -16,6 +16,9 @@ import {
   MessageSquare,
   FileText,
   Loader2,
+  Stethoscope,
+  User,
+  Users,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useConsultation } from "@/hooks/useConsultation";
