@@ -162,20 +162,34 @@ export function TranscriptionPane({
               {segments.map((segment, index) => {
                 const isNew = newSegmentIds.has(segment.id);
                 const isLatest = index === segments.length - 1;
-                
+                const cycleSpeaker = (dir: 1 | -1) => {
+                  const order: SpeakerType[] = ['doctor', 'patient', 'companion'];
+                  const i = order.indexOf(segment.speaker);
+                  const next = order[(i + dir + order.length) % order.length];
+                  onChangeSpeaker(segment.id, next);
+                  if (navigator.vibrate) navigator.vibrate(10);
+                };
+
                 return (
                   <motion.div
                     key={segment.id}
                     initial={{ opacity: 0, y: 20, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                    transition={{ 
-                      type: "spring", 
-                      stiffness: 300, 
-                      damping: 25 
+                    transition={{
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 25,
+                    }}
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.25}
+                    onDragEnd={(_, info) => {
+                      if (info.offset.x > 60) cycleSpeaker(1);
+                      else if (info.offset.x < -60) cycleSpeaker(-1);
                     }}
                     className={cn(
-                      "group relative p-2 md:p-3 rounded-lg border-l-4 bg-card transition-all duration-200",
+                      "group relative p-2 md:p-3 rounded-lg border-l-4 bg-card transition-all duration-200 touch-pan-y cursor-grab active:cursor-grabbing",
                       getSpeakerBorderColor(segment.speaker),
                       segment.isEdited && "ring-1 ring-primary/30",
                       isLatest && isRecording && "shadow-md"
