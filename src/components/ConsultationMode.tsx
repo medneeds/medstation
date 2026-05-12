@@ -162,6 +162,23 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
         </div>
 
         <div className="flex items-center gap-2 md:gap-3">
+          {/* Toggle: modo unificado (sem identificação de falante) */}
+          <button
+            type="button"
+            onClick={() => setUnifiedMode((v) => !v)}
+            aria-pressed={unifiedMode}
+            title={unifiedMode ? 'Voltar para identificação de falantes' : 'Transcrever tudo como um único bloco, sem identificar falantes'}
+            className={cn(
+              "hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] md:text-xs font-medium ring-1 transition-colors",
+              unifiedMode
+                ? "bg-primary/15 ring-primary/30 text-primary"
+                : "bg-muted/50 ring-border/60 text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <MessageSquare className="h-3 w-3 md:h-3.5 md:w-3.5" />
+            <span>{unifiedMode ? 'Transcrição contínua' : 'Identificar falantes'}</span>
+          </button>
+
           <div className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm px-2.5 py-1 rounded-full bg-muted/50 ring-1 ring-border/60">
             <Clock className="h-3 w-3 md:h-3.5 md:w-3.5 text-muted-foreground" />
             <span className="font-mono tabular-nums tracking-tight">{formattedTime}</span>
