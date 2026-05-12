@@ -1171,6 +1171,16 @@ export function AgentChat({
                       <Button
                         variant="ghost"
                         size="sm"
+                        onClick={() => setReadingMessage(msg)}
+                        className="h-7 px-2 gap-1.5 text-xs"
+                        title="Abrir em leitura ampliada"
+                      >
+                        <BookOpen className="h-3 w-3" />
+                        <span className="hidden md:inline">Ler</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => {
                           const upperText = msg.content.toUpperCase();
                           navigator.clipboard.writeText(upperText);
