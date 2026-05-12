@@ -42,6 +42,18 @@ function getCrumb(pathname: string) {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { pathname } = useLocation();
   const crumb = getCrumb(pathname);
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen((o) => !o);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   return (
     <>
