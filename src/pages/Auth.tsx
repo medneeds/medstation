@@ -205,15 +205,19 @@ export default function Auth() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-          className="flex items-center justify-center p-5 sm:p-10 lg:p-16"
+          className="flex items-start lg:items-center justify-center px-5 pt-8 pb-10 sm:p-10 lg:p-16"
+          style={{ paddingBottom: "max(2.5rem, env(safe-area-inset-bottom))" }}
         >
-          <div className="w-full max-w-md space-y-8">
-            <div className="lg:hidden flex justify-center">
+          <div className="w-full max-w-md space-y-6 lg:space-y-8">
+            <div className="lg:hidden flex flex-col items-center gap-3 text-center">
               <Logo size="md" />
+              <p className="text-[0.65rem] uppercase tracking-[0.22em] text-muted-foreground">
+                Produza mais. <span className="text-primary">Digite menos.</span>
+              </p>
             </div>
 
-            <div className="space-y-2">
-              <h2 className="font-display text-3xl tracking-tight text-foreground">
+            <div className="space-y-1.5 lg:space-y-2 text-center lg:text-left">
+              <h2 className="font-display text-2xl lg:text-3xl tracking-tight text-foreground">
                 Bem-vindo
               </h2>
               <p className="text-sm text-muted-foreground">
@@ -222,7 +226,7 @@ export default function Auth() {
             </div>
 
             <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 rounded-full">
+              <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 rounded-full h-11">
                 <TabsTrigger value="signin" className="rounded-full data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
                   Entrar
                 </TabsTrigger>
