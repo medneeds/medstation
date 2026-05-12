@@ -59,11 +59,26 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     updateStructureField,
     stopTimer,
     reset,
+    setCurrentSpeaker,
   } = useConsultation({ caseId });
 
   useEffect(() => {
     if (error) toast.error(error);
   }, [error]);
+
+  // Keyboard shortcuts: 1=Médico, 2=Paciente, 3=Acompanhante (durante gravação)
+  useEffect(() => {
+    if (!isRecording || isPaused) return;
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+      if (e.key === '1') { setCurrentSpeaker('doctor'); toast.success('Falando: Médico', { duration: 1200 }); }
+      else if (e.key === '2') { setCurrentSpeaker('patient'); toast.success('Falando: Paciente', { duration: 1200 }); }
+      else if (e.key === '3') { setCurrentSpeaker('companion'); toast.success('Falando: Acompanhante', { duration: 1200 }); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isRecording, isPaused, setCurrentSpeaker]);
 
   const handleFinish = useCallback(async () => {
     await stopRecording();
