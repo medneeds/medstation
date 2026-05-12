@@ -79,17 +79,21 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   </span>
                 </div>
 
-                {/* Search */}
-                <div className="relative hidden lg:block ml-auto w-full max-w-xs">
-                  <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/60" />
-                  <Input
-                    placeholder="Buscar..."
-                    className="h-8 pl-8 pr-12 text-sm bg-transparent"
-                  />
-                  <kbd className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-2xs text-muted-foreground/60 border border-hairline rounded-sm px-1.5 py-0.5 leading-none">
+                {/* Search trigger — opens command palette */}
+                <button
+                  type="button"
+                  onClick={() => setSearchOpen(true)}
+                  aria-label="Buscar"
+                  className="ml-auto flex items-center gap-2 h-8 rounded-sm border border-hairline bg-transparent text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors px-2 md:px-3 md:w-full md:max-w-xs"
+                >
+                  <Search className="h-3.5 w-3.5 shrink-0" />
+                  <span className="hidden md:inline text-sm flex-1 text-left truncate">
+                    Buscar pacientes, casos, assistentes...
+                  </span>
+                  <kbd className="hidden md:inline font-mono text-2xs border border-hairline rounded-sm px-1.5 py-0.5 leading-none">
                     ⌘K
                   </kbd>
-                </div>
+                </button>
               </div>
 
               <div className="flex items-center gap-2 md:gap-3 hairline-l pl-2 md:pl-4 ml-2 md:ml-4">
