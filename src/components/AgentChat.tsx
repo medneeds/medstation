@@ -1162,7 +1162,8 @@ export function AgentChat({
                   )}
                 </div>
               </div>
-            ))}
+              );
+            })}
             <div ref={messagesEndRef} />
           </div>
         )}
