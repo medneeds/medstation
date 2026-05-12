@@ -1265,11 +1265,20 @@ export function AgentChat({
                       )}
                     </p>
                   )}
-                  <p className="text-xs opacity-70 mt-1">
-                    {new Date(msg.created_at).toLocaleTimeString([], { 
-                      hour: '2-digit', 
-                      minute: '2-digit' 
-                    })}
+                  <p className="text-xs opacity-70 mt-1 flex items-center gap-1">
+                    <span>
+                      {new Date(msg.created_at).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                    {msg.role === "user" && msg.pending && (
+                      <span className="inline-flex items-baseline ml-1" aria-label="enviando">
+                        <span className="animate-thinking-dot">.</span>
+                        <span className="animate-thinking-dot [animation-delay:0.18s]">.</span>
+                        <span className="animate-thinking-dot [animation-delay:0.36s]">.</span>
+                      </span>
+                    )}
                   </p>
                   {msg.role === "assistant" && (
                     <div className="absolute bottom-2 right-2 flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
