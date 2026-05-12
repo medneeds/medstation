@@ -21,6 +21,9 @@ import {
   LifeBuoy,
   Mic,
   Gift,
+  UsersRound,
+  FolderOpen,
+  NotebookPen,
 } from "lucide-react";
 import { SUPPORT_CHAT_EVENT } from "@/components/SupportChat";
 import { LogoMark } from "@/components/LogoMark";
@@ -53,6 +56,13 @@ const agentModules = [
 ];
 
 const consultorioModule = { title: "Modo Consultório", url: "/consultorio", icon: Mic, code: "C" };
+
+const recordsModules = [
+  { title: "Pacientes", url: "/patients", icon: UsersRound },
+  { title: "Casos clínicos", url: "/cases", icon: FolderOpen },
+  { title: "Prescrições", url: "/prescricoes", icon: Pill },
+  { title: "Notas", url: "/notes", icon: NotebookPen },
+];
 
 const navItemClass = ({ isActive }: { isActive: boolean }) =>
   cn(
@@ -165,6 +175,32 @@ export function AppSidebar() {
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Prontuário */}
+        <SidebarGroup className="py-3 hairline-t">
+          {!collapsed && (
+            <SidebarGroupLabel className="label-mono px-4 mb-2 h-auto flex items-center justify-between">
+              <span>Prontuário</span>
+              <span className="font-mono text-2xs text-muted-foreground/60">
+                {recordsModules.length.toString().padStart(2, "0")}
+              </span>
+            </SidebarGroupLabel>
+          )}
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-1.5">
+              {recordsModules.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild tooltip={item.title} className="p-0 h-auto bg-transparent hover:bg-transparent">
+                    <NavLink to={item.url} className={navItemClass}>
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      {!collapsed && <span className="flex-1">{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
