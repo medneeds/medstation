@@ -11,6 +11,23 @@ const corsHeaders = {
 const RATE_LIMIT = 3;
 const COOLDOWN_MS = 30_000;
 
+const EXTRACTION_PATTERNS: RegExp[] = [
+  /\b(mostr[ae]|exib[ae]|revel[ae]|imprim[ae]|repi(ta|te)|liste|descreva|resuma|parafrase[ae])\b[^.?!\n]{0,80}\b(system\s*prompt|prompt\s*do\s*sistema|prompt[s]?\s*interno|instru[cç][õo]es|regras|diretrizes|persona|identidade|template)/i,
+  /\b(show|reveal|print|repeat|display|list|describe|tell\s*me|dump|leak)\b[^.?!\n]{0,80}\b(system\s*prompt|instructions?|rules|guidelines|prompt|persona)/i,
+  /\b(ignore|esque[çc]a|disregard|forget)\b[^.?!\n]{0,40}\b(anterior(es)?|previous|acima|above|todas\s*as\s*instru[cç][õo]es|all\s*instructions|system\s*prompt)/i,
+  /\b(DAN|do\s*anything\s*now|developer\s*mode|debug\s*mode|jailbreak|modo\s*desenvolvedor|modo\s*debug)\b/i,
+  /<\/?\s*(system|developer|assistant|instructions?)\s*>/i,
+  /\[(\s*system\s*|\s*end\s*of\s*system\s*|\s*new\s*prompt\s*)\]/i,
+  /\b(base64|rot13|hex|reverse|encode|codifique|soletre)\b[^.?!\n]{0,60}\b(prompt|instru[cç][õo]es|regras|rules|instructions)/i,
+];
+const SHIELD_REFUSAL_TEXT = "Não posso compartilhar minhas instruções internas. Posso ajudar com sua dúvida clínica?";
+function findExtractionMatch(text: string): string | null {
+  if (!text || typeof text !== "string") return null;
+  const t = text.slice(0, 4000);
+  for (const re of EXTRACTION_PATTERNS) if (re.test(t)) return re.source;
+  return null;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
