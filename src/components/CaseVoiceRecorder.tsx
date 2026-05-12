@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Mic, Square, Loader2, Radio, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useScribe } from "@elevenlabs/react";
+import { useScribe, CommitStrategy } from "@elevenlabs/react";
 import { cn } from "@/lib/utils";
 
 interface CaseVoiceRecorderProps {
@@ -30,7 +30,7 @@ export default function CaseVoiceRecorder({ onTranscriptionComplete }: CaseVoice
   // ===== Realtime via ElevenLabs Scribe =====
   const scribe = useScribe({
     modelId: "scribe_v2_realtime",
-    commitStrategy: "vad",
+    commitStrategy: CommitStrategy.VAD,
     onPartialTranscript: (d: any) => setLiveText(committedRef.current + " " + (d?.text ?? "")),
     onCommittedTranscript: (d: any) => {
       committedRef.current = (committedRef.current + " " + (d?.text ?? "")).trim();
