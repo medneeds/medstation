@@ -12,7 +12,7 @@ export default function Atestus() {
         <AgentChat
           agentName="Atestus"
           agentIcon={<FileCheck className="h-8 w-8" />}
-          agentColor="text-emerald-500"
+          agentColor="text-primary"
           agentType="atestus"
           caseId={caseId}
           placeholder="Descreva o atestado que você precisa gerar..."

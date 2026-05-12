@@ -12,7 +12,7 @@ export default function Gasometrus() {
         <AgentChat
           agentName="Gasometrus"
           agentIcon={<Wind className="h-8 w-8" />}
-          agentColor="text-cyan-500"
+          agentColor="text-primary"
           agentType="gasometrus"
           caseId={caseId}
           placeholder="Cole os valores da gasometria para análise completa..."

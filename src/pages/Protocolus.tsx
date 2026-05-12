@@ -12,7 +12,7 @@ export default function Protocolus() {
         <AgentChat
           agentName="Protocolus"
           agentIcon={<BookOpen className="h-8 w-8" />}
-          agentColor="text-amber-500"
+          agentColor="text-primary"
           agentType="protocolus"
           caseId={caseId}
           placeholder="Qual protocolo ou guideline você precisa consultar?"
