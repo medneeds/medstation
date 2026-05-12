@@ -1153,7 +1153,7 @@ export function AgentChat({
                   ) : isThinking ? (
                     <ThinkingIndicator />
                   ) : (
-                    <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                    <p className={`whitespace-pre-wrap leading-relaxed ${focusMode ? "text-base md:text-lg" : "text-sm"}`}>
                       {msg.role === "assistant" && agentType === "clinicus" ? msg.content.replace(/\*\*/g, "") : msg.content}
                       {isStreaming && (
                         <span className="inline-block w-[2px] h-3.5 ml-0.5 align-[-2px] bg-primary animate-stream-cursor" />
