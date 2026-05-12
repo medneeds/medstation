@@ -21,6 +21,9 @@ import {
   LifeBuoy,
   Mic,
   Gift,
+  UsersRound,
+  FolderOpen,
+  NotebookPen,
 } from "lucide-react";
 import { SUPPORT_CHAT_EVENT } from "@/components/SupportChat";
 import { LogoMark } from "@/components/LogoMark";
