@@ -90,7 +90,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [isRecording, isPaused, setCurrentSpeaker]);
+  }, [isRecording, isPaused, unifiedMode, setCurrentSpeaker]);
 
   const handleFinish = useCallback(async () => {
     await stopRecording();
