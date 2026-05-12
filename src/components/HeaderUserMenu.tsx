@@ -71,6 +71,11 @@ export function HeaderUserMenu() {
           <CreditCard className="mr-2 h-4 w-4" />
           Assinatura
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate("/indicar")}>
+          <Gift className="mr-2 h-4 w-4 text-primary" />
+          <span className="flex-1">Indicar e ganhar</span>
+          <span className="font-mono text-2xs text-primary/80">+30d</span>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
           <LogOut className="mr-2 h-4 w-4" />
