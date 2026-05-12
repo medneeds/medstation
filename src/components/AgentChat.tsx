@@ -1205,8 +1205,24 @@ export function AgentChat({
             };
             return (
               <div className="text-center py-8 md:py-12 text-muted-foreground max-w-xl mx-auto px-4">
-                <div className={`rounded-full p-4 md:p-6 bg-gradient-to-br from-primary/15 to-primary/5 ring-1 ring-primary/20 inline-block ${agentColor} mb-5 [&>svg]:stroke-[1.75]`}>
-                  {agentIcon}
+                <div className="relative inline-flex items-center justify-center mb-6 animate-orb-float" style={{ willChange: "transform" }}>
+                  {/* Expanding rings (ChatGPT-listening vibe) */}
+                  <span className="pointer-events-none absolute inset-0 rounded-full bg-primary/25 animate-orb-ring" />
+                  <span className="pointer-events-none absolute inset-0 rounded-full bg-primary/20 animate-orb-ring [animation-delay:1.4s]" />
+                  {/* Slow rotating conic shimmer */}
+                  <span
+                    className="pointer-events-none absolute -inset-3 rounded-full opacity-70 blur-md animate-orb-spin-slow"
+                    style={{
+                      background:
+                        "conic-gradient(from 0deg, hsl(var(--primary) / 0.0), hsl(var(--primary) / 0.55), hsl(var(--primary) / 0.0), hsl(var(--primary) / 0.45), hsl(var(--primary) / 0.0))",
+                    }}
+                  />
+                  {/* Soft outer glow */}
+                  <span className="pointer-events-none absolute -inset-4 rounded-full bg-primary/10 blur-2xl animate-orb-shimmer" />
+                  {/* Core orb with the icon, breathing */}
+                  <div className={`relative rounded-full p-5 md:p-7 bg-gradient-to-br from-primary/25 via-primary/10 to-primary/5 ring-1 ring-primary/30 shadow-[0_10px_40px_-10px_hsl(var(--primary)/0.5)] backdrop-blur-sm ${agentColor} animate-orb-breathe [&>svg]:stroke-[1.75] [&>svg]:relative [&>svg]:z-10`}>
+                    {agentIcon}
+                  </div>
                 </div>
                 <p className="text-base md:text-xl font-medium text-foreground tracking-tight">{g.title}</p>
                 <p className="text-xs md:text-sm mt-2 leading-relaxed">{g.subtitle}</p>
