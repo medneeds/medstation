@@ -964,6 +964,10 @@ export function AgentChat({
 
         {/* Desktop actions */}
         <div className="hidden md:flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => setFocusMode(v => !v)} title={focusMode ? "Sair do modo foco (Esc)" : "Modo foco — expandir área de leitura"}>
+            {focusMode ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
+            <span className="ml-2">{focusMode ? "Sair do foco" : "Foco"}</span>
+          </Button>
           <Button variant="outline" size="sm" onClick={createNewConversation} title="Nova Conversa">
             <Plus className="h-4 w-4" />
             <span className="ml-2">Nova Conversa</span>
