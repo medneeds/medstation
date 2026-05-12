@@ -77,6 +77,18 @@ export default function Auth() {
           crm_state: crmState || null,
           specialty: specialty || null,
         }).eq("id", data.user.id);
+
+        // Track referral if a code was captured before signup
+        try {
+          const refCode = localStorage.getItem("medstation_ref_code");
+          if (refCode) {
+            await supabase.functions.invoke("referral-track", { body: { code: refCode } });
+            localStorage.removeItem("medstation_ref_code");
+            localStorage.removeItem("medstation_ref_expiry");
+          }
+        } catch (e) {
+          console.error("Referral tracking failed", e);
+        }
       }
       toast({ title: "Cadastro realizado", description: "Você já pode entrar." });
       setFullName(""); setSignUpEmail(""); setSignUpPassword(""); setConfirmPassword("");
