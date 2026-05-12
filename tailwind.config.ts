@@ -154,6 +154,26 @@ export default {
           "0%, 100%": { opacity: "0.15" },
           "50%": { opacity: "1" },
         },
+        "orb-float": {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        "orb-breathe": {
+          "0%, 100%": { transform: "scale(1)", filter: "brightness(1)" },
+          "50%": { transform: "scale(1.06)", filter: "brightness(1.15)" },
+        },
+        "orb-spin-slow": {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" },
+        },
+        "orb-ring": {
+          "0%": { transform: "scale(0.8)", opacity: "0.55" },
+          "100%": { transform: "scale(1.9)", opacity: "0" },
+        },
+        "orb-shimmer": {
+          "0%, 100%": { opacity: "0.6", transform: "scale(1) rotate(0deg)" },
+          "50%": { opacity: "1", transform: "scale(1.1) rotate(180deg)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -166,6 +186,11 @@ export default {
         "thinking-halo": "thinking-halo 1.8s ease-in-out infinite",
         "thinking-dot": "thinking-dot 1.2s ease-in-out infinite",
         "stream-cursor": "stream-cursor 0.9s ease-in-out infinite",
+        "orb-float": "orb-float 4s ease-in-out infinite",
+        "orb-breathe": "orb-breathe 3s ease-in-out infinite",
+        "orb-spin-slow": "orb-spin-slow 14s linear infinite",
+        "orb-ring": "orb-ring 2.8s ease-out infinite",
+        "orb-shimmer": "orb-shimmer 6s ease-in-out infinite",
       },
     },
   },
