@@ -58,9 +58,6 @@ const agentModules = [
 const consultorioModule = { title: "Modo Consultório", url: "/consultorio", icon: Mic, code: "C" };
 
 const recordsModules = [
-  { title: "Pacientes", url: "/patients", icon: UsersRound },
-  { title: "Casos clínicos", url: "/cases", icon: FolderOpen },
-  { title: "Prescrições", url: "/prescricoes", icon: Pill },
   { title: "Notas", url: "/notes", icon: NotebookPen },
 ];
 
