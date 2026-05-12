@@ -1129,7 +1129,7 @@ export function AgentChat({
                 className={`flex animate-fade-in ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[85%] md:max-w-[80%] rounded-2xl px-3 md:px-4 relative group ${
+                  className={`${focusMode ? "max-w-[95%] md:max-w-4xl" : "max-w-[85%] md:max-w-[80%]"} rounded-2xl px-3 md:px-4 relative group ${
                     msg.role === "user"
                       ? "bg-primary text-primary-foreground py-2 md:py-3"
                       : isThinking
