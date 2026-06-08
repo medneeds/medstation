@@ -132,6 +132,7 @@ export function StructuredPane({
     new Set(['chiefComplaint', 'historyPresentIllness'])
   );
   const [editingSection, setEditingSection] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const toggleSection = (key: string) => {
     setExpandedSections(prev => {
@@ -148,17 +149,44 @@ export function StructuredPane({
   const filledSections = sections.filter(s => structure[s.key]?.trim());
   const emptySections = sections.filter(s => !structure[s.key]?.trim());
 
+  const handleCopyStructure = () => {
+    const text = filledSections
+      .map((s) => `${s.label.toUpperCase()}:\n${structure[s.key]}`)
+      .join("\n\n");
+    if (!text) {
+      toast.error("Gere a estruturação antes de copiar.");
+      return;
+    }
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    toast.success("Estruturação copiada 👏");
+    setTimeout(() => setCopied(false), 1800);
+  };
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between px-3 md:px-4 py-2 border-b bg-muted/30">
         <h3 className="font-semibold text-xs md:text-sm">Estruturação</h3>
-        {isStructuring && (
-          <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs text-muted-foreground">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            <span>Estruturando...</span>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {isStructuring && (
+            <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs text-muted-foreground">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              <span>Estruturando...</span>
+            </div>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleCopyStructure}
+            disabled={filledSections.length === 0}
+            className="h-7 gap-1.5 px-2 text-[11px] md:text-xs text-muted-foreground hover:text-foreground"
+          >
+            {copied ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />}
+            <span className="hidden sm:inline">{copied ? "Copiado" : "Copiar"}</span>
+          </Button>
+        </div>
       </div>
+      
       
       <ScrollArea className="flex-1 p-1.5 md:p-2">
         <div className="space-y-1">
