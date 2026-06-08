@@ -67,6 +67,19 @@ export function TranscriptionPane({
   const scrollRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const [newSegmentIds, setNewSegmentIds] = useState<Set<string>>(new Set());
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyAll = () => {
+    const text = segments.map((s) => s.text.trim()).filter(Boolean).join("\n\n");
+    if (!text) {
+      toast.error("Nada para copiar ainda.");
+      return;
+    }
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    toast.success("Transcrição copiada 👏");
+    setTimeout(() => setCopied(false), 1800);
+  };
 
   // Track new segments for typing animation
   useEffect(() => {
