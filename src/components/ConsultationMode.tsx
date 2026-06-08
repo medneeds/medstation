@@ -304,13 +304,15 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           </>
         )}
 
-        <div className="relative flex flex-col items-center gap-4 md:gap-6 px-3 md:px-4 py-6 md:py-8">
-          <AudioVisualizer
-            level={audioLevel}
-            isActive={isRecording && !isPaused}
-            currentSpeaker={isRecording && !isPaused && !unifiedMode ? currentSpeaker : undefined}
-            className="w-full max-w-sm"
-          />
+        <div className="relative flex flex-col items-center gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3">
+          {(isRecording || !segments.length) && (
+            <AudioVisualizer
+              level={audioLevel}
+              isActive={isRecording && !isPaused}
+              currentSpeaker={isRecording && !isPaused && !unifiedMode ? currentSpeaker : undefined}
+              className="w-full max-w-[260px] md:max-w-xs"
+            />
+          )}
 
           {/* Speaker switcher — quem está falando agora (afeta os próximos segmentos) */}
           {isRecording && !isPaused && !unifiedMode && (
