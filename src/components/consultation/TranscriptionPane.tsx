@@ -1,9 +1,10 @@
 import { useRef, useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SpeakerIndicator } from "./SpeakerIndicator";
-import { Loader2, Trash2, Sparkles, Mic } from "lucide-react";
+import { Loader2, Trash2, Sparkles, Mic, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 import type { TranscriptionSegment, SpeakerType } from "@/hooks/useConsultation";
 import { cn } from "@/lib/utils";
 
