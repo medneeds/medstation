@@ -127,19 +127,31 @@ export function TranscriptionPane({
             />
           )}
         </div>
-        <AnimatePresence>
-          {isTranscribing && (
-            <motion.div
-              initial={{ opacity: 0, x: 10, scale: 0.9 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 10, scale: 0.9 }}
-              className="flex items-center gap-1.5 md:gap-2 px-2 py-1 rounded-full bg-primary/10 border border-primary/20"
-            >
-              <Loader2 className="h-3 w-3 animate-spin text-primary" />
-              <span className="text-[10px] md:text-xs font-medium text-primary">Transcrevendo...</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div className="flex items-center gap-2">
+          <AnimatePresence>
+            {isTranscribing && (
+              <motion.div
+                initial={{ opacity: 0, x: 10, scale: 0.9 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 10, scale: 0.9 }}
+                className="flex items-center gap-1.5 md:gap-2 px-2 py-1 rounded-full bg-primary/10 border border-primary/20"
+              >
+                <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                <span className="text-[10px] md:text-xs font-medium text-primary">Transcrevendo...</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleCopyAll}
+            disabled={segments.length === 0}
+            className="h-7 gap-1.5 px-2 text-[11px] md:text-xs text-muted-foreground hover:text-foreground"
+          >
+            {copied ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />}
+            <span className="hidden sm:inline">{copied ? "Copiado" : "Copiar"}</span>
+          </Button>
+        </div>
       </div>
       
       <ScrollArea className="flex-1 p-2 md:p-4" ref={scrollRef}>
