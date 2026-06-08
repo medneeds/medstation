@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { 
   ChevronDown, 
   ChevronRight, 
@@ -17,6 +18,8 @@ import {
   Activity,
   Lightbulb,
   FileCheck,
+  Copy,
+  Check,
 } from "lucide-react";
 import type { AnamnesisStructure } from "@/hooks/useConsultation";
 import { cn } from "@/lib/utils";
