@@ -485,10 +485,10 @@ LSL - LABORATORIAIS
 REGRA FUNDAMENTAL: Extraia TODOS os exames laboratoriais presentes no texto, sem exceção. Se o exame existe no texto, ele DEVE aparecer na saída formatada.
 
 ESTRUTURA (linha única, incluir APENAS exames presentes):
-DD/MM HH:MM: [exames na ordem abaixo, separados por espaço]
+${includeTime === false ? 'DD/MM' : 'DD/MM HH:MM'}: [exames na ordem abaixo, separados por ${usePipeSeparator ? '" | "' : 'espaço'}]
 
 ORDEM DE APRESENTAÇÃO (prioridade clínica, incluir somente os presentes no texto):
-1. Data e hora
+1. ${includeTime === false ? 'Data (sem horário)' : 'Data e hora'}
 2. Hemograma: Hb, Ht, Leuco (com diferencial se disponível: Seg, Bast, Linf, Mon, Eos, Baso), Pqt
 3. Função renal: Ur, Cr, TFG
 4. Eletrólitos: Na, K, Ca, Cai (cálcio iônico), Mg, P, Cl
