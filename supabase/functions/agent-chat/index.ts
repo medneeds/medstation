@@ -520,9 +520,11 @@ EXAMES ESPECIAIS (nova linha, na ordem de relevância clínica):
 
 REGRA CRÍTICA: Se um exame está no texto mas NÃO aparece na lista acima, inclua-o mesmo assim ao final da linha, usando a abreviatura mais comum. NUNCA omita um resultado presente no texto original.
 
-EXEMPLO COMPLETO:
-20/11 14:30: Hb 12,5 Ht 37,2 Leuco 14.320 Pqt 180.000 Ur 45 Cr 1,23 TFG 85 Na 138 K 4,2 Cl 102 Ca 9,1 Mg 1,8 P 3,5 Glicemia 126 Lactato 2,1 PCR 58,3 TP 14,2 (RNI 1,15) TTPa 28,5 Troponina 0,04 TGO 28 TGP 32 Albumina 3,2
-(Gaso): pH 7,35 PCO2 38 PO2 92 HCO3 22 BE -2,1 SatO2 96% Lactato 1,8
+EXEMPLO (já aplicando a CONFIGURAÇÃO ATIVA acima):
+${includeTime === false ? '20/11' : '20/11 14:30'}: ${compactMode
+  ? ['Hb 12,5','Ht 37,2','Leuco 14.320','Pqt 180.000','Ur 45','Cr 1,23','Na 138','K 4,2','PCR 58,3'].join(usePipeSeparator ? ' | ' : ' ')
+  : ['Hb 12,5','Ht 37,2','Leuco 14.320','Pqt 180.000','Ur 45','Cr 1,23','TFG 85','Na 138','K 4,2','Cl 102','Ca 9,1','Mg 1,8','P 3,5','Glicemia 126','Lactato 2,1','PCR 58,3','TP 14,2 (RNI 1,15)','TTPa 28,5','Troponina 0,04','TGO 28','TGP 32','Albumina 3,2'].join(usePipeSeparator ? ' | ' : ' ')}
+(Gaso): ${['pH 7,35','PCO2 38','PO2 92','HCO3 22','BE -2,1','SatO2 96%','Lactato 1,8'].join(usePipeSeparator ? ' | ' : ' ')}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 LSI - IMAGEM
