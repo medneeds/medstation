@@ -466,8 +466,15 @@ PROIBIDO começar com:
 Qualquer texto explicativo
 
 SEMPRE começar DIRETO com:
-20/11 14:30: Hb 12,5... (para LSL)
-19/11 10:45 (TC Crânio): Hipodensidade... (para LSI)
+${includeTime === false ? '20/11' : '20/11 14:30'}: Hb 12,5... (para LSL)
+${includeTime === false ? '19/11' : '19/11 10:45'} (TC Crânio): Hipodensidade... (para LSI)
+
+CONFIGURAÇÃO ATIVA (siga RIGOROSAMENTE em TODA a saída, incluindo os exemplos):
+• Horário: ${includeTime === false ? 'OMITIR horário (HH:MM) — usar APENAS a data DD/MM' : 'INCLUIR data e horário DD/MM HH:MM'}
+• Separador: ${usePipeSeparator ? 'usar " | " (espaço-pipe-espaço) entre cada exame' : 'usar espaço simples entre cada exame'}
+• Hemograma: ${compactMode ? 'COMPACTO — somente Hb, Ht, Leuco (total), Pqt; OMITIR VCM, HCM, CHCM, RDW, eritrócitos, reticulócitos e diferencial leucocitário' : 'COMPLETO — incluir todos os parâmetros presentes, inclusive diferencial'}
+• Filtro: ${onlyAltered ? 'exibir SOMENTE resultados FORA da referência (marcar ↑/↓)' : 'exibir TODOS os resultados presentes'}
+• Impressão clínica: ${clinicalImpression ? 'ADICIONAR seção IMPRESSÃO CLÍNICA ao final' : 'NÃO adicionar interpretação clínica'}
 
 FORMATO: Sem ** * #. Títulos em CAIXA ALTA, listas com •, seções separadas por linha em branco.
 
@@ -478,10 +485,10 @@ LSL - LABORATORIAIS
 REGRA FUNDAMENTAL: Extraia TODOS os exames laboratoriais presentes no texto, sem exceção. Se o exame existe no texto, ele DEVE aparecer na saída formatada.
 
 ESTRUTURA (linha única, incluir APENAS exames presentes):
-DD/MM HH:MM: [exames na ordem abaixo, separados por espaço]
+${includeTime === false ? 'DD/MM' : 'DD/MM HH:MM'}: [exames na ordem abaixo, separados por ${usePipeSeparator ? '" | "' : 'espaço'}]
 
 ORDEM DE APRESENTAÇÃO (prioridade clínica, incluir somente os presentes no texto):
-1. Data e hora
+1. ${includeTime === false ? 'Data (sem horário)' : 'Data e hora'}
 2. Hemograma: Hb, Ht, Leuco (com diferencial se disponível: Seg, Bast, Linf, Mon, Eos, Baso), Pqt
 3. Função renal: Ur, Cr, TFG
 4. Eletrólitos: Na, K, Ca, Cai (cálcio iônico), Mg, P, Cl
@@ -513,16 +520,18 @@ EXAMES ESPECIAIS (nova linha, na ordem de relevância clínica):
 
 REGRA CRÍTICA: Se um exame está no texto mas NÃO aparece na lista acima, inclua-o mesmo assim ao final da linha, usando a abreviatura mais comum. NUNCA omita um resultado presente no texto original.
 
-EXEMPLO COMPLETO:
-20/11 14:30: Hb 12,5 Ht 37,2 Leuco 14.320 Pqt 180.000 Ur 45 Cr 1,23 TFG 85 Na 138 K 4,2 Cl 102 Ca 9,1 Mg 1,8 P 3,5 Glicemia 126 Lactato 2,1 PCR 58,3 TP 14,2 (RNI 1,15) TTPa 28,5 Troponina 0,04 TGO 28 TGP 32 Albumina 3,2
-(Gaso): pH 7,35 PCO2 38 PO2 92 HCO3 22 BE -2,1 SatO2 96% Lactato 1,8
+EXEMPLO (já aplicando a CONFIGURAÇÃO ATIVA acima):
+${includeTime === false ? '20/11' : '20/11 14:30'}: ${compactMode
+  ? ['Hb 12,5','Ht 37,2','Leuco 14.320','Pqt 180.000','Ur 45','Cr 1,23','Na 138','K 4,2','PCR 58,3'].join(usePipeSeparator ? ' | ' : ' ')
+  : ['Hb 12,5','Ht 37,2','Leuco 14.320','Pqt 180.000','Ur 45','Cr 1,23','TFG 85','Na 138','K 4,2','Cl 102','Ca 9,1','Mg 1,8','P 3,5','Glicemia 126','Lactato 2,1','PCR 58,3','TP 14,2 (RNI 1,15)','TTPa 28,5','Troponina 0,04','TGO 28','TGP 32','Albumina 3,2'].join(usePipeSeparator ? ' | ' : ' ')}
+(Gaso): ${['pH 7,35','PCO2 38','PO2 92','HCO3 22','BE -2,1','SatO2 96%','Lactato 1,8'].join(usePipeSeparator ? ' | ' : ' ')}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 LSI - IMAGEM
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ESTRUTURA:
-DD/MM HH:MM (TIPO DE EXAME): ACHADOS ANORMAIS
+${includeTime === false ? 'DD/MM' : 'DD/MM HH:MM'} (TIPO DE EXAME): ACHADOS ANORMAIS
 
 REGRAS:
 • SÓ relatar anormais (ignorar normalidade)
@@ -531,7 +540,7 @@ REGRAS:
 • Condensar em descrição objetiva
 
 EXEMPLO:
-19/11 10:45 (TC Crânio): Hipodensidade em território de ACM esquerda compatível com AVCi recente
+${includeTime === false ? '19/11' : '19/11 10:45'} (TC Crânio): Hipodensidade em território de ACM esquerda compatível com AVCi recente
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ${onlyAltered ? `⚠️ MODO ALTERADOS ATIVADO
