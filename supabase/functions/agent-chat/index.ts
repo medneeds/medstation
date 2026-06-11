@@ -466,8 +466,15 @@ PROIBIDO começar com:
 Qualquer texto explicativo
 
 SEMPRE começar DIRETO com:
-20/11 14:30: Hb 12,5... (para LSL)
-19/11 10:45 (TC Crânio): Hipodensidade... (para LSI)
+${includeTime === false ? '20/11' : '20/11 14:30'}: Hb 12,5... (para LSL)
+${includeTime === false ? '19/11' : '19/11 10:45'} (TC Crânio): Hipodensidade... (para LSI)
+
+CONFIGURAÇÃO ATIVA (siga RIGOROSAMENTE em TODA a saída, incluindo os exemplos):
+• Horário: ${includeTime === false ? 'OMITIR horário (HH:MM) — usar APENAS a data DD/MM' : 'INCLUIR data e horário DD/MM HH:MM'}
+• Separador: ${usePipeSeparator ? 'usar " | " (espaço-pipe-espaço) entre cada exame' : 'usar espaço simples entre cada exame'}
+• Hemograma: ${compactMode ? 'COMPACTO — somente Hb, Ht, Leuco (total), Pqt; OMITIR VCM, HCM, CHCM, RDW, eritrócitos, reticulócitos e diferencial leucocitário' : 'COMPLETO — incluir todos os parâmetros presentes, inclusive diferencial'}
+• Filtro: ${onlyAltered ? 'exibir SOMENTE resultados FORA da referência (marcar ↑/↓)' : 'exibir TODOS os resultados presentes'}
+• Impressão clínica: ${clinicalImpression ? 'ADICIONAR seção IMPRESSÃO CLÍNICA ao final' : 'NÃO adicionar interpretação clínica'}
 
 FORMATO: Sem ** * #. Títulos em CAIXA ALTA, listas com •, seções separadas por linha em branco.
 
