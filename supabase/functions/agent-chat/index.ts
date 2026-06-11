@@ -531,7 +531,7 @@ LSI - IMAGEM
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ESTRUTURA:
-DD/MM HH:MM (TIPO DE EXAME): ACHADOS ANORMAIS
+${includeTime === false ? 'DD/MM' : 'DD/MM HH:MM'} (TIPO DE EXAME): ACHADOS ANORMAIS
 
 REGRAS:
 • SÓ relatar anormais (ignorar normalidade)
@@ -540,7 +540,7 @@ REGRAS:
 • Condensar em descrição objetiva
 
 EXEMPLO:
-19/11 10:45 (TC Crânio): Hipodensidade em território de ACM esquerda compatível com AVCi recente
+${includeTime === false ? '19/11' : '19/11 10:45'} (TC Crânio): Hipodensidade em território de ACM esquerda compatível com AVCi recente
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ${onlyAltered ? `⚠️ MODO ALTERADOS ATIVADO
