@@ -35,6 +35,53 @@
 
   <body>
     <div id="root"></div>
+    <script>
+      // Recuperação automática de assets desatualizados (cache/propagação após deploy).
+      // Se o navegador tiver um index.html antigo cacheado apontando para um bundle JS
+      // que não existe mais (404), a página ficaria preta. Aqui detectamos a falha e
+      // recarregamos uma única vez com cache-busting para buscar a versão nova.
+      (function () {
+        var KEY = "ms_asset_reload_at";
+        function recover() {
+          try {
+            var last = parseInt(sessionStorage.getItem(KEY) || "0", 10);
+            // Evita loop de reload: no máximo 1 recuperação a cada 15s.
+            if (Date.now() - last < 15000) return;
+            sessionStorage.setItem(KEY, String(Date.now()));
+          } catch (e) {}
+          try {
+            var u = new URL(window.location.href);
+            u.searchParams.set("_v", Date.now().toString(36));
+            window.location.replace(u.toString());
+          } catch (e) {
+            window.location.reload();
+          }
+        }
+        // Falha ao carregar <script> ou <link> (bundle/css com hash inexistente).
+        window.addEventListener(
+          "error",
+          function (e) {
+            var t = e && e.target;
+            if (t && (t.tagName === "SCRIPT" || t.tagName === "LINK")) {
+              var src = t.src || t.href || "";
+              if (/\/(assets|src)\//.test(src) || t.type === "module") recover();
+            }
+          },
+          true
+        );
+        // Falha ao importar módulo dinâmico (chunk antigo removido pelo deploy).
+        window.addEventListener("unhandledrejection", function (e) {
+          var msg = ((e && e.reason && (e.reason.message || e.reason)) || "") + "";
+          if (
+            /dynamically imported module|Importing a module script failed|Failed to fetch|ChunkLoadError|error loading dynamically imported module/i.test(
+              msg
+            )
+          ) {
+            recover();
+          }
+        });
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
