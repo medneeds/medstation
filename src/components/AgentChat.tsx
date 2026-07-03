@@ -151,6 +151,8 @@ export function AgentChat({
   const [bulaInteligenteMode, setBulaInteligenteMode] = useState(false);
   const [directLIMode, setDirectLIMode] = useState(false);
   const [quickCIDMode, setQuickCIDMode] = useState(false);
+  const [mediscussMode, setMediscussMode] = useState("auto");
+  const [mediscussSpecialty, setMediscussSpecialty] = useState("auto");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -472,7 +474,8 @@ export function AgentChat({
           ...(agentType === "clinicus" && { directAHEMode, aheTemplate }),
           ...(agentType === "prescriptus" && { bulaInteligenteMode }),
           ...(agentType === "gasometrus" && { directLIMode }),
-          ...(agentType === "codexus" && { quickCIDMode })
+          ...(agentType === "codexus" && { quickCIDMode }),
+          ...(agentType === "mediscuss" && { mediscussMode, mediscussSpecialty })
         }),
       });
 
