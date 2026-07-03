@@ -236,6 +236,16 @@ const App = () => (
               }
             />
             <Route
+              path="/mediscuss"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <Mediscuss />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/settings"
               element={
                 <ProtectedRoute>
