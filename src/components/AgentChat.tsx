@@ -1538,6 +1538,32 @@ export function AgentChat({
             </Toggle>
           </div>
         )}
+        {isMobile && agentType === "mediscuss" && (
+          <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+            <Select value={mediscussMode} onValueChange={setMediscussMode}>
+              <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {MEDISCUSS_MODES.map((m) => (
+                  <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={mediscussSpecialty} onValueChange={setMediscussSpecialty}>
+              <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {MEDISCUSS_SPECIALTIES.map((s) => (
+                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+
 
         {/* Toolbar row: attach + desktop toggles */}
         {!isMobile && (
