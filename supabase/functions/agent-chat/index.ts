@@ -230,7 +230,7 @@ serve(async (req) => {
 
     console.log(`Rate limit check passed for user ${user.id}`);
 
-    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, aheTemplate, bulaInteligenteMode, directLIMode, onlyAltered, clinicalImpression, quickCIDMode, compactMode } = await req.json();
+    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, aheTemplate, bulaInteligenteMode, directLIMode, onlyAltered, clinicalImpression, quickCIDMode, compactMode, mediscussMode, mediscussSpecialty } = await req.json();
 
     // Validate input
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
