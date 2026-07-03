@@ -230,7 +230,7 @@ serve(async (req) => {
 
     console.log(`Rate limit check passed for user ${user.id}`);
 
-    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, aheTemplate, bulaInteligenteMode, directLIMode, onlyAltered, clinicalImpression, quickCIDMode, compactMode } = await req.json();
+    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, aheTemplate, bulaInteligenteMode, directLIMode, onlyAltered, clinicalImpression, quickCIDMode, compactMode, mediscussMode, mediscussSpecialty } = await req.json();
 
     // Validate input
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -2006,6 +2006,39 @@ ${contextData}`;
       systemPrompt = aheV2EmergenciaPrompt;
     } else if (agentType === "clinicus" && directAHEMode && aheTemplate === "v3") {
       systemPrompt = aheV3AdmissaoUTIPrompt;
+    }
+
+    // Mediscuss: injeta modo e especialidade selecionados (quando não "auto")
+    if (agentType === "mediscuss") {
+      const modeInstructions: Record<string, string> = {
+        parecer_curto: "MODO SELECIONADO: gere obrigatoriamente no formato PARECER CURTO (interconsulta objetiva e direta).",
+        parecer_completo: "MODO SELECIONADO: gere obrigatoriamente no formato PARECER COMPLETO (caso estruturado e detalhado com pergunta clínica clara).",
+        discussao: "MODO SELECIONADO: gere obrigatoriamente no formato DISCUSSÃO CLÍNICA com especialista.",
+        internacao: "MODO SELECIONADO: gere obrigatoriamente no formato SOLICITAÇÃO DE INTERNAÇÃO com justificativa clínica.",
+        uti: "MODO SELECIONADO: gere obrigatoriamente no formato SOLICITAÇÃO DE UTI com justificativa de gravidade e critérios de terapia intensiva.",
+        transferencia: "MODO SELECIONADO: gere obrigatoriamente no formato SOLICITAÇÃO DE TRANSFERÊNCIA / REGULAÇÃO.",
+        evolucao: "MODO SELECIONADO: gere obrigatoriamente no formato EVOLUÇÃO para discussão de caso.",
+      };
+      const specialtyLabels: Record<string, string> = {
+        cardiologia: "Cardiologia",
+        neurologia: "Neurologia",
+        neurocirurgia: "Neurocirurgia",
+        cirurgia: "Cirurgia Geral",
+        infectologia: "Infectologia",
+        hematologia: "Hematologia",
+        nefrologia: "Nefrologia",
+        ortopedia: "Ortopedia",
+      };
+      const extra: string[] = [];
+      if (mediscussMode && mediscussMode !== "auto" && modeInstructions[mediscussMode]) {
+        extra.push(modeInstructions[mediscussMode]);
+      }
+      if (mediscussSpecialty && mediscussSpecialty !== "auto" && specialtyLabels[mediscussSpecialty]) {
+        extra.push(`ÊNFASE POR ESPECIALIDADE: priorize e organize as informações relevantes para ${specialtyLabels[mediscussSpecialty]}, destacando os dados que o especialista dessa área precisa para responder ao caso.`);
+      }
+      if (extra.length > 0) {
+        systemPrompt += `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nINSTRUÇÕES ADICIONAIS DO MÉDICO SOLICITANTE:\n${extra.join("\n")}`;
+      }
     }
 
     // SHIELD: blinda o system prompt com regras absolutas anti-extração

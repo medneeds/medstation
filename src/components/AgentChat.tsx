@@ -115,6 +115,31 @@ interface CaseOption {
   patient_name: string;
 }
 
+const MEDISCUSS_MODES = [
+  { value: "auto", label: "Automático" },
+  { value: "parecer_curto", label: "Parecer curto" },
+  { value: "parecer_completo", label: "Parecer completo" },
+  { value: "discussao", label: "Discussão clínica" },
+  { value: "internacao", label: "Internação" },
+  { value: "uti", label: "UTI" },
+  { value: "transferencia", label: "Transferência / Regulação" },
+  { value: "evolucao", label: "Evolução p/ discussão" },
+];
+
+const MEDISCUSS_SPECIALTIES = [
+  { value: "auto", label: "Geral / Automático" },
+  { value: "cardiologia", label: "Cardiologia" },
+  { value: "neurologia", label: "Neurologia" },
+  { value: "neurocirurgia", label: "Neurocirurgia" },
+  { value: "cirurgia", label: "Cirurgia Geral" },
+  { value: "infectologia", label: "Infectologia" },
+  { value: "hematologia", label: "Hematologia" },
+  { value: "nefrologia", label: "Nefrologia" },
+  { value: "ortopedia", label: "Ortopedia" },
+];
+
+
+
 export function AgentChat({ 
   agentName, 
   agentIcon, 
@@ -151,6 +176,8 @@ export function AgentChat({
   const [bulaInteligenteMode, setBulaInteligenteMode] = useState(false);
   const [directLIMode, setDirectLIMode] = useState(false);
   const [quickCIDMode, setQuickCIDMode] = useState(false);
+  const [mediscussMode, setMediscussMode] = useState("auto");
+  const [mediscussSpecialty, setMediscussSpecialty] = useState("auto");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -472,7 +499,8 @@ export function AgentChat({
           ...(agentType === "clinicus" && { directAHEMode, aheTemplate }),
           ...(agentType === "prescriptus" && { bulaInteligenteMode }),
           ...(agentType === "gasometrus" && { directLIMode }),
-          ...(agentType === "codexus" && { quickCIDMode })
+          ...(agentType === "codexus" && { quickCIDMode }),
+          ...(agentType === "mediscuss" && { mediscussMode, mediscussSpecialty })
         }),
       });
 
@@ -1510,6 +1538,32 @@ export function AgentChat({
             </Toggle>
           </div>
         )}
+        {isMobile && agentType === "mediscuss" && (
+          <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+            <Select value={mediscussMode} onValueChange={setMediscussMode}>
+              <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {MEDISCUSS_MODES.map((m) => (
+                  <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={mediscussSpecialty} onValueChange={setMediscussSpecialty}>
+              <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {MEDISCUSS_SPECIALTIES.map((s) => (
+                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+
 
         {/* Toolbar row: attach + desktop toggles */}
         {!isMobile && (
@@ -1606,6 +1660,32 @@ export function AgentChat({
                 <Zap className="h-4 w-4" />
                 <span className="text-xs">C.R.</span>
               </Toggle>
+            )}
+            {agentType === "mediscuss" && (
+              <>
+                <Select value={mediscussMode} onValueChange={setMediscussMode}>
+                  <SelectTrigger className="shrink-0 h-8 w-auto gap-1.5 rounded-full text-xs px-3">
+                    <span className="text-muted-foreground">Modo:</span>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MEDISCUSS_MODES.map((m) => (
+                      <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={mediscussSpecialty} onValueChange={setMediscussSpecialty}>
+                  <SelectTrigger className="shrink-0 h-8 w-auto gap-1.5 rounded-full text-xs px-3">
+                    <span className="text-muted-foreground">Especialidade:</span>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MEDISCUSS_SPECIALTIES.map((s) => (
+                      <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </>
             )}
             {agentType === "examinus" && (
               <>
