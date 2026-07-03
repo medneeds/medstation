@@ -199,4 +199,37 @@ export const assistantSlides: Record<string, AssistantSlide[]> = {
       ],
     },
   ],
+  Mediscuss: [
+    {
+      eyebrow: "O problema",
+      title: "Pedir parecer consome tempo",
+      body: "Reunir história, evolução, exames e conduta em um texto claro para o especialista, a regulação ou a UTI trava o plantão e atrasa a comunicação entre equipes.",
+    },
+    {
+      eyebrow: "Como funciona",
+      title: "Do caso bruto ao texto pronto",
+      body: "Cole os dados do paciente, mesmo desorganizados. Mediscuss monta o pedido técnico, cronológico e objetivo, pronto para o prontuário ou sistema.",
+      bullets: [
+        "Parecer, discussão, internação, UTI e transferência",
+        "Ênfases por especialidade (cardio, neuro, cirurgia...)",
+        "Nunca inventa dados: sinaliza o que não foi informado",
+      ],
+    },
+    {
+      eyebrow: "Exemplo",
+      title: "Solicitação pronta para colar",
+      body: "Prosa médica hospitalar, sem floreios, com a pergunta clínica no centro.",
+      example: {
+        label: "Saída Mediscuss",
+        lines: [
+          "SOLICITAÇÃO DE PARECER — CARDIOLOGIA",
+          "",
+          "Paciente masculino, 68 anos, hipertenso e diabético,",
+          "admitido por dor torácica retroesternal há 4h...",
+          "",
+          "Solicito avaliação e conduta. Desde já, grato.",
+        ],
+      },
+    },
+  ],
 };

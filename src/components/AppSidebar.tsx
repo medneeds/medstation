@@ -24,6 +24,7 @@ import {
   UsersRound,
   FolderOpen,
   NotebookPen,
+  MessagesSquare,
 } from "lucide-react";
 import { SUPPORT_CHAT_EVENT } from "@/components/SupportChat";
 import { LogoMark } from "@/components/LogoMark";
@@ -53,6 +54,7 @@ const agentModules = [
   { title: "Protocolus", url: "/protocolus", icon: BookOpen, code: "08" },
   { title: "Orientus", url: "/orientus", icon: Compass, code: "09" },
   { title: "CODexus", url: "/codexus", icon: FileText, code: "10" },
+  { title: "Mediscuss", url: "/mediscuss", icon: MessagesSquare, code: "11" },
 ];
 
 const consultorioModule = { title: "Modo Consultório", url: "/consultorio", icon: Mic, code: "C" };
