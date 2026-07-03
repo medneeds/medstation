@@ -115,6 +115,31 @@ interface CaseOption {
   patient_name: string;
 }
 
+const MEDISCUSS_MODES = [
+  { value: "auto", label: "Automático" },
+  { value: "parecer_curto", label: "Parecer curto" },
+  { value: "parecer_completo", label: "Parecer completo" },
+  { value: "discussao", label: "Discussão clínica" },
+  { value: "internacao", label: "Internação" },
+  { value: "uti", label: "UTI" },
+  { value: "transferencia", label: "Transferência / Regulação" },
+  { value: "evolucao", label: "Evolução p/ discussão" },
+];
+
+const MEDISCUSS_SPECIALTIES = [
+  { value: "auto", label: "Geral / Automático" },
+  { value: "cardiologia", label: "Cardiologia" },
+  { value: "neurologia", label: "Neurologia" },
+  { value: "neurocirurgia", label: "Neurocirurgia" },
+  { value: "cirurgia", label: "Cirurgia Geral" },
+  { value: "infectologia", label: "Infectologia" },
+  { value: "hematologia", label: "Hematologia" },
+  { value: "nefrologia", label: "Nefrologia" },
+  { value: "ortopedia", label: "Ortopedia" },
+];
+
+
+
 export function AgentChat({ 
   agentName, 
   agentIcon, 
