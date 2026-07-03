@@ -1635,6 +1635,32 @@ export function AgentChat({
                 <span className="text-xs">C.R.</span>
               </Toggle>
             )}
+            {agentType === "mediscuss" && (
+              <>
+                <Select value={mediscussMode} onValueChange={setMediscussMode}>
+                  <SelectTrigger className="shrink-0 h-8 w-auto gap-1.5 rounded-full text-xs px-3">
+                    <span className="text-muted-foreground">Modo:</span>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MEDISCUSS_MODES.map((m) => (
+                      <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={mediscussSpecialty} onValueChange={setMediscussSpecialty}>
+                  <SelectTrigger className="shrink-0 h-8 w-auto gap-1.5 rounded-full text-xs px-3">
+                    <span className="text-muted-foreground">Especialidade:</span>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MEDISCUSS_SPECIALTIES.map((s) => (
+                      <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </>
+            )}
             {agentType === "examinus" && (
               <>
                 <Toggle
