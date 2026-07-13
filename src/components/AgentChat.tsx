@@ -138,6 +138,16 @@ const MEDISCUSS_SPECIALTIES = [
   { value: "ortopedia", label: "Ortopedia" },
 ];
 
+const CLINICUS_CONTEXTS = [
+  { value: "consultorio", label: "Consultório" },
+  { value: "enfermaria", label: "Enfermaria / Clínica Médica" },
+  { value: "emergencia_inicial", label: "Emergência · Avaliação Inicial" },
+  { value: "emergencia_completa", label: "Emergência · Admissão Completa" },
+  { value: "uti", label: "UTI · Paciente Crítico" },
+] as const;
+
+type ClinicusContext = (typeof CLINICUS_CONTEXTS)[number]["value"];
+
 
 
 export function AgentChat({ 
@@ -172,7 +182,7 @@ export function AgentChat({
   const [clinicalImpression, setClinicalImpression] = useState(false);
   const [compactMode, setCompactMode] = useState(true);
   const [directAHEMode, setDirectAHEMode] = useState(false);
-  const [aheTemplate, setAheTemplate] = useState<"v1" | "v2" | "v3">("v1");
+  const [aheTemplate, setAheTemplate] = useState<ClinicusContext>("enfermaria");
   const [bulaInteligenteMode, setBulaInteligenteMode] = useState(false);
   const [directLIMode, setDirectLIMode] = useState(false);
   const [quickCIDMode, setQuickCIDMode] = useState(false);
@@ -1467,32 +1477,16 @@ export function AgentChat({
               <span>Anamnese</span>
             </Toggle>
             {directAHEMode && (
-              <div className="inline-flex flex-wrap items-center gap-0.5 rounded-full border border-border bg-card/60 p-0.5 text-[10px]">
-                <button
-                  type="button"
-                  onClick={() => setAheTemplate("v1")}
-                  title="Modelo 1: anamnese hospitalar padrão"
-                  className={`px-2 h-6 rounded-full transition-colors ${aheTemplate === "v1" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  M1 · Padrão
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAheTemplate("v2")}
-                  title="Modelo 2: admissão hospitalar para Medicina de Emergência"
-                  className={`px-2 h-6 rounded-full transition-colors ${aheTemplate === "v2" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  M2 · Emergência
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAheTemplate("v3")}
-                  title="Modelo 3: admissão de paciente crítico em UTI/urgência"
-                  className={`px-2 h-6 rounded-full transition-colors ${aheTemplate === "v3" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  M3 · UTI
-                </button>
-              </div>
+              <Select value={aheTemplate} onValueChange={(v) => setAheTemplate(v as ClinicusContext)}>
+                <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CLINICUS_CONTEXTS.map((c) => (
+                    <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             )}
           </div>
         )}
@@ -1596,32 +1590,17 @@ export function AgentChat({
                   <span className="text-xs">Anamnese</span>
                 </Toggle>
                 {directAHEMode && (
-                  <div className="inline-flex items-center rounded-full border border-border bg-card/60 p-0.5 text-xs shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => setAheTemplate("v1")}
-                      className={`px-2.5 h-7 rounded-full transition-colors ${aheTemplate === "v1" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
-                      title="Modelo 1: anamnese hospitalar padrão"
-                    >
-                      Modelo 1 · Padrão
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setAheTemplate("v2")}
-                      className={`px-2.5 h-7 rounded-full transition-colors ${aheTemplate === "v2" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
-                      title="Modelo 2: admissão hospitalar para Medicina de Emergência"
-                    >
-                      Modelo 2 · Emergência
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setAheTemplate("v3")}
-                      className={`px-2.5 h-7 rounded-full transition-colors ${aheTemplate === "v3" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
-                      title="Modelo 3: admissão de paciente crítico em UTI/urgência"
-                    >
-                      Modelo 3 · Admissão UTI
-                    </button>
-                  </div>
+                  <Select value={aheTemplate} onValueChange={(v) => setAheTemplate(v as ClinicusContext)}>
+                    <SelectTrigger className="shrink-0 h-8 w-auto gap-1.5 rounded-full text-xs px-3">
+                      <span className="text-muted-foreground">Contexto:</span>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CLINICUS_CONTEXTS.map((c) => (
+                        <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 )}
               </>
             )}
