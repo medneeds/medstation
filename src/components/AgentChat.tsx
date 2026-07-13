@@ -1590,32 +1590,17 @@ export function AgentChat({
                   <span className="text-xs">Anamnese</span>
                 </Toggle>
                 {directAHEMode && (
-                  <div className="inline-flex items-center rounded-full border border-border bg-card/60 p-0.5 text-xs shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => setAheTemplate("v1")}
-                      className={`px-2.5 h-7 rounded-full transition-colors ${aheTemplate === "v1" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
-                      title="Modelo 1: anamnese hospitalar padrão"
-                    >
-                      Modelo 1 · Padrão
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setAheTemplate("v2")}
-                      className={`px-2.5 h-7 rounded-full transition-colors ${aheTemplate === "v2" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
-                      title="Modelo 2: admissão hospitalar para Medicina de Emergência"
-                    >
-                      Modelo 2 · Emergência
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setAheTemplate("v3")}
-                      className={`px-2.5 h-7 rounded-full transition-colors ${aheTemplate === "v3" ? "bg-primary/20 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
-                      title="Modelo 3: admissão de paciente crítico em UTI/urgência"
-                    >
-                      Modelo 3 · Admissão UTI
-                    </button>
-                  </div>
+                  <Select value={aheTemplate} onValueChange={(v) => setAheTemplate(v as ClinicusContext)}>
+                    <SelectTrigger className="shrink-0 h-8 w-auto gap-1.5 rounded-full text-xs px-3">
+                      <span className="text-muted-foreground">Contexto:</span>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CLINICUS_CONTEXTS.map((c) => (
+                        <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 )}
               </>
             )}
