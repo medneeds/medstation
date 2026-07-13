@@ -138,6 +138,16 @@ const MEDISCUSS_SPECIALTIES = [
   { value: "ortopedia", label: "Ortopedia" },
 ];
 
+const CLINICUS_CONTEXTS = [
+  { value: "consultorio", label: "Consultório" },
+  { value: "enfermaria", label: "Enfermaria / Clínica Médica" },
+  { value: "emergencia_inicial", label: "Emergência · Avaliação Inicial" },
+  { value: "emergencia_completa", label: "Emergência · Admissão Completa" },
+  { value: "uti", label: "UTI · Paciente Crítico" },
+] as const;
+
+type ClinicusContext = (typeof CLINICUS_CONTEXTS)[number]["value"];
+
 
 
 export function AgentChat({ 
@@ -172,7 +182,7 @@ export function AgentChat({
   const [clinicalImpression, setClinicalImpression] = useState(false);
   const [compactMode, setCompactMode] = useState(true);
   const [directAHEMode, setDirectAHEMode] = useState(false);
-  const [aheTemplate, setAheTemplate] = useState<"v1" | "v2" | "v3">("v1");
+  const [aheTemplate, setAheTemplate] = useState<ClinicusContext>("enfermaria");
   const [bulaInteligenteMode, setBulaInteligenteMode] = useState(false);
   const [directLIMode, setDirectLIMode] = useState(false);
   const [quickCIDMode, setQuickCIDMode] = useState(false);
