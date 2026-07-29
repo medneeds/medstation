@@ -286,6 +286,7 @@ const App = () => (
               <Route index element={<AdminDashboard />} />
               <Route path="usuarios" element={<AdminUsers />} />
               <Route path="faturamento" element={<AdminRoute requireAdmin><AdminBilling /></AdminRoute>} />
+              <Route path="indicacoes" element={<AdminRoute requireAdmin><AdminReferrals /></AdminRoute>} />
               <Route path="suporte" element={<AdminSupport />} />
               <Route path="uso-ia" element={<AdminAIUsage />} />
               <Route path="feedback" element={<AdminFeedback />} />
