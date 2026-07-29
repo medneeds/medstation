@@ -41,6 +41,7 @@ function fmtMoney(cents: number, currency = "brl") {
 
 export default function AdminBilling() {
   const [stats, setStats] = useState<Stats | null>(null);
+  const [filteredStats, setFilteredStats] = useState<FilteredSubscriberStats | null>(null);
   const [records, setRecords] = useState<Record[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -49,6 +50,7 @@ export default function AdminBilling() {
   const [preset, setPreset] = useState("all");
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
+  const [kpiScope, setKpiScope] = useState<"global" | "filter">("global");
 
   const { from, to } = useMemo(() => {
     const now = new Date();
