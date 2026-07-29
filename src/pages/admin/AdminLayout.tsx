@@ -15,6 +15,7 @@ const NAV = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/usuarios", label: "Usuários", icon: Users },
   { to: "/admin/faturamento", label: "Faturamento", icon: CreditCard, adminOnly: true },
+  { to: "/admin/indicacoes", label: "Indicações", icon: Gift, adminOnly: true },
   { to: "/admin/suporte", label: "Suporte", icon: MessageSquare },
   { to: "/admin/uso-ia", label: "Uso de IA", icon: Activity },
   { to: "/admin/feedback", label: "Feedback", icon: Star },
