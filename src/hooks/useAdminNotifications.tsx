@@ -142,20 +142,36 @@ export function useAdminNotifications(enabled: boolean) {
     [userId],
   );
 
+  const visibleItems = useMemo(
+    () => items.filter((n) => isEnabled(prefs, n.type)),
+    [items, prefs],
+  );
+
   const markAllAsRead = useCallback(async () => {
     if (!userId) return;
-    const unread = items.filter((n) => !n.read);
+    const unread = visibleItems.filter((n) => !n.read);
     if (unread.length === 0) return;
-    setItems((prev) => prev.map((n) => ({ ...n, read: true })));
+    const ids = new Set(unread.map((n) => n.id));
+    setItems((prev) => prev.map((n) => (ids.has(n.id) ? { ...n, read: true } : n)));
     await supabase
       .from("admin_notification_reads")
       .upsert(
         unread.map((n) => ({ notification_id: n.id, user_id: userId })),
         { onConflict: "notification_id,user_id" },
       );
-  }, [items, userId]);
+  }, [visibleItems, userId]);
 
-  const unreadCount = useMemo(() => items.filter((n) => !n.read).length, [items]);
+  const unreadCount = useMemo(() => visibleItems.filter((n) => !n.read).length, [visibleItems]);
 
-  return { items, loading, unreadCount, markAsRead, markAsUnread, markAllAsRead, refresh: load };
+  return {
+    items: visibleItems,
+    loading,
+    unreadCount,
+    prefs,
+    updatePrefs,
+    markAsRead,
+    markAsUnread,
+    markAllAsRead,
+    refresh: load,
+  };
 }
