@@ -248,6 +248,8 @@ export function AdminNotificationBell() {
             </ul>
           )}
         </ScrollArea>
+        </>
+        )}
       </PopoverContent>
     </Popover>
   );
