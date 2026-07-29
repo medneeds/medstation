@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, X, Send, Mic, Square, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send, Mic, Square, Loader2, UserRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -27,6 +27,8 @@ export function SupportChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [handoffTicketId, setHandoffTicketId] = useState<string | null>(null);
+  const [handingOff, setHandingOff] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -76,6 +78,72 @@ export function SupportChat() {
     if (lastConversation) {
       setMessages(lastConversation);
       setLastConversation(null);
+    }
+  };
+
+  // Realtime: quando um ticket humano existe, ouve respostas do suporte
+  useEffect(() => {
+    if (!handoffTicketId) return;
+    const channel = supabase
+      .channel(`support-user-${handoffTicketId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "support_messages", filter: `ticket_id=eq.${handoffTicketId}` },
+        (payload: any) => {
+          const m = payload.new;
+          if (m.sender_type === "agent") {
+            setMessages((prev) => [...prev, { role: "assistant", content: `👤 Suporte: ${m.content}` }]);
+          }
+        },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [handoffTicketId]);
+
+  const requestHuman = async () => {
+    if (handingOff || handoffTicketId) return;
+    setHandingOff(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({ title: "Faça login", description: "Você precisa estar autenticado para falar com o suporte humano.", variant: "destructive" });
+        return;
+      }
+      const lastUserMsg = [...messages].reverse().find((m) => m.role === "user")?.content?.slice(0, 120) ?? "Solicitação de suporte";
+      const { data: ticket, error: tErr } = await supabase
+        .from("support_tickets")
+        .insert([{
+          user_id: user.id,
+          subject: lastUserMsg,
+          status: "open",
+          priority: "normal",
+          ai_context_snapshot: { messages } as any,
+          last_message_at: new Date().toISOString(),
+        }])
+        .select()
+        .single();
+      if (tErr) throw tErr;
+      // Grava histórico da conversa como mensagens do ticket (usuário e IA)
+      const rows = messages
+        .filter((m) => m.content && m.content !== INITIAL_MESSAGE.content)
+        .map((m) => ({
+          ticket_id: ticket.id,
+          sender_type: m.role === "user" ? "user" : "ai",
+          sender_id: m.role === "user" ? user.id : null,
+          content: m.content,
+        }));
+      if (rows.length) await supabase.from("support_messages").insert(rows);
+      setHandoffTicketId(ticket.id);
+      setMessages((prev) => [...prev, {
+        role: "assistant",
+        content: "✅ Conectado ao suporte humano. Nossa equipe responderá aqui mesmo assim que possível. Você pode continuar enviando mensagens neste chat.",
+      }]);
+      toast({ title: "Suporte humano acionado", description: "Um atendente foi notificado." });
+    } catch (e: any) {
+      console.error("[handoff]", e);
+      toast({ title: "Erro", description: e.message || "Não foi possível conectar ao suporte humano.", variant: "destructive" });
+    } finally {
+      setHandingOff(false);
     }
   };
 
@@ -199,7 +267,10 @@ export function SupportChat() {
           <div className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground rounded-t-lg">
             <div className="flex items-center gap-2">
               <MessageCircle className="h-5 w-5" />
-              <span className="font-semibold">Suporte MedPocket</span>
+              <span className="font-semibold">Suporte MedStation</span>
+              {handoffTicketId && (
+                <span className="ml-2 text-2xs px-1.5 py-0.5 rounded bg-primary-foreground/20">humano</span>
+              )}
             </div>
             <Button
               variant="ghost"
@@ -210,6 +281,18 @@ export function SupportChat() {
               <X className="h-5 w-5" />
             </Button>
           </div>
+
+          {!handoffTicketId && (
+            <div className="px-3 py-2 border-b bg-muted/30 flex items-center justify-between gap-2">
+              <span className="text-xs text-muted-foreground">Precisa de um humano?</span>
+              <Button size="sm" variant="outline" onClick={requestHuman} disabled={handingOff} className="h-7 text-xs">
+                {handingOff ? <Loader2 className="h-3 w-3 animate-spin mr-1.5" /> : <UserRound className="h-3 w-3 mr-1.5" />}
+                Falar com suporte
+              </Button>
+            </div>
+          )}
+
+
 
           {/* Messages */}
           <ScrollArea className="flex-1 p-4" ref={scrollRef}>

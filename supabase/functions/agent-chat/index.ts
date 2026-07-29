@@ -2194,6 +2194,8 @@ ${contextData}`;
     ];
 
     // Call Lovable AI with streaming
+    const model = "google/gemini-3-flash-preview";
+    const startedAt = Date.now();
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -2201,10 +2203,11 @@ ${contextData}`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model,
         messages: messagesForAI,
         temperature: agentType === "examinus" ? 0 : undefined,
         stream: true,
+        stream_options: { include_usage: true },
       }),
     });
 
@@ -2218,10 +2221,24 @@ ${contextData}`;
 
     console.log("AI streaming response started");
 
-    // Return the stream directly
-    return new Response(aiResponse.body, {
-      headers: { 
-        ...corsHeaders, 
+    // Instrumenta stream — captura usage do chunk final e loga.
+    const { teeStreamWithUsage } = await import("../_shared/ai-logger.ts");
+    const instrumented = teeStreamWithUsage(
+      aiResponse.body!,
+      {
+        userId: user?.id ?? null,
+        assistant: agentType,
+        functionName: "agent-chat",
+        model,
+        status: "ok",
+        metadata: { streaming: true },
+      },
+      startedAt,
+    );
+
+    return new Response(instrumented, {
+      headers: {
+        ...corsHeaders,
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
         "Connection": "keep-alive"
