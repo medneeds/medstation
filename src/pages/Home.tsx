@@ -15,7 +15,7 @@ import { TimeSavingsComparison } from "@/components/TimeSavingsComparison";
 import { FAQMiniDemo } from "@/components/FAQMiniDemo";
 import { HeroVideo } from "@/components/HeroVideo";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
-import { trackEvent } from "@/lib/analytics";
+import { trackCtaClick } from "@/lib/analytics";
 
 type FAQItem = {
   q: string;
@@ -124,7 +124,7 @@ export default function Home() {
               variant="ghost" 
               size="sm"
               className="text-xs md:text-sm h-8 md:h-9 px-3 md:px-4"
-              onClick={() => navigate('/auth')}
+              onClick={() => { trackCtaClick({ cta: 'header_login', section: 'header', destination: '/auth' }); navigate('/auth'); }}
             >
               Login
             </Button>
@@ -132,7 +132,7 @@ export default function Home() {
               variant="outline" 
               size="sm"
               className="text-xs md:text-sm h-8 md:h-9 px-3 md:px-4"
-              onClick={() => { trackEvent('cta_click', { cta: 'header_cadastro' }); scrollToSection('cadastro'); }}
+              onClick={() => { trackCtaClick({ cta: 'header_comecar', section: 'header', destination: '#cadastro' }); scrollToSection('cadastro'); }}
             >
               Começar
             </Button>
@@ -278,7 +278,7 @@ export default function Home() {
             <Button 
               size="lg"
               className="shadow-medical hover:shadow-elevated transition-all hover:scale-105 px-8"
-              onClick={() => { trackEvent('cta_click', { cta: 'ver_planos' }); scrollToSection('planos'); }}
+              onClick={() => { trackCtaClick({ cta: 'provas_ver_planos', section: 'provas_sociais', destination: '#planos' }); scrollToSection('planos'); }}
             >
               Ver planos e preços
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -391,7 +391,7 @@ export default function Home() {
                   <li className="flex gap-2"><span className="text-amber-500 mt-0.5">!</span> Outros 9 bloqueados</li>
                 </ul>
               </div>
-              <Button variant="outline" className="w-full h-11 mt-5" onClick={() => navigate('/auth')}>
+              <Button variant="outline" className="w-full h-11 mt-5" onClick={() => { trackCtaClick({ cta: 'plano_gratis', section: 'pricing', plan: 'free', billingPeriod, destination: '/auth' }); navigate('/auth'); }}>
                 Criar conta grátis
               </Button>
               <p className="text-[10px] text-center text-muted-foreground mt-2">Sem cartão</p>
@@ -421,7 +421,7 @@ export default function Home() {
                   <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Garantia 7 dias</li>
                 </ul>
               </div>
-              <Button className="w-full h-11 mt-5" onClick={() => { trackEvent('cta_click', { cta: 'plano_pricing' }); navigate('/pricing'); }}>
+              <Button className="w-full h-11 mt-5" onClick={() => { trackCtaClick({ cta: 'plano_agents', section: 'pricing', plan: billingPeriod === 'yearly' ? 'agents_yearly' : 'agents_monthly', billing_period: billingPeriod, price_brl: billingPeriod === 'yearly' ? 299.9 : 29.9, destination: '/pricing' }); navigate('/pricing'); }}>
                 Assinar Pro
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -456,7 +456,7 @@ export default function Home() {
                   <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Suporte prioritário · Garantia 7 dias</li>
                 </ul>
               </div>
-              <Button className="w-full h-11 mt-5" onClick={() => { trackEvent('cta_click', { cta: 'plano_pricing' }); navigate('/pricing'); }}>
+              <Button className="w-full h-11 mt-5" onClick={() => { trackCtaClick({ cta: 'plano_pro2', section: 'pricing', plan: billingPeriod === 'yearly' ? 'pro2_bundle_yearly' : 'pro2_bundle', billing_period: billingPeriod, price_brl: billingPeriod === 'yearly' ? 499.9 : 49.9, destination: '/pricing' }); navigate('/pricing'); }}>
                 Assinar Pro 2
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -486,7 +486,7 @@ export default function Home() {
                   <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Reconhecimento de voz treinado para vocabulário médico</li>
                 </ul>
               </div>
-              <Button variant="outline" className="w-full h-11 mt-5" onClick={() => navigate('/consultorio-landing')}>
+              <Button variant="outline" className="w-full h-11 mt-5" onClick={() => { trackCtaClick({ cta: 'plano_consultorio', section: 'pricing', plan: billingPeriod === 'yearly' ? 'consultorio_yearly' : 'consultorio_monthly', billing_period: billingPeriod, destination: '/consultorio-landing' }); navigate('/consultorio-landing'); }}>
                 Conhecer o Consultório
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -501,7 +501,7 @@ export default function Home() {
                 <p className="text-xs md:text-sm text-muted-foreground">
                   Já é assinante de um dos lados? Adicione o outro por <span className="text-primary font-semibold">apenas R$ 19,90/mês</span> — preço exclusivo de upgrade cruzado.
                 </p>
-                <Button variant="link" size="sm" className="text-primary h-auto p-0" onClick={() => navigate('/pricing')}>
+                <Button variant="link" size="sm" className="text-primary h-auto p-0" onClick={() => { trackCtaClick({ cta: 'upgrade_cruzado', section: 'pricing_cross_upgrade', destination: '/pricing' }); navigate('/pricing'); }}>
                   Ver upgrade <ArrowRight className="w-3 h-3 ml-1" />
                 </Button>
               </div>
@@ -525,7 +525,7 @@ export default function Home() {
             <Button 
               size="lg"
               className="shadow-medical hover:shadow-elevated transition-all hover:scale-105 h-11 md:h-12 text-sm md:text-base"
-              onClick={() => navigate('/auth')}
+              onClick={() => { trackCtaClick({ cta: 'final_criar_conta', section: 'cta_final', plan: 'free', destination: '/auth' }); navigate('/auth'); }}
             >
               Criar conta gratuita
               <ArrowRight className="ml-2 h-3.5 md:h-4 w-3.5 md:w-4" />
@@ -534,7 +534,7 @@ export default function Home() {
               size="lg"
               variant="outline"
               className="h-11 md:h-12 text-sm md:text-base"
-              onClick={() => scrollToSection('demo')}
+              onClick={() => { trackCtaClick({ cta: 'final_testar_demo', section: 'cta_final', destination: '#demo' }); scrollToSection('demo'); }}
             >
               Testar sem cadastro
             </Button>
