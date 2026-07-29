@@ -24,6 +24,19 @@ serve(async (req) => {
     const referredUserId: string | undefined = body.referred_user_id;
     if (!referredUserId) throw new Error("referred_user_id required");
 
+    // Load configurable settings
+    const { data: settings } = await supabase
+      .from("referral_settings")
+      .select("active, referrer_reward_days")
+      .eq("id", 1)
+      .maybeSingle();
+    if (settings && settings.active === false) {
+      return new Response(JSON.stringify({ ok: false, reason: "program_disabled" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const rewardDays = settings?.referrer_reward_days ?? 30;
+
     // Find pending referral for this user
     const { data: ref } = await supabase
       .from("referrals")
