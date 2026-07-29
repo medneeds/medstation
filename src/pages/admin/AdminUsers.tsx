@@ -9,7 +9,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { toast } from "sonner";
 import { Search, RefreshCw, Shield, Gift, KeyRound, CheckCircle2, Loader2 } from "lucide-react";
 
-interface Record {
+interface UserRow {
   user_id: string;
   email: string;
   full_name: string | null;
@@ -154,7 +154,7 @@ export default function AdminUsers() {
   );
 }
 
-function UserDetailSheet({ user, onClose, onChanged }: { user: Record | null; onClose: () => void; onChanged: () => void }) {
+function UserDetailSheet({ user, onClose, onChanged }: { user: UserRow | null; onClose: () => void; onChanged: () => void }) {
   const [busy, setBusy] = useState<string | null>(null);
 
   const resetPassword = async () => {
