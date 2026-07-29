@@ -159,6 +159,9 @@ export default function AdminReferrals() {
           referrer_reward_days: settings.referrer_reward_days,
           require_crm: settings.require_crm,
           max_rewards_per_referrer: settings.max_rewards_per_referrer,
+          lead_reward_enabled: settings.lead_reward_enabled,
+          block_existing_referrers: settings.block_existing_referrers,
+
 
           updated_by: (await supabase.auth.getUser()).data.user?.id,
         })
