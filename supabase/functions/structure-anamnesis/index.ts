@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { logAIUsage } from "../_shared/ai-logger.ts";
+
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -166,6 +168,17 @@ SEÇÕES PARA ESTRUTURAR:
 
     const data = await response.json();
     console.log('AI response received');
+
+    void logAIUsage({
+      userId: user.id,
+      assistant: "consultorio",
+      functionName: "structure-anamnesis",
+      model: "google/gemini-3-flash-preview",
+      inputTokens: data.usage?.prompt_tokens,
+      outputTokens: data.usage?.completion_tokens,
+      totalTokens: data.usage?.total_tokens,
+      status: "ok",
+    });
 
     // Extract structured data from tool call
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
