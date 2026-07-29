@@ -1,4 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { logAIUsage } from "../_shared/ai-logger.ts";
+import { getUserIdFromAuth, estimateAudioSecondsFromBytes } from "../_shared/auth-helpers.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
