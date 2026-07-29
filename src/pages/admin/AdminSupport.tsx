@@ -114,7 +114,6 @@ export default function AdminSupport() {
   return (
     <div className="p-4 sm:p-6 space-y-5 h-screen flex flex-col">
       <header>
-        <h1 className="text-2xl font-display font-semibold">Suporte</h1>
         <p className="text-sm text-muted-foreground">
           {metrics
             ? `${metrics.open + metrics.assigned} em aberto · ${metrics.resolved_total} resolvidos · ${metrics.total} total (global)`

@@ -54,7 +54,6 @@ export default function AdminFlags() {
     <div className="p-4 sm:p-6 space-y-5">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-semibold">Feature flags</h1>
           <p className="text-sm text-muted-foreground">Kill-switches e rollout gradual</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>

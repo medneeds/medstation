@@ -115,9 +115,6 @@ export default function AdminReferrals() {
     <div className="p-4 sm:p-6 space-y-6">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-semibold flex items-center gap-2">
-            <Gift className="h-5 w-5 text-primary" /> Indique e Ganhe
-          </h1>
           <p className="text-sm text-muted-foreground">Métricas e parâmetros do programa de indicação</p>
         </div>
         <Badge variant={settings.active ? "default" : "outline"}>

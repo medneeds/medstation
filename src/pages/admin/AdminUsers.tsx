@@ -95,7 +95,6 @@ export default function AdminUsers() {
     <div className="p-4 sm:p-6 space-y-5">
       <header className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-display font-semibold">Usuários</h1>
           <p className="text-sm text-muted-foreground">
             {stats ? `${stats.total_users} usuários no total` : "—"}
             {filterActive && ` · ${total} no filtro atual`}
