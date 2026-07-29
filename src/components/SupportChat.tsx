@@ -267,7 +267,10 @@ export function SupportChat() {
           <div className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground rounded-t-lg">
             <div className="flex items-center gap-2">
               <MessageCircle className="h-5 w-5" />
-              <span className="font-semibold">Suporte MedPocket</span>
+              <span className="font-semibold">Suporte MedStation</span>
+              {handoffTicketId && (
+                <span className="ml-2 text-2xs px-1.5 py-0.5 rounded bg-primary-foreground/20">humano</span>
+              )}
             </div>
             <Button
               variant="ghost"
@@ -278,6 +281,18 @@ export function SupportChat() {
               <X className="h-5 w-5" />
             </Button>
           </div>
+
+          {!handoffTicketId && (
+            <div className="px-3 py-2 border-b bg-muted/30 flex items-center justify-between gap-2">
+              <span className="text-xs text-muted-foreground">Precisa de um humano?</span>
+              <Button size="sm" variant="outline" onClick={requestHuman} disabled={handingOff} className="h-7 text-xs">
+                {handingOff ? <Loader2 className="h-3 w-3 animate-spin mr-1.5" /> : <UserRound className="h-3 w-3 mr-1.5" />}
+                Falar com suporte
+              </Button>
+            </div>
+          )}
+
+
 
           {/* Messages */}
           <ScrollArea className="flex-1 p-4" ref={scrollRef}>
