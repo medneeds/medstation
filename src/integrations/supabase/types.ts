@@ -1081,6 +1081,7 @@ export type Database = {
           active: boolean
           created_at: string
           id: number
+          max_rewards_per_referrer: number
           referred_discount_percent: number
           referred_stripe_coupon: string
           referrer_reward_days: number
@@ -1092,6 +1093,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           id?: number
+          max_rewards_per_referrer?: number
           referred_discount_percent?: number
           referred_stripe_coupon?: string
           referrer_reward_days?: number
@@ -1103,6 +1105,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           id?: number
+          max_rewards_per_referrer?: number
           referred_discount_percent?: number
           referred_stripe_coupon?: string
           referrer_reward_days?: number
