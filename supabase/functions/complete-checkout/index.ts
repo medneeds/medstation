@@ -91,6 +91,9 @@ serve(async (req) => {
         userExists: true,
         email,
         passwordWasSkipped,
+        plan: session.metadata?.plan ?? null,
+        amountTotal: session.amount_total ?? null,
+        currency: session.currency ?? null,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -137,6 +140,9 @@ serve(async (req) => {
       email,
       userId: newUser.user.id,
       passwordWasSkipped,
+      plan: session.metadata?.plan ?? null,
+      amountTotal: session.amount_total ?? null,
+      currency: session.currency ?? null,
       // Para wallets: o frontend pode disparar email de "definir senha".
       autoLoginUrl: sessionData?.properties?.hashed_token ?
         `${req.headers.get("origin")}/auth/callback?token=${sessionData.properties.hashed_token}` :

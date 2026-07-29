@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Loader2, Mail, Zap, Shield, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { trackEvent } from "@/lib/analytics";
+import { trackCheckoutStarted } from "@/lib/analytics";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 
@@ -14,6 +14,8 @@ interface QuickCheckoutProps {
   billingPeriod?: "monthly" | "yearly";
   showPricing?: boolean;
   className?: string;
+  /** Onde este checkout está embutido (para atribuição do funil) */
+  origin?: string;
 }
 
 export function QuickCheckout({ 
@@ -21,6 +23,7 @@ export function QuickCheckout({
   billingPeriod = "monthly",
   showPricing = true,
   className = "",
+  origin = "quick_checkout",
 }: QuickCheckoutProps) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -39,7 +42,14 @@ export function QuickCheckout({
     }
 
     setLoading(true);
-    trackEvent("checkout_started", { product, billing_period: billingPeriod });
+    trackCheckoutStarted({
+      origin,
+      product,
+      plan: billingPeriod === "yearly" ? "agents_yearly" : "agents_monthly",
+      billing_period: billingPeriod,
+      price_brl: billingPeriod === "yearly" ? 299.9 : 29.9,
+      auth_state: "guest",
+    });
     try {
       const { data, error } = await supabase.functions.invoke("guest-checkout", {
         body: { email, product, billingPeriod },
@@ -157,6 +167,8 @@ interface InlineCheckoutProps {
   buttonText?: string;
   placeholder?: string;
   className?: string;
+  /** Onde este checkout está embutido (para atribuição do funil) */
+  origin?: string;
 }
 
 export function InlineCheckout({
@@ -165,6 +177,7 @@ export function InlineCheckout({
   buttonText = "Assinar",
   placeholder = "seu@email.com",
   className = "",
+  origin = "inline_checkout",
 }: InlineCheckoutProps) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -183,7 +196,14 @@ export function InlineCheckout({
     }
 
     setLoading(true);
-    trackEvent("checkout_started", { product, billing_period: billingPeriod });
+    trackCheckoutStarted({
+      origin,
+      product,
+      plan: billingPeriod === "yearly" ? "agents_yearly" : "agents_monthly",
+      billing_period: billingPeriod,
+      price_brl: billingPeriod === "yearly" ? 299.9 : 29.9,
+      auth_state: "guest",
+    });
     try {
       const { data, error } = await supabase.functions.invoke("guest-checkout", {
         body: { email, product, billingPeriod },

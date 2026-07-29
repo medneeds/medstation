@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { trackCtaClick, trackCheckoutStarted } from "@/lib/analytics";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -42,6 +43,12 @@ export default function ConsultorioLanding() {
     try {
       // Guests can only buy standalone or bundle (upgrades require existing sub)
       const guestPlan = plan === "consultorio_upgrade" || plan === "agents_upgrade" ? "consultorio_monthly" : plan;
+      trackCheckoutStarted({
+        origin: "consultorio_landing",
+        plan: guestPlan,
+        billing_period: "monthly",
+        auth_state: "guest",
+      });
       const { data, error } = await supabase.functions.invoke("guest-checkout", {
         body: { email, plan: guestPlan },
       });
@@ -59,10 +66,23 @@ export default function ConsultorioLanding() {
 
   const startCheckout = async (plan: ConsultorioPlan) => {
     setLoading(plan);
+    trackCtaClick({
+      cta: `consultorio_${plan}`,
+      section: "consultorio_landing",
+      plan,
+      billing_period: "monthly",
+      destination: "checkout",
+    });
     try {
       const { data: { session } } = await supabase.auth.getSession();
 
       if (session) {
+        trackCheckoutStarted({
+          origin: "consultorio_landing",
+          plan,
+          billing_period: "monthly",
+          auth_state: "authenticated",
+        });
         const { data, error } = await supabase.functions.invoke("create-checkout", {
           body: { plan },
         });

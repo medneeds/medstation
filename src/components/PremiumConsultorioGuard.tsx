@@ -1,4 +1,5 @@
 import { ReactNode, useState } from "react";
+import { trackCheckoutStarted } from "@/lib/analytics";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,13 @@ export function PremiumConsultorioGuard({ children }: PremiumConsultorioGuardPro
         navigate("/auth");
         return;
       }
+      trackCheckoutStarted({
+        origin: "consultorio_guard",
+        plan,
+        billing_period: "monthly",
+        auth_state: "authenticated",
+      });
+
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: { plan },
       });
