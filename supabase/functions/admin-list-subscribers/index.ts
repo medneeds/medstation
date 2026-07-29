@@ -322,7 +322,15 @@ serve(async (req) => {
       );
     }
     if (statusFilter !== "all") {
-      filtered = filtered.filter((r) => r.effective_status === statusFilter);
+      const stripeStatusFilters = new Set(["active", "trialing", "past_due", "canceled"]);
+      if (statusFilter === "paying") {
+        filtered = filtered.filter((r) => payingStatuses.has(r.stripe_status));
+      } else if (stripeStatusFilters.has(statusFilter)) {
+        // Match real Stripe status so admins/courtesies with paid subs are included
+        filtered = filtered.filter((r) => r.stripe_status === statusFilter);
+      } else {
+        filtered = filtered.filter((r) => r.effective_status === statusFilter);
+      }
     }
     if (from || to) {
       filtered = filtered.filter((r) => {
