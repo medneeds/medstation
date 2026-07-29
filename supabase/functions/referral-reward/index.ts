@@ -95,7 +95,7 @@ serve(async (req) => {
 
     // Extend by 30 days using trial_end (postpones next invoice)
     const currentEnd = sub.current_period_end || Math.floor(Date.now() / 1000);
-    const newTrialEnd = currentEnd + 30 * 24 * 60 * 60;
+    const newTrialEnd = currentEnd + rewardDays * 24 * 60 * 60;
 
     await stripe.subscriptions.update(sub.id, {
       trial_end: newTrialEnd,
