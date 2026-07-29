@@ -333,6 +333,8 @@ export type Database = {
           granted_by: string
           id: string
           reason: string | null
+          referral_id: string | null
+          source: string
           updated_at: string
           user_id: string
         }
@@ -342,6 +344,8 @@ export type Database = {
           granted_by: string
           id?: string
           reason?: string | null
+          referral_id?: string | null
+          source?: string
           updated_at?: string
           user_id: string
         }
@@ -351,6 +355,8 @@ export type Database = {
           granted_by?: string
           id?: string
           reason?: string | null
+          referral_id?: string | null
+          source?: string
           updated_at?: string
           user_id?: string
         }
@@ -1166,8 +1172,10 @@ export type Database = {
       referral_settings: {
         Row: {
           active: boolean
+          block_existing_referrers: boolean
           created_at: string
           id: number
+          lead_reward_enabled: boolean
           max_rewards_per_referrer: number
           referred_discount_percent: number
           referred_stripe_coupon: string
@@ -1178,8 +1186,10 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          block_existing_referrers?: boolean
           created_at?: string
           id?: number
+          lead_reward_enabled?: boolean
           max_rewards_per_referrer?: number
           referred_discount_percent?: number
           referred_stripe_coupon?: string
@@ -1190,8 +1200,10 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          block_existing_referrers?: boolean
           created_at?: string
           id?: number
+          lead_reward_enabled?: boolean
           max_rewards_per_referrer?: number
           referred_discount_percent?: number
           referred_stripe_coupon?: string
@@ -1215,6 +1227,7 @@ export type Database = {
           referrer_id: string
           reward_applied_at: string | null
           reward_credit_days: number | null
+          reward_type: string | null
           status: string
           updated_at: string
         }
@@ -1230,6 +1243,7 @@ export type Database = {
           referrer_id: string
           reward_applied_at?: string | null
           reward_credit_days?: number | null
+          reward_type?: string | null
           status?: string
           updated_at?: string
         }
@@ -1245,6 +1259,7 @@ export type Database = {
           referrer_id?: string
           reward_applied_at?: string | null
           reward_credit_days?: number | null
+          reward_type?: string | null
           status?: string
           updated_at?: string
         }

@@ -92,10 +92,13 @@ export default function Indicar() {
           <span className="italic text-primary">Ganhe meses grátis.</span>
         </h1>
         <p className="mt-4 text-muted-foreground max-w-2xl">
-          Cada médico que assinar pelo seu link ganha 50% off no 1º mês. Você ganha 30 dias grátis
-          adicionados à sua próxima fatura — automaticamente. São até {maxRewards} indicações
-          válidas, ou seja, até {maxRewards} meses de acesso completo sem pagar nada.
+          Cada médico que assinar pelo seu link ganha 50% off no 1º mês. Você ganha 30 dias grátis:
+          se já assina, entram como crédito na próxima fatura; se ainda não assina, liberamos 30
+          dias de acesso completo à plataforma — e você recebe um e-mail confirmando. São até{" "}
+          {maxRewards} indicações válidas, ou seja, até {maxRewards} meses de acesso completo sem
+          pagar nada.
         </p>
+
 
       </motion.div>
 
@@ -184,8 +187,10 @@ export default function Indicar() {
           {[
             "Compartilhe seu link com colegas médicos por WhatsApp, e-mail ou pessoalmente.",
             "Quando um colega clica e cria a conta, ele ganha 50% off no 1º mês de qualquer plano.",
-            "Assim que ele paga a 1ª fatura, você recebe 30 dias adicionados à sua próxima cobrança automaticamente.",
+            "Assim que ele paga a 1ª fatura, você recebe 30 dias: crédito na sua próxima cobrança, se você já assina, ou 30 dias de acesso completo liberado na hora, se você ainda não assina.",
+            "Se o acesso liberado chegar ao fim sem uma nova indicação confirmada, ele é encerrado automaticamente — sem cobrança e sem surpresa.",
             `O link vale para até ${maxRewards} indicações pagas — ou seja, até ${maxRewards} meses seguidos de acesso completo sem custo.`,
+
           ].map((line, i) => (
             <li key={i} className="flex gap-3">
               <span className="flex-shrink-0 h-6 w-6 rounded-full bg-primary/15 text-primary flex items-center justify-center text-xs font-semibold">

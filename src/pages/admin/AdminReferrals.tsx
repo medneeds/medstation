@@ -17,9 +17,23 @@ interface Settings {
   referrer_reward_days: number;
   require_crm: boolean;
   max_rewards_per_referrer: number;
+  lead_reward_enabled: boolean;
+  block_existing_referrers: boolean;
   updated_at?: string;
 
 }
+
+interface CourtesyRow {
+  id: string;
+  user_id: string;
+  email: string;
+  full_name: string;
+  reason: string | null;
+  expires_at: string | null;
+  days_left: number | null;
+  active: boolean;
+}
+
 
 interface ReferralRow {
   id: string;
@@ -39,7 +53,52 @@ export default function AdminReferrals() {
   const [referrals, setReferrals] = useState<ReferralRow[]>([]);
   const [metrics, setMetrics] = useState<AdminMetrics["referrals"] | null>(null);
   const [topReferrers, setTopReferrers] = useState<Array<{ email: string; qualified: number; total: number }>>([]);
+  const [courtesy, setCourtesy] = useState<CourtesyRow[]>([]);
+  const [busyUser, setBusyUser] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const callAccess = async (payload: Record<string, unknown>) => {
+    const { data, error } = await supabase.functions.invoke("admin-referral-access", { body: payload });
+    if (error) throw error;
+    if ((data as any)?.error) throw new Error((data as any).error);
+    return data as any;
+  };
+
+  const loadCourtesy = async () => {
+    try {
+      const res = await callAccess({ action: "list" });
+      setCourtesy((res?.rows || []) as CourtesyRow[]);
+    } catch (e: any) {
+      console.error("[admin-referral-access]", e.message);
+    }
+  };
+
+  const extendAccess = async (userId: string, days: number) => {
+    setBusyUser(userId);
+    try {
+      await callAccess({ action: "extend", target_user_id: userId, days });
+      toast({ title: `+${days} dias liberados` });
+      await loadCourtesy();
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Erro", description: e.message });
+    } finally {
+      setBusyUser(null);
+    }
+  };
+
+  const revokeAccess = async (userId: string) => {
+    setBusyUser(userId);
+    try {
+      await callAccess({ action: "revoke", target_user_id: userId });
+      toast({ title: "Acesso encerrado" });
+      await loadCourtesy();
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Erro", description: e.message });
+    } finally {
+      setBusyUser(null);
+    }
+  };
+
 
   useEffect(() => { load(); }, []);
 
@@ -78,6 +137,8 @@ export default function AdminReferrals() {
         (profs || []).forEach((p: any) => emailMap.set(p.id, p.full_name || p.id.slice(0, 8)));
       }
       setTopReferrers(top.map(([id, v]) => ({ email: emailMap.get(id) || id.slice(0, 8), ...v })));
+      await loadCourtesy();
+
     } catch (e: any) {
       toast({ variant: "destructive", title: "Erro", description: e.message });
     } finally {
@@ -98,6 +159,9 @@ export default function AdminReferrals() {
           referrer_reward_days: settings.referrer_reward_days,
           require_crm: settings.require_crm,
           max_rewards_per_referrer: settings.max_rewards_per_referrer,
+          lead_reward_enabled: settings.lead_reward_enabled,
+          block_existing_referrers: settings.block_existing_referrers,
+
 
           updated_by: (await supabase.auth.getUser()).data.user?.id,
         })
@@ -205,8 +269,29 @@ export default function AdminReferrals() {
               value={settings.referrer_reward_days}
               onChange={(e) => setSettings({ ...settings, referrer_reward_days: parseInt(e.target.value) || 0 })}
             />
-            <p className="text-[11px] text-muted-foreground">Aplicados via trial_end na assinatura ativa do indicador.</p>
+            <p className="text-[11px] text-muted-foreground">Crédito na fatura de quem já assina, ou dias de acesso liberado para quem ainda não assina.</p>
           </div>
+
+          <div className="space-y-1.5 flex flex-col justify-center">
+            <div className="flex items-center justify-between p-3 rounded-md bg-muted/30 border border-border/40">
+              <div className="pr-3">
+                <div className="text-sm font-medium">Liberar acesso para indicador sem assinatura</div>
+                <div className="text-xs text-muted-foreground">O lead que indica ganha acesso completo pelos dias configurados. Ao expirar, o acesso cai automaticamente.</div>
+              </div>
+              <Switch checked={settings.lead_reward_enabled} onCheckedChange={(v) => setSettings({ ...settings, lead_reward_enabled: v })} />
+            </div>
+          </div>
+
+          <div className="space-y-1.5 flex flex-col justify-center">
+            <div className="flex items-center justify-between p-3 rounded-md bg-muted/30 border border-border/40">
+              <div className="pr-3">
+                <div className="text-sm font-medium">Bloquear desconto para quem já indicou</div>
+                <div className="text-xs text-muted-foreground">Quem já usou o próprio link para indicar alguém não pode ser indicado por outro usuário para obter o desconto do 1º mês.</div>
+              </div>
+              <Switch checked={settings.block_existing_referrers} onCheckedChange={(v) => setSettings({ ...settings, block_existing_referrers: v })} />
+            </div>
+          </div>
+
 
           <div className="space-y-1.5">
             <Label htmlFor="max-rewards">Limite de recompensas por indicador</Label>
@@ -240,6 +325,89 @@ export default function AdminReferrals() {
           </Button>
         </div>
       </Card>
+
+      {/* Acessos liberados por indicação */}
+      <Card className="overflow-hidden">
+        <div className="px-6 py-4 border-b border-border/40 flex items-center justify-between">
+          <div>
+            <h2 className="font-display font-semibold">Acessos liberados por indicação</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Indicadores sem assinatura com acesso temporário. Expira sozinho se não houver nova indicação.
+            </p>
+          </div>
+          <Badge variant="outline">{courtesy.filter((c) => c.active).length} ativos</Badge>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
+              <tr>
+                <th className="text-left px-4 py-2">Usuário</th>
+                <th className="text-left px-4 py-2">Expira em</th>
+                <th className="text-left px-4 py-2">Dias restantes</th>
+                <th className="text-left px-4 py-2">Origem</th>
+                <th className="text-right px-4 py-2">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {courtesy.map((c) => (
+                <tr key={c.id} className="border-t border-border/40 hover:bg-muted/30">
+                  <td className="px-4 py-2">
+                    <div className="text-sm">{c.full_name || "—"}</div>
+                    <div className="font-mono text-[11px] text-muted-foreground">{c.email || c.user_id.slice(0, 8)}</div>
+                  </td>
+                  <td className="px-4 py-2 text-xs">
+                    {c.expires_at ? new Date(c.expires_at).toLocaleDateString("pt-BR") : "Indefinido"}
+                  </td>
+                  <td className="px-4 py-2">
+                    <Badge
+                      variant="outline"
+                      className={
+                        !c.active
+                          ? "text-red-600 border-red-600/40"
+                          : (c.days_left ?? 99) <= 5
+                          ? "text-amber-600 border-amber-600/40"
+                          : "text-emerald-600 border-emerald-600/40"
+                      }
+                    >
+                      {c.active ? `${c.days_left ?? "∞"} dias` : "Expirado"}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-2 text-xs text-muted-foreground">{c.reason || "Indicação"}</td>
+                  <td className="px-4 py-2">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={busyUser === c.user_id}
+                        onClick={() => extendAccess(c.user_id, settings.referrer_reward_days || 30)}
+                      >
+                        +{settings.referrer_reward_days || 30} dias
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-red-600 hover:text-red-600"
+                        disabled={busyUser === c.user_id}
+                        onClick={() => revokeAccess(c.user_id)}
+                      >
+                        Encerrar
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {courtesy.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-muted-foreground">
+                    Nenhum acesso liberado por indicação ainda.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
 
       {/* Top referrers */}
       <Card className="p-6">
