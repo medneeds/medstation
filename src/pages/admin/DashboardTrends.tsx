@@ -115,7 +115,9 @@ export default function DashboardTrends() {
     const subsEnd = data.subs_growth[data.subs_growth.length - 1]?.count ?? 0;
     const mrrEnd = data.mrr_curve[data.mrr_curve.length - 1]?.mrr_cents ?? 0;
     const mrrStart = data.mrr_curve[0]?.mrr_cents ?? 0;
-    return { signupsTotal, aiTotal, subsStart, subsEnd, mrrStart, mrrEnd };
+    const visitorsTotal = (data.visitors ?? []).reduce((s, d) => s + d.views, 0);
+    const uniqueTotal = (data.visitors ?? []).reduce((s, d) => s + d.unique, 0);
+    return { signupsTotal, aiTotal, subsStart, subsEnd, mrrStart, mrrEnd, visitorsTotal, uniqueTotal };
   }, [data]);
 
   const fmtMoney = (cents: number) =>
