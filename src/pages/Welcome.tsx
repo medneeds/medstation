@@ -48,6 +48,7 @@ export default function Welcome() {
           user_exists: !!data.userExists,
           plan: data.plan ?? undefined,
           amount_brl: typeof data.amountTotal === "number" ? data.amountTotal / 100 : undefined,
+          currency: data.currency ?? undefined,
         });
         setEmail(data.email);
         setUserExists(data.userExists);
