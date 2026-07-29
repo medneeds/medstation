@@ -137,6 +137,8 @@ export default function AdminReferrals() {
         (profs || []).forEach((p: any) => emailMap.set(p.id, p.full_name || p.id.slice(0, 8)));
       }
       setTopReferrers(top.map(([id, v]) => ({ email: emailMap.get(id) || id.slice(0, 8), ...v })));
+      await loadCourtesy();
+
     } catch (e: any) {
       toast({ variant: "destructive", title: "Erro", description: e.message });
     } finally {
