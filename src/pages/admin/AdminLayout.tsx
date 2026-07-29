@@ -32,6 +32,8 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
   const { role, isAdmin } = useAdminRole();
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const { theme, setTheme } = useTheme();
+  const isDark = theme !== "light";
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem(STORAGE_KEY) === "1";
