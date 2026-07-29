@@ -12,36 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { SubscriberRecord, SubscriberStats, FilteredSubscriberStats } from "./types";
 
-type Record = {
-  user_id: string | null;
-  email: string | null;
-  full_name: string | null;
-  effective_status: string;
-  stripe_status: string;
-  stripe_customer_id: string | null;
-  subscription_end: string | null;
-  subscription_created: string | null;
-  monthly_amount_cents: number;
-  currency: string | null;
-  interval: string | null;
-  auth_missing?: boolean;
-};
-
-type Stats = {
-  total_users: number;
-  active: number;
-  trialing: number;
-  past_due: number;
-  canceled: number;
-  courtesy: number;
-  admin: number;
-  auth_missing: number;
-  mrr_cents: number;
-  arr_cents: number;
-  avg_ticket_cents: number;
-  currency: string;
-};
+type Record = SubscriberRecord;
+type Stats = SubscriberStats;
 
 const PRESETS = [
   { key: "all", label: "Sempre" },
@@ -67,6 +41,7 @@ function fmtMoney(cents: number, currency = "brl") {
 
 export default function AdminBilling() {
   const [stats, setStats] = useState<Stats | null>(null);
+  const [filteredStats, setFilteredStats] = useState<FilteredSubscriberStats | null>(null);
   const [records, setRecords] = useState<Record[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -75,6 +50,7 @@ export default function AdminBilling() {
   const [preset, setPreset] = useState("all");
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
+  const [kpiScope, setKpiScope] = useState<"global" | "filter">("global");
 
   const { from, to } = useMemo(() => {
     const now = new Date();
@@ -106,6 +82,7 @@ export default function AdminBilling() {
       );
       const data = await res.json();
       setStats(data.stats);
+      setFilteredStats(data.filteredStats ?? null);
       setRecords(data.records || []);
     } catch (e) { console.error(e); }
     finally { setLoading(false); setRefreshing(false); }
@@ -140,6 +117,10 @@ export default function AdminBilling() {
   };
 
   const currency = stats?.currency || "brl";
+  const filterActive =
+    status !== "all" || preset !== "all" || (!!search && search.trim().length > 0);
+  const displayed = kpiScope === "filter" && filteredStats ? filteredStats : stats;
+  const showFilterToggle = filterActive && !!filteredStats;
 
   return (
     <div className="p-6 space-y-5">
@@ -159,45 +140,73 @@ export default function AdminBilling() {
         </div>
       </header>
 
+      {/* Scope toggle: which KPIs to show */}
+      {showFilterToggle && (
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-muted-foreground">KPIs:</span>
+          <Button
+            size="sm"
+            variant={kpiScope === "global" ? "default" : "outline"}
+            className="h-7 text-xs"
+            onClick={() => setKpiScope("global")}
+          >
+            Globais
+          </Button>
+          <Button
+            size="sm"
+            variant={kpiScope === "filter" ? "default" : "outline"}
+            className="h-7 text-xs"
+            onClick={() => setKpiScope("filter")}
+          >
+            Filtro atual
+          </Button>
+          <span className="text-muted-foreground ml-1">
+            {kpiScope === "filter"
+              ? "Os cards refletem apenas o recorte selecionado."
+              : "Os cards mostram os totais globais, ignorando filtros."}
+          </span>
+        </div>
+      )}
+
       {/* Revenue KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4">
           <div className="text-xs uppercase text-muted-foreground">MRR</div>
-          <div className="text-2xl font-display font-semibold mt-1">{stats ? fmtMoney(stats.mrr_cents, currency) : "—"}</div>
+          <div className="text-2xl font-display font-semibold mt-1">{displayed ? fmtMoney(displayed.mrr_cents, currency) : "—"}</div>
           <div className="text-[11px] text-muted-foreground mt-1">Receita mensal recorrente</div>
         </Card>
         <Card className="p-4">
           <div className="text-xs uppercase text-muted-foreground">ARR</div>
-          <div className="text-2xl font-display font-semibold mt-1">{stats ? fmtMoney(stats.arr_cents, currency) : "—"}</div>
+          <div className="text-2xl font-display font-semibold mt-1">{displayed ? fmtMoney(displayed.arr_cents, currency) : "—"}</div>
           <div className="text-[11px] text-muted-foreground mt-1">Projeção anualizada</div>
         </Card>
         <Card className="p-4">
           <div className="text-xs uppercase text-muted-foreground">Ticket médio</div>
-          <div className="text-2xl font-display font-semibold mt-1">{stats ? fmtMoney(stats.avg_ticket_cents, currency) : "—"}</div>
+          <div className="text-2xl font-display font-semibold mt-1">{displayed ? fmtMoney(displayed.avg_ticket_cents, currency) : "—"}</div>
           <div className="text-[11px] text-muted-foreground mt-1">por assinatura ativa</div>
         </Card>
         <Card className="p-4">
           <div className="text-xs uppercase text-muted-foreground">Assinantes pagantes</div>
           <div className="text-2xl font-display font-semibold mt-1">
-            {stats ? stats.active + stats.trialing + stats.past_due : "—"}
+            {displayed ? displayed.active + displayed.trialing + displayed.past_due : "—"}
           </div>
           <div className="text-[11px] text-muted-foreground mt-1">
-            {stats?.active ?? 0} ativos · {stats?.trialing ?? 0} trial · {stats?.past_due ?? 0} atraso
+            {displayed?.active ?? 0} ativos · {displayed?.trialing ?? 0} trial · {displayed?.past_due ?? 0} atraso
           </div>
         </Card>
       </div>
 
       {/* Status pills */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <Card className="p-3"><div className="text-[11px] uppercase text-muted-foreground">Cancelados</div><div className="text-lg font-semibold mt-0.5 text-red-500">{stats?.canceled ?? "—"}</div></Card>
-        <Card className="p-3"><div className="text-[11px] uppercase text-muted-foreground">Cortesias</div><div className="text-lg font-semibold mt-0.5 text-emerald-500">{stats?.courtesy ?? "—"}</div></Card>
-        <Card className="p-3"><div className="text-[11px] uppercase text-muted-foreground">Admin</div><div className="text-lg font-semibold mt-0.5">{stats?.admin ?? "—"}</div></Card>
-        <Card className="p-3"><div className="text-[11px] uppercase text-muted-foreground">Total usuários</div><div className="text-lg font-semibold mt-0.5">{stats?.total_users ?? "—"}</div></Card>
+        <Card className="p-3"><div className="text-[11px] uppercase text-muted-foreground">Cancelados</div><div className="text-lg font-semibold mt-0.5 text-red-500">{displayed?.canceled ?? "—"}</div></Card>
+        <Card className="p-3"><div className="text-[11px] uppercase text-muted-foreground">Cortesias</div><div className="text-lg font-semibold mt-0.5 text-emerald-500">{displayed?.courtesy ?? "—"}</div></Card>
+        <Card className="p-3"><div className="text-[11px] uppercase text-muted-foreground">Admin</div><div className="text-lg font-semibold mt-0.5">{displayed?.admin ?? "—"}</div></Card>
+        <Card className="p-3"><div className="text-[11px] uppercase text-muted-foreground">Total usuários</div><div className="text-lg font-semibold mt-0.5">{displayed?.total_users ?? "—"}</div></Card>
         <Card className="p-3 border-amber-500/30">
           <div className="text-[11px] uppercase text-muted-foreground flex items-center gap-1">
             <AlertTriangle className="h-3 w-3 text-amber-500" /> Sem conta
           </div>
-          <div className="text-lg font-semibold mt-0.5 text-amber-500">{stats?.auth_missing ?? "—"}</div>
+          <div className="text-lg font-semibold mt-0.5 text-amber-500">{displayed?.auth_missing ?? "—"}</div>
         </Card>
       </div>
 

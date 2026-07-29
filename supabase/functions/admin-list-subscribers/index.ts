@@ -353,19 +353,29 @@ serve(async (req) => {
     const start = (page - 1) * perPage;
     const paginated = filtered.slice(start, start + perPage);
 
-    // Per-filter stats (for contextual display when a filter is active)
+    // Per-filter stats (for contextual display when a filter is active).
+    // Shape mirrors `stats` so frontends can swap between global/filtered without extra branching.
     const filteredPaying = filtered.filter((r) => payingStatuses.has(r.stripe_status));
     const filteredMrr = filteredPaying.reduce((s, r) => s + (r.monthly_amount_cents || 0), 0);
+    const filteredCurrency = filteredPaying.find((r) => r.currency)?.currency || stats.currency;
     const filteredStats = {
-      total: filtered.length,
+      total_users: filtered.filter((r) => !r.auth_missing).length,
+      total_records: filtered.length,
       active: filtered.filter((r) => r.stripe_status === "active").length,
       trialing: filtered.filter((r) => r.stripe_status === "trialing").length,
       past_due: filtered.filter((r) => r.stripe_status === "past_due").length,
       canceled: filtered.filter((r) => r.stripe_status === "canceled").length,
+      none: filtered.filter(
+        (r) => r.stripe_status === "none" && !r.is_admin && r.effective_status !== "courtesy",
+      ).length,
       courtesy: filtered.filter((r) => r.effective_status === "courtesy").length,
       admin: filtered.filter((r) => r.is_admin).length,
+      auth_missing: filtered.filter((r) => r.auth_missing).length,
       mrr_cents: Math.round(filteredMrr),
-      paying: filteredPaying.length,
+      arr_cents: Math.round(filteredMrr * 12),
+      avg_ticket_cents: filteredPaying.length ? Math.round(filteredMrr / filteredPaying.length) : 0,
+      currency: filteredCurrency,
+      paying_total: filteredPaying.length,
     };
 
     return new Response(

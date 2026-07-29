@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { MessageSquare, Send, Loader2 } from "lucide-react";
+import type { AdminMetrics } from "./types";
 
 interface Ticket {
   id: string;
@@ -28,6 +29,7 @@ interface Message {
 
 export default function AdminSupport() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [metrics, setMetrics] = useState<AdminMetrics["support"] | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [reply, setReply] = useState("");
@@ -36,13 +38,21 @@ export default function AdminSupport() {
 
   const load = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("support_tickets")
-      .select("*")
-      .order("last_message_at", { ascending: false })
-      .limit(100);
-    if (error) toast.error(error.message);
-    else setTickets(data || []);
+    const { data: { session } } = await supabase.auth.getSession();
+    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+    const [ticketsRes, metricsRes] = await Promise.all([
+      supabase
+        .from("support_tickets")
+        .select("*")
+        .order("last_message_at", { ascending: false })
+        .limit(100),
+      fetch(`https://${projectId}.supabase.co/functions/v1/admin-metrics`, {
+        headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
+      }).then((r) => (r.ok ? r.json() : null)),
+    ]);
+    if (ticketsRes.error) toast.error(ticketsRes.error.message);
+    else setTickets(ticketsRes.data || []);
+    if (metricsRes) setMetrics((metricsRes as AdminMetrics).support);
     setLoading(false);
   };
 
@@ -105,7 +115,11 @@ export default function AdminSupport() {
     <div className="p-6 space-y-5 h-screen flex flex-col">
       <header>
         <h1 className="text-2xl font-display font-semibold">Suporte</h1>
-        <p className="text-sm text-muted-foreground">{tickets.filter((t) => t.status !== "resolved").length} ticket(s) em aberto</p>
+        <p className="text-sm text-muted-foreground">
+          {metrics
+            ? `${metrics.open + metrics.assigned} em aberto · ${metrics.resolved_total} resolvidos · ${metrics.total} total (global)`
+            : `${tickets.filter((t) => t.status !== "resolved").length} ticket(s) em aberto`}
+        </p>
       </header>
 
       <div className="flex-1 grid grid-cols-1 md:grid-cols-[320px_1fr] gap-4 min-h-0">

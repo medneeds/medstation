@@ -3,21 +3,32 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Loader2, Shield, AlertTriangle } from "lucide-react";
+import type { AdminMetrics } from "./types";
 
 export default function AdminAudit() {
   const [audit, setAudit] = useState<any[]>([]);
   const [security, setSecurity] = useState<any[]>([]);
+  const [metrics, setMetrics] = useState<AdminMetrics["audit"] | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const [a, s] = await Promise.all([
-        supabase.from("audit_log").select("*").order("created_at", { ascending: false }).limit(200),
-        supabase.from("security_events").select("*").order("created_at", { ascending: false }).limit(200),
-      ]);
-      setAudit(a.data || []);
-      setSecurity(s.data || []);
-      setLoading(false);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+        const [a, s, m] = await Promise.all([
+          supabase.from("audit_log").select("*").order("created_at", { ascending: false }).limit(200),
+          supabase.from("security_events").select("*").order("created_at", { ascending: false }).limit(200),
+          fetch(`https://${projectId}.supabase.co/functions/v1/admin-metrics`, {
+            headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
+          }).then((r) => (r.ok ? r.json() : null)),
+        ]);
+        setAudit(a.data || []);
+        setSecurity(s.data || []);
+        if (m) setMetrics((m as AdminMetrics).audit);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 
@@ -25,8 +36,32 @@ export default function AdminAudit() {
     <div className="p-6 space-y-5">
       <header>
         <h1 className="text-2xl font-display font-semibold">Auditoria e segurança</h1>
-        <p className="text-sm text-muted-foreground">Ações administrativas e eventos de segurança</p>
+        <p className="text-sm text-muted-foreground">
+          Ações administrativas e eventos de segurança — contadores globais, listas mostram as 200 mais recentes
+        </p>
       </header>
+
+      {/* Global counters */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Card className="p-4">
+          <div className="text-[11px] uppercase text-muted-foreground">Ações admin 24h</div>
+          <div className="text-2xl font-display font-semibold mt-1">{loading ? "···" : metrics?.events_24h ?? "—"}</div>
+        </Card>
+        <Card className="p-4">
+          <div className="text-[11px] uppercase text-muted-foreground">Ações admin 7d</div>
+          <div className="text-2xl font-display font-semibold mt-1">{loading ? "···" : metrics?.events_7d ?? "—"}</div>
+        </Card>
+        <Card className={`p-4 ${metrics && metrics.security_events_24h > 0 ? "border-red-500/40" : ""}`}>
+          <div className="text-[11px] uppercase text-muted-foreground">Segurança 24h</div>
+          <div className={`text-2xl font-display font-semibold mt-1 ${metrics && metrics.security_events_24h > 0 ? "text-red-500" : ""}`}>
+            {loading ? "···" : metrics?.security_events_24h ?? "—"}
+          </div>
+        </Card>
+        <Card className="p-4">
+          <div className="text-[11px] uppercase text-muted-foreground">Segurança 7d</div>
+          <div className="text-2xl font-display font-semibold mt-1">{loading ? "···" : metrics?.security_events_7d ?? "—"}</div>
+        </Card>
+      </div>
 
       <Tabs defaultValue="audit">
         <TabsList>

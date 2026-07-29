@@ -7,22 +7,42 @@ import {
   MessageSquare,
   Activity,
   DollarSign,
-  AlertTriangle,
   TrendingUp,
   RefreshCw,
   Wallet,
+  Star,
+  Gift,
+  ShieldAlert,
 } from "lucide-react";
+import type { AdminMetrics, SubscribersResponse } from "./types";
 
 interface KPIs {
   totalUsers: number;
   activeSubs: number;
   payingTotal: number;
   mrrCents: number;
+  arrCents: number;
   currency: string;
-  courtesy: number;
+  courtesyActive: number;
   openTickets: number;
   tokens24h: number;
   cost30d: number;
+  avgFeedback: number;
+  feedbackTotal: number;
+  referrals: number;
+  referralConversion: number;
+  securityEvents24h: number;
+}
+
+async function invokeAdmin<T>(name: string, query = ""): Promise<T> {
+  const { data: { session } } = await supabase.auth.getSession();
+  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+  const url = `https://${projectId}.supabase.co/functions/v1/${name}${query}`;
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
+  });
+  if (!res.ok) throw new Error(`${name} failed (${res.status})`);
+  return res.json() as Promise<T>;
 }
 
 export default function AdminDashboard() {
@@ -35,40 +55,30 @@ export default function AdminDashboard() {
     if (forceStripeReload) setRefreshing(true);
     else setLoading(true);
     try {
-      const [tickets, tokens, cost, courtesy] = await Promise.all([
-        supabase
-          .from("support_tickets")
-          .select("id", { count: "exact", head: true })
-          .in("status", ["open", "assigned"]),
-        supabase
-          .from("ai_usage_logs")
-          .select("total_tokens")
-          .gte("created_at", new Date(Date.now() - 86400000).toISOString()),
-        supabase
-          .from("ai_usage_logs")
-          .select("cost_usd")
-          .gte("created_at", new Date(Date.now() - 30 * 86400000).toISOString()),
-        supabase.from("courtesy_access").select("id", { count: "exact", head: true }),
+      const [subs, metrics] = await Promise.all([
+        invokeAdmin<SubscribersResponse>(
+          "admin-list-subscribers",
+          `?page=1&perPage=1&status=all${forceStripeReload ? "&refresh=true" : ""}`,
+        ),
+        invokeAdmin<AdminMetrics>("admin-metrics"),
       ]);
 
-      const { data: { session } } = await supabase.auth.getSession();
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-      const url = `https://${projectId}.supabase.co/functions/v1/admin-list-subscribers?page=1&perPage=1&status=all${forceStripeReload ? "&refresh=true" : ""}`;
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
-      });
-      const subData = await res.json().catch(() => null);
-
       setKpis({
-        totalUsers: subData?.stats?.total_users ?? 0,
-        activeSubs: subData?.stats?.active ?? 0,
-        payingTotal: subData?.stats?.paying_total ?? 0,
-        mrrCents: subData?.stats?.mrr_cents ?? 0,
-        currency: subData?.stats?.currency ?? "brl",
-        courtesy: courtesy.count ?? 0,
-        openTickets: tickets.count ?? 0,
-        tokens24h: (tokens.data ?? []).reduce((a: number, r: any) => a + (r.total_tokens || 0), 0),
-        cost30d: (cost.data ?? []).reduce((a: number, r: any) => a + Number(r.cost_usd || 0), 0),
+        totalUsers: subs.stats.total_users,
+        activeSubs: subs.stats.active,
+        payingTotal: subs.stats.paying_total,
+        mrrCents: subs.stats.mrr_cents,
+        arrCents: subs.stats.arr_cents,
+        currency: subs.stats.currency,
+        courtesyActive: metrics.courtesy.active,
+        openTickets: metrics.support.open + metrics.support.assigned,
+        tokens24h: metrics.ai.tokens_24h,
+        cost30d: metrics.ai.cost_30d_usd,
+        avgFeedback: metrics.feedback.avg_rating,
+        feedbackTotal: metrics.feedback.total,
+        referrals: metrics.referrals.total,
+        referralConversion: metrics.referrals.conversion_rate,
+        securityEvents24h: metrics.audit.security_events_24h,
       });
       setLastSync(new Date());
     } catch (e) {
@@ -99,15 +109,34 @@ export default function AdminDashboard() {
       color: "text-emerald-500",
     },
     {
-      label: "Total pagantes",
-      value: kpis?.payingTotal ?? "—",
-      icon: TrendingUp,
+      label: "ARR",
+      value: kpis ? fmtMoney(kpis.arrCents, kpis.currency) : "—",
+      icon: Wallet,
       color: "text-teal-500",
     },
-    { label: "Cortesias ativas", value: kpis?.courtesy ?? "—", icon: Users, color: "text-purple-500" },
-    { label: "Tickets abertos", value: kpis?.openTickets ?? "—", icon: MessageSquare, color: "text-amber-500" },
+    { label: "Total pagantes", value: kpis?.payingTotal ?? "—", icon: TrendingUp, color: "text-teal-500" },
+    { label: "Cortesias ativas", value: kpis?.courtesyActive ?? "—", icon: Users, color: "text-purple-500" },
+    { label: "Tickets em aberto", value: kpis?.openTickets ?? "—", icon: MessageSquare, color: "text-amber-500" },
     { label: "Tokens 24h", value: kpis ? kpis.tokens24h.toLocaleString("pt-BR") : "—", icon: Activity, color: "text-sky-500" },
     { label: "Custo IA (30d)", value: kpis ? `$${kpis.cost30d.toFixed(2)}` : "—", icon: DollarSign, color: "text-green-500" },
+    {
+      label: "Feedback médio",
+      value: kpis && kpis.feedbackTotal ? `${kpis.avgFeedback.toFixed(2)} ★` : "—",
+      icon: Star,
+      color: "text-amber-500",
+    },
+    {
+      label: "Indicações",
+      value: kpis ? `${kpis.referrals} (${kpis.referralConversion}%)` : "—",
+      icon: Gift,
+      color: "text-pink-500",
+    },
+    {
+      label: "Segurança 24h",
+      value: kpis?.securityEvents24h ?? "—",
+      icon: ShieldAlert,
+      color: kpis && kpis.securityEvents24h > 0 ? "text-red-500" : "text-muted-foreground",
+    },
   ];
 
   return (
@@ -116,7 +145,7 @@ export default function AdminDashboard() {
         <div>
           <h1 className="text-2xl font-display font-semibold">Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Visão geral operacional da plataforma.
+            Retrato ao vivo da plataforma — assinaturas, IA, suporte, segurança.
             {lastSync && (
               <span className="ml-2 text-xs">
                 · Atualizado {lastSync.toLocaleTimeString("pt-BR")}
@@ -161,15 +190,6 @@ export default function AdminDashboard() {
           </Card>
         ))}
       </div>
-
-      <Card className="p-5 border-dashed">
-        <div className="flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
-          <div className="text-sm text-muted-foreground">
-            <strong className="text-foreground">Instrumentação de IA em progresso.</strong> Os cards de tokens e custo só refletem chamadas feitas após ativação do logger nas edge functions.
-          </div>
-        </div>
-      </Card>
     </div>
   );
 }
