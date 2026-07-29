@@ -110,6 +110,12 @@ export default {
         sm: "calc(var(--radius) - 2px)",
       },
       keyframes: {
+        wiggle: {
+          "0%, 88%, 100%": { transform: "rotate(0deg)" },
+          "91%": { transform: "rotate(-9deg)" },
+          "94%": { transform: "rotate(7deg)" },
+          "97%": { transform: "rotate(-4deg)" },
+        },
         "accordion-down": {
           from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
