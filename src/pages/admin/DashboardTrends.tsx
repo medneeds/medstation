@@ -302,6 +302,52 @@ export default function DashboardTrends() {
               </AreaChart>
             </ResponsiveContainer>
           </ChartCard>
+
+          <ChartCard
+            title="Visitantes da landing"
+            subtitle="Página de vendas · views totais vs sessões únicas"
+            value={summary ? summary.visitorsTotal.toLocaleString("pt-BR") : ""}
+            delta={summary ? `${summary.uniqueTotal.toLocaleString("pt-BR")} sessões únicas` : undefined}
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data.visitors ?? []} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="viewsFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.28} />
+                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="uniqueFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.5} />
+                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.35} vertical={false} />
+                <XAxis dataKey="date" tick={axisTick} tickFormatter={shortDate} minTickGap={30} />
+                <YAxis tick={axisTick} allowDecimals={false} width={40} />
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  labelFormatter={(l) => shortDate(l as string)}
+                  formatter={(v: number, name) => [v, name === "views" ? "Views" : "Únicos"]}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="views"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth={2}
+                  fill="url(#viewsFill)"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="unique"
+                  stroke="hsl(var(--primary))"
+                  strokeOpacity={0.6}
+                  strokeDasharray="4 4"
+                  strokeWidth={1.5}
+                  fill="url(#uniqueFill)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </ChartCard>
         </div>
       )}
     </section>
