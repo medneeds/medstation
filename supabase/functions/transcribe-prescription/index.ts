@@ -44,10 +44,12 @@ serve(async (req) => {
   }
 
   try {
+    const userId = await getUserIdFromAuth(req);
     const { audio } = await req.json();
-    
+
     if (!audio) {
       throw new Error('Áudio não fornecido');
+    }
     }
 
     console.log('Processando áudio de prescrição...');
