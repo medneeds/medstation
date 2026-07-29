@@ -1,91 +1,77 @@
 project_id = "rwiovxyftfbkvzbepfqi"
 
-[functions.agent-chat]
+[functions]
+  [functions.admin-bulk-courtesy]
+    verify_jwt = false
+  [functions.admin-reset-password]
+    verify_jwt = false
+  [functions.admin-set-role]
+    verify_jwt = false
+  [functions.agent-chat]
+    verify_jwt = false
+  [functions.agent-transcribe]
+    verify_jwt = true
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.check-subscription]
+    verify_jwt = true
+  [functions.complete-checkout]
+    verify_jwt = false
+  [functions.consultation-transcribe]
+    verify_jwt = true
+  [functions.create-checkout]
+    verify_jwt = true
+  [functions.customer-portal]
+    verify_jwt = true
+  [functions.elevenlabs-scribe-token]
+    verify_jwt = true
+  [functions.examinus-chat]
+    verify_jwt = true
+  [functions.extract-case-from-document]
+    verify_jwt = true
+  [functions.extract-file-text]
+    verify_jwt = true
+  [functions.generate-case-title]
+    verify_jwt = true
+  [functions.generate-flashcards]
+    verify_jwt = true
+  [functions.generate-medical-document]
+    verify_jwt = true
+  [functions.generate-quiz]
+    verify_jwt = true
+  [functions.guest-checkout]
+    verify_jwt = false
+  [functions.process-article]
+    verify_jwt = true
+  [functions.process-document]
+    verify_jwt = true
+  [functions.process-email-queue]
+    verify_jwt = true
+  [functions.public-examinus]
+    verify_jwt = false
+  [functions.public-extract-text]
+    verify_jwt = false
+  [functions.structure-anamnesis]
+    verify_jwt = true
+  [functions.studius-chat]
+    verify_jwt = true
+  [functions.support-chat]
+    verify_jwt = false
+  [functions.transcribe-audio]
+    verify_jwt = true
+  [functions.transcribe-case]
+    verify_jwt = true
+  [functions.transcribe-prescription]
+    verify_jwt = true
+
+[functions.send-transactional-email]
+verify_jwt = true
+
+[functions.preview-transactional-email]
 verify_jwt = false
 
-[functions.check-subscription]
-verify_jwt = true
-
-[functions.create-checkout]
-verify_jwt = true
-
-[functions.customer-portal]
-verify_jwt = true
-
-[functions.process-document]
-verify_jwt = true
-
-[functions.transcribe-audio]
-verify_jwt = true
-
-[functions.transcribe-prescription]
-verify_jwt = true
-
-[functions.public-examinus]
+[functions.handle-email-unsubscribe]
 verify_jwt = false
 
-[functions.transcribe-case]
-verify_jwt = true
-
-[functions.generate-case-title]
-verify_jwt = true
-
-[functions.extract-case-from-document]
-verify_jwt = true
-
-[functions.generate-medical-document]
-verify_jwt = true
-
-[functions.support-chat]
+[functions.handle-email-suppression]
 verify_jwt = false
-
-[functions.examinus-chat]
-verify_jwt = true
-
-[functions.agent-transcribe]
-verify_jwt = true
-
-[functions.consultation-transcribe]
-verify_jwt = true
-
-[functions.elevenlabs-scribe-token]
-verify_jwt = true
-
-[functions.structure-anamnesis]
-verify_jwt = true
-
-[functions.studius-chat]
-verify_jwt = true
-
-[functions.generate-flashcards]
-verify_jwt = true
-
-[functions.generate-quiz]
-verify_jwt = true
-
-[functions.guest-checkout]
-verify_jwt = false
-
-[functions.complete-checkout]
-verify_jwt = false
-
-[functions.extract-file-text]
-verify_jwt = true
-
-[functions.process-article]
-verify_jwt = true
-
-[functions.admin-reset-password]
-verify_jwt = false
-
-[functions.public-extract-text]
-verify_jwt = false
-
-[functions.admin-set-role]
-verify_jwt = false
-
-[functions.admin-bulk-courtesy]
-verify_jwt = false
-
-[functions.process-email-queue]
-verify_jwt = true

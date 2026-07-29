@@ -60,6 +60,8 @@ import AdminLogin from "./pages/admin/AdminLogin";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminFunnel from "./pages/admin/AdminFunnel";
 import AdminAudience from "./pages/admin/AdminAudience";
+import AdminEmails from "./pages/admin/AdminEmails";
+import Unsubscribe from "./pages/Unsubscribe";
 import Indicar from "./pages/Indicar";
 import ReferralRedirect from "./pages/ReferralRedirect";
 import NotFound from "./pages/NotFound";
@@ -294,6 +296,7 @@ const App = () => (
               <Route path="analytics" element={<AdminAnalytics />} />
               <Route path="funil" element={<AdminFunnel />} />
               <Route path="audiencia" element={<AdminRoute requireAdmin><AdminAudience /></AdminRoute>} />
+              <Route path="emails" element={<AdminRoute requireAdmin><AdminEmails /></AdminRoute>} />
 
               <Route path="uso-ia" element={<AdminAIUsage />} />
               <Route path="feedback" element={<AdminFeedback />} />
@@ -312,6 +315,7 @@ const App = () => (
               }
             />
             <Route path="/r/:code" element={<ReferralRedirect />} />
+            <Route path="/unsubscribe" element={<Unsubscribe />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
