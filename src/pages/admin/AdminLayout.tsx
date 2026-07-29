@@ -2,7 +2,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, CreditCard, MessageSquare, Activity,
-  Star, Shield, ToggleLeft, Megaphone, ArrowLeft, LogOut,
+  Star, Shield, ToggleLeft, Megaphone, ArrowLeft, LogOut, Gift,
   PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 import { useAdminRole } from "@/hooks/useAdminRole";
