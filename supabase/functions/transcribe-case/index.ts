@@ -1,4 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { logAIUsage } from "../_shared/ai-logger.ts";
+import { getUserIdFromAuth, estimateAudioSecondsFromBytes } from "../_shared/auth-helpers.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -32,6 +34,7 @@ serve(async (req) => {
   }
 
   try {
+    const userId = await getUserIdFromAuth(req);
     const body = await req.json();
     const { audio, transcript: providedTranscript } = body;
 
@@ -48,9 +51,11 @@ serve(async (req) => {
       if (!audio) throw new Error('Nenhum áudio nem texto fornecido');
       const binaryAudio = processBase64Chunks(audio);
       const blob = new Blob([binaryAudio], { type: 'audio/webm' });
+      const audioSeconds = estimateAudioSecondsFromBytes(binaryAudio.byteLength);
 
       if (ELEVENLABS_API_KEY) {
         console.log('Transcrevendo com ElevenLabs Scribe v2...');
+        const sttStart = Date.now();
         const fd = new FormData();
         fd.append('file', blob, 'audio.webm');
         fd.append('model_id', 'scribe_v2');
@@ -63,12 +68,22 @@ serve(async (req) => {
         if (!resp.ok) {
           const err = await resp.text();
           console.error('ElevenLabs error:', err);
+          void logAIUsage({
+            userId, assistant: 'consultorio', functionName: 'transcribe-case',
+            model: 'elevenlabs/scribe_v2', audioSeconds, latencyMs: Date.now() - sttStart,
+            status: 'error', metadata: { error: err.slice(0, 200) },
+          });
           throw new Error('Falha na transcrição (ElevenLabs).');
         }
         const data = await resp.json();
         transcription = data.text ?? '';
+        void logAIUsage({
+          userId, assistant: 'consultorio', functionName: 'transcribe-case',
+          model: 'elevenlabs/scribe_v2', audioSeconds, latencyMs: Date.now() - sttStart, status: 'ok',
+        });
       } else if (OPENAI_API_KEY) {
         console.log('Transcrevendo com Whisper (fallback)...');
+        const sttStart = Date.now();
         const fd = new FormData();
         fd.append('file', blob, 'audio.webm');
         fd.append('model', 'whisper-1');
@@ -78,9 +93,19 @@ serve(async (req) => {
           headers: { Authorization: `Bearer ${OPENAI_API_KEY}` },
           body: fd,
         });
-        if (!resp.ok) throw new Error('Falha na transcrição (Whisper).');
+        if (!resp.ok) {
+          void logAIUsage({
+            userId, assistant: 'consultorio', functionName: 'transcribe-case',
+            model: 'openai/whisper-1', audioSeconds, latencyMs: Date.now() - sttStart, status: 'error',
+          });
+          throw new Error('Falha na transcrição (Whisper).');
+        }
         const data = await resp.json();
         transcription = data.text ?? '';
+        void logAIUsage({
+          userId, assistant: 'consultorio', functionName: 'transcribe-case',
+          model: 'openai/whisper-1', audioSeconds, latencyMs: Date.now() - sttStart, status: 'ok',
+        });
       } else {
         throw new Error('Nenhuma chave de transcrição configurada');
       }
@@ -95,6 +120,7 @@ Campos:
 - notes: observações e histórico
 - tags: array com especialidades, sintomas, diagnósticos`;
 
+    const extractionStart = Date.now();
     const extractionResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
@@ -127,6 +153,10 @@ Campos:
     });
 
     if (!extractionResponse.ok) {
+      void logAIUsage({
+        userId, assistant: 'consultorio', functionName: 'transcribe-case:extract',
+        model: 'google/gemini-3-flash-preview', latencyMs: Date.now() - extractionStart, status: 'error',
+      });
       if (extractionResponse.status === 429) throw new Error('Muitas requisições. Aguarde alguns segundos.');
       if (extractionResponse.status === 402) throw new Error('Créditos esgotados.');
       throw new Error('Erro ao processar com IA');
@@ -134,6 +164,14 @@ Campos:
 
     const ed = await extractionResponse.json();
     const toolCall = ed.choices?.[0]?.message?.tool_calls?.[0];
+    void logAIUsage({
+      userId, assistant: 'consultorio', functionName: 'transcribe-case:extract',
+      model: 'google/gemini-3-flash-preview',
+      inputTokens: ed.usage?.prompt_tokens ?? 0,
+      outputTokens: ed.usage?.completion_tokens ?? 0,
+      totalTokens: ed.usage?.total_tokens ?? 0,
+      latencyMs: Date.now() - extractionStart, status: 'ok',
+    });
     if (!toolCall?.function?.arguments) throw new Error('IA não retornou dados estruturados');
 
     const caseData = JSON.parse(toolCall.function.arguments);

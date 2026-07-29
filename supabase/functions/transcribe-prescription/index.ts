@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { logAIUsage } from "../_shared/ai-logger.ts";
+import { getUserIdFromAuth, estimateAudioSecondsFromBytes } from "../_shared/auth-helpers.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -42,10 +44,12 @@ serve(async (req) => {
   }
 
   try {
+    const userId = await getUserIdFromAuth(req);
     const { audio } = await req.json();
-    
+
     if (!audio) {
       throw new Error('Áudio não fornecido');
+    }
     }
 
     console.log('Processando áudio de prescrição...');
@@ -64,7 +68,8 @@ serve(async (req) => {
 
     // Process audio in chunks
     const binaryAudio = processBase64Chunks(audio);
-    
+    const audioSeconds = estimateAudioSecondsFromBytes(binaryAudio.byteLength);
+
     // Prepare form data for Whisper transcription
     const formData = new FormData();
     const blob = new Blob([binaryAudio], { type: 'audio/webm' });
@@ -75,6 +80,7 @@ serve(async (req) => {
 
     // Step 1: Transcribe audio using OpenAI Whisper
     console.log('Transcrevendo áudio com Whisper...');
+    const sttStart = Date.now();
     const transcriptionResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',
       headers: {
@@ -86,12 +92,20 @@ serve(async (req) => {
     if (!transcriptionResponse.ok) {
       const error = await transcriptionResponse.text();
       console.error('Erro na transcrição:', error);
+      void logAIUsage({
+        userId, assistant: 'prescriptus', functionName: 'transcribe-prescription',
+        model: 'openai/whisper-1', audioSeconds, latencyMs: Date.now() - sttStart, status: 'error',
+      });
       throw new Error(`Erro ao transcrever áudio. Verifique se a chave OPENAI_API_KEY está válida.`);
     }
 
     const transcription = await transcriptionResponse.json();
     const transcribedText = transcription.text;
     console.log('Transcrição completa:', transcribedText);
+    void logAIUsage({
+      userId, assistant: 'prescriptus', functionName: 'transcribe-prescription',
+      model: 'openai/whisper-1', audioSeconds, latencyMs: Date.now() - sttStart, status: 'ok',
+    });
 
     if (!transcribedText || transcribedText.trim().length === 0) {
       throw new Error('Não foi possível transcrever o áudio. Tente gravar novamente com melhor qualidade.');
@@ -99,6 +113,7 @@ serve(async (req) => {
 
     // Step 2: Extract structured data using Lovable AI with tool calling
     console.log('Extraindo dados estruturados com IA...');
+    const extractionStart = Date.now();
     const extractionResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -207,20 +222,29 @@ Extraia todos os dados mencionados incluindo: paciente (se mencionado), diagnós
     if (!extractionResponse.ok) {
       const error = await extractionResponse.text();
       console.error('Erro na extração IA:', error);
-      
-      // Se houver erro de rate limit ou payment
+      void logAIUsage({
+        userId, assistant: 'prescriptus', functionName: 'transcribe-prescription:extract',
+        model: 'google/gemini-3-flash-preview', latencyMs: Date.now() - extractionStart, status: 'error',
+      });
       if (extractionResponse.status === 429) {
         throw new Error('Limite de uso da IA atingido. Tente novamente em alguns instantes.');
       }
       if (extractionResponse.status === 402) {
         throw new Error('Créditos da IA esgotados. Adicione créditos em Settings -> Workspace -> Usage.');
       }
-      
       throw new Error(`Erro ao processar com IA: ${error}`);
     }
 
     const extractionResult = await extractionResponse.json();
     console.log('Resposta da IA:', JSON.stringify(extractionResult, null, 2));
+    void logAIUsage({
+      userId, assistant: 'prescriptus', functionName: 'transcribe-prescription:extract',
+      model: 'google/gemini-3-flash-preview',
+      inputTokens: extractionResult.usage?.prompt_tokens ?? 0,
+      outputTokens: extractionResult.usage?.completion_tokens ?? 0,
+      totalTokens: extractionResult.usage?.total_tokens ?? 0,
+      latencyMs: Date.now() - extractionStart, status: 'ok',
+    });
 
     // Parse the tool call result
     const toolCall = extractionResult.choices?.[0]?.message?.tool_calls?.[0];
