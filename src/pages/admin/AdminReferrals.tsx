@@ -269,8 +269,29 @@ export default function AdminReferrals() {
               value={settings.referrer_reward_days}
               onChange={(e) => setSettings({ ...settings, referrer_reward_days: parseInt(e.target.value) || 0 })}
             />
-            <p className="text-[11px] text-muted-foreground">Aplicados via trial_end na assinatura ativa do indicador.</p>
+            <p className="text-[11px] text-muted-foreground">Crédito na fatura de quem já assina, ou dias de acesso liberado para quem ainda não assina.</p>
           </div>
+
+          <div className="space-y-1.5 flex flex-col justify-center">
+            <div className="flex items-center justify-between p-3 rounded-md bg-muted/30 border border-border/40">
+              <div className="pr-3">
+                <div className="text-sm font-medium">Liberar acesso para indicador sem assinatura</div>
+                <div className="text-xs text-muted-foreground">O lead que indica ganha acesso completo pelos dias configurados. Ao expirar, o acesso cai automaticamente.</div>
+              </div>
+              <Switch checked={settings.lead_reward_enabled} onCheckedChange={(v) => setSettings({ ...settings, lead_reward_enabled: v })} />
+            </div>
+          </div>
+
+          <div className="space-y-1.5 flex flex-col justify-center">
+            <div className="flex items-center justify-between p-3 rounded-md bg-muted/30 border border-border/40">
+              <div className="pr-3">
+                <div className="text-sm font-medium">Bloquear desconto para quem já indicou</div>
+                <div className="text-xs text-muted-foreground">Quem já usou o próprio link para indicar alguém não pode ser indicado por outro usuário para obter o desconto do 1º mês.</div>
+              </div>
+              <Switch checked={settings.block_existing_referrers} onCheckedChange={(v) => setSettings({ ...settings, block_existing_referrers: v })} />
+            </div>
+          </div>
+
 
           <div className="space-y-1.5">
             <Label htmlFor="max-rewards">Limite de recompensas por indicador</Label>
