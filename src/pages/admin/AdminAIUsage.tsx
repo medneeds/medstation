@@ -117,7 +117,6 @@ export default function AdminAIUsage() {
     <div className="p-4 sm:p-6 space-y-5">
       <header className="flex flex-wrap items-center gap-3 justify-between">
         <div>
-          <h1 className="text-2xl font-display font-semibold">Uso de IA</h1>
           <p className="text-sm text-muted-foreground">
             Custos, tokens e latência por período, provider, assistente e usuário
           </p>

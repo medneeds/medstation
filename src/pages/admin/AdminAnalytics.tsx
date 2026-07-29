@@ -136,10 +136,6 @@ export default function AdminAnalytics() {
     <div className="p-4 sm:p-6 space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-xl font-semibold flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-primary" />
-            Analytics
-          </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             Tráfego, dispositivos e funil de conversão da landing.
           </p>

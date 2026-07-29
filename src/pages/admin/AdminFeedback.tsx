@@ -45,7 +45,6 @@ export default function AdminFeedback() {
   return (
     <div className="p-4 sm:p-6 space-y-5">
       <header>
-        <h1 className="text-2xl font-display font-semibold">Feedback</h1>
         <p className="text-sm text-muted-foreground">
           Avaliações dos assistentes — números globais (a lista abaixo mostra os 200 mais recentes)
         </p>

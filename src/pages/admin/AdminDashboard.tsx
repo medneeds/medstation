@@ -144,7 +144,6 @@ export default function AdminDashboard() {
     <div className="p-4 sm:p-6 space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-display font-semibold">Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Retrato ao vivo da plataforma — assinaturas, IA, suporte, segurança.
             {lastSync && (

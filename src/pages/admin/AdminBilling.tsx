@@ -126,7 +126,6 @@ export default function AdminBilling() {
     <div className="p-4 sm:p-6 space-y-5">
       <header className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-display font-semibold">Faturamento</h1>
           <p className="text-sm text-muted-foreground">Assinaturas, MRR e cortesias — dados ao vivo do Stripe</p>
         </div>
         <div className="flex items-center gap-2">

@@ -35,7 +35,6 @@ export default function AdminAudit() {
   return (
     <div className="p-4 sm:p-6 space-y-5">
       <header>
-        <h1 className="text-2xl font-display font-semibold">Auditoria e segurança</h1>
         <p className="text-sm text-muted-foreground">
           Ações administrativas e eventos de segurança — contadores globais, listas mostram as 200 mais recentes
         </p>
