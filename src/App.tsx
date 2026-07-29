@@ -54,6 +54,7 @@ import AdminFeedback from "./pages/admin/AdminFeedback";
 import AdminAudit from "./pages/admin/AdminAudit";
 import AdminFlags from "./pages/admin/AdminFlags";
 import AdminBroadcast from "./pages/admin/AdminBroadcast";
+import AdminReferrals from "./pages/admin/AdminReferrals";
 import Indicar from "./pages/Indicar";
 import ReferralRedirect from "./pages/ReferralRedirect";
 import NotFound from "./pages/NotFound";
