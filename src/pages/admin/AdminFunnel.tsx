@@ -196,15 +196,10 @@ export default function AdminFunnel() {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display text-xl font-semibold flex items-center gap-2">
-            <Filter className="h-5 w-5 text-primary" />
-            Funil de conversão
-          </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Do clique no botão até a assinatura, com validação dos dados enviados.
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          Do clique no botão até a assinatura, com validação dos dados enviados.
+        </p>
+
         <div className="flex items-center gap-2">
           <div className="flex rounded-lg border border-border/60 p-0.5">
             {RANGES.map((r) => (
