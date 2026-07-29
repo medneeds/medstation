@@ -111,6 +111,7 @@ serve(async (req) => {
       .from("referrals")
       .update({
         status: "rewarded",
+        reward_credit_days: rewardDays,
         reward_applied_at: new Date().toISOString(),
       })
       .eq("id", ref.id);
