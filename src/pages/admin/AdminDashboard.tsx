@@ -15,6 +15,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import type { AdminMetrics, SubscribersResponse } from "./types";
+import DashboardTrends from "./DashboardTrends";
 
 interface KPIs {
   totalUsers: number;
@@ -190,6 +191,8 @@ export default function AdminDashboard() {
           </Card>
         ))}
       </div>
+
+      <DashboardTrends />
     </div>
   );
 }
