@@ -12,36 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { SubscriberRecord, SubscriberStats, FilteredSubscriberStats } from "./types";
 
-type Record = {
-  user_id: string | null;
-  email: string | null;
-  full_name: string | null;
-  effective_status: string;
-  stripe_status: string;
-  stripe_customer_id: string | null;
-  subscription_end: string | null;
-  subscription_created: string | null;
-  monthly_amount_cents: number;
-  currency: string | null;
-  interval: string | null;
-  auth_missing?: boolean;
-};
-
-type Stats = {
-  total_users: number;
-  active: number;
-  trialing: number;
-  past_due: number;
-  canceled: number;
-  courtesy: number;
-  admin: number;
-  auth_missing: number;
-  mrr_cents: number;
-  arr_cents: number;
-  avg_ticket_cents: number;
-  currency: string;
-};
+type Record = SubscriberRecord;
+type Stats = SubscriberStats;
 
 const PRESETS = [
   { key: "all", label: "Sempre" },
