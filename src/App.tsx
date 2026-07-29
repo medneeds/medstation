@@ -59,6 +59,7 @@ import AdminReferrals from "./pages/admin/AdminReferrals";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminFunnel from "./pages/admin/AdminFunnel";
+import AdminAudience from "./pages/admin/AdminAudience";
 import Indicar from "./pages/Indicar";
 import ReferralRedirect from "./pages/ReferralRedirect";
 import NotFound from "./pages/NotFound";
