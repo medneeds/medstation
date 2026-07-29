@@ -368,6 +368,7 @@ serve(async (req) => {
         total,
         totalPages,
         stats,
+        filteredStats,
         cacheAge: stripeCache ? Date.now() - stripeCache.fetchedAt : 0,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
