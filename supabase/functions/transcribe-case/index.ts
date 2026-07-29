@@ -34,6 +34,7 @@ serve(async (req) => {
   }
 
   try {
+    const userId = await getUserIdFromAuth(req);
     const body = await req.json();
     const { audio, transcript: providedTranscript } = body;
 
@@ -50,9 +51,11 @@ serve(async (req) => {
       if (!audio) throw new Error('Nenhum áudio nem texto fornecido');
       const binaryAudio = processBase64Chunks(audio);
       const blob = new Blob([binaryAudio], { type: 'audio/webm' });
+      const audioSeconds = estimateAudioSecondsFromBytes(binaryAudio.byteLength);
 
       if (ELEVENLABS_API_KEY) {
         console.log('Transcrevendo com ElevenLabs Scribe v2...');
+        const sttStart = Date.now();
         const fd = new FormData();
         fd.append('file', blob, 'audio.webm');
         fd.append('model_id', 'scribe_v2');
@@ -65,12 +68,22 @@ serve(async (req) => {
         if (!resp.ok) {
           const err = await resp.text();
           console.error('ElevenLabs error:', err);
+          void logAIUsage({
+            userId, assistant: 'consultorio', functionName: 'transcribe-case',
+            model: 'elevenlabs/scribe_v2', audioSeconds, latencyMs: Date.now() - sttStart,
+            status: 'error', metadata: { error: err.slice(0, 200) },
+          });
           throw new Error('Falha na transcrição (ElevenLabs).');
         }
         const data = await resp.json();
         transcription = data.text ?? '';
+        void logAIUsage({
+          userId, assistant: 'consultorio', functionName: 'transcribe-case',
+          model: 'elevenlabs/scribe_v2', audioSeconds, latencyMs: Date.now() - sttStart, status: 'ok',
+        });
       } else if (OPENAI_API_KEY) {
         console.log('Transcrevendo com Whisper (fallback)...');
+        const sttStart = Date.now();
         const fd = new FormData();
         fd.append('file', blob, 'audio.webm');
         fd.append('model', 'whisper-1');
@@ -80,9 +93,19 @@ serve(async (req) => {
           headers: { Authorization: `Bearer ${OPENAI_API_KEY}` },
           body: fd,
         });
-        if (!resp.ok) throw new Error('Falha na transcrição (Whisper).');
+        if (!resp.ok) {
+          void logAIUsage({
+            userId, assistant: 'consultorio', functionName: 'transcribe-case',
+            model: 'openai/whisper-1', audioSeconds, latencyMs: Date.now() - sttStart, status: 'error',
+          });
+          throw new Error('Falha na transcrição (Whisper).');
+        }
         const data = await resp.json();
         transcription = data.text ?? '';
+        void logAIUsage({
+          userId, assistant: 'consultorio', functionName: 'transcribe-case',
+          model: 'openai/whisper-1', audioSeconds, latencyMs: Date.now() - sttStart, status: 'ok',
+        });
       } else {
         throw new Error('Nenhuma chave de transcrição configurada');
       }
