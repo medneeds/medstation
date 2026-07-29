@@ -53,7 +53,52 @@ export default function AdminReferrals() {
   const [referrals, setReferrals] = useState<ReferralRow[]>([]);
   const [metrics, setMetrics] = useState<AdminMetrics["referrals"] | null>(null);
   const [topReferrers, setTopReferrers] = useState<Array<{ email: string; qualified: number; total: number }>>([]);
+  const [courtesy, setCourtesy] = useState<CourtesyRow[]>([]);
+  const [busyUser, setBusyUser] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const callAccess = async (payload: Record<string, unknown>) => {
+    const { data, error } = await supabase.functions.invoke("admin-referral-access", { body: payload });
+    if (error) throw error;
+    if ((data as any)?.error) throw new Error((data as any).error);
+    return data as any;
+  };
+
+  const loadCourtesy = async () => {
+    try {
+      const res = await callAccess({ action: "list" });
+      setCourtesy((res?.rows || []) as CourtesyRow[]);
+    } catch (e: any) {
+      console.error("[admin-referral-access]", e.message);
+    }
+  };
+
+  const extendAccess = async (userId: string, days: number) => {
+    setBusyUser(userId);
+    try {
+      await callAccess({ action: "extend", target_user_id: userId, days });
+      toast({ title: `+${days} dias liberados` });
+      await loadCourtesy();
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Erro", description: e.message });
+    } finally {
+      setBusyUser(null);
+    }
+  };
+
+  const revokeAccess = async (userId: string) => {
+    setBusyUser(userId);
+    try {
+      await callAccess({ action: "revoke", target_user_id: userId });
+      toast({ title: "Acesso encerrado" });
+      await loadCourtesy();
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Erro", description: e.message });
+    } finally {
+      setBusyUser(null);
+    }
+  };
+
 
   useEffect(() => { load(); }, []);
 
