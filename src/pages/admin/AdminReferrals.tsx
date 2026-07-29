@@ -129,7 +129,7 @@ export default function AdminReferrals() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4">
           <div className="flex items-center gap-2 text-xs uppercase text-muted-foreground"><Users className="h-3 w-3" /> Códigos gerados</div>
-          <div className="text-2xl font-display font-semibold mt-1">{metrics?.codes ?? "—"}</div>
+          <div className="text-2xl font-display font-semibold mt-1">{metrics?.codes_generated ?? "—"}</div>
         </Card>
         <Card className="p-4">
           <div className="flex items-center gap-2 text-xs uppercase text-muted-foreground"><TrendingUp className="h-3 w-3" /> Indicações</div>
@@ -139,7 +139,7 @@ export default function AdminReferrals() {
         <Card className="p-4">
           <div className="flex items-center gap-2 text-xs uppercase text-muted-foreground"><Award className="h-3 w-3" /> Recompensados</div>
           <div className="text-2xl font-display font-semibold mt-1 text-primary">{metrics?.rewarded ?? "—"}</div>
-          <div className="text-[11px] text-muted-foreground mt-1">{metrics?.rewarded_days ?? 0} dias creditados</div>
+          <div className="text-[11px] text-muted-foreground mt-1">{metrics?.reward_days_total ?? 0} dias creditados</div>
         </Card>
         <Card className="p-4">
           <div className="text-xs uppercase text-muted-foreground">Status</div>
