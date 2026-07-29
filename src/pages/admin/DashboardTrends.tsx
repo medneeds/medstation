@@ -24,6 +24,7 @@ interface TrendsResponse {
   subs_growth: { date: string; count: number }[];
   mrr_curve: { date: string; mrr_cents: number }[];
   ai_daily: { date: string; cost_usd: number; tokens: number }[];
+  visitors?: { date: string; views: number; unique: number }[];
 }
 
 const RANGES: { label: string; value: number }[] = [
