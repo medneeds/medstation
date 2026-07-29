@@ -3,7 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, CreditCard, MessageSquare, Activity,
   Star, Shield, ToggleLeft, Megaphone, ArrowLeft, LogOut, Gift, Users2,
-  PanelLeftClose, PanelLeftOpen, Sun, Moon, BarChart3,
+  PanelLeftClose, PanelLeftOpen, Sun, Moon, BarChart3, Mail,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAdminRole } from "@/hooks/useAdminRole";
@@ -24,6 +24,7 @@ const NAV = [
   { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/admin/funil", label: "Funil", icon: Filter },
   { to: "/admin/audiencia", label: "Audiência", icon: Users2, adminOnly: true },
+  { to: "/admin/emails", label: "E-mails", icon: Mail, adminOnly: true },
   { to: "/admin/uso-ia", label: "Uso de IA", icon: Activity },
   { to: "/admin/feedback", label: "Feedback", icon: Star },
   { to: "/admin/auditoria", label: "Auditoria", icon: Shield },
