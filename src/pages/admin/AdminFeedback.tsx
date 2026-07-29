@@ -43,7 +43,7 @@ export default function AdminFeedback() {
   const fb = metrics?.feedback;
 
   return (
-    <div className="p-6 space-y-5">
+    <div className="p-4 sm:p-6 space-y-5">
       <header>
         <h1 className="text-2xl font-display font-semibold">Feedback</h1>
         <p className="text-sm text-muted-foreground">

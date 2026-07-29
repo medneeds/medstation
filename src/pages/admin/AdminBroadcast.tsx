@@ -38,7 +38,7 @@ export default function AdminBroadcast() {
   };
 
   return (
-    <div className="p-6 space-y-5">
+    <div className="p-4 sm:p-6 space-y-5">
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-display font-semibold">Broadcast</h1>

@@ -112,7 +112,7 @@ export default function AdminReferrals() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-6">
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-display font-semibold flex items-center gap-2">
