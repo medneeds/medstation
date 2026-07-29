@@ -80,3 +80,9 @@ verify_jwt = false
 
 [functions.public-extract-text]
 verify_jwt = false
+
+[functions.admin-set-role]
+verify_jwt = false
+
+[functions.admin-bulk-courtesy]
+verify_jwt = false
