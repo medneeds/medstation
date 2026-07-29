@@ -4,15 +4,20 @@ import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   Bell, CheckCheck, LifeBuoy, UserPlus, Trophy, CreditCard,
-  Dot, Loader2, Inbox, ArrowRight, RotateCcw,
+  Dot, Loader2, Inbox, ArrowRight, RotateCcw, Settings2, ChevronLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { useAdminNotifications, type AdminNotification } from "@/hooks/useAdminNotifications";
+import {
+  useAdminNotifications,
+  PREF_LABELS,
+  type AdminNotification,
+} from "@/hooks/useAdminNotifications";
 
 const META: Record<string, { icon: typeof Bell; tone: string; label: string }> = {
   support_ticket: { icon: LifeBuoy, tone: "text-destructive bg-destructive/10", label: "Suporte" },
@@ -28,8 +33,9 @@ function metaFor(type: string) {
 export function AdminNotificationBell() {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"all" | "unread">("all");
+  const [settings, setSettings] = useState(false);
   const navigate = useNavigate();
-  const { items, loading, unreadCount, markAsRead, markAsUnread, markAllAsRead, refresh } =
+  const { items, loading, unreadCount, prefs, updatePrefs, markAsRead, markAsUnread, markAllAsRead, refresh } =
     useAdminNotifications(true);
 
   const visible = useMemo(
