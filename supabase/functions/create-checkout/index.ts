@@ -62,15 +62,25 @@ serve(async (req) => {
     // Auto-apply referral coupon if this user has a pending referral and no other coupon was provided
     if (!couponCode) {
       try {
-        const { data: pendingRef } = await supabaseClient
-          .from("referrals")
-          .select("id")
-          .eq("referred_user_id", user.id)
-          .eq("status", "pending")
+        const { data: settings } = await supabaseClient
+          .from("referral_settings")
+          .select("active, referred_stripe_coupon")
+          .eq("id", 1)
           .maybeSingle();
-        if (pendingRef) {
-          couponCode = "XzP9db0s"; // MedStation Referral 50% off 1º mês
-          logStep("Auto-applying referral coupon");
+        const programActive = settings?.active !== false;
+        const referralCoupon = settings?.referred_stripe_coupon || "XzP9db0s";
+
+        if (programActive) {
+          const { data: pendingRef } = await supabaseClient
+            .from("referrals")
+            .select("id")
+            .eq("referred_user_id", user.id)
+            .eq("status", "pending")
+            .maybeSingle();
+          if (pendingRef) {
+            couponCode = referralCoupon;
+            logStep("Auto-applying referral coupon", { coupon: referralCoupon });
+          }
         }
       } catch (e) {
         console.error("[CREATE-CHECKOUT] referral lookup failed", e);
