@@ -92,10 +92,13 @@ export default function Indicar() {
           <span className="italic text-primary">Ganhe meses grátis.</span>
         </h1>
         <p className="mt-4 text-muted-foreground max-w-2xl">
-          Cada médico que assinar pelo seu link ganha 50% off no 1º mês. Você ganha 30 dias grátis
-          adicionados à sua próxima fatura — automaticamente. São até {maxRewards} indicações
-          válidas, ou seja, até {maxRewards} meses de acesso completo sem pagar nada.
+          Cada médico que assinar pelo seu link ganha 50% off no 1º mês. Você ganha 30 dias grátis:
+          se já assina, entram como crédito na próxima fatura; se ainda não assina, liberamos 30
+          dias de acesso completo à plataforma — e você recebe um e-mail confirmando. São até{" "}
+          {maxRewards} indicações válidas, ou seja, até {maxRewards} meses de acesso completo sem
+          pagar nada.
         </p>
+
 
       </motion.div>
 
