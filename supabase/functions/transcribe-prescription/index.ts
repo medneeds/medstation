@@ -113,6 +113,7 @@ serve(async (req) => {
 
     // Step 2: Extract structured data using Lovable AI with tool calling
     console.log('Extraindo dados estruturados com IA...');
+    const extractionStart = Date.now();
     const extractionResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
