@@ -81,6 +81,72 @@ export function SupportChat() {
     }
   };
 
+  // Realtime: quando um ticket humano existe, ouve respostas do suporte
+  useEffect(() => {
+    if (!handoffTicketId) return;
+    const channel = supabase
+      .channel(`support-user-${handoffTicketId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "support_messages", filter: `ticket_id=eq.${handoffTicketId}` },
+        (payload: any) => {
+          const m = payload.new;
+          if (m.sender_type === "agent") {
+            setMessages((prev) => [...prev, { role: "assistant", content: `👤 Suporte: ${m.content}` }]);
+          }
+        },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [handoffTicketId]);
+
+  const requestHuman = async () => {
+    if (handingOff || handoffTicketId) return;
+    setHandingOff(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({ title: "Faça login", description: "Você precisa estar autenticado para falar com o suporte humano.", variant: "destructive" });
+        return;
+      }
+      const lastUserMsg = [...messages].reverse().find((m) => m.role === "user")?.content?.slice(0, 120) ?? "Solicitação de suporte";
+      const { data: ticket, error: tErr } = await supabase
+        .from("support_tickets")
+        .insert({
+          user_id: user.id,
+          subject: lastUserMsg,
+          status: "open",
+          priority: "normal",
+          ai_context_snapshot: { messages },
+          last_message_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+      if (tErr) throw tErr;
+      // Grava histórico da conversa como mensagens do ticket (usuário e IA)
+      const rows = messages
+        .filter((m) => m.content && m.content !== INITIAL_MESSAGE.content)
+        .map((m) => ({
+          ticket_id: ticket.id,
+          sender_type: m.role === "user" ? "user" : "ai",
+          sender_id: m.role === "user" ? user.id : null,
+          content: m.content,
+        }));
+      if (rows.length) await supabase.from("support_messages").insert(rows);
+      setHandoffTicketId(ticket.id);
+      setMessages((prev) => [...prev, {
+        role: "assistant",
+        content: "✅ Conectado ao suporte humano. Nossa equipe responderá aqui mesmo assim que possível. Você pode continuar enviando mensagens neste chat.",
+      }]);
+      toast({ title: "Suporte humano acionado", description: "Um atendente foi notificado." });
+    } catch (e: any) {
+      console.error("[handoff]", e);
+      toast({ title: "Erro", description: e.message || "Não foi possível conectar ao suporte humano.", variant: "destructive" });
+    } finally {
+      setHandingOff(false);
+    }
+  };
+
   const sendMessage = async (text: string) => {
     if (!text.trim() || isLoading) return;
 
