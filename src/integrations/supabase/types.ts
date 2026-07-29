@@ -948,6 +948,42 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_settings: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: number
+          referred_discount_percent: number
+          referred_stripe_coupon: string
+          referrer_reward_days: number
+          require_crm: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: number
+          referred_discount_percent?: number
+          referred_stripe_coupon?: string
+          referrer_reward_days?: number
+          require_crm?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: number
+          referred_discount_percent?: number
+          referred_stripe_coupon?: string
+          referrer_reward_days?: number
+          require_crm?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       referrals: {
         Row: {
           blocked_reason: string | null
