@@ -275,6 +275,24 @@ const App = () => (
               }
             />
             <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <AdminRoute><AdminLayout /></AdminRoute>
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<AdminDashboard />} />
+              <Route path="usuarios" element={<AdminUsers />} />
+              <Route path="faturamento" element={<AdminRoute requireAdmin><AdminBilling /></AdminRoute>} />
+              <Route path="suporte" element={<AdminSupport />} />
+              <Route path="uso-ia" element={<AdminAIUsage />} />
+              <Route path="feedback" element={<AdminFeedback />} />
+              <Route path="auditoria" element={<AdminAudit />} />
+              <Route path="flags" element={<AdminRoute requireAdmin><AdminFlags /></AdminRoute>} />
+              <Route path="broadcast" element={<AdminRoute requireAdmin><AdminBroadcast /></AdminRoute>} />
+            </Route>
+            <Route
               path="/indicar"
               element={
                 <ProtectedRoute>
