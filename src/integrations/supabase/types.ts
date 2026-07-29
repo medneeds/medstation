@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_notification_prefs: {
+        Row: {
+          created_at: string
+          milestone: boolean
+          new_user: boolean
+          sale: boolean
+          support_ticket: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          milestone?: boolean
+          new_user?: boolean
+          sale?: boolean
+          support_ticket?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          milestone?: boolean
+          new_user?: boolean
+          sale?: boolean
+          support_ticket?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       admin_notification_reads: {
         Row: {
           id: string
