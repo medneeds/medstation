@@ -213,8 +213,28 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
             )}
           </div>
         </aside>
-        <main className="flex-1 overflow-x-hidden min-w-0">
-          {children ?? <Outlet />}
+        <main className="flex-1 overflow-x-hidden min-w-0 flex flex-col">
+          <header className="sticky top-0 z-30 h-14 shrink-0 border-b border-border/60 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 flex items-center justify-between gap-3 px-4 sm:px-6">
+            <div className="min-w-0">
+              <h1 className="text-sm font-semibold font-display truncate">{currentLabel}</h1>
+              <p className="text-2xs text-muted-foreground truncate">Painel de gestão MedStation</p>
+            </div>
+            <div className="flex items-center gap-1">
+              <AdminNotificationBell />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9"
+                onClick={() => setTheme(isDark ? "light" : "dark")}
+                aria-label={isDark ? "Ativar modo claro" : "Ativar modo escuro"}
+              >
+                {isDark ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}
+              </Button>
+            </div>
+          </header>
+          <div className="flex-1 min-w-0">
+            {children ?? <Outlet />}
+          </div>
         </main>
       </div>
     </TooltipProvider>
