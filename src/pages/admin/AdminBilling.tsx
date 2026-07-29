@@ -82,6 +82,7 @@ export default function AdminBilling() {
       );
       const data = await res.json();
       setStats(data.stats);
+      setFilteredStats(data.filteredStats ?? null);
       setRecords(data.records || []);
     } catch (e) { console.error(e); }
     finally { setLoading(false); setRefreshing(false); }
