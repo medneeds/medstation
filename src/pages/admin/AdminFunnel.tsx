@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   Loader2,
   RefreshCw,
-  Filter,
   AlertTriangle,
   CheckCircle2,
   Copy,
