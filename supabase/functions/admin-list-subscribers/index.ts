@@ -12,10 +12,10 @@ const log = (step: string, details?: any) => {
   console.log(`[ADMIN-LIST-SUBSCRIBERS] ${step}${detailsStr}`);
 };
 
-// Simple in-memory cache (per edge function instance) - 5 minutes
 let stripeCache: {
-  customers: Map<string, any>; // email -> customer
-  subscriptionsByCustomer: Map<string, any[]>; // customerId -> subscriptions
+  customers: Map<string, any>;
+  customersById: Map<string, any>;
+  subscriptionsByCustomer: Map<string, any[]>;
   fetchedAt: number;
 } | null = null;
 
@@ -24,34 +24,26 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
 async function fetchAllStripeData(stripe: Stripe, force = false) {
   const now = Date.now();
   if (!force && stripeCache && now - stripeCache.fetchedAt < CACHE_TTL_MS) {
-    log("Using cached Stripe data", {
-      ageMs: now - stripeCache.fetchedAt,
-      customers: stripeCache.customers.size,
-    });
     return stripeCache;
   }
 
   log("Fetching fresh Stripe data");
   const customers = new Map<string, any>();
+  const customersById = new Map<string, any>();
   const subscriptionsByCustomer = new Map<string, any[]>();
 
-  // Paginate all customers
   let hasMore = true;
   let startingAfter: string | undefined;
   while (hasMore) {
-    const page: any = await stripe.customers.list({
-      limit: 100,
-      starting_after: startingAfter,
-    });
+    const page: any = await stripe.customers.list({ limit: 100, starting_after: startingAfter });
     for (const c of page.data) {
       if (c.email) customers.set(c.email.toLowerCase(), c);
+      customersById.set(c.id, c);
     }
     hasMore = page.has_more;
     if (hasMore) startingAfter = page.data[page.data.length - 1].id;
   }
-  log("Customers fetched", { total: customers.size });
 
-  // Paginate all subscriptions (all statuses)
   hasMore = true;
   startingAfter = undefined;
   while (hasMore) {
@@ -59,6 +51,7 @@ async function fetchAllStripeData(stripe: Stripe, force = false) {
       status: "all",
       limit: 100,
       starting_after: startingAfter,
+      expand: ["data.items.data.price"],
     });
     for (const s of page.data) {
       const cid = typeof s.customer === "string" ? s.customer : s.customer.id;
@@ -68,34 +61,63 @@ async function fetchAllStripeData(stripe: Stripe, force = false) {
     hasMore = page.has_more;
     if (hasMore) startingAfter = page.data[page.data.length - 1].id;
   }
-  log("Subscriptions fetched", { customers: subscriptionsByCustomer.size });
+  log("Stripe data fetched", {
+    customers: customers.size,
+    customersById: customersById.size,
+    subCustomers: subscriptionsByCustomer.size,
+  });
 
-  stripeCache = { customers, subscriptionsByCustomer, fetchedAt: now };
+  stripeCache = { customers, customersById, subscriptionsByCustomer, fetchedAt: now };
   return stripeCache;
 }
 
-function getDisplayStatus(subs: any[] | undefined): {
-  status: string;
-  endDate: string | null;
-  productIds: string[];
-} {
+// Normalize a price to a monthly amount (in cents)
+function monthlyFromPrice(price: any, quantity = 1): number {
+  if (!price?.unit_amount || !price?.recurring) return 0;
+  const amount = price.unit_amount * quantity;
+  const { interval, interval_count = 1 } = price.recurring;
+  const perMonth =
+    interval === "year"
+      ? amount / (12 * interval_count)
+      : interval === "week"
+      ? (amount * 52) / (12 * interval_count)
+      : interval === "day"
+      ? (amount * 365) / (12 * interval_count)
+      : amount / interval_count; // month
+  return perMonth;
+}
+
+function summarize(subs: any[] | undefined) {
   if (!subs || subs.length === 0) {
-    return { status: "none", endDate: null, productIds: [] };
+    return {
+      status: "none",
+      endDate: null as string | null,
+      productIds: [] as string[],
+      monthlyAmountCents: 0,
+      currency: null as string | null,
+      currentSubCreated: null as string | null,
+      interval: null as string | null,
+    };
   }
 
-  // Priority order
   const priority = ["active", "trialing", "past_due", "unpaid", "canceled", "incomplete", "incomplete_expired"];
-  const sorted = [...subs].sort(
-    (a, b) => priority.indexOf(a.status) - priority.indexOf(b.status)
-  );
+  const sorted = [...subs].sort((a, b) => priority.indexOf(a.status) - priority.indexOf(b.status));
   const top = sorted[0];
 
   const productIds: string[] = [];
+  let monthlyAmountCents = 0;
+  let currency: string | null = null;
+  let interval: string | null = null;
+
   for (const s of subs) {
     if (["active", "trialing", "past_due"].includes(s.status)) {
       for (const item of s.items.data) {
-        const pid = typeof item.price.product === "string" ? item.price.product : item.price.product.id;
+        const price = item.price;
+        const pid = typeof price.product === "string" ? price.product : price.product.id;
         if (pid && !productIds.includes(pid)) productIds.push(pid);
+        monthlyAmountCents += monthlyFromPrice(price, item.quantity || 1);
+        if (!currency) currency = price.currency;
+        if (!interval) interval = price.recurring?.interval || null;
       }
     }
   }
@@ -104,18 +126,24 @@ function getDisplayStatus(subs: any[] | undefined): {
   if (top.current_period_end) {
     try {
       endDate = new Date(top.current_period_end * 1000).toISOString();
-    } catch {
-      endDate = null;
-    }
+    } catch { /* skip */ }
   }
 
-  return { status: top.status, endDate, productIds };
+  const currentSubCreated = top.created ? new Date(top.created * 1000).toISOString() : null;
+
+  return {
+    status: top.status,
+    endDate,
+    productIds,
+    monthlyAmountCents: Math.round(monthlyAmountCents),
+    currency,
+    currentSubCreated,
+    interval,
+  };
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const supabaseAdmin = createClient(
@@ -124,7 +152,6 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    // Verify caller is admin
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header");
     const token = authHeader.replace("Bearer ", "");
@@ -146,84 +173,81 @@ serve(async (req) => {
     const search = (url.searchParams.get("search") || "").toLowerCase().trim();
     const statusFilter = url.searchParams.get("status") || "all";
     const page = parseInt(url.searchParams.get("page") || "1", 10);
-    const perPage = parseInt(url.searchParams.get("perPage") || "25", 10);
+    const perPage = parseInt(url.searchParams.get("perPage") || "100", 10);
     const refresh = url.searchParams.get("refresh") === "true";
-
-    log("Request params", { search, statusFilter, page, perPage, refresh });
+    const fromParam = url.searchParams.get("from");
+    const toParam = url.searchParams.get("to");
+    const from = fromParam ? new Date(fromParam) : null;
+    const to = toParam ? new Date(toParam) : null;
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not set");
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
-    // Fetch all auth users (paginated)
     const allUsers: any[] = [];
     let pageNum = 1;
     while (true) {
-      const { data, error } = await supabaseAdmin.auth.admin.listUsers({
-        page: pageNum,
-        perPage: 1000,
-      });
+      const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page: pageNum, perPage: 1000 });
       if (error) throw error;
       allUsers.push(...data.users);
       if (data.users.length < 1000) break;
       pageNum++;
     }
-    log("Auth users fetched", { total: allUsers.length });
 
-    // Fetch courtesy + admin role data
     const [courtesyRes, rolesRes, profilesRes] = await Promise.all([
       supabaseAdmin.from("courtesy_access").select("*"),
       supabaseAdmin.from("user_roles").select("user_id, role"),
       supabaseAdmin.from("profiles").select("id, full_name, specialty"),
     ]);
-    const courtesyMap = new Map(
-      (courtesyRes.data || []).map((c: any) => [c.user_id, c])
-    );
+    const courtesyMap = new Map((courtesyRes.data || []).map((c: any) => [c.user_id, c]));
     const rolesMap = new Map<string, string[]>();
     for (const r of rolesRes.data || []) {
       if (!rolesMap.has(r.user_id)) rolesMap.set(r.user_id, []);
       rolesMap.get(r.user_id)!.push(r.role);
     }
-    const profilesMap = new Map(
-      (profilesRes.data || []).map((p: any) => [p.id, p])
-    );
+    const profilesMap = new Map((profilesRes.data || []).map((p: any) => [p.id, p]));
 
-    // Fetch Stripe data (with cache)
-    const { customers, subscriptionsByCustomer } = await fetchAllStripeData(stripe, refresh);
+    const { customers, customersById, subscriptionsByCustomer } = await fetchAllStripeData(stripe, refresh);
 
-    // Build records
-    let records = allUsers.map((u: any) => {
-      const email = (u.email || "").toLowerCase();
-      const customer = customers.get(email);
+    const usersByEmail = new Map<string, any>();
+    for (const u of allUsers) {
+      if (u.email) usersByEmail.set(u.email.toLowerCase(), u);
+    }
+
+    // Build records: iterate every user AND every stripe customer that has subs (to catch missing/mismatched auth accounts)
+    const buildRecord = (u: any | null, customer: any | null) => {
+      const email = (u?.email || customer?.email || "").toLowerCase();
       const subs = customer ? subscriptionsByCustomer.get(customer.id) : undefined;
-      const stripeStatus = getDisplayStatus(subs);
+      const stripe = summarize(subs);
 
-      const courtesy = courtesyMap.get(u.id);
-      const courtesyActive =
-        courtesy && (!courtesy.expires_at || new Date(courtesy.expires_at) > new Date());
-
-      const roles = rolesMap.get(u.id) || [];
+      const courtesy = u ? courtesyMap.get(u.id) : null;
+      const courtesyActive = courtesy && (!courtesy.expires_at || new Date(courtesy.expires_at) > new Date());
+      const roles = u ? (rolesMap.get(u.id) || []) : [];
       const isAdminUser = roles.includes("admin");
-      const profile = profilesMap.get(u.id);
+      const profile = u ? profilesMap.get(u.id) : null;
 
-      // Effective status (priority: admin > courtesy > stripe)
       let effectiveStatus: string;
       if (isAdminUser) effectiveStatus = "admin";
       else if (courtesyActive) effectiveStatus = "courtesy";
-      else effectiveStatus = stripeStatus.status;
+      else effectiveStatus = stripe.status;
 
       return {
-        user_id: u.id,
-        email: u.email,
-        created_at: u.created_at,
-        last_sign_in_at: u.last_sign_in_at,
-        full_name: profile?.full_name || null,
+        user_id: u?.id || null,
+        email: u?.email || customer?.email || null,
+        created_at: u?.created_at || null,
+        last_sign_in_at: u?.last_sign_in_at || null,
+        full_name: profile?.full_name || customer?.name || null,
         specialty: profile?.specialty || null,
         is_admin: isAdminUser,
         stripe_customer_id: customer?.id || null,
-        stripe_status: stripeStatus.status,
-        stripe_product_ids: stripeStatus.productIds,
-        subscription_end: stripeStatus.endDate,
+        stripe_status: stripe.status,
+        stripe_product_ids: stripe.productIds,
+        subscription_end: stripe.endDate,
+        subscription_created: stripe.currentSubCreated,
+        monthly_amount_cents: stripe.monthlyAmountCents,
+        currency: stripe.currency,
+        interval: stripe.interval,
+        auth_missing: !u,
         courtesy: courtesy
           ? {
               id: courtesy.id,
@@ -236,41 +260,85 @@ serve(async (req) => {
           : null,
         effective_status: effectiveStatus,
       };
+    };
+
+    const records: any[] = allUsers.map((u: any) => {
+      const email = (u.email || "").toLowerCase();
+      const customer = customers.get(email) || null;
+      return buildRecord(u, customer);
     });
 
-    // Filter
+    // Add stripe customers that don't map to any auth user (missing/mismatched account)
+    const seenCustomerIds = new Set(records.filter((r) => r.stripe_customer_id).map((r) => r.stripe_customer_id));
+    for (const [cid, subs] of subscriptionsByCustomer.entries()) {
+      if (seenCustomerIds.has(cid)) continue;
+      if (!subs || subs.length === 0) continue;
+      const customer = customersById.get(cid);
+      if (!customer) continue;
+      records.push(buildRecord(null, customer));
+    }
+
+    let filtered = records;
+
     if (search) {
-      records = records.filter(
-        (r) =>
-          r.email?.toLowerCase().includes(search) ||
-          r.full_name?.toLowerCase().includes(search)
+      filtered = filtered.filter(
+        (r) => r.email?.toLowerCase().includes(search) || r.full_name?.toLowerCase().includes(search)
       );
     }
     if (statusFilter !== "all") {
-      records = records.filter((r) => r.effective_status === statusFilter);
+      filtered = filtered.filter((r) => r.effective_status === statusFilter);
+    }
+    if (from || to) {
+      filtered = filtered.filter((r) => {
+        const ref = r.subscription_created || r.created_at;
+        if (!ref) return false;
+        const d = new Date(ref);
+        if (from && d < from) return false;
+        if (to && d > to) return false;
+        return true;
+      });
     }
 
-    // Sort by created_at DESC
-    records.sort(
-      (a, b) =>
-        new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+    filtered.sort(
+      (a, b) => new Date(b.subscription_created || b.created_at || 0).getTime() -
+                new Date(a.subscription_created || a.created_at || 0).getTime()
     );
 
-    const total = records.length;
+    const total = filtered.length;
     const totalPages = Math.ceil(total / perPage);
     const start = (page - 1) * perPage;
-    const paginated = records.slice(start, start + perPage);
+    const paginated = filtered.slice(start, start + perPage);
 
-    // Aggregate stats
+    const active = filtered.filter((r) => r.effective_status === "active");
+    const trialing = filtered.filter((r) => r.effective_status === "trialing");
+    const past_due = filtered.filter((r) => r.effective_status === "past_due");
+    const canceled = filtered.filter((r) => r.effective_status === "canceled");
+    const courtesy = filtered.filter((r) => r.effective_status === "courtesy");
+    const admin = filtered.filter((r) => r.effective_status === "admin");
+    const none = filtered.filter((r) => r.effective_status === "none");
+
+    const mrrCents = [...active, ...trialing, ...past_due].reduce(
+      (sum, r) => sum + (r.monthly_amount_cents || 0),
+      0
+    );
+    const activeCurrency =
+      [...active, ...trialing, ...past_due].find((r) => r.currency)?.currency || "brl";
+
     const stats = {
-      total: allUsers.length,
-      active: records.filter((r) => r.effective_status === "active").length,
-      trialing: records.filter((r) => r.effective_status === "trialing").length,
-      past_due: records.filter((r) => r.effective_status === "past_due").length,
-      canceled: records.filter((r) => r.effective_status === "canceled").length,
-      none: records.filter((r) => r.effective_status === "none").length,
-      courtesy: records.filter((r) => r.effective_status === "courtesy").length,
-      admin: records.filter((r) => r.effective_status === "admin").length,
+      total_users: allUsers.length,
+      total_records: records.length,
+      active: active.length,
+      trialing: trialing.length,
+      past_due: past_due.length,
+      canceled: canceled.length,
+      none: none.length,
+      courtesy: courtesy.length,
+      admin: admin.length,
+      auth_missing: filtered.filter((r) => r.auth_missing).length,
+      mrr_cents: Math.round(mrrCents),
+      arr_cents: Math.round(mrrCents * 12),
+      avg_ticket_cents: active.length ? Math.round(mrrCents / (active.length + trialing.length + past_due.length)) : 0,
+      currency: activeCurrency,
     };
 
     return new Response(
@@ -283,10 +351,7 @@ serve(async (req) => {
         stats,
         cacheAge: stripeCache ? Date.now() - stripeCache.fetchedAt : 0,
       }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
