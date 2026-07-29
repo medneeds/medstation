@@ -2,7 +2,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, CreditCard, MessageSquare, Activity,
-  Star, Shield, ToggleLeft, Megaphone, ArrowLeft, LogOut, Gift,
+  Star, Shield, ToggleLeft, Megaphone, ArrowLeft, LogOut, Gift, Users2,
   PanelLeftClose, PanelLeftOpen, Sun, Moon, BarChart3,
 } from "lucide-react";
 import { useTheme } from "next-themes";
