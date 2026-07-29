@@ -10,6 +10,8 @@ import { HeaderThemeToggle } from "@/components/HeaderThemeToggle";
 import { SupportChat } from "@/components/SupportChat";
 import { FloatingConsultationButton } from "@/components/FloatingConsultationButton";
 import { OnboardingTour } from "@/components/OnboardingTour";
+import { AnnouncementsBanner } from "@/components/AnnouncementsBanner";
+import { NpsWidget } from "@/components/NpsWidget";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -119,6 +121,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
             {/* Main */}
             <main className="flex-1 overflow-x-hidden bg-background p-4 md:p-6 lg:p-8">
+              <AnnouncementsBanner />
               {children}
             </main>
           </div>
@@ -127,6 +130,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
       <SupportChat />
       <OnboardingTour />
+      <NpsWidget />
     </>
   );
 }
