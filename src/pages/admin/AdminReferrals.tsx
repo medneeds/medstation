@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Loader2, Save, Gift, TrendingUp, Users, Award } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import type { AdminMetrics } from "./types";
 
 interface Settings {
   active: boolean;
@@ -34,7 +35,7 @@ export default function AdminReferrals() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [savingSettings, setSavingSettings] = useState(false);
   const [referrals, setReferrals] = useState<ReferralRow[]>([]);
-  const [codesCount, setCodesCount] = useState(0);
+  const [metrics, setMetrics] = useState<AdminMetrics["referrals"] | null>(null);
   const [topReferrers, setTopReferrers] = useState<Array<{ email: string; qualified: number; total: number }>>([]);
   const [loading, setLoading] = useState(true);
 
@@ -43,16 +44,21 @@ export default function AdminReferrals() {
   const load = async () => {
     setLoading(true);
     try {
-      const [{ data: s }, { data: refs }, { count: codes }] = await Promise.all([
+      const { data: { session } } = await supabase.auth.getSession();
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+
+      const [{ data: s }, { data: refs }, metricsRes] = await Promise.all([
         supabase.from("referral_settings").select("*").eq("id", 1).maybeSingle(),
         supabase.from("referrals").select("*").order("created_at", { ascending: false }).limit(500),
-        supabase.from("referral_codes").select("*", { count: "exact", head: true }),
+        fetch(`https://${projectId}.supabase.co/functions/v1/admin-metrics`, {
+          headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
+        }).then((r) => (r.ok ? r.json() : null)),
       ]);
       if (s) setSettings(s as any);
       setReferrals((refs || []) as any);
-      setCodesCount(codes || 0);
+      if (metricsRes) setMetrics((metricsRes as AdminMetrics).referrals);
 
-      // Top referrers aggregation
+      // Top referrers aggregation (from the recent 500 sample)
       const byRef = new Map<string, { qualified: number; total: number }>();
       for (const r of refs || []) {
         const cur = byRef.get(r.referrer_id) || { qualified: 0, total: 0 };
@@ -76,18 +82,6 @@ export default function AdminReferrals() {
       setLoading(false);
     }
   };
-
-  const stats = useMemo(() => {
-    const total = referrals.length;
-    const pending = referrals.filter((r) => r.status === "pending").length;
-    const qualified = referrals.filter((r) => r.status === "qualified").length;
-    const rewarded = referrals.filter((r) => r.status === "rewarded").length;
-    const blocked = referrals.filter((r) => r.status === "blocked").length;
-    const converted = qualified + rewarded;
-    const conversionRate = total > 0 ? Math.round((converted / total) * 1000) / 10 : 0;
-    const rewardedDays = referrals.reduce((s, r) => s + (r.reward_credit_days || 0), 0);
-    return { total, pending, qualified, rewarded, blocked, conversionRate, rewardedDays };
-  }, [referrals]);
 
   const saveSettings = async () => {
     if (!settings) return;
