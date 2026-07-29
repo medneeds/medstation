@@ -16,10 +16,37 @@ export type AdminNotification = {
 
 const PAGE_SIZE = 40;
 
+export type AdminNotificationPrefs = {
+  support_ticket: boolean;
+  new_user: boolean;
+  sale: boolean;
+  milestone: boolean;
+};
+
+export const DEFAULT_PREFS: AdminNotificationPrefs = {
+  support_ticket: true,
+  new_user: true,
+  sale: true,
+  milestone: true,
+};
+
+export const PREF_LABELS: { key: keyof AdminNotificationPrefs; label: string; hint: string }[] = [
+  { key: "support_ticket", label: "Tickets de suporte", hint: "Novos chamados abertos por usuários" },
+  { key: "new_user", label: "Novos usuários", hint: "Cada novo cadastro na plataforma" },
+  { key: "sale", label: "Vendas", hint: "Assinaturas confirmadas e indicações convertidas" },
+  { key: "milestone", label: "Marcos", hint: "Metas de crescimento alcançadas" },
+];
+
+function isEnabled(prefs: AdminNotificationPrefs, type: string) {
+  if (type in prefs) return prefs[type as keyof AdminNotificationPrefs];
+  return true;
+}
+
 export function useAdminNotifications(enabled: boolean) {
   const [items, setItems] = useState<AdminNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const [prefs, setPrefs] = useState<AdminNotificationPrefs>(DEFAULT_PREFS);
 
   const load = useCallback(async () => {
     const { data: auth } = await supabase.auth.getUser();
@@ -31,14 +58,21 @@ export function useAdminNotifications(enabled: boolean) {
       return;
     }
 
-    const [{ data: notifs }, { data: reads }] = await Promise.all([
+    const [{ data: notifs }, { data: reads }, { data: prefRow }] = await Promise.all([
       supabase
         .from("admin_notifications")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(PAGE_SIZE),
       supabase.from("admin_notification_reads").select("notification_id").eq("user_id", uid),
+      supabase
+        .from("admin_notification_prefs")
+        .select("support_ticket,new_user,sale,milestone")
+        .eq("user_id", uid)
+        .maybeSingle(),
     ]);
+
+    if (prefRow) setPrefs({ ...DEFAULT_PREFS, ...prefRow });
 
     const readSet = new Set((reads ?? []).map((r) => r.notification_id));
     setItems(
@@ -49,6 +83,17 @@ export function useAdminNotifications(enabled: boolean) {
     );
     setLoading(false);
   }, []);
+
+  const updatePrefs = useCallback(
+    async (patch: Partial<AdminNotificationPrefs>) => {
+      setPrefs((prev) => ({ ...prev, ...patch }));
+      if (!userId) return;
+      await supabase
+        .from("admin_notification_prefs")
+        .upsert({ user_id: userId, ...prefs, ...patch }, { onConflict: "user_id" });
+    },
+    [userId, prefs],
+  );
 
   useEffect(() => {
     if (!enabled) return;
