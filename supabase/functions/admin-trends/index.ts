@@ -58,9 +58,10 @@ serve(async (req) => {
     const dayList = fillDays(from, days);
 
     // Paralelo: DB
-    const [signupsRes, aiRes] = await Promise.all([
+    const [signupsRes, aiRes, viewsRes] = await Promise.all([
       supabase.from("profiles").select("created_at").gte("created_at", fromIso),
       supabase.from("ai_usage_logs").select("created_at, cost_usd, total_tokens").gte("created_at", fromIso),
+      supabase.from("page_views").select("created_at, session_id").gte("created_at", fromIso),
     ]);
 
     // Séries base (bucket por dia)
