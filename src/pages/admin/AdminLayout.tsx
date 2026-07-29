@@ -23,6 +23,7 @@ const NAV = [
   { to: "/admin/suporte", label: "Suporte", icon: MessageSquare },
   { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/admin/funil", label: "Funil", icon: Filter },
+  { to: "/admin/audiencia", label: "Audiência", icon: Users2, adminOnly: true },
   { to: "/admin/uso-ia", label: "Uso de IA", icon: Activity },
   { to: "/admin/feedback", label: "Feedback", icon: Star },
   { to: "/admin/auditoria", label: "Auditoria", icon: Shield },
