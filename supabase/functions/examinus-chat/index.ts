@@ -1,5 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { logAIUsage } from "../_shared/ai-logger.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -274,6 +276,16 @@ SE NÃO FOR EXAME: "Envie um laudo de exame."`;
 
     const data = await response.json();
     console.log("Resposta da IA recebida");
+
+    void logAIUsage({
+      assistant: "examinus",
+      functionName: "examinus-chat",
+      model: "google/gemini-3-flash-preview",
+      inputTokens: data.usage?.prompt_tokens,
+      outputTokens: data.usage?.completion_tokens,
+      totalTokens: data.usage?.total_tokens,
+      status: "ok",
+    });
 
     return new Response(
       JSON.stringify({ 

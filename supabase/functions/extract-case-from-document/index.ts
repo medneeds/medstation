@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { logAIUsage } from "../_shared/ai-logger.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -100,6 +101,16 @@ Extraia o máximo de informação relevante possível para o campo notes/descri�
 
     const data = await response.json();
     console.log('Resposta da IA:', JSON.stringify(data, null, 2));
+
+    void logAIUsage({
+      assistant: "casos",
+      functionName: "extract-case-from-document",
+      model: "google/gemini-3-flash-preview",
+      inputTokens: data.usage?.prompt_tokens,
+      outputTokens: data.usage?.completion_tokens,
+      totalTokens: data.usage?.total_tokens,
+      status: "ok",
+    });
 
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
     if (!toolCall || !toolCall.function?.arguments) {

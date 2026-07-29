@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { logAIUsage } from "../_shared/ai-logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -102,6 +103,17 @@ O atestado deve ser objetivo e seguir as normas do CFM.`;
     if (!content) {
       throw new Error("Resposta da IA vazia");
     }
+
+    void logAIUsage({
+      assistant: "documentos",
+      functionName: "generate-medical-document",
+      model: "google/gemini-3-flash-preview",
+      inputTokens: aiData.usage?.prompt_tokens,
+      outputTokens: aiData.usage?.completion_tokens,
+      totalTokens: aiData.usage?.total_tokens,
+      status: "ok",
+      metadata: { document_type },
+    });
 
     // Gerar título se não fornecido
     let title = "";

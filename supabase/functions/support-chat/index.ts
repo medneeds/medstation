@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { logAIUsage } from "../_shared/ai-logger.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -162,6 +163,16 @@ INSTRUÇÕES:
     if (!aiResponse) {
       throw new Error('Resposta inválida da IA');
     }
+
+    void logAIUsage({
+      assistant: "suporte",
+      functionName: "support-chat",
+      model: "google/gemini-2.5-flash-lite",
+      inputTokens: data.usage?.prompt_tokens,
+      outputTokens: data.usage?.completion_tokens,
+      totalTokens: data.usage?.total_tokens,
+      status: "ok",
+    });
 
     return new Response(
       JSON.stringify({ response: aiResponse }),

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { logAIUsage } from "../_shared/ai-logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -105,6 +106,20 @@ serve(async (req) => {
 
     const aiResult = await aiResponse.json();
     const text = aiResult.choices?.[0]?.message?.content || "";
+
+    void logAIUsage({
+      userId: user.id,
+      assistant: "ocr",
+      functionName: "extract-file-text",
+      model: "google/gemini-2.5-flash-lite",
+      inputTokens: aiResult.usage?.prompt_tokens,
+      outputTokens: aiResult.usage?.completion_tokens,
+      totalTokens: aiResult.usage?.total_tokens,
+      status: "ok",
+      metadata: { mime: mimeType },
+    });
+
+
 
     return new Response(JSON.stringify({ text }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
