@@ -43,6 +43,17 @@ import MedicalDocuments from "@/pages/MedicalDocuments";
 import MedicalDocumentDetail from "@/pages/MedicalDocumentDetail";
 import Settings from "./pages/Settings";
 import AdminSubscribers from "./pages/AdminSubscribers";
+import { AdminRoute } from "./components/AdminRoute";
+import { AdminLayout } from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminBilling from "./pages/admin/AdminBilling";
+import AdminSupport from "./pages/admin/AdminSupport";
+import AdminAIUsage from "./pages/admin/AdminAIUsage";
+import AdminFeedback from "./pages/admin/AdminFeedback";
+import AdminAudit from "./pages/admin/AdminAudit";
+import AdminFlags from "./pages/admin/AdminFlags";
+import AdminBroadcast from "./pages/admin/AdminBroadcast";
 import Indicar from "./pages/Indicar";
 import ReferralRedirect from "./pages/ReferralRedirect";
 import NotFound from "./pages/NotFound";
@@ -263,6 +274,24 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <AdminRoute><AdminLayout /></AdminRoute>
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<AdminDashboard />} />
+              <Route path="usuarios" element={<AdminUsers />} />
+              <Route path="faturamento" element={<AdminRoute requireAdmin><AdminBilling /></AdminRoute>} />
+              <Route path="suporte" element={<AdminSupport />} />
+              <Route path="uso-ia" element={<AdminAIUsage />} />
+              <Route path="feedback" element={<AdminFeedback />} />
+              <Route path="auditoria" element={<AdminAudit />} />
+              <Route path="flags" element={<AdminRoute requireAdmin><AdminFlags /></AdminRoute>} />
+              <Route path="broadcast" element={<AdminRoute requireAdmin><AdminBroadcast /></AdminRoute>} />
+            </Route>
             <Route
               path="/indicar"
               element={
