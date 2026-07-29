@@ -193,7 +193,7 @@ export default function AdminFunnel() {
   const healthy = !err && data?.configured && metaIssues.length === 0 && totalDuplicates === 0;
 
   return (
-    <div className="space-y-5">
+    <div className="p-4 sm:p-6 space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
           Do clique no botão até a assinatura, com validação dos dados enviados.
