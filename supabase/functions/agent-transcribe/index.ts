@@ -1,6 +1,8 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { logAIUsage } from "../_shared/ai-logger.ts";
+import { estimateAudioSecondsFromBytes } from "../_shared/auth-helpers.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -135,6 +137,7 @@ serve(async (req) => {
     for (let i = 0; i < binaryString.length; i++) {
       audioBytes[i] = binaryString.charCodeAt(i);
     }
+    const audioSeconds = estimateAudioSecondsFromBytes(audioBytes.byteLength);
 
     // Determine extension/mime
     const mime = clientMimeType || "audio/webm";
@@ -157,6 +160,7 @@ serve(async (req) => {
     formData.append("tag_audio_events", "false");
     formData.append("diarize", "false");
 
+    const sttStart = Date.now();
     const aiResponse = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
       method: "POST",
       headers: { "xi-api-key": elevenLabsKey },
@@ -166,6 +170,10 @@ serve(async (req) => {
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
       console.error("[AGENT-TRANSCRIBE] ElevenLabs error:", aiResponse.status, errorText);
+      void logAIUsage({
+        userId: user.id, assistant: context || 'agent', functionName: 'agent-transcribe',
+        model: 'elevenlabs/scribe_v2', audioSeconds, latencyMs: Date.now() - sttStart, status: 'error',
+      });
 
       if (aiResponse.status === 429) {
         return new Response(
@@ -192,12 +200,16 @@ serve(async (req) => {
     const processingTime = Date.now() - startTime;
     console.log(`[AGENT-TRANSCRIBE] Transcription complete in ${processingTime}ms`);
     console.log(`[AGENT-TRANSCRIBE] Result preview: ${transcription.substring(0, 100)}...`);
+    void logAIUsage({
+      userId: user.id, assistant: context || 'agent', functionName: 'agent-transcribe',
+      model: 'elevenlabs/scribe_v2', audioSeconds, latencyMs: Date.now() - sttStart, status: 'ok',
+    });
 
     return new Response(
       JSON.stringify({
         success: true,
         transcription,
-        duration: 0, // Gemini doesn't provide duration
+        duration: audioSeconds,
         language: language,
         processingTime,
       }),

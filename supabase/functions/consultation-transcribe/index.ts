@@ -85,11 +85,13 @@ serve(async (req) => {
     console.log(`[CONSULTATION-TRANSCRIBE] Using file extension: ${fileExtension}, MIME: ${mimeType}`);
 
     // Convert base64 to binary
+    // Convert base64 to binary
     const binaryString = atob(audio);
     const bytes = new Uint8Array(binaryString.length);
     for (let i = 0; i < binaryString.length; i++) {
       bytes[i] = binaryString.charCodeAt(i);
     }
+    const audioSeconds = estimateAudioSecondsFromBytes(bytes.byteLength);
 
     // Create a File object for the Whisper API
     const audioFile = new File([bytes], `audio.${fileExtension}`, { type: mimeType });
@@ -114,6 +116,8 @@ serve(async (req) => {
     );
 
     // Call OpenAI Whisper API
+    // Call OpenAI Whisper API
+    const sttStart = Date.now();
     const whisperResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',
       headers: {
@@ -125,20 +129,21 @@ serve(async (req) => {
     if (!whisperResponse.ok) {
       const errorText = await whisperResponse.text();
       console.error('[CONSULTATION-TRANSCRIBE] Whisper API error:', whisperResponse.status, errorText);
-      
-      // Handle specific error cases
-      if (whisperResponse.status === 401) {
-        throw new Error('Chave de API inválida');
-      }
-      if (whisperResponse.status === 429) {
-        throw new Error('Limite de requisições excedido. Tente novamente em alguns segundos.');
-      }
-      
+      void logAIUsage({
+        userId: user.id, assistant: 'consultorio', functionName: 'consultation-transcribe',
+        model: 'openai/whisper-1', audioSeconds, latencyMs: Date.now() - sttStart, status: 'error',
+      });
+      if (whisperResponse.status === 401) throw new Error('Chave de API inválida');
+      if (whisperResponse.status === 429) throw new Error('Limite de requisições excedido. Tente novamente em alguns segundos.');
       throw new Error(`Erro na transcrição: ${whisperResponse.status}`);
     }
 
     const whisperResult = await whisperResponse.json();
     const transcription = whisperResult.text?.trim() || '';
+    void logAIUsage({
+      userId: user.id, assistant: 'consultorio', functionName: 'consultation-transcribe',
+      model: 'openai/whisper-1', audioSeconds, latencyMs: Date.now() - sttStart, status: 'ok',
+    });
     
     // Check for silence probability - Whisper returns this in verbose_json
     const noSpeechProb = whisperResult.segments?.[0]?.no_speech_prob ?? 0;
