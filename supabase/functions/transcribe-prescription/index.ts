@@ -68,7 +68,8 @@ serve(async (req) => {
 
     // Process audio in chunks
     const binaryAudio = processBase64Chunks(audio);
-    
+    const audioSeconds = estimateAudioSecondsFromBytes(binaryAudio.byteLength);
+
     // Prepare form data for Whisper transcription
     const formData = new FormData();
     const blob = new Blob([binaryAudio], { type: 'audio/webm' });
@@ -79,6 +80,7 @@ serve(async (req) => {
 
     // Step 1: Transcribe audio using OpenAI Whisper
     console.log('Transcrevendo áudio com Whisper...');
+    const sttStart = Date.now();
     const transcriptionResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',
       headers: {
@@ -90,12 +92,20 @@ serve(async (req) => {
     if (!transcriptionResponse.ok) {
       const error = await transcriptionResponse.text();
       console.error('Erro na transcrição:', error);
+      void logAIUsage({
+        userId, assistant: 'prescriptus', functionName: 'transcribe-prescription',
+        model: 'openai/whisper-1', audioSeconds, latencyMs: Date.now() - sttStart, status: 'error',
+      });
       throw new Error(`Erro ao transcrever áudio. Verifique se a chave OPENAI_API_KEY está válida.`);
     }
 
     const transcription = await transcriptionResponse.json();
     const transcribedText = transcription.text;
     console.log('Transcrição completa:', transcribedText);
+    void logAIUsage({
+      userId, assistant: 'prescriptus', functionName: 'transcribe-prescription',
+      model: 'openai/whisper-1', audioSeconds, latencyMs: Date.now() - sttStart, status: 'ok',
+    });
 
     if (!transcribedText || transcribedText.trim().length === 0) {
       throw new Error('Não foi possível transcrever o áudio. Tente gravar novamente com melhor qualidade.');
