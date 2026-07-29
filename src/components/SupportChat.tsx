@@ -112,14 +112,14 @@ export function SupportChat() {
       const lastUserMsg = [...messages].reverse().find((m) => m.role === "user")?.content?.slice(0, 120) ?? "Solicitação de suporte";
       const { data: ticket, error: tErr } = await supabase
         .from("support_tickets")
-        .insert({
+        .insert([{
           user_id: user.id,
           subject: lastUserMsg,
           status: "open",
           priority: "normal",
-          ai_context_snapshot: { messages },
+          ai_context_snapshot: { messages } as any,
           last_message_at: new Date().toISOString(),
-        })
+        }])
         .select()
         .single();
       if (tErr) throw tErr;
