@@ -117,7 +117,7 @@ export default function AdminSupport() {
         <h1 className="text-2xl font-display font-semibold">Suporte</h1>
         <p className="text-sm text-muted-foreground">
           {metrics
-            ? `${metrics.open + metrics.assigned} em aberto · ${metrics.resolved} resolvidos · ${metrics.total} total (global)`
+            ? `${metrics.open + metrics.assigned} em aberto · ${metrics.resolved_total} resolvidos · ${metrics.total} total (global)`
             : `${tickets.filter((t) => t.status !== "resolved").length} ticket(s) em aberto`}
         </p>
       </header>
