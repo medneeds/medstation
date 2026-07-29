@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Loader2, Mail, Zap, Shield, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { trackEvent } from "@/lib/analytics";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 
@@ -38,6 +39,7 @@ export function QuickCheckout({
     }
 
     setLoading(true);
+    trackEvent("checkout_started", { product, billing_period: billingPeriod });
     try {
       const { data, error } = await supabase.functions.invoke("guest-checkout", {
         body: { email, product, billingPeriod },
@@ -181,6 +183,7 @@ export function InlineCheckout({
     }
 
     setLoading(true);
+    trackEvent("checkout_started", { product, billing_period: billingPeriod });
     try {
       const { data, error } = await supabase.functions.invoke("guest-checkout", {
         body: { email, product, billingPeriod },

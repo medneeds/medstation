@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { trackEvent } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -43,6 +44,7 @@ export default function Welcome() {
       if (error) throw error;
 
       if (data.success) {
+        trackEvent("subscription_completed", { user_exists: !!data.userExists });
         setEmail(data.email);
         setUserExists(data.userExists);
         setPasswordWasSkipped(!!data.passwordWasSkipped);

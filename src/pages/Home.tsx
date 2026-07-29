@@ -15,6 +15,7 @@ import { TimeSavingsComparison } from "@/components/TimeSavingsComparison";
 import { FAQMiniDemo } from "@/components/FAQMiniDemo";
 import { HeroVideo } from "@/components/HeroVideo";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
+import { trackEvent } from "@/lib/analytics";
 
 type FAQItem = {
   q: string;
@@ -131,7 +132,7 @@ export default function Home() {
               variant="outline" 
               size="sm"
               className="text-xs md:text-sm h-8 md:h-9 px-3 md:px-4"
-              onClick={() => scrollToSection('cadastro')}
+              onClick={() => { trackEvent('cta_click', { cta: 'header_cadastro' }); scrollToSection('cadastro'); }}
             >
               Começar
             </Button>
@@ -277,7 +278,7 @@ export default function Home() {
             <Button 
               size="lg"
               className="shadow-medical hover:shadow-elevated transition-all hover:scale-105 px-8"
-              onClick={() => scrollToSection('planos')}
+              onClick={() => { trackEvent('cta_click', { cta: 'ver_planos' }); scrollToSection('planos'); }}
             >
               Ver planos e preços
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -420,7 +421,7 @@ export default function Home() {
                   <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Garantia 7 dias</li>
                 </ul>
               </div>
-              <Button className="w-full h-11 mt-5" onClick={() => navigate('/pricing')}>
+              <Button className="w-full h-11 mt-5" onClick={() => { trackEvent('cta_click', { cta: 'plano_pricing' }); navigate('/pricing'); }}>
                 Assinar Pro
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -455,7 +456,7 @@ export default function Home() {
                   <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Suporte prioritário · Garantia 7 dias</li>
                 </ul>
               </div>
-              <Button className="w-full h-11 mt-5" onClick={() => navigate('/pricing')}>
+              <Button className="w-full h-11 mt-5" onClick={() => { trackEvent('cta_click', { cta: 'plano_pricing' }); navigate('/pricing'); }}>
                 Assinar Pro 2
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
