@@ -55,6 +55,7 @@ import AdminAudit from "./pages/admin/AdminAudit";
 import AdminFlags from "./pages/admin/AdminFlags";
 import AdminBroadcast from "./pages/admin/AdminBroadcast";
 import AdminReferrals from "./pages/admin/AdminReferrals";
+import AdminLogin from "./pages/admin/AdminLogin";
 import Indicar from "./pages/Indicar";
 import ReferralRedirect from "./pages/ReferralRedirect";
 import NotFound from "./pages/NotFound";
@@ -275,13 +276,10 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route path="/admin/login" element={<AdminLogin />} />
             <Route
               path="/admin"
-              element={
-                <ProtectedRoute>
-                  <AdminRoute><AdminLayout /></AdminRoute>
-                </ProtectedRoute>
-              }
+              element={<AdminRoute><AdminLayout /></AdminRoute>}
             >
               <Route index element={<AdminDashboard />} />
               <Route path="usuarios" element={<AdminUsers />} />
