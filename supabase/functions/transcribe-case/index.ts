@@ -120,6 +120,7 @@ Campos:
 - notes: observações e histórico
 - tags: array com especialidades, sintomas, diagnósticos`;
 
+    const extractionStart = Date.now();
     const extractionResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
@@ -152,6 +153,10 @@ Campos:
     });
 
     if (!extractionResponse.ok) {
+      void logAIUsage({
+        userId, assistant: 'consultorio', functionName: 'transcribe-case:extract',
+        model: 'google/gemini-3-flash-preview', latencyMs: Date.now() - extractionStart, status: 'error',
+      });
       if (extractionResponse.status === 429) throw new Error('Muitas requisições. Aguarde alguns segundos.');
       if (extractionResponse.status === 402) throw new Error('Créditos esgotados.');
       throw new Error('Erro ao processar com IA');
@@ -159,6 +164,14 @@ Campos:
 
     const ed = await extractionResponse.json();
     const toolCall = ed.choices?.[0]?.message?.tool_calls?.[0];
+    void logAIUsage({
+      userId, assistant: 'consultorio', functionName: 'transcribe-case:extract',
+      model: 'google/gemini-3-flash-preview',
+      inputTokens: ed.usage?.prompt_tokens ?? 0,
+      outputTokens: ed.usage?.completion_tokens ?? 0,
+      totalTokens: ed.usage?.total_tokens ?? 0,
+      latencyMs: Date.now() - extractionStart, status: 'ok',
+    });
     if (!toolCall?.function?.arguments) throw new Error('IA não retornou dados estruturados');
 
     const caseData = JSON.parse(toolCall.function.arguments);
