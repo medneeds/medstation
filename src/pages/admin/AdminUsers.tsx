@@ -149,6 +149,7 @@ export default function AdminUsers() {
           <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos os status</SelectItem>
+            <SelectItem value="paying">Pagantes (todos)</SelectItem>
             <SelectItem value="active">Ativos</SelectItem>
             <SelectItem value="trialing">Trial</SelectItem>
             <SelectItem value="courtesy">Cortesia</SelectItem>
