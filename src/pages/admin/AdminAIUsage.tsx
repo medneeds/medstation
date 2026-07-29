@@ -114,7 +114,7 @@ export default function AdminAIUsage() {
   };
 
   return (
-    <div className="p-6 space-y-5">
+    <div className="p-4 sm:p-6 space-y-5">
       <header className="flex flex-wrap items-center gap-3 justify-between">
         <div>
           <h1 className="text-2xl font-display font-semibold">Uso de IA</h1>

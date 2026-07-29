@@ -112,7 +112,7 @@ export default function AdminSupport() {
   const selected = tickets.find((t) => t.id === selectedId);
 
   return (
-    <div className="p-6 space-y-5 h-screen flex flex-col">
+    <div className="p-4 sm:p-6 space-y-5 h-screen flex flex-col">
       <header>
         <h1 className="text-2xl font-display font-semibold">Suporte</h1>
         <p className="text-sm text-muted-foreground">

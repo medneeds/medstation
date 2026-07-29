@@ -133,7 +133,7 @@ export default function AdminAnalytics() {
   const totalUniques = (data?.daily ?? []).reduce((a, b) => a + b.uniques, 0);
 
   return (
-    <div className="space-y-5">
+    <div className="p-4 sm:p-6 space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-display text-xl font-semibold flex items-center gap-2">
