@@ -4,15 +4,20 @@ import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   Bell, CheckCheck, LifeBuoy, UserPlus, Trophy, CreditCard,
-  Dot, Loader2, Inbox, ArrowRight, RotateCcw,
+  Dot, Loader2, Inbox, ArrowRight, RotateCcw, Settings2, ChevronLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { useAdminNotifications, type AdminNotification } from "@/hooks/useAdminNotifications";
+import {
+  useAdminNotifications,
+  PREF_LABELS,
+  type AdminNotification,
+} from "@/hooks/useAdminNotifications";
 
 const META: Record<string, { icon: typeof Bell; tone: string; label: string }> = {
   support_ticket: { icon: LifeBuoy, tone: "text-destructive bg-destructive/10", label: "Suporte" },
@@ -28,8 +33,9 @@ function metaFor(type: string) {
 export function AdminNotificationBell() {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"all" | "unread">("all");
+  const [settings, setSettings] = useState(false);
   const navigate = useNavigate();
-  const { items, loading, unreadCount, markAsRead, markAsUnread, markAllAsRead, refresh } =
+  const { items, loading, unreadCount, prefs, updatePrefs, markAsRead, markAsUnread, markAllAsRead, refresh } =
     useAdminNotifications(true);
 
   const visible = useMemo(
@@ -69,33 +75,87 @@ export function AdminNotificationBell() {
 
       <PopoverContent align="end" sideOffset={10} className="w-[380px] p-0 overflow-hidden">
         <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border/60">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold leading-none">Notificações</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {unreadCount > 0 ? `${unreadCount} não lida${unreadCount > 1 ? "s" : ""}` : "Tudo em dia"}
-            </p>
+          <div className="min-w-0 flex items-center gap-2">
+            {settings && (
+              <Button variant="ghost" size="icon" className="h-7 w-7 -ml-1" onClick={() => setSettings(false)}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            )}
+            <div className="min-w-0">
+              <p className="text-sm font-semibold leading-none">
+                {settings ? "Preferências" : "Notificações"}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {settings
+                  ? "Escolha o que deseja receber"
+                  : unreadCount > 0
+                    ? `${unreadCount} não lida${unreadCount > 1 ? "s" : ""}`
+                    : "Tudo em dia"}
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => void refresh()}>
-                  <RotateCcw className="h-3.5 w-3.5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Atualizar</TooltipContent>
-            </Tooltip>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 text-xs"
-              disabled={unreadCount === 0}
-              onClick={() => void markAllAsRead()}
-            >
-              <CheckCheck className="h-3.5 w-3.5 mr-1.5" /> Marcar todas
-            </Button>
-          </div>
+          {!settings && (
+            <div className="flex items-center gap-1">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => void refresh()}>
+                    <RotateCcw className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Atualizar</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSettings(true)}>
+                    <Settings2 className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Configurações</TooltipContent>
+              </Tooltip>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 text-xs"
+                disabled={unreadCount === 0}
+                onClick={() => void markAllAsRead()}
+              >
+                <CheckCheck className="h-3.5 w-3.5 mr-1.5" /> Marcar todas
+              </Button>
+            </div>
+          )}
         </div>
 
+        {settings ? (
+          <div className="p-3 space-y-1.5">
+            {PREF_LABELS.map((p) => {
+              const m = metaFor(p.key);
+              const Icon = m.icon;
+              return (
+                <div
+                  key={p.key}
+                  className="flex items-center gap-3 rounded-lg p-3 hover:bg-muted/50 transition-colors"
+                >
+                  <div className={cn("h-8 w-8 shrink-0 rounded-full flex items-center justify-center", m.tone)}>
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium leading-none">{p.label}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{p.hint}</p>
+                  </div>
+                  <Switch
+                    checked={prefs[p.key]}
+                    onCheckedChange={(v) => void updatePrefs({ [p.key]: v })}
+                    aria-label={p.label}
+                  />
+                </div>
+              );
+            })}
+            <p className="text-[11px] text-muted-foreground px-3 pt-1">
+              As preferências ficam salvas na sua conta e valem em qualquer dispositivo.
+            </p>
+          </div>
+        ) : (
+        <>
         <div className="px-3 pt-3">
           <Tabs value={tab} onValueChange={(v) => setTab(v as "all" | "unread")}>
             <TabsList className="grid grid-cols-2 h-8 w-full">
@@ -106,6 +166,7 @@ export function AdminNotificationBell() {
             </TabsList>
           </Tabs>
         </div>
+
 
         <ScrollArea className="h-[380px]">
           {loading ? (
@@ -187,6 +248,8 @@ export function AdminNotificationBell() {
             </ul>
           )}
         </ScrollArea>
+        </>
+        )}
       </PopoverContent>
     </Popover>
   );
