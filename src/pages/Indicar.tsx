@@ -21,6 +21,7 @@ export default function Indicar() {
   const [code, setCode] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [maxRewards, setMaxRewards] = useState(3);
 
   useEffect(() => {
     (async () => {
@@ -34,6 +35,13 @@ export default function Indicar() {
           .select("id,status,referred_email,reward_applied_at,created_at")
           .order("created_at", { ascending: false });
         setReferrals(rows || []);
+
+        const { data: settings } = await supabase
+          .from("referral_settings")
+          .select("max_rewards_per_referrer")
+          .eq("id", 1)
+          .maybeSingle();
+        if (settings?.max_rewards_per_referrer) setMaxRewards(settings.max_rewards_per_referrer);
       } catch (e: any) {
         toast({ variant: "destructive", title: "Erro", description: e.message });
       } finally {
@@ -51,6 +59,8 @@ export default function Indicar() {
     pending: referrals.filter((r) => r.status === "pending").length,
     monthsEarned: referrals.filter((r) => r.status === "rewarded").length,
   };
+  const remaining = Math.max(0, maxRewards - stats.monthsEarned);
+
 
   const copyLink = async () => {
     if (!shareLink) return;
