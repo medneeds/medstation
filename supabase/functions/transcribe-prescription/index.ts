@@ -222,20 +222,29 @@ Extraia todos os dados mencionados incluindo: paciente (se mencionado), diagnós
     if (!extractionResponse.ok) {
       const error = await extractionResponse.text();
       console.error('Erro na extração IA:', error);
-      
-      // Se houver erro de rate limit ou payment
+      void logAIUsage({
+        userId, assistant: 'prescriptus', functionName: 'transcribe-prescription:extract',
+        model: 'google/gemini-3-flash-preview', latencyMs: Date.now() - extractionStart, status: 'error',
+      });
       if (extractionResponse.status === 429) {
         throw new Error('Limite de uso da IA atingido. Tente novamente em alguns instantes.');
       }
       if (extractionResponse.status === 402) {
         throw new Error('Créditos da IA esgotados. Adicione créditos em Settings -> Workspace -> Usage.');
       }
-      
       throw new Error(`Erro ao processar com IA: ${error}`);
     }
 
     const extractionResult = await extractionResponse.json();
     console.log('Resposta da IA:', JSON.stringify(extractionResult, null, 2));
+    void logAIUsage({
+      userId, assistant: 'prescriptus', functionName: 'transcribe-prescription:extract',
+      model: 'google/gemini-3-flash-preview',
+      inputTokens: extractionResult.usage?.prompt_tokens ?? 0,
+      outputTokens: extractionResult.usage?.completion_tokens ?? 0,
+      totalTokens: extractionResult.usage?.total_tokens ?? 0,
+      latencyMs: Date.now() - extractionStart, status: 'ok',
+    });
 
     // Parse the tool call result
     const toolCall = extractionResult.choices?.[0]?.message?.tool_calls?.[0];
