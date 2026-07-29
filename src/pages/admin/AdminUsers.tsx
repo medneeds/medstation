@@ -6,8 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Search, RefreshCw, Shield, Gift, KeyRound, CheckCircle2, Loader2 } from "lucide-react";
+import { Search, RefreshCw, Shield, Gift, KeyRound, Loader2, ShieldCheck, ShieldOff, Gift as GiftIcon } from "lucide-react";
 
 interface UserRow {
   user_id: string;
@@ -41,6 +44,7 @@ export default function AdminUsers() {
   const [status, setStatus] = useState("all");
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<UserRow | null>(null);
+  const [bulkOpen, setBulkOpen] = useState(false);
 
   const load = async (refresh = false) => {
     setLoading(true);
@@ -72,9 +76,14 @@ export default function AdminUsers() {
           <h1 className="text-2xl font-display font-semibold">Usuários</h1>
           <p className="text-sm text-muted-foreground">{total} usuário(s)</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => load(true)} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} /> Atualizar
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => setBulkOpen(true)}>
+            <GiftIcon className="h-4 w-4 mr-2" /> Cortesia em massa
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => load(true)} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} /> Atualizar
+          </Button>
+        </div>
       </header>
 
       <div className="flex gap-2 items-center">
@@ -150,48 +159,70 @@ export default function AdminUsers() {
       </div>
 
       <UserDetailSheet user={selected} onClose={() => setSelected(null)} onChanged={() => load(true)} />
+      <BulkCourtesyDialog open={bulkOpen} onClose={() => setBulkOpen(false)} onDone={() => load(true)} />
     </div>
   );
 }
 
 function UserDetailSheet({ user, onClose, onChanged }: { user: UserRow | null; onClose: () => void; onChanged: () => void }) {
   const [busy, setBusy] = useState<string | null>(null);
+  const [roles, setRoles] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase.from("user_roles").select("role").eq("user_id", user.user_id);
+      setRoles((data || []).map((r: any) => r.role));
+    })();
+  }, [user]);
+
+  const call = async (fn: string, body: any) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${fn}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+      body: JSON.stringify(body),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
+    return json;
+  };
 
   const resetPassword = async () => {
     if (!user) return;
     setBusy("reset");
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-reset-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
-        body: JSON.stringify({ email: user.email }),
-      });
-      if (!res.ok) throw new Error((await res.json()).error);
+      await call("admin-reset-password", { email: user.email });
       toast.success("Email de reset enviado");
-    } catch (e: any) {
-      toast.error(`Erro: ${e.message}`);
-    } finally { setBusy(null); }
+    } catch (e: any) { toast.error(`Erro: ${e.message}`); }
+    finally { setBusy(null); }
   };
 
   const grantCourtesy = async () => {
     if (!user) return;
-    const days = prompt("Quantos dias de cortesia? (deixe vazio para indefinido)");
+    const days = prompt("Quantos dias de cortesia? (vazio = indefinido)");
     const reason = prompt("Motivo:") || "Concedido via /admin";
     setBusy("courtesy");
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-grant-courtesy`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
-        body: JSON.stringify({ user_id: user.user_id, reason, expires_days: days ? parseInt(days) : null }),
-      });
-      if (!res.ok) throw new Error((await res.json()).error);
+      const expires_at = days ? new Date(Date.now() + parseInt(days) * 86400000).toISOString() : null;
+      await call("admin-grant-courtesy", { action: "grant", target_user_id: user.user_id, reason, expires_at });
       toast.success("Cortesia concedida");
       onChanged();
-    } catch (e: any) {
-      toast.error(`Erro: ${e.message}`);
-    } finally { setBusy(null); }
+    } catch (e: any) { toast.error(`Erro: ${e.message}`); }
+    finally { setBusy(null); }
+  };
+
+  const setRole = async (role: "admin" | "support", grant: boolean) => {
+    if (!user) return;
+    setBusy(`role-${role}`);
+    try {
+      await call("admin-set-role", { action: grant ? "grant" : "revoke", target_user_id: user.user_id, role });
+      toast.success(grant ? `Role "${role}" concedida` : `Role "${role}" revogada`);
+      const { data } = await supabase.from("user_roles").select("role").eq("user_id", user.user_id);
+      setRoles((data || []).map((r: any) => r.role));
+      onChanged();
+    } catch (e: any) { toast.error(`Erro: ${e.message}`); }
+    finally { setBusy(null); }
   };
 
   return (
@@ -219,6 +250,15 @@ function UserDetailSheet({ user, onClose, onChanged }: { user: UserRow | null; o
                 <div className="text-xs text-muted-foreground">Fim assinatura</div>
                 <div>{user.subscription_end ? new Date(user.subscription_end).toLocaleDateString("pt-BR") : "—"}</div>
               </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">Roles</div>
+                <div className="flex flex-wrap gap-1">
+                  {roles.length === 0 && <span className="text-xs text-muted-foreground">Nenhuma role</span>}
+                  {roles.map((r) => (
+                    <Badge key={r} variant="outline" className={r === "admin" ? STATUS_COLORS.admin : ""}>{r}</Badge>
+                  ))}
+                </div>
+              </div>
               {user.courtesy && (
                 <div className="p-3 rounded-md bg-purple-500/5 border border-purple-500/20">
                   <div className="text-xs font-medium text-purple-600 mb-1">Cortesia ativa</div>
@@ -237,16 +277,123 @@ function UserDetailSheet({ user, onClose, onChanged }: { user: UserRow | null; o
                 <Button variant="outline" size="sm" className="w-full justify-start" onClick={grantCourtesy} disabled={busy === "courtesy"}>
                   <Gift className="h-4 w-4 mr-2" /> {busy === "courtesy" ? "Concedendo..." : "Conceder cortesia"}
                 </Button>
-                {user.is_admin && (
-                  <div className="flex items-center gap-2 p-2 rounded-md bg-primary/5 border border-primary/20 text-xs">
-                    <Shield className="h-3.5 w-3.5 text-primary" /> Este usuário é admin
-                  </div>
-                )}
+              </div>
+
+              <div className="pt-4 space-y-2 border-t border-border/60">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Roles administrativas</div>
+                {(["admin", "support"] as const).map((r) => {
+                  const has = roles.includes(r);
+                  return (
+                    <Button
+                      key={r}
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-start"
+                      disabled={busy === `role-${r}`}
+                      onClick={() => setRole(r, !has)}
+                    >
+                      {has ? <ShieldOff className="h-4 w-4 mr-2" /> : <ShieldCheck className="h-4 w-4 mr-2" />}
+                      {busy === `role-${r}` ? "Salvando..." : (has ? `Remover ${r}` : `Promover a ${r}`)}
+                    </Button>
+                  );
+                })}
+                <p className="text-2xs text-muted-foreground pt-1">
+                  Somente admins podem promover ou remover roles.
+                </p>
               </div>
             </div>
           </>
         )}
       </SheetContent>
     </Sheet>
+  );
+}
+
+function BulkCourtesyDialog({ open, onClose, onDone }: { open: boolean; onClose: () => void; onDone: () => void }) {
+  const [emails, setEmails] = useState("");
+  const [days, setDays] = useState("");
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [results, setResults] = useState<any[] | null>(null);
+
+  const submit = async () => {
+    const list = emails.split(/[\s,;]+/).map((e) => e.trim()).filter(Boolean);
+    if (list.length === 0) { toast.error("Informe ao menos 1 email"); return; }
+    setBusy(true);
+    setResults(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-bulk-courtesy`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({
+          emails: list,
+          reason: reason.trim() || null,
+          expires_days: days ? parseInt(days) : null,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
+      setResults(json.results);
+      const ok = json.results.filter((r: any) => r.status === "granted").length;
+      toast.success(`${ok}/${list.length} cortesia(s) concedida(s)`);
+      onDone();
+    } catch (e: any) {
+      toast.error(`Erro: ${e.message}`);
+    } finally { setBusy(false); }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Cortesia em massa</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label>Emails (separados por vírgula, quebra de linha ou espaço)</Label>
+            <Textarea
+              value={emails}
+              onChange={(e) => setEmails(e.target.value)}
+              placeholder="joao@exemplo.com, maria@exemplo.com..."
+              className="min-h-[120px] font-mono text-xs mt-1"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Dias de cortesia</Label>
+              <Input type="number" value={days} onChange={(e) => setDays(e.target.value)} placeholder="vazio = indefinido" />
+            </div>
+            <div>
+              <Label>Motivo</Label>
+              <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Ex: Campanha lançamento" />
+            </div>
+          </div>
+          {results && (
+            <Card className="p-3 max-h-48 overflow-y-auto text-xs space-y-1">
+              {results.map((r, i) => (
+                <div key={i} className="flex justify-between font-mono">
+                  <span>{r.email}</span>
+                  <Badge variant="outline" className={
+                    r.status === "granted" ? STATUS_COLORS.active :
+                    r.status === "not_found" ? STATUS_COLORS.none :
+                    STATUS_COLORS.canceled
+                  }>
+                    {r.status}
+                  </Badge>
+                </div>
+              ))}
+            </Card>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Fechar</Button>
+          <Button onClick={submit} disabled={busy}>
+            {busy ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Gift className="h-4 w-4 mr-2" />}
+            Conceder
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
