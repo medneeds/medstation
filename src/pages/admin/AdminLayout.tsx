@@ -58,6 +58,11 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
   }, []);
 
   const items = NAV.filter((n) => !n.adminOnly || isAdmin);
+  const currentLabel =
+    [...NAV].sort((a, b) => b.to.length - a.to.length).find((n) =>
+      n.exact ? pathname === n.to : pathname.startsWith(n.to),
+    )?.label ?? "Admin";
+
 
   return (
     <TooltipProvider delayDuration={0}>
