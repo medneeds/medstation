@@ -293,6 +293,8 @@ const App = () => (
               <Route path="suporte" element={<AdminSupport />} />
               <Route path="analytics" element={<AdminAnalytics />} />
               <Route path="funil" element={<AdminFunnel />} />
+              <Route path="audiencia" element={<AdminRoute requireAdmin><AdminAudience /></AdminRoute>} />
+
               <Route path="uso-ia" element={<AdminAIUsage />} />
               <Route path="feedback" element={<AdminFeedback />} />
               <Route path="auditoria" element={<AdminAudit />} />
