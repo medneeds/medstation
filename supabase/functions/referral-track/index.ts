@@ -32,6 +32,19 @@ serve(async (req) => {
       });
     }
 
+    const { data: settings } = await supabase
+      .from("referral_settings")
+      .select("active, require_crm, block_existing_referrers")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (settings && settings.active === false) {
+      return new Response(JSON.stringify({ ok: false, reason: "program_disabled" }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Get the referrer
     const { data: refRow } = await supabase
       .from("referral_codes")
@@ -50,6 +63,20 @@ serve(async (req) => {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Anti-fraud: whoever already referred someone cannot be referred (no 50% off)
+    if (settings?.block_existing_referrers !== false) {
+      const { count: ownReferrals } = await supabase
+        .from("referrals")
+        .select("id", { count: "exact", head: true })
+        .eq("referrer_id", user.id);
+      if ((ownReferrals ?? 0) > 0) {
+        return new Response(JSON.stringify({ ok: false, reason: "already_referrer" }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Already tracked?
