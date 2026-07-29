@@ -3,13 +3,15 @@ import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, CreditCard, MessageSquare, Activity,
   Star, Shield, ToggleLeft, Megaphone, ArrowLeft, LogOut, Gift,
-  PanelLeftClose, PanelLeftOpen,
+  PanelLeftClose, PanelLeftOpen, Sun, Moon,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 const NAV = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -30,6 +32,8 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
   const { role, isAdmin } = useAdminRole();
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const { theme, setTheme } = useTheme();
+  const isDark = theme !== "light";
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem(STORAGE_KEY) === "1";
@@ -123,6 +127,20 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
               <>
                 <Tooltip>
                   <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="w-full h-9"
+                      onClick={() => setTheme(isDark ? "light" : "dark")}
+                      aria-label={isDark ? "Ativar modo claro" : "Ativar modo escuro"}
+                    >
+                      {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">{isDark ? "Modo claro" : "Modo escuro"}</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
                     <Button variant="ghost" size="icon" className="w-full h-9" onClick={() => navigate("/dashboard")}>
                       <ArrowLeft className="h-4 w-4" />
                     </Button>
@@ -145,6 +163,40 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
               </>
             ) : (
               <>
+                <div
+                  role="tablist"
+                  aria-label="Tema do painel"
+                  className="grid grid-cols-2 gap-1 rounded-md border border-border/60 bg-muted/40 p-1"
+                >
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={!isDark}
+                    onClick={() => setTheme("light")}
+                    className={cn(
+                      "inline-flex items-center justify-center gap-1.5 rounded-sm h-7 text-xs transition-colors",
+                      !isDark
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    <Sun className="h-3.5 w-3.5" /> Claro
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={isDark}
+                    onClick={() => setTheme("dark")}
+                    className={cn(
+                      "inline-flex items-center justify-center gap-1.5 rounded-sm h-7 text-xs transition-colors",
+                      isDark
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    <Moon className="h-3.5 w-3.5" /> Escuro
+                  </button>
+                </div>
                 <Button variant="ghost" size="sm" className="w-full justify-start" onClick={() => navigate("/dashboard")}>
                   <ArrowLeft className="h-4 w-4 mr-2" /> Voltar ao app
                 </Button>
