@@ -59,6 +59,7 @@ import AdminReferrals from "./pages/admin/AdminReferrals";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminFunnel from "./pages/admin/AdminFunnel";
+import AdminAudience from "./pages/admin/AdminAudience";
 import Indicar from "./pages/Indicar";
 import ReferralRedirect from "./pages/ReferralRedirect";
 import NotFound from "./pages/NotFound";
@@ -292,6 +293,8 @@ const App = () => (
               <Route path="suporte" element={<AdminSupport />} />
               <Route path="analytics" element={<AdminAnalytics />} />
               <Route path="funil" element={<AdminFunnel />} />
+              <Route path="audiencia" element={<AdminRoute requireAdmin><AdminAudience /></AdminRoute>} />
+
               <Route path="uso-ia" element={<AdminAIUsage />} />
               <Route path="feedback" element={<AdminFeedback />} />
               <Route path="auditoria" element={<AdminAudit />} />
