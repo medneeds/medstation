@@ -1,4 +1,5 @@
 import { ReactNode, useState } from "react";
+import { trackCheckoutStarted } from "@/lib/analytics";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,15 @@ export function PremiumAgentGuard({ children, agentName }: PremiumAgentGuardProp
         navigate("/auth");
         return;
       }
+
+      trackCheckoutStarted({
+        origin: "agent_guard",
+        plan: "agents_monthly",
+        product: "agents",
+        billing_period: "monthly",
+        auth_state: "authenticated",
+        agent: agentName,
+      });
 
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: { billingPeriod: "monthly", product: "agents" },

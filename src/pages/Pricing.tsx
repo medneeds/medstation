@@ -11,6 +11,7 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { GuestEmailDialog } from "@/components/GuestEmailDialog";
 import type { PlanSlug } from "@/lib/subscription-tiers";
 import { TimeSavingsComparison } from "@/components/TimeSavingsComparison";
+import { trackCtaClick, trackCheckoutStarted } from "@/lib/analytics";
 
 const proAgents = [
   "Examinus", "Clínicus", "Scorius", "Numerus", "Prescriptus",
@@ -49,6 +50,13 @@ export default function Pricing() {
 
   const runGuestCheckout = async (plan: PlanSlug, email: string) => {
     setLoadingPlan(plan);
+    trackCheckoutStarted({
+      origin: "pricing_page",
+      plan,
+      billing_period: billingPeriod,
+      auth_state: "guest",
+      coupon: couponApplied ? couponCode.trim() : null,
+    });
     try {
       const { data, error } = await supabase.functions.invoke("guest-checkout", {
         body: { email, plan, couponCode: couponApplied ? couponCode.trim() : undefined },
@@ -64,10 +72,24 @@ export default function Pricing() {
 
   const startCheckout = async (plan: PlanSlug) => {
     setLoadingPlan(plan);
+    trackCtaClick({
+      cta: `pricing_${plan}`,
+      section: "pricing_page",
+      plan,
+      billing_period: billingPeriod,
+      destination: "checkout",
+    });
     try {
       const { data: { session } } = await supabase.auth.getSession();
 
       if (session) {
+        trackCheckoutStarted({
+          origin: "pricing_page",
+          plan,
+          billing_period: billingPeriod,
+          auth_state: "authenticated",
+          coupon: couponApplied ? couponCode.trim() : null,
+        });
         const { data, error } = await supabase.functions.invoke("create-checkout", {
           body: { plan, couponCode: couponApplied ? couponCode.trim() : undefined },
         });

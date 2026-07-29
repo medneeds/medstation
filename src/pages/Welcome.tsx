@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { trackEvent } from "@/lib/analytics";
+import { trackSubscriptionCompleted } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -44,7 +44,11 @@ export default function Welcome() {
       if (error) throw error;
 
       if (data.success) {
-        trackEvent("subscription_completed", { user_exists: !!data.userExists });
+        trackSubscriptionCompleted({
+          user_exists: !!data.userExists,
+          plan: data.plan ?? undefined,
+          amount_brl: typeof data.amountTotal === "number" ? data.amountTotal / 100 : undefined,
+        });
         setEmail(data.email);
         setUserExists(data.userExists);
         setPasswordWasSkipped(!!data.passwordWasSkipped);
