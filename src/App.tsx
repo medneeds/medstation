@@ -275,13 +275,10 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route path="/admin/login" element={<AdminLogin />} />
             <Route
               path="/admin"
-              element={
-                <ProtectedRoute>
-                  <AdminRoute><AdminLayout /></AdminRoute>
-                </ProtectedRoute>
-              }
+              element={<AdminRoute><AdminLayout /></AdminRoute>}
             >
               <Route index element={<AdminDashboard />} />
               <Route path="usuarios" element={<AdminUsers />} />
