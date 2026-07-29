@@ -36,17 +36,34 @@ const STATUS_COLORS: Record<string, string> = {
   admin: "bg-primary/10 text-primary border-primary/20",
 } as const;
 
+interface Stats {
+  total_users: number;
+  active: number;
+  trialing: number;
+  past_due: number;
+  canceled: number;
+  courtesy: number;
+  admin: number;
+  none: number;
+  paying_total: number;
+  mrr_cents: number;
+  currency: string;
+}
+
 export default function AdminUsers() {
   const [records, setRecords] = useState<UserRow[]>([]);
   const [total, setTotal] = useState(0);
+  const [stats, setStats] = useState<Stats | null>(null);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [loading, setLoading] = useState(false);
+  const [refreshingStripe, setRefreshingStripe] = useState(false);
   const [selected, setSelected] = useState<UserRow | null>(null);
   const [bulkOpen, setBulkOpen] = useState(false);
 
   const load = async (refresh = false) => {
+    if (refresh) setRefreshingStripe(true);
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page), perPage: "25", search, status });
@@ -58,33 +75,64 @@ export default function AdminUsers() {
       if (!res.ok) throw new Error(data.error);
       setRecords(data.records);
       setTotal(data.total);
+      setStats(data.stats || null);
     } catch (e: any) {
       toast.error(`Erro: ${e.message}`);
     } finally {
       setLoading(false);
+      setRefreshingStripe(false);
     }
   };
 
   useEffect(() => { load(); }, [page, status]);
 
   const totalPages = Math.max(1, Math.ceil(total / 25));
+  const fmtMoney = (cents: number, currency: string) =>
+    new Intl.NumberFormat("pt-BR", { style: "currency", currency: currency.toUpperCase() }).format(cents / 100);
+  const filterActive = status !== "all" || search.trim().length > 0;
 
   return (
     <div className="p-6 space-y-5">
-      <header className="flex items-center justify-between">
+      <header className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-display font-semibold">Usuários</h1>
-          <p className="text-sm text-muted-foreground">{total} usuário(s)</p>
+          <p className="text-sm text-muted-foreground">
+            {stats ? `${stats.total_users} usuários no total` : "—"}
+            {filterActive && ` · ${total} no filtro atual`}
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => setBulkOpen(true)}>
             <GiftIcon className="h-4 w-4 mr-2" /> Cortesia em massa
           </Button>
-          <Button variant="outline" size="sm" onClick={() => load(true)} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} /> Atualizar
+          <Button variant="outline" size="sm" onClick={() => load(false)} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading && !refreshingStripe ? "animate-spin" : ""}`} /> Atualizar
+          </Button>
+          <Button variant="default" size="sm" onClick={() => load(true)} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${refreshingStripe ? "animate-spin" : ""}`} /> Recarregar Stripe
           </Button>
         </div>
       </header>
+
+      {stats && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 text-xs">
+          {[
+            { label: "Ativos", value: stats.active, color: "text-emerald-600" },
+            { label: "Trial", value: stats.trialing, color: "text-sky-600" },
+            { label: "Em atraso", value: stats.past_due, color: "text-amber-600" },
+            { label: "Cortesia", value: stats.courtesy, color: "text-purple-600" },
+            { label: "Cancelados", value: stats.canceled, color: "text-red-600" },
+            { label: "Admins", value: stats.admin, color: "text-primary" },
+            { label: "Sem plano", value: stats.none, color: "text-muted-foreground" },
+            { label: "MRR", value: fmtMoney(stats.mrr_cents, stats.currency), color: "text-emerald-600" },
+          ].map((s) => (
+            <Card key={s.label} className="px-3 py-2">
+              <div className="text-2xs uppercase tracking-wider text-muted-foreground">{s.label}</div>
+              <div className={`text-base font-display font-semibold ${s.color}`}>{s.value}</div>
+            </Card>
+          ))}
+        </div>
+      )}
 
       <div className="flex gap-2 items-center">
         <div className="relative flex-1 max-w-md">
