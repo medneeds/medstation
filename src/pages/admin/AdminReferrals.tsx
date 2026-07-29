@@ -204,6 +204,20 @@ export default function AdminReferrals() {
             <p className="text-[11px] text-muted-foreground">Aplicados via trial_end na assinatura ativa do indicador.</p>
           </div>
 
+          <div className="space-y-1.5">
+            <Label htmlFor="max-rewards">Limite de recompensas por indicador</Label>
+            <Input
+              id="max-rewards"
+              type="number"
+              min={0}
+              max={50}
+              value={settings.max_rewards_per_referrer}
+              onChange={(e) => setSettings({ ...settings, max_rewards_per_referrer: parseInt(e.target.value) || 0 })}
+            />
+            <p className="text-[11px] text-muted-foreground">Máximo de indicações pagas que geram bônus (padrão: 3 meses grátis).</p>
+          </div>
+
+
           <div className="space-y-1.5 flex flex-col justify-center">
             <div className="flex items-center justify-between p-3 rounded-md bg-muted/30 border border-border/40">
               <div>
