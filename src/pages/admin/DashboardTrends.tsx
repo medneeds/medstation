@@ -24,6 +24,7 @@ interface TrendsResponse {
   subs_growth: { date: string; count: number }[];
   mrr_curve: { date: string; mrr_cents: number }[];
   ai_daily: { date: string; cost_usd: number; tokens: number }[];
+  visitors?: { date: string; views: number; unique: number }[];
 }
 
 const RANGES: { label: string; value: number }[] = [
@@ -114,7 +115,9 @@ export default function DashboardTrends() {
     const subsEnd = data.subs_growth[data.subs_growth.length - 1]?.count ?? 0;
     const mrrEnd = data.mrr_curve[data.mrr_curve.length - 1]?.mrr_cents ?? 0;
     const mrrStart = data.mrr_curve[0]?.mrr_cents ?? 0;
-    return { signupsTotal, aiTotal, subsStart, subsEnd, mrrStart, mrrEnd };
+    const visitorsTotal = (data.visitors ?? []).reduce((s, d) => s + d.views, 0);
+    const uniqueTotal = (data.visitors ?? []).reduce((s, d) => s + d.unique, 0);
+    return { signupsTotal, aiTotal, subsStart, subsEnd, mrrStart, mrrEnd, visitorsTotal, uniqueTotal };
   }, [data]);
 
   const fmtMoney = (cents: number) =>
@@ -295,6 +298,52 @@ export default function DashboardTrends() {
                   stroke="hsl(var(--primary))"
                   strokeWidth={2}
                   fill="url(#aiFill)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </ChartCard>
+
+          <ChartCard
+            title="Visitantes da landing"
+            subtitle="Página de vendas · views totais vs sessões únicas"
+            value={summary ? summary.visitorsTotal.toLocaleString("pt-BR") : ""}
+            delta={summary ? `${summary.uniqueTotal.toLocaleString("pt-BR")} sessões únicas` : undefined}
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data.visitors ?? []} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="viewsFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.28} />
+                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="uniqueFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.5} />
+                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.35} vertical={false} />
+                <XAxis dataKey="date" tick={axisTick} tickFormatter={shortDate} minTickGap={30} />
+                <YAxis tick={axisTick} allowDecimals={false} width={40} />
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  labelFormatter={(l) => shortDate(l as string)}
+                  formatter={(v: number, name) => [v, name === "views" ? "Views" : "Únicos"]}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="views"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth={2}
+                  fill="url(#viewsFill)"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="unique"
+                  stroke="hsl(var(--primary))"
+                  strokeOpacity={0.6}
+                  strokeDasharray="4 4"
+                  strokeWidth={1.5}
+                  fill="url(#uniqueFill)"
                 />
               </AreaChart>
             </ResponsiveContainer>

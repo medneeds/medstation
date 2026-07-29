@@ -58,9 +58,10 @@ serve(async (req) => {
     const dayList = fillDays(from, days);
 
     // Paralelo: DB
-    const [signupsRes, aiRes] = await Promise.all([
+    const [signupsRes, aiRes, viewsRes] = await Promise.all([
       supabase.from("profiles").select("created_at").gte("created_at", fromIso),
       supabase.from("ai_usage_logs").select("created_at, cost_usd, total_tokens").gte("created_at", fromIso),
+      supabase.from("page_views").select("created_at, session_id").gte("created_at", fromIso),
     ]);
 
     // Séries base (bucket por dia)
@@ -170,6 +171,21 @@ serve(async (req) => {
       return { date: d, cost_usd: Math.round(v.cost * 10000) / 10000, tokens: v.tokens };
     });
 
+    // Visitantes da landing (page_views) — total e únicos por sessão
+    const viewsMap = new Map<string, { total: number; sessions: Set<string> }>();
+    for (const r of viewsRes.data ?? []) {
+      const row = r as { created_at: string; session_id: string | null };
+      const k = dayKey(row.created_at);
+      const cur = viewsMap.get(k) ?? { total: 0, sessions: new Set<string>() };
+      cur.total += 1;
+      if (row.session_id) cur.sessions.add(row.session_id);
+      viewsMap.set(k, cur);
+    }
+    const visitors = dayList.map((d) => {
+      const v = viewsMap.get(d) ?? { total: 0, sessions: new Set<string>() };
+      return { date: d, views: v.total, unique: v.sessions.size };
+    });
+
     return new Response(
       JSON.stringify({
         window: { days, from: fromIso },
@@ -178,6 +194,7 @@ serve(async (req) => {
         subs_growth: subsGrowth,
         mrr_curve: mrrCurve,
         ai_daily: aiDaily,
+        visitors,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );

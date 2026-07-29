@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { DashboardLayout } from "./components/DashboardLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { AnalyticsTracker } from "./components/AnalyticsTracker";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 import { ProfileProvider } from "./contexts/ProfileContext";
 import Dashboard from "./pages/Dashboard";
@@ -70,6 +71,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+          <AnalyticsTracker />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<Auth />} />
