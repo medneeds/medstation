@@ -17,9 +17,23 @@ interface Settings {
   referrer_reward_days: number;
   require_crm: boolean;
   max_rewards_per_referrer: number;
+  lead_reward_enabled: boolean;
+  block_existing_referrers: boolean;
   updated_at?: string;
 
 }
+
+interface CourtesyRow {
+  id: string;
+  user_id: string;
+  email: string;
+  full_name: string;
+  reason: string | null;
+  expires_at: string | null;
+  days_left: number | null;
+  active: boolean;
+}
+
 
 interface ReferralRow {
   id: string;
