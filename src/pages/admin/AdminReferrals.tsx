@@ -16,7 +16,9 @@ interface Settings {
   referred_stripe_coupon: string;
   referrer_reward_days: number;
   require_crm: boolean;
+  max_rewards_per_referrer: number;
   updated_at?: string;
+
 }
 
 interface ReferralRow {
