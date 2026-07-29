@@ -27,7 +27,7 @@ serve(async (req) => {
     // Load configurable settings
     const { data: settings } = await supabase
       .from("referral_settings")
-      .select("active, referrer_reward_days")
+      .select("active, referrer_reward_days, max_rewards_per_referrer")
       .eq("id", 1)
       .maybeSingle();
     if (settings && settings.active === false) {
@@ -36,6 +36,7 @@ serve(async (req) => {
       });
     }
     const rewardDays = settings?.referrer_reward_days ?? 30;
+    const maxRewards = settings?.max_rewards_per_referrer ?? 3;
 
     // Find pending referral for this user
     const { data: ref } = await supabase
@@ -50,6 +51,25 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Enforce the per-referrer reward cap (default: 3 free months)
+    const { count: rewardedCount } = await supabase
+      .from("referrals")
+      .select("id", { count: "exact", head: true })
+      .eq("referrer_id", ref.referrer_id)
+      .eq("status", "rewarded");
+
+    if ((rewardedCount ?? 0) >= maxRewards) {
+      await supabase
+        .from("referrals")
+        .update({ status: "blocked", blocked_reason: "reward_limit_reached" })
+        .eq("id", ref.id);
+      return new Response(
+        JSON.stringify({ ok: false, reason: "reward_limit_reached", max: maxRewards }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
 
     // Mark as qualified first to avoid double-processing race
     await supabase

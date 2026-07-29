@@ -21,6 +21,7 @@ export default function Indicar() {
   const [code, setCode] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [maxRewards, setMaxRewards] = useState(3);
 
   useEffect(() => {
     (async () => {
@@ -34,6 +35,13 @@ export default function Indicar() {
           .select("id,status,referred_email,reward_applied_at,created_at")
           .order("created_at", { ascending: false });
         setReferrals(rows || []);
+
+        const { data: settings } = await supabase
+          .from("referral_settings")
+          .select("max_rewards_per_referrer")
+          .eq("id", 1)
+          .maybeSingle();
+        if (settings?.max_rewards_per_referrer) setMaxRewards(settings.max_rewards_per_referrer);
       } catch (e: any) {
         toast({ variant: "destructive", title: "Erro", description: e.message });
       } finally {
@@ -51,6 +59,8 @@ export default function Indicar() {
     pending: referrals.filter((r) => r.status === "pending").length,
     monthsEarned: referrals.filter((r) => r.status === "rewarded").length,
   };
+  const remaining = Math.max(0, maxRewards - stats.monthsEarned);
+
 
   const copyLink = async () => {
     if (!shareLink) return;
@@ -83,8 +93,10 @@ export default function Indicar() {
         </h1>
         <p className="mt-4 text-muted-foreground max-w-2xl">
           Cada médico que assinar pelo seu link ganha 50% off no 1º mês. Você ganha 30 dias grátis
-          adicionados à sua próxima fatura — automaticamente.
+          adicionados à sua próxima fatura — automaticamente. São até {maxRewards} indicações
+          válidas, ou seja, até {maxRewards} meses de acesso completo sem pagar nada.
         </p>
+
       </motion.div>
 
       {/* Link card */}
@@ -138,6 +150,33 @@ export default function Indicar() {
         />
       </div>
 
+      {/* Progresso do limite */}
+      <Card className="p-6 sm:p-8 border-hairline">
+        <div className="flex items-baseline justify-between mb-3">
+          <h2 className="font-display text-xl">Seu progresso</h2>
+          <span className="text-sm text-muted-foreground">
+            {stats.monthsEarned} de {maxRewards} meses conquistados
+          </span>
+        </div>
+        <div className="flex gap-2">
+          {Array.from({ length: maxRewards }).map((_, i) => (
+            <div
+              key={i}
+              className={`h-2.5 flex-1 rounded-full ${
+                i < stats.monthsEarned ? "bg-primary" : "bg-muted"
+              }`}
+            />
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          {remaining > 0
+            ? `Faltam ${remaining} indicação${remaining > 1 ? "ões" : ""} paga${
+                remaining > 1 ? "s" : ""
+              } para completar seus ${maxRewards} meses grátis.`
+            : "Você já atingiu o máximo de meses grátis do programa. Obrigado por indicar!"}
+        </p>
+      </Card>
+
       {/* Como funciona */}
       <Card className="p-6 sm:p-8 border-hairline">
         <h2 className="font-display text-xl mb-5">Como funciona</h2>
@@ -146,7 +185,7 @@ export default function Indicar() {
             "Compartilhe seu link com colegas médicos por WhatsApp, e-mail ou pessoalmente.",
             "Quando um colega clica e cria a conta, ele ganha 50% off no 1º mês de qualquer plano.",
             "Assim que ele paga a 1ª fatura, você recebe 30 dias adicionados à sua próxima cobrança automaticamente.",
-            "Sem limite de indicações. Indique 10 colegas → ganhe 10 meses grátis.",
+            `O link vale para até ${maxRewards} indicações pagas — ou seja, até ${maxRewards} meses seguidos de acesso completo sem custo.`,
           ].map((line, i) => (
             <li key={i} className="flex gap-3">
               <span className="flex-shrink-0 h-6 w-6 rounded-full bg-primary/15 text-primary flex items-center justify-center text-xs font-semibold">
@@ -157,6 +196,8 @@ export default function Indicar() {
           ))}
         </ol>
       </Card>
+
+
 
       {/* Lista de indicações */}
       {referrals.length > 0 && (
