@@ -391,7 +391,7 @@ export default function Home() {
                   <li className="flex gap-2"><span className="text-amber-500 mt-0.5">!</span> Outros 9 bloqueados</li>
                 </ul>
               </div>
-              <Button variant="outline" className="w-full h-11 mt-5" onClick={() => { trackCtaClick({ cta: 'plano_gratis', section: 'pricing', plan: 'free', billingPeriod, destination: '/auth' }); navigate('/auth'); }}>
+              <Button variant="outline" className="w-full h-11 mt-5" onClick={() => { trackCtaClick({ cta: 'plano_gratis', section: 'pricing', plan: 'free', billing_period: billingPeriod, destination: '/auth' }); navigate('/auth'); }}>
                 Criar conta grátis
               </Button>
               <p className="text-[10px] text-center text-muted-foreground mt-2">Sem cartão</p>
