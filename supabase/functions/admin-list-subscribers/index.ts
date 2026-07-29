@@ -278,8 +278,44 @@ serve(async (req) => {
       records.push(buildRecord(null, customer));
     }
 
-    let filtered = records;
+    // ---- GLOBAL stats (always computed on ALL records, ignoring search/status filter) ----
+    // A user counts as "paying" whenever Stripe reports a real recurring status,
+    // even if effective_status is overridden by admin/courtesy — otherwise
+    // admin owners with real paid subs (e.g. Marcio Serra) disappear from MRR.
+    const payingStatuses = new Set(["active", "trialing", "past_due"]);
+    const payingAll = records.filter((r) => payingStatuses.has(r.stripe_status));
+    const globalActive = records.filter((r) => r.stripe_status === "active");
+    const globalTrialing = records.filter((r) => r.stripe_status === "trialing");
+    const globalPastDue = records.filter((r) => r.stripe_status === "past_due");
+    const globalCanceled = records.filter((r) => r.stripe_status === "canceled");
+    const globalCourtesy = records.filter((r) => r.effective_status === "courtesy");
+    const globalAdmin = records.filter((r) => r.is_admin);
+    const globalNone = records.filter(
+      (r) => r.stripe_status === "none" && !r.is_admin && r.effective_status !== "courtesy"
+    );
+    const globalMrrCents = payingAll.reduce((sum, r) => sum + (r.monthly_amount_cents || 0), 0);
+    const globalCurrency = payingAll.find((r) => r.currency)?.currency || "brl";
 
+    const stats = {
+      total_users: allUsers.length,
+      total_records: records.length,
+      active: globalActive.length,
+      trialing: globalTrialing.length,
+      past_due: globalPastDue.length,
+      canceled: globalCanceled.length,
+      none: globalNone.length,
+      courtesy: globalCourtesy.length,
+      admin: globalAdmin.length,
+      auth_missing: records.filter((r) => r.auth_missing).length,
+      mrr_cents: Math.round(globalMrrCents),
+      arr_cents: Math.round(globalMrrCents * 12),
+      avg_ticket_cents: payingAll.length ? Math.round(globalMrrCents / payingAll.length) : 0,
+      currency: globalCurrency,
+      paying_total: payingAll.length,
+    };
+
+    // ---- Apply filters only to the returned records list (pagination/search) ----
+    let filtered = records;
     if (search) {
       filtered = filtered.filter(
         (r) => r.email?.toLowerCase().includes(search) || r.full_name?.toLowerCase().includes(search)
@@ -309,36 +345,19 @@ serve(async (req) => {
     const start = (page - 1) * perPage;
     const paginated = filtered.slice(start, start + perPage);
 
-    const active = filtered.filter((r) => r.effective_status === "active");
-    const trialing = filtered.filter((r) => r.effective_status === "trialing");
-    const past_due = filtered.filter((r) => r.effective_status === "past_due");
-    const canceled = filtered.filter((r) => r.effective_status === "canceled");
-    const courtesy = filtered.filter((r) => r.effective_status === "courtesy");
-    const admin = filtered.filter((r) => r.effective_status === "admin");
-    const none = filtered.filter((r) => r.effective_status === "none");
-
-    const mrrCents = [...active, ...trialing, ...past_due].reduce(
-      (sum, r) => sum + (r.monthly_amount_cents || 0),
-      0
-    );
-    const activeCurrency =
-      [...active, ...trialing, ...past_due].find((r) => r.currency)?.currency || "brl";
-
-    const stats = {
-      total_users: allUsers.length,
-      total_records: records.length,
-      active: active.length,
-      trialing: trialing.length,
-      past_due: past_due.length,
-      canceled: canceled.length,
-      none: none.length,
-      courtesy: courtesy.length,
-      admin: admin.length,
-      auth_missing: filtered.filter((r) => r.auth_missing).length,
-      mrr_cents: Math.round(mrrCents),
-      arr_cents: Math.round(mrrCents * 12),
-      avg_ticket_cents: active.length ? Math.round(mrrCents / (active.length + trialing.length + past_due.length)) : 0,
-      currency: activeCurrency,
+    // Per-filter stats (for contextual display when a filter is active)
+    const filteredPaying = filtered.filter((r) => payingStatuses.has(r.stripe_status));
+    const filteredMrr = filteredPaying.reduce((s, r) => s + (r.monthly_amount_cents || 0), 0);
+    const filteredStats = {
+      total: filtered.length,
+      active: filtered.filter((r) => r.stripe_status === "active").length,
+      trialing: filtered.filter((r) => r.stripe_status === "trialing").length,
+      past_due: filtered.filter((r) => r.stripe_status === "past_due").length,
+      canceled: filtered.filter((r) => r.stripe_status === "canceled").length,
+      courtesy: filtered.filter((r) => r.effective_status === "courtesy").length,
+      admin: filtered.filter((r) => r.is_admin).length,
+      mrr_cents: Math.round(filteredMrr),
+      paying: filteredPaying.length,
     };
 
     return new Response(
@@ -349,6 +368,7 @@ serve(async (req) => {
         total,
         totalPages,
         stats,
+        filteredStats,
         cacheAge: stripeCache ? Date.now() - stripeCache.fetchedAt : 0,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
