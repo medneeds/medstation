@@ -222,10 +222,13 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
           </div>
         </aside>
         <main className="flex-1 overflow-x-hidden min-w-0 flex flex-col">
-          <header className="sticky top-0 z-30 h-14 shrink-0 border-b border-border/60 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 flex items-center justify-between gap-3 px-4 sm:px-6">
-            <div className="min-w-0">
-              <h1 className="text-sm font-semibold font-display truncate">{currentLabel}</h1>
-              <p className="text-2xs text-muted-foreground truncate">Painel de gestão MedStation</p>
+          <header className="sticky top-0 z-30 h-16 shrink-0 border-b border-border/60 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 flex items-center justify-between gap-3 px-4 sm:px-6">
+            <div className="min-w-0 flex items-center gap-3">
+              <span className="h-7 w-1 rounded-full bg-primary/80 shrink-0" aria-hidden />
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl font-semibold font-display tracking-tight leading-none truncate">{currentLabel}</h1>
+                <p className="text-xs text-muted-foreground truncate mt-1">Painel de gestão MedStation</p>
+              </div>
             </div>
             <div className="flex items-center gap-1">
               <AdminNotificationBell />
