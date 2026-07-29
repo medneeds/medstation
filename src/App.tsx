@@ -54,6 +54,7 @@ import AdminFeedback from "./pages/admin/AdminFeedback";
 import AdminAudit from "./pages/admin/AdminAudit";
 import AdminFlags from "./pages/admin/AdminFlags";
 import AdminBroadcast from "./pages/admin/AdminBroadcast";
+import AdminReferrals from "./pages/admin/AdminReferrals";
 import Indicar from "./pages/Indicar";
 import ReferralRedirect from "./pages/ReferralRedirect";
 import NotFound from "./pages/NotFound";
@@ -285,6 +286,7 @@ const App = () => (
               <Route index element={<AdminDashboard />} />
               <Route path="usuarios" element={<AdminUsers />} />
               <Route path="faturamento" element={<AdminRoute requireAdmin><AdminBilling /></AdminRoute>} />
+              <Route path="indicacoes" element={<AdminRoute requireAdmin><AdminReferrals /></AdminRoute>} />
               <Route path="suporte" element={<AdminSupport />} />
               <Route path="uso-ia" element={<AdminAIUsage />} />
               <Route path="feedback" element={<AdminFeedback />} />

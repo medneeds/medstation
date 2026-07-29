@@ -2,7 +2,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, CreditCard, MessageSquare, Activity,
-  Star, Shield, ToggleLeft, Megaphone, ArrowLeft, LogOut,
+  Star, Shield, ToggleLeft, Megaphone, ArrowLeft, LogOut, Gift,
   PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 import { useAdminRole } from "@/hooks/useAdminRole";
@@ -15,6 +15,7 @@ const NAV = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/usuarios", label: "Usuários", icon: Users },
   { to: "/admin/faturamento", label: "Faturamento", icon: CreditCard, adminOnly: true },
+  { to: "/admin/indicacoes", label: "Indicações", icon: Gift, adminOnly: true },
   { to: "/admin/suporte", label: "Suporte", icon: MessageSquare },
   { to: "/admin/uso-ia", label: "Uso de IA", icon: Activity },
   { to: "/admin/feedback", label: "Feedback", icon: Star },

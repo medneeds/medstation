@@ -24,6 +24,19 @@ serve(async (req) => {
     const referredUserId: string | undefined = body.referred_user_id;
     if (!referredUserId) throw new Error("referred_user_id required");
 
+    // Load configurable settings
+    const { data: settings } = await supabase
+      .from("referral_settings")
+      .select("active, referrer_reward_days")
+      .eq("id", 1)
+      .maybeSingle();
+    if (settings && settings.active === false) {
+      return new Response(JSON.stringify({ ok: false, reason: "program_disabled" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const rewardDays = settings?.referrer_reward_days ?? 30;
+
     // Find pending referral for this user
     const { data: ref } = await supabase
       .from("referrals")
@@ -82,7 +95,7 @@ serve(async (req) => {
 
     // Extend by 30 days using trial_end (postpones next invoice)
     const currentEnd = sub.current_period_end || Math.floor(Date.now() / 1000);
-    const newTrialEnd = currentEnd + 30 * 24 * 60 * 60;
+    const newTrialEnd = currentEnd + rewardDays * 24 * 60 * 60;
 
     await stripe.subscriptions.update(sub.id, {
       trial_end: newTrialEnd,
@@ -98,6 +111,7 @@ serve(async (req) => {
       .from("referrals")
       .update({
         status: "rewarded",
+        reward_credit_days: rewardDays,
         reward_applied_at: new Date().toISOString(),
       })
       .eq("id", ref.id);
