@@ -97,6 +97,8 @@ export default function AdminReferrals() {
           referred_stripe_coupon: settings.referred_stripe_coupon.trim(),
           referrer_reward_days: settings.referrer_reward_days,
           require_crm: settings.require_crm,
+          max_rewards_per_referrer: settings.max_rewards_per_referrer,
+
           updated_by: (await supabase.auth.getUser()).data.user?.id,
         })
         .eq("id", 1);
