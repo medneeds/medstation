@@ -326,6 +326,89 @@ export default function AdminReferrals() {
         </div>
       </Card>
 
+      {/* Acessos liberados por indicação */}
+      <Card className="overflow-hidden">
+        <div className="px-6 py-4 border-b border-border/40 flex items-center justify-between">
+          <div>
+            <h2 className="font-display font-semibold">Acessos liberados por indicação</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Indicadores sem assinatura com acesso temporário. Expira sozinho se não houver nova indicação.
+            </p>
+          </div>
+          <Badge variant="outline">{courtesy.filter((c) => c.active).length} ativos</Badge>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
+              <tr>
+                <th className="text-left px-4 py-2">Usuário</th>
+                <th className="text-left px-4 py-2">Expira em</th>
+                <th className="text-left px-4 py-2">Dias restantes</th>
+                <th className="text-left px-4 py-2">Origem</th>
+                <th className="text-right px-4 py-2">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {courtesy.map((c) => (
+                <tr key={c.id} className="border-t border-border/40 hover:bg-muted/30">
+                  <td className="px-4 py-2">
+                    <div className="text-sm">{c.full_name || "—"}</div>
+                    <div className="font-mono text-[11px] text-muted-foreground">{c.email || c.user_id.slice(0, 8)}</div>
+                  </td>
+                  <td className="px-4 py-2 text-xs">
+                    {c.expires_at ? new Date(c.expires_at).toLocaleDateString("pt-BR") : "Indefinido"}
+                  </td>
+                  <td className="px-4 py-2">
+                    <Badge
+                      variant="outline"
+                      className={
+                        !c.active
+                          ? "text-red-600 border-red-600/40"
+                          : (c.days_left ?? 99) <= 5
+                          ? "text-amber-600 border-amber-600/40"
+                          : "text-emerald-600 border-emerald-600/40"
+                      }
+                    >
+                      {c.active ? `${c.days_left ?? "∞"} dias` : "Expirado"}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-2 text-xs text-muted-foreground">{c.reason || "Indicação"}</td>
+                  <td className="px-4 py-2">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={busyUser === c.user_id}
+                        onClick={() => extendAccess(c.user_id, settings.referrer_reward_days || 30)}
+                      >
+                        +{settings.referrer_reward_days || 30} dias
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-red-600 hover:text-red-600"
+                        disabled={busyUser === c.user_id}
+                        onClick={() => revokeAccess(c.user_id)}
+                      >
+                        Encerrar
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {courtesy.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-muted-foreground">
+                    Nenhum acesso liberado por indicação ainda.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+
       {/* Top referrers */}
       <Card className="p-6">
         <h2 className="font-display font-semibold mb-3">Top indicadores</h2>
