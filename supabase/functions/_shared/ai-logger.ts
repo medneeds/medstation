@@ -1,7 +1,12 @@
 // Logger central para uso de IA — grava em ai_usage_logs via service_role.
 // Não deve lançar erros que quebrem a resposta ao usuário.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { estimateCostUSD } from "./model-pricing.ts";
+import {
+  estimateCostUSD,
+  estimateSTTCostUSD,
+  providerFromModel,
+  type Provider,
+} from "./model-pricing.ts";
 
 export interface LogUsageParams {
   userId?: string | null;
@@ -14,6 +19,12 @@ export interface LogUsageParams {
   latencyMs?: number | null;
   status?: string; // ok | error | shield_block
   metadata?: Record<string, unknown> | null;
+  /** Provider explícito. Se ausente, derivado do model. */
+  provider?: Provider;
+  /** Segundos de áudio (para STT). Se presente, custo derivado por minuto. */
+  audioSeconds?: number | null;
+  /** Custo já calculado externamente — sobrepõe os estimadores. */
+  costUsdOverride?: number | null;
 }
 
 function client() {
@@ -27,10 +38,28 @@ export async function logAIUsage(p: LogUsageParams): Promise<void> {
   try {
     const supabase = client();
     if (!supabase) return;
+
     const input = p.inputTokens ?? 0;
     const output = p.outputTokens ?? 0;
     const total = p.totalTokens ?? input + output;
-    const cost = estimateCostUSD(p.model, input, output);
+    const provider = p.provider ?? providerFromModel(p.model);
+    const audioSeconds = p.audioSeconds ?? null;
+
+    let cost: number;
+    if (p.costUsdOverride != null) {
+      cost = p.costUsdOverride;
+    } else if (audioSeconds != null && audioSeconds > 0) {
+      cost = estimateSTTCostUSD(p.model, audioSeconds);
+    } else {
+      cost = estimateCostUSD(p.model, input, output);
+    }
+
+    const metadata: Record<string, unknown> = {
+      ...(p.metadata ?? {}),
+      provider,
+      ...(audioSeconds != null ? { audio_seconds: audioSeconds } : {}),
+    };
+
     await supabase.from("ai_usage_logs").insert({
       user_id: p.userId ?? null,
       assistant: p.assistant ?? null,
@@ -42,7 +71,7 @@ export async function logAIUsage(p: LogUsageParams): Promise<void> {
       cost_usd: cost,
       latency_ms: p.latencyMs ?? null,
       status: p.status ?? "ok",
-      metadata: p.metadata ?? {},
+      metadata,
     });
   } catch (e) {
     console.error("[ai-logger] failed:", (e as Error).message);
@@ -73,7 +102,6 @@ export function teeStreamWithUsage(
           if (done) break;
           controller.enqueue(value);
           buffer += decoder.decode(value, { stream: true });
-          // parse lines
           const lines = buffer.split("\n");
           buffer = lines.pop() ?? "";
           for (const line of lines) {
