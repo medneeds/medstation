@@ -150,6 +150,33 @@ export default function Indicar() {
         />
       </div>
 
+      {/* Progresso do limite */}
+      <Card className="p-6 sm:p-8 border-hairline">
+        <div className="flex items-baseline justify-between mb-3">
+          <h2 className="font-display text-xl">Seu progresso</h2>
+          <span className="text-sm text-muted-foreground">
+            {stats.monthsEarned} de {maxRewards} meses conquistados
+          </span>
+        </div>
+        <div className="flex gap-2">
+          {Array.from({ length: maxRewards }).map((_, i) => (
+            <div
+              key={i}
+              className={`h-2.5 flex-1 rounded-full ${
+                i < stats.monthsEarned ? "bg-primary" : "bg-muted"
+              }`}
+            />
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          {remaining > 0
+            ? `Faltam ${remaining} indicação${remaining > 1 ? "ões" : ""} paga${
+                remaining > 1 ? "s" : ""
+              } para completar seus ${maxRewards} meses grátis.`
+            : "Você já atingiu o máximo de meses grátis do programa. Obrigado por indicar!"}
+        </p>
+      </Card>
+
       {/* Como funciona */}
       <Card className="p-6 sm:p-8 border-hairline">
         <h2 className="font-display text-xl mb-5">Como funciona</h2>
@@ -158,7 +185,7 @@ export default function Indicar() {
             "Compartilhe seu link com colegas médicos por WhatsApp, e-mail ou pessoalmente.",
             "Quando um colega clica e cria a conta, ele ganha 50% off no 1º mês de qualquer plano.",
             "Assim que ele paga a 1ª fatura, você recebe 30 dias adicionados à sua próxima cobrança automaticamente.",
-            "Sem limite de indicações. Indique 10 colegas → ganhe 10 meses grátis.",
+            `O link vale para até ${maxRewards} indicações pagas — ou seja, até ${maxRewards} meses seguidos de acesso completo sem custo.`,
           ].map((line, i) => (
             <li key={i} className="flex gap-3">
               <span className="flex-shrink-0 h-6 w-6 rounded-full bg-primary/15 text-primary flex items-center justify-center text-xs font-semibold">
@@ -169,6 +196,8 @@ export default function Indicar() {
           ))}
         </ol>
       </Card>
+
+
 
       {/* Lista de indicações */}
       {referrals.length > 0 && (
