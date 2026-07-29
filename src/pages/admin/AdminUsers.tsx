@@ -34,13 +34,13 @@ const STATUS_COLORS: Record<string, string> = {
 } as const;
 
 export default function AdminUsers() {
-  const [records, setRecords] = useState<Record[]>([]);
+  const [records, setRecords] = useState<UserRow[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [loading, setLoading] = useState(false);
-  const [selected, setSelected] = useState<Record | null>(null);
+  const [selected, setSelected] = useState<UserRow | null>(null);
 
   const load = async (refresh = false) => {
     setLoading(true);
