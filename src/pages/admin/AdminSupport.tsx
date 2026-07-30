@@ -290,14 +290,6 @@ export default function AdminSupport() {
                   )}
                 </div>
               </div>
-
-                <div className="flex gap-2">
-                  <Badge variant="outline">{selected.status}</Badge>
-                  {selected.status !== "resolved" && (
-                    <Button size="sm" variant="outline" onClick={resolve}>Resolver</Button>
-                  )}
-                </div>
-              </div>
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {messages.map((m) => (
                   <div key={m.id} className={`flex ${m.sender_type === "user" ? "justify-start" : "justify-end"}`}>
