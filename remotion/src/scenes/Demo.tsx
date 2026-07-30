@@ -71,7 +71,7 @@ export const Demo: React.FC<{
 
   const shotCol = (
     <div style={{ flex: 1, display: "flex", justifyContent: side === "right" ? "flex-end" : "flex-start" }}>
-      <ProductFrame src={shot} label={shotLabel} focus={shotFocus} width={1060} height={606} delay={18} />
+      <ProductFrame src={shot} label={shotLabel} focus={shotFocus} width={980} height={560} delay={18} />
     </div>
   );
 

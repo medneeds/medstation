@@ -36,11 +36,11 @@ export const Abertura: React.FC = () => {
         {hh}:{mm}
       </div>
 
-      <div style={{ position: "absolute", left: 110, bottom: 250, width: 1180 }}>
+      <div style={{ position: "absolute", left: 110, bottom: 250, width: 1320 }}>
         <div
           style={{
             fontFamily: serif,
-            fontSize: 96,
+            fontSize: 84,
             lineHeight: 1.04,
             color: COLORS.cream,
             opacity: t,
@@ -52,7 +52,7 @@ export const Abertura: React.FC = () => {
         <div
           style={{
             fontFamily: serif,
-            fontSize: 96,
+            fontSize: 84,
             lineHeight: 1.04,
             color: COLORS.green,
             marginTop: 12,
