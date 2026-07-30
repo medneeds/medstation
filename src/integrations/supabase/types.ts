@@ -1346,7 +1346,9 @@ export type Database = {
         Row: {
           ai_context_snapshot: Json | null
           assigned_to: string | null
+          category: string
           created_at: string
+          first_response_at: string | null
           id: string
           last_message_at: string
           priority: string
@@ -1359,7 +1361,9 @@ export type Database = {
         Insert: {
           ai_context_snapshot?: Json | null
           assigned_to?: string | null
+          category?: string
           created_at?: string
+          first_response_at?: string | null
           id?: string
           last_message_at?: string
           priority?: string
@@ -1372,7 +1376,9 @@ export type Database = {
         Update: {
           ai_context_snapshot?: Json | null
           assigned_to?: string | null
+          category?: string
           created_at?: string
+          first_response_at?: string | null
           id?: string
           last_message_at?: string
           priority?: string
