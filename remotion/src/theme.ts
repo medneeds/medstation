@@ -7,21 +7,52 @@ export const COLORS = {
   cream: "#EEF4EF",
   muted: "#7C8B83",
   line: "rgba(143,227,181,0.18)",
+  alert: "#E8B27A",
 };
 
 export const FPS = 30;
 
-// Bloco timeline (frames)
-export const T = {
-  hook: { from: 0, dur: 240 },
-  virada: { from: 240, dur: 240 },
-  cut1: { from: 480, dur: 290 },
-  cut2: { from: 770, dur: 290 },
-  cut3: { from: 1060, dur: 290 },
-  prova: { from: 1350, dur: 330 },
-  gratis: { from: 1680, dur: 300 },
-  preco: { from: 1980, dur: 420 },
-  fecho: { from: 2400, dur: 240 },
+const seq = (durations: [string, number][]) => {
+  let cursor = 0;
+  const out: Record<string, { from: number; dur: number }> = {};
+  for (const [key, dur] of durations) {
+    out[key] = { from: cursor, dur };
+    cursor += dur;
+  }
+  return { blocks: out, total: cursor };
 };
 
-export const TOTAL = 2640;
+const { blocks, total } = seq([
+  ["abertura", 240],
+  ["dor", 360],
+  ["custo", 300],
+  ["virada", 240],
+  ["plantao", 360],
+  ["consultorio", 360],
+  ["assistentes", 390],
+  ["examinus", 300],
+  ["depoimentos", 480],
+  ["ancoragem", 540],
+  ["planos", 390],
+  ["garantia", 330],
+  ["fecho", 300],
+]);
+
+export const T = blocks as Record<
+  | "abertura"
+  | "dor"
+  | "custo"
+  | "virada"
+  | "plantao"
+  | "consultorio"
+  | "assistentes"
+  | "examinus"
+  | "depoimentos"
+  | "ancoragem"
+  | "planos"
+  | "garantia"
+  | "fecho",
+  { from: number; dur: number }
+>;
+
+export const TOTAL = total;

@@ -2,12 +2,15 @@ import React from "react";
 import { AbsoluteFill, Sequence } from "remotion";
 import { Atmosphere } from "./components/Atmosphere";
 import { T } from "./theme";
-import { Hook } from "./scenes/Hook";
+import { Abertura } from "./scenes/Abertura";
+import { Dor } from "./scenes/Dor";
+import { Custo } from "./scenes/Custo";
 import { Virada } from "./scenes/Virada";
-import { DemoCut } from "./scenes/DemoCut";
-import { Prova } from "./scenes/Prova";
-import { Gratis } from "./scenes/Gratis";
-import { Preco } from "./scenes/Preco";
+import { Demo } from "./scenes/Demo";
+import { Depoimentos } from "./scenes/Depoimentos";
+import { Ancoragem } from "./scenes/Ancoragem";
+import { Planos } from "./scenes/Planos";
+import { Garantia } from "./scenes/Garantia";
 import { Fecho } from "./scenes/Fecho";
 
 export const MedStationVideo: React.FC = () => {
@@ -15,67 +18,118 @@ export const MedStationVideo: React.FC = () => {
     <AbsoluteFill>
       <Atmosphere />
 
-      <Sequence from={T.hook.from} durationInFrames={T.hook.dur}>
-        <Hook />
+      <Sequence from={T.abertura.from} durationInFrames={T.abertura.dur}>
+        <Abertura />
+      </Sequence>
+
+      <Sequence from={T.dor.from} durationInFrames={T.dor.dur}>
+        <Dor />
+      </Sequence>
+
+      <Sequence from={T.custo.from} durationInFrames={T.custo.dur}>
+        <Custo />
       </Sequence>
 
       <Sequence from={T.virada.from} durationInFrames={T.virada.dur}>
         <Virada />
       </Sequence>
 
-      <Sequence from={T.cut1.from} durationInFrames={T.cut1.dur}>
-        <DemoCut
+      <Sequence from={T.plantao.from} durationInFrames={T.plantao.dur}>
+        <Demo
           index="01"
-          kicker="EXAMINUS"
-          title="Cole o exame."
-          italic="Receba o que importa."
-          bullets={["Laboratório, laudo ou foto", "Resposta organizada em segundos", "Grátis para todo médico cadastrado"]}
-          caption="“Cole um exame, um laudo, uma foto. Em segundos você tem o que importa, organizado.”"
-          src="images/examinus_resposta.png"
-          label="Examinus · Interpretação de exames"
-          focus={[0.55, 0.42]}
+          kicker="PLANTÃO · BEIRA-LEITO"
+          title="Avalie o paciente."
+          italic="A evolução já sai pronta."
+          bullets={[
+            "Grave a avaliação com a permissão do paciente",
+            "Ou narre o caso no caminho até o computador",
+            "Exame físico e sinais vitais já estruturados",
+          ]}
+          caption="“No plantão, você grava a avaliação à beira do leito — ou narra o caso no caminho. A estruturação te espera pronta.”"
+          plate="images/scene_bedside.jpg"
+          plateFocus={[0.3, 0.4]}
+          shot="images/consultorio.png"
+          shotLabel="Modo Consultório · beira-leito"
+          shotFocus={[0.5, 0.42]}
         />
       </Sequence>
 
-      <Sequence from={T.cut2.from} durationInFrames={T.cut2.dur}>
-        <DemoCut
+      <Sequence from={T.consultorio.from} durationInFrames={T.consultorio.dur}>
+        <Demo
           index="02"
-          kicker="ASSISTENTES"
-          title="Dez assistentes,"
-          italic="um para cada rotina."
-          bullets={["Evolução, prescrição e gasometria", "Protocolos, atestado e orientação", "Sempre no seu tom, no seu formato"]}
-          caption="“São dez assistentes: evolução, prescrição, gasometria, protocolos, atestado, orientação ao paciente.”"
-          src="images/clinicus.png"
-          label="Assistentes clínicos"
-          focus={[0.45, 0.4]}
+          kicker="MODO CONSULTÓRIO"
+          title="Você só conversa"
+          italic="com o paciente."
+          bullets={[
+            "A consulta vira anamnese estruturada",
+            "Tudo pronto para copiar e colar no prontuário",
+            "Zero digitação durante o atendimento",
+          ]}
+          caption="“No consultório, você só conversa. A consulta vira anamnese estruturada, pronta para copiar.”"
+          plate="images/scene_typing.jpg"
+          plateFocus={[0.6, 0.45]}
+          shot="images/consultorio.png"
+          shotLabel="Modo Consultório · tempo real"
+          shotFocus={[0.5, 0.5]}
           side="left"
         />
       </Sequence>
 
-      <Sequence from={T.cut3.from} durationInFrames={T.cut3.dur}>
-        <DemoCut
+      <Sequence from={T.assistentes.from} durationInFrames={T.assistentes.dur}>
+        <Demo
           index="03"
-          kicker="MODO CONSULTÓRIO"
-          title="Você só conversa"
-          italic="com o paciente."
-          bullets={["A consulta vira anamnese estruturada", "Tudo pronto para copiar e colar", "Zero digitação durante o atendimento"]}
-          caption="“No Modo Consultório, você só conversa com o paciente. A consulta vira anamnese pronta para copiar.”"
-          src="images/consultorio.png"
-          label="Modo Consultório"
-          focus={[0.5, 0.42]}
+          kicker="DEZ ASSISTENTES CLÍNICOS"
+          title="Um assistente"
+          italic="para cada rotina sua."
+          bullets={[
+            "Evolução, prescrição e gasometria",
+            "Protocolos, atestado e orientação ao paciente",
+            "Sempre no seu tom e no seu formato",
+          ]}
+          caption="“São dez assistentes: evolução, prescrição, gasometria, protocolos, atestado, orientação ao paciente.”"
+          plate="images/scene_emergency.jpg"
+          plateFocus={[0.6, 0.4]}
+          shot="images/clinicus.png"
+          shotLabel="Assistentes clínicos"
+          shotFocus={[0.45, 0.4]}
         />
       </Sequence>
 
-      <Sequence from={T.prova.from} durationInFrames={T.prova.dur}>
-        <Prova />
+      <Sequence from={T.examinus.from} durationInFrames={T.examinus.dur}>
+        <Demo
+          index="04"
+          kicker="EXAMINUS · GRÁTIS"
+          title="Cole o exame."
+          italic="Receba o que importa."
+          bullets={[
+            "Laboratório, laudo ou foto do papel",
+            "Resposta organizada em segundos",
+            "Grátis para todo médico cadastrado",
+          ]}
+          caption="“E o Examinus é grátis: cole um exame, um laudo, uma foto — em segundos você tem o que importa.”"
+          plate="images/scene_bedside.jpg"
+          plateFocus={[0.7, 0.42]}
+          shot="images/examinus_resposta.png"
+          shotLabel="Examinus · interpretação de exames"
+          shotFocus={[0.55, 0.42]}
+          side="left"
+        />
       </Sequence>
 
-      <Sequence from={T.gratis.from} durationInFrames={T.gratis.dur}>
-        <Gratis />
+      <Sequence from={T.depoimentos.from} durationInFrames={T.depoimentos.dur}>
+        <Depoimentos />
       </Sequence>
 
-      <Sequence from={T.preco.from} durationInFrames={T.preco.dur}>
-        <Preco />
+      <Sequence from={T.ancoragem.from} durationInFrames={T.ancoragem.dur}>
+        <Ancoragem />
+      </Sequence>
+
+      <Sequence from={T.planos.from} durationInFrames={T.planos.dur}>
+        <Planos />
+      </Sequence>
+
+      <Sequence from={T.garantia.from} durationInFrames={T.garantia.dur}>
+        <Garantia />
       </Sequence>
 
       <Sequence from={T.fecho.from} durationInFrames={T.fecho.dur}>

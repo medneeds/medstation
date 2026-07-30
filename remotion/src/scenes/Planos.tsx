@@ -19,11 +19,11 @@ const Plan: React.FC<{
   return (
     <div
       style={{
-        flex: featured ? 1.12 : 1,
+        flex: featured ? 1.14 : 1,
         padding: featured ? "52px 42px" : "44px 38px",
-        borderRadius: 12,
-        border: `1px solid ${featured ? "rgba(143,227,181,0.46)" : COLORS.line}`,
-        background: featured ? "rgba(143,227,181,0.08)" : "rgba(17,24,21,0.72)",
+        borderRadius: 14,
+        border: `1px solid ${featured ? "rgba(143,227,181,0.48)" : COLORS.line}`,
+        background: featured ? "rgba(143,227,181,0.09)" : "rgba(17,24,21,0.74)",
         opacity: s,
         transform: `translateY(${interpolate(s, [0, 1], [50, 0])}px)`,
         position: "relative",
@@ -65,19 +65,17 @@ const Plan: React.FC<{
   );
 };
 
-export const Preco: React.FC = () => {
+export const Planos: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const t = spring({ frame: frame - 4, fps, config: { damping: 200 } });
   const anchor = spring({ frame: frame - 210, fps, config: { damping: 200 } });
-  const out = interpolate(frame, [durationInFrames - 18, durationInFrames], [1, 0], {
-    extrapolateLeft: "clamp",
-  });
+  const out = interpolate(frame, [durationInFrames - 18, durationInFrames], [1, 0], { extrapolateLeft: "clamp" });
 
   return (
-    <AbsoluteFill style={{ opacity: out, padding: "0 110px", justifyContent: "center", paddingBottom: 130 }}>
+    <AbsoluteFill style={{ opacity: out, padding: "0 110px", justifyContent: "center", paddingBottom: 140 }}>
       <div style={{ fontFamily: mono, fontSize: 16, letterSpacing: 5.5, color: COLORS.green, opacity: t }}>
-        PLANOS & ASSINATURA
+        PLANOS
       </div>
       <div
         style={{
@@ -93,7 +91,7 @@ export const Preco: React.FC = () => {
         <span style={{ fontFamily: serifItalic, color: COLORS.green }}>ou os dois juntos.</span>
       </div>
 
-      <div style={{ display: "flex", gap: 24, marginTop: 56, alignItems: "stretch" }}>
+      <div style={{ display: "flex", gap: 24, marginTop: 54, alignItems: "stretch" }}>
         <Plan name="Assistentes" desc="Os 10 assistentes clínicos" month="R$ 29,90" year="R$ 299,90" delay={34} />
         <Plan
           name="Os dois"
@@ -104,15 +102,15 @@ export const Preco: React.FC = () => {
           featured
           tag="RECOMENDADO"
         />
-        <Plan name="Consultório" desc="Modo Consultório em tempo real" month="R$ 29,90" year="R$ 299,90" delay={66} />
+        <Plan name="Consultório" desc="Gravação e estruturação em tempo real" month="R$ 29,90" year="R$ 299,90" delay={66} />
       </div>
 
       <div
         style={{
-          marginTop: 48,
+          marginTop: 46,
           display: "flex",
           alignItems: "center",
-          gap: 26,
+          gap: 24,
           opacity: anchor,
           transform: `translateY(${interpolate(anchor, [0, 1], [18, 0])}px)`,
         }}
@@ -128,16 +126,16 @@ export const Preco: React.FC = () => {
             padding: "12px 22px",
           }}
         >
-          7 DIAS DE GARANTIA INCONDICIONAL
+          MENOS DE R$ 300 PELO ANO INTEIRO
         </span>
-        <span style={{ fontFamily: sans, fontSize: 26, color: COLORS.muted }}>
-          Menos do que você cobra por uma consulta.
+        <span style={{ fontFamily: sans, fontSize: 27, color: COLORS.muted }}>
+          Menos do que você ganha em quatro horas de plantão.
         </span>
       </div>
 
       <Caption
-        text="“Os assistentes por vinte e nove e noventa. O Modo Consultório pelo mesmo valor. Os dois juntos, quarenta e nove e noventa.”"
-        delay={14}
+        text="“Vinte e nove e noventa por mês. Os dois juntos, quarenta e nove e noventa. Menos de trezentos reais pelo ano.”"
+        delay={16}
         align="center"
       />
     </AbsoluteFill>

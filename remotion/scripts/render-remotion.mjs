@@ -20,7 +20,7 @@ const browser = await openBrowser("chrome", {
 const composition = await selectComposition({ serveUrl: bundled, id: "main", puppeteerInstance: browser });
 
 if (stillsMode) {
-  const frames = [60, 140, 300, 420, 560, 700, 860, 1000, 1150, 1280, 1450, 1600, 1780, 1900, 2100, 2300, 2450, 2560];
+  const frames = [120, 400, 700, 1010, 1300, 1650, 2000, 2380, 2700, 2900, 3250, 3450, 3720, 4100, 4400];
   for (const frame of frames) {
     await renderStill({
       composition,
