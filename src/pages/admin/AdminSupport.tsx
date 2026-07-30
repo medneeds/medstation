@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { MessageSquare, Send, Loader2 } from "lucide-react";
+import { MessageSquare, Send, Loader2, Search } from "lucide-react";
 import type { AdminMetrics } from "./types";
 
 interface Ticket {
@@ -14,6 +16,7 @@ interface Ticket {
   subject: string;
   status: string;
   priority: string;
+  category: string | null;
   created_at: string;
   last_message_at: string;
 }
@@ -27,14 +30,49 @@ interface Message {
   created_at: string;
 }
 
+interface Requester {
+  full_name: string | null;
+  crm: string | null;
+  specialty: string | null;
+  phone: string | null;
+}
+
+const CATEGORY_LABEL: Record<string, string> = {
+  geral: "Dúvida geral",
+  tecnico: "Problema técnico",
+  assinatura: "Assinatura e cobrança",
+  conta: "Conta e acesso",
+  sugestao: "Sugestão",
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  open: "Aberto",
+  assigned: "Em atendimento",
+  waiting_user: "Aguardando cliente",
+  resolved: "Resolvido",
+};
+
+const PRIORITY_LABEL: Record<string, string> = {
+  low: "Baixa",
+  normal: "Normal",
+  high: "Alta",
+  urgent: "Urgente",
+};
+
 export default function AdminSupport() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [profiles, setProfiles] = useState<Record<string, Requester>>({});
   const [metrics, setMetrics] = useState<AdminMetrics["support"] | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [reply, setReply] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+
+  const [statusFilter, setStatusFilter] = useState("active");
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [search, setSearch] = useState("");
 
   const load = async () => {
     setLoading(true);
@@ -45,18 +83,34 @@ export default function AdminSupport() {
         .from("support_tickets")
         .select("*")
         .order("last_message_at", { ascending: false })
-        .limit(100),
+        .limit(200),
       fetch(`https://${projectId}.supabase.co/functions/v1/admin-metrics`, {
         headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
       }).then((r) => (r.ok ? r.json() : null)),
     ]);
     if (ticketsRes.error) toast.error(ticketsRes.error.message);
-    else setTickets(ticketsRes.data || []);
+    else {
+      const rows = (ticketsRes.data as Ticket[]) || [];
+      setTickets(rows);
+      const ids = [...new Set(rows.map((t) => t.user_id))];
+      if (ids.length) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("id, full_name, crm, specialty, phone")
+          .in("id", ids);
+        const map: Record<string, Requester> = {};
+        (profs || []).forEach((p: any) => {
+          map[p.id] = { full_name: p.full_name, crm: p.crm, specialty: p.specialty, phone: p.phone };
+        });
+        setProfiles(map);
+      }
+    }
     if (metricsRes) setMetrics((metricsRes as AdminMetrics).support);
     setLoading(false);
   };
 
   useEffect(() => { load(); }, []);
+
 
   useEffect(() => {
     if (!selectedId) { setMessages([]); return; }
