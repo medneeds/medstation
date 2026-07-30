@@ -164,27 +164,82 @@ export default function AdminSupport() {
   };
 
   const selected = tickets.find((t) => t.id === selectedId);
+  const selectedProfile = selected ? profiles[selected.user_id] : undefined;
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return tickets.filter((t) => {
+      if (statusFilter === "active" ? t.status === "resolved" : statusFilter !== "all" && t.status !== statusFilter)
+        return false;
+      if (priorityFilter !== "all" && t.priority !== priorityFilter) return false;
+      if (categoryFilter !== "all" && (t.category || "geral") !== categoryFilter) return false;
+      if (q) {
+        const name = profiles[t.user_id]?.full_name?.toLowerCase() || "";
+        if (!t.subject.toLowerCase().includes(q) && !name.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [tickets, profiles, statusFilter, priorityFilter, categoryFilter, search]);
 
   return (
-    <div className="p-4 sm:p-6 space-y-5 h-screen flex flex-col">
-      <header>
+    <div className="p-4 sm:p-6 space-y-4 h-screen flex flex-col">
+      <header className="space-y-3">
         <p className="text-sm text-muted-foreground">
           {metrics
             ? `${metrics.open + metrics.assigned} em aberto · ${metrics.resolved_total} resolvidos · ${metrics.total} total (global)`
             : `${tickets.filter((t) => t.status !== "resolved").length} ticket(s) em aberto`}
         </p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar assunto ou médico"
+              className="pl-8 h-9"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="active">Em aberto</SelectItem>
+              <SelectItem value="open">Aberto</SelectItem>
+              <SelectItem value="waiting_user">Aguardando cliente</SelectItem>
+              <SelectItem value="resolved">Resolvido</SelectItem>
+              <SelectItem value="all">Todos os status</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+            <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas prioridades</SelectItem>
+              {Object.entries(PRIORITY_LABEL).map(([v, l]) => (
+                <SelectItem key={v} value={v}>{l}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas categorias</SelectItem>
+              {Object.entries(CATEGORY_LABEL).map(([v, l]) => (
+                <SelectItem key={v} value={v}>{l}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </header>
 
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-[320px_1fr] gap-4 min-h-0">
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-[340px_1fr] gap-4 min-h-0">
         <Card className="overflow-y-auto">
           {loading && <div className="p-6 text-center text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin inline" /></div>}
-          {!loading && tickets.length === 0 && (
+          {!loading && filtered.length === 0 && (
             <div className="p-6 text-center text-muted-foreground text-sm">
               <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-40" />
-              Nenhum ticket ainda
+              Nenhum ticket encontrado
             </div>
           )}
-          {tickets.map((t) => (
+          {filtered.map((t) => (
             <button
               key={t.id}
               onClick={() => setSelectedId(t.id)}
@@ -192,9 +247,17 @@ export default function AdminSupport() {
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="text-sm font-medium truncate">{t.subject}</div>
-                <Badge variant={t.status === "open" ? "default" : "outline"} className="shrink-0 text-2xs">{t.status}</Badge>
+                <Badge variant={t.status === "resolved" ? "outline" : "default"} className="shrink-0 text-2xs">
+                  {STATUS_LABEL[t.status] || t.status}
+                </Badge>
               </div>
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className="text-xs text-muted-foreground mt-1 truncate">
+                {profiles[t.user_id]?.full_name || "Assinante"}
+                {" · "}
+                {CATEGORY_LABEL[t.category || "geral"] || t.category}
+                {t.priority !== "normal" && ` · ${PRIORITY_LABEL[t.priority] || t.priority}`}
+              </div>
+              <div className="text-2xs text-muted-foreground mt-0.5">
                 {new Date(t.last_message_at).toLocaleString("pt-BR")}
               </div>
             </button>
@@ -208,11 +271,26 @@ export default function AdminSupport() {
             </div>
           ) : (
             <>
-              <div className="p-4 border-b border-border/40 flex items-center justify-between">
-                <div>
-                  <div className="font-medium">{selected.subject}</div>
-                  <div className="text-xs text-muted-foreground font-mono">{selected.user_id.slice(0, 8)}...</div>
+              <div className="p-4 border-b border-border/40 flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="font-medium truncate">{selected.subject}</div>
+                  <div className="text-xs text-muted-foreground truncate">
+                    {selectedProfile?.full_name || "Assinante"}
+                    {selectedProfile?.crm && ` · CRM ${selectedProfile.crm}`}
+                    {selectedProfile?.specialty && ` · ${selectedProfile.specialty}`}
+                    {selectedProfile?.phone && ` · ${selectedProfile.phone}`}
+                  </div>
+                  <div className="text-2xs text-muted-foreground font-mono mt-0.5">{selected.user_id.slice(0, 8)}...</div>
                 </div>
+                <div className="flex gap-2 shrink-0">
+                  <Badge variant="secondary">{CATEGORY_LABEL[selected.category || "geral"]}</Badge>
+                  <Badge variant="outline">{PRIORITY_LABEL[selected.priority] || selected.priority}</Badge>
+                  {selected.status !== "resolved" && (
+                    <Button size="sm" variant="outline" onClick={resolve}>Resolver</Button>
+                  )}
+                </div>
+              </div>
+
                 <div className="flex gap-2">
                   <Badge variant="outline">{selected.status}</Badge>
                   {selected.status !== "resolved" && (
