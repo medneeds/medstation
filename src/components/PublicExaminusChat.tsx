@@ -932,37 +932,38 @@ export default function PublicExaminusChat() {
             </div>
           </div>
 
-          {/* Desktop: Original layout with all options */}
-          <div className="hidden md:flex flex-col gap-4">
-            {/* Formatting Options Row */}
-            <div className="flex items-center gap-4 px-1">
+          {/* Desktop: Glass clinical layout */}
+          <div className="hidden md:flex flex-col gap-3">
+            {/* Control bar */}
+            <div className="flex flex-wrap items-center gap-2 px-3 py-2.5 rounded-xl bg-muted/40 border border-border/50">
               <Toggle
                 pressed={usePipeSeparator}
                 onPressedChange={setUsePipeSeparator}
                 size="sm"
-                className="h-8 px-3 rounded-full data-[state=on]:bg-primary/20 data-[state=on]:text-primary"
+                className="h-8 px-3 rounded-lg data-[state=on]:bg-primary/15 data-[state=on]:text-primary"
                 title="Separar exames com barra vertical |"
               >
                 <SeparatorVertical className="w-4 h-4 mr-2" />
                 <span className="text-xs">Separar com |</span>
               </Toggle>
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-full">
+              <div className="flex items-center gap-2 px-3 h-8 bg-background/70 border border-border/50 rounded-lg">
                 <Switch
                   id="include-time"
                   checked={includeTime}
                   onCheckedChange={setIncludeTime}
-                  className="data-[state=checked]:bg-primary"
+                  className="data-[state=checked]:bg-primary scale-90"
                 />
                 <Label htmlFor="include-time" className="text-xs cursor-pointer flex items-center gap-1.5">
                   <Clock className="w-3 h-3" />
                   Incluir horário
                 </Label>
               </div>
+              <div className="w-px h-5 bg-border/70 mx-1" />
               <Toggle
                 pressed={onlyAltered}
                 onPressedChange={setOnlyAltered}
                 size="sm"
-                className="h-8 px-3 rounded-full data-[state=on]:bg-amber-500/20 data-[state=on]:text-amber-600 dark:data-[state=on]:text-amber-400"
+                className="h-8 px-3 rounded-lg data-[state=on]:bg-amber-500/15 data-[state=on]:text-amber-600 dark:data-[state=on]:text-amber-400"
                 title="Mostrar apenas resultados alterados/críticos"
               >
                 <AlertTriangle className="w-4 h-4 mr-2" />
@@ -972,7 +973,7 @@ export default function PublicExaminusChat() {
                 pressed={clinicalImpression}
                 onPressedChange={setClinicalImpression}
                 size="sm"
-                className="h-8 px-3 rounded-full data-[state=on]:bg-blue-500/20 data-[state=on]:text-blue-600 dark:data-[state=on]:text-blue-400"
+                className="h-8 px-3 rounded-lg data-[state=on]:bg-blue-500/15 data-[state=on]:text-blue-600 dark:data-[state=on]:text-blue-400"
                 title="Impressão clínica: análise das alterações laboratoriais"
               >
                 <Stethoscope className="w-4 h-4 mr-2" />
@@ -982,7 +983,7 @@ export default function PublicExaminusChat() {
                 pressed={compactMode}
                 onPressedChange={setCompactMode}
                 size="sm"
-                className="h-8 px-3 rounded-full data-[state=on]:bg-green-500/20 data-[state=on]:text-green-600 dark:data-[state=on]:text-green-400"
+                className="h-8 px-3 rounded-lg data-[state=on]:bg-green-500/15 data-[state=on]:text-green-600 dark:data-[state=on]:text-green-400"
                 title="Versão compacta: omite índices hematimétricos (VCM, HCM, CHCM, RDW)"
               >
                 <Minimize2 className="w-4 h-4 mr-2" />
@@ -990,8 +991,8 @@ export default function PublicExaminusChat() {
               </Toggle>
             </div>
 
-            {/* Input Row */}
-            <div className="flex gap-3 items-end">
+            {/* Input area — textarea dominante com ações flutuantes */}
+            <div className="relative group">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -1000,20 +1001,6 @@ export default function PublicExaminusChat() {
                 onChange={handleFileSelect}
                 className="hidden"
               />
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isLoading || isExtracting}
-                className="h-12 w-12 shrink-0 rounded-xl hover:bg-primary/10 hover:border-primary/50 transition-all"
-                title="Upload de imagens ou PDF"
-              >
-                {isExtracting ? (
-                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                ) : (
-                  <Upload className="w-5 h-5 text-primary" />
-                )}
-              </Button>
               <Textarea
                 value={input}
                 onChange={(e) => handleInputChange(e.target.value)}
@@ -1021,41 +1008,59 @@ export default function PublicExaminusChat() {
                 placeholder={hasMessages ? "Cole mais exames aqui..." : "Cole os resultados de exames aqui (texto, imagem ou PDF)"}
                 maxLength={DEMO_MAX_CHARS}
                 aria-invalid={(input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= DEMO_MAX_CHARS}
-                className={`${isExpanded ? "min-h-[180px] max-h-[45vh]" : "min-h-[48px] max-h-40"} resize-none flex-1 rounded-xl transition-colors text-sm py-3 ${
+                className={`${isExpanded ? "min-h-[240px] max-h-[45vh]" : hasMessages ? "min-h-[110px] max-h-52" : "min-h-[168px] max-h-64"} resize-none w-full rounded-2xl transition-all text-base leading-relaxed p-5 pb-16 bg-muted/25 border-2 ${
                   (input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= DEMO_MAX_CHARS
                     ? "border-destructive focus:border-destructive"
-                    : "border-border/50 focus:border-primary/50"
+                    : "border-border/40 focus:border-primary/60 focus:bg-background"
                 }`}
                 disabled={isLoading}
               />
-              <Button
-                onClick={handleSend}
-                disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0) || isCoolingDown || input.length > DEMO_MAX_CHARS}
-                size="lg"
-                className="h-12 px-6 rounded-xl bg-gradient-primary hover:opacity-90 transition-all shadow-medical hover:shadow-elevated"
-                title={isCoolingDown ? `Aguarde ${cooldownRemaining}s — modo gratuito` : undefined}
-              >
-                {isLoading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : isCoolingDown ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin opacity-60" />
-                    Aguarde {cooldownRemaining}s
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4 mr-2" />
-                    Enviar
-                  </>
-                )}
-              </Button>
+              <div className="absolute bottom-3.5 right-3.5 flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isLoading || isExtracting}
+                  className="h-11 w-11 shrink-0 rounded-xl bg-background/90 hover:bg-primary/10 hover:border-primary/50 transition-all"
+                  title="Upload de imagens ou PDF"
+                >
+                  {isExtracting ? (
+                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                  ) : (
+                    <Upload className="w-5 h-5 text-primary" />
+                  )}
+                </Button>
+                <Button
+                  onClick={handleSend}
+                  disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0) || isCoolingDown || input.length > DEMO_MAX_CHARS}
+                  className="h-11 px-7 rounded-xl bg-gradient-primary hover:opacity-90 transition-all shadow-medical hover:shadow-elevated active:scale-95 font-semibold"
+                  title={isCoolingDown ? `Aguarde ${cooldownRemaining}s — modo gratuito` : undefined}
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : isCoolingDown ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin opacity-60" />
+                      Aguarde {cooldownRemaining}s
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      Enviar
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center justify-between gap-2 mt-1 px-1">
-              <span className="text-xs text-muted-foreground/80">
+
+            {/* Footer */}
+            <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-muted/30 border border-border/40">
+              <span className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary/70" />
                 Modo demonstração: até 8.000 caracteres por mensagem • Usuários da plataforma: até 30.000
               </span>
               <span
-                className={`text-xs tabular-nums shrink-0 ${
+                className={`text-[11px] tabular-nums shrink-0 px-2 py-0.5 rounded-md bg-background/80 border border-border/50 ${
                   input.length >= DEMO_MAX_CHARS
                     ? "text-destructive font-medium"
                     : input.length >= DEMO_MAX_CHARS * 0.9
@@ -1068,6 +1073,7 @@ export default function PublicExaminusChat() {
               </span>
             </div>
           </div>
+
         </div>
       </Card>
 
