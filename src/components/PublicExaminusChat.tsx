@@ -612,9 +612,10 @@ export default function PublicExaminusChat() {
             <span className="text-[0.7rem] md:text-xs uppercase tracking-[0.18em] font-mono text-primary">Examinus · MedStation AI</span>
           </div>
 
-          <p className="text-base md:text-xl text-foreground/90 max-w-2xl mx-auto leading-snug px-2 font-display">
-            Cole o exame. Receba o resumo pronto para o prontuário.
+          <p className="text-2xl md:text-4xl text-foreground max-w-2xl mx-auto leading-tight px-2 font-display">
+            Cole o exame. Receba o <span className="italic text-primary">resumo pronto</span>.
           </p>
+
           <p className="text-xs md:text-sm text-muted-foreground max-w-xl mx-auto px-2">
             Sem cadastro, sem instalação — em segundos.
           </p>
