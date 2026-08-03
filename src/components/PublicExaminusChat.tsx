@@ -236,24 +236,7 @@ export default function PublicExaminusChat() {
   const truncateToastShownRef = useRef(false);
 
   const [isExpanded, setIsExpanded] = useState(false);
-  const [viewportHeight, setViewportHeight] = useState(
-    typeof window !== "undefined" ? window.innerHeight : 900
-  );
 
-  useEffect(() => {
-    if (!isExpanded) return;
-    let raf = 0;
-    const onResize = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => setViewportHeight(window.innerHeight));
-    };
-    setViewportHeight(window.innerHeight);
-    window.addEventListener("resize", onResize);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", onResize);
-    };
-  }, [isExpanded]);
 
 
   // Fecha o modo expandido com ESC e trava o scroll do body
