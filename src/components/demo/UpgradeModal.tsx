@@ -9,9 +9,11 @@ interface UpgradeModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   reason?: "limit-reached" | "cooldown" | "engagement";
+  /** "app" = usuário já logado (sem CTA de criar conta) */
+  context?: "public" | "app";
 }
 
-export function UpgradeModal({ open, onOpenChange, reason = "engagement" }: UpgradeModalProps) {
+export function UpgradeModal({ open, onOpenChange, reason = "engagement", context = "public" }: UpgradeModalProps) {
   const navigate = useNavigate();
 
   const headline =
@@ -82,24 +84,24 @@ export function UpgradeModal({ open, onOpenChange, reason = "engagement" }: Upgr
           <Button
             onClick={() => {
               onOpenChange(false);
-              navigate("/auth");
+              navigate(context === "app" ? "/pricing" : "/auth");
             }}
             className="flex-1 bg-gradient-primary hover:opacity-90"
             size="lg"
           >
-            Criar conta grátis
+            {context === "app" ? "Liberar os 10 assistentes" : "Criar conta grátis"}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
           <Button
             onClick={() => {
               onOpenChange(false);
-              navigate("/pricing");
+              navigate(context === "app" ? "/examinus" : "/pricing");
             }}
             variant="outline"
             size="lg"
             className="flex-1"
           >
-            Ver planos
+            {context === "app" ? "Continuar no Examinus" : "Ver planos"}
           </Button>
         </div>
 
