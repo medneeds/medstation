@@ -165,12 +165,13 @@ export function AgentChat({
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { subscribed } = useSubscription();
+  const [message, setMessage] = useState("");
   // Assinantes: sem limite de caracteres. Cadastrados sem assinatura: 30.000.
   const FREE_CHAR_LIMIT = 30000;
   const charLimit = subscribed ? Infinity : FREE_CHAR_LIMIT;
   const overLimit = message.length > charLimit;
   const nearLimit = !subscribed && message.length >= FREE_CHAR_LIMIT * 0.9;
-  const [message, setMessage] = useState("");
+
 
   const [validationAnnouncement, setValidationAnnouncement] = useState("");
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
