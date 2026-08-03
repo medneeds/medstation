@@ -622,11 +622,11 @@ export default function PublicExaminusChat() {
             <span className="text-[0.7rem] md:text-xs uppercase tracking-[0.18em] font-mono text-primary">Conheça o Examinus | MedStation AI</span>
           </div>
 
-          <p className="text-3xl md:text-5xl text-foreground max-w-3xl mx-auto leading-[1.1] px-2 font-display">
+          <p className="text-3xl md:text-5xl text-foreground max-w-5xl mx-auto leading-[1.1] px-2 font-display">
             Cole o exame. Receba o <span className="italic text-primary">resumo pronto</span>.
           </p>
 
-          <p className="text-xs md:text-sm text-muted-foreground max-w-xl mx-auto px-2">
+          <p className="text-xs md:text-sm text-muted-foreground max-w-3xl mx-auto px-2">
             Sem cadastro, sem instalação — em segundos.
           </p>
 
