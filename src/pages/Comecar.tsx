@@ -402,6 +402,74 @@ export default function Comecar() {
             Ver tour completo da plataforma
           </button>
         </footer>
+
+        <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
+          <DialogContent className="max-w-md overflow-hidden p-0 gap-0">
+            {selected && (
+              <>
+                <div className="relative px-6 pt-7 pb-6 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent">
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_80%_at_20%_0%,hsl(var(--primary)/0.18),transparent)]" />
+                  <div className="relative flex items-start gap-4">
+                    <div className="w-12 h-12 shrink-0 rounded-2xl bg-primary flex items-center justify-center shadow-[0_12px_30px_-12px_hsl(var(--primary)/0.9)]">
+                      <selected.icon className="w-5 h-5 text-primary-foreground" />
+                    </div>
+                    <DialogHeader className="text-left space-y-1">
+                      <DialogTitle className="text-xl leading-tight flex items-center gap-2">
+                        {selected.name}
+                        {selected.free && (
+                          <span className="text-[9px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-primary/15 text-primary font-semibold">
+                            Grátis
+                          </span>
+                        )}
+                      </DialogTitle>
+                      <DialogDescription className="text-xs uppercase tracking-widest">
+                        {selected.desc}
+                      </DialogDescription>
+                    </DialogHeader>
+                  </div>
+                  <p className="relative mt-5 text-base md:text-lg font-medium leading-snug text-foreground">
+                    {selected.hook}
+                  </p>
+                </div>
+
+                <div className="px-6 py-5 space-y-4">
+                  <p className="text-sm text-muted-foreground leading-relaxed">{selected.detail}</p>
+                  <ul className="space-y-2">
+                    {selected.bullets.map((b) => (
+                      <li key={b} className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                        <span className="text-muted-foreground">{b}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                    <Button
+                      className="flex-1 bg-gradient-primary hover:opacity-90"
+                      onClick={() => {
+                        setSelected(null);
+                        go(selected.free ? "/auth" : "/pricing", `assistente_${selected.name.toLowerCase()}`);
+                      }}
+                    >
+                      {selected.free ? "Criar conta e usar grátis" : "Assinar e liberar"}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="sm:w-auto"
+                      onClick={() => {
+                        setSelected(null);
+                        go("/tour", `tour_${selected.name.toLowerCase()}`);
+                      }}
+                    >
+                      Ver no tour
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
+
       </div>
     </div>
   );
