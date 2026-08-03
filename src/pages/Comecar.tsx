@@ -89,7 +89,7 @@ export default function Comecar() {
   useReferralCapture();
 
   const go = (to: string, label: string) => {
-    trackCtaClick(label, "entrada");
+    trackCtaClick({ cta: label, section: "entrada", destination: to });
     if (to.includes("#")) {
       const [path, hash] = to.split("#");
       navigate(path, { state: { scrollTo: hash } });
