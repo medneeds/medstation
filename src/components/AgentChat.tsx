@@ -15,6 +15,8 @@ import { exportAgentConversationToPDF } from "@/utils/pdfExport";
 import { pdfToImages } from "@/utils/pdfToImages";
 import { AgentVoiceInput } from "@/components/AgentVoiceInput";
 import { ThinkingIndicator } from "@/components/ThinkingIndicator";
+import { useSubscription } from "@/contexts/SubscriptionContext";
+
 import { 
   Send, 
   Paperclip, 
