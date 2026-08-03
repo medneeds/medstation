@@ -171,7 +171,26 @@ export default function Auth() {
         email: validated.email, password: validated.password,
       });
       if (error) {
-        toast({ variant: "destructive", title: "Erro no login", description: error.message });
+        const notConfirmed =
+          /email not confirmed|not confirmed|email_not_confirmed/i.test(error.message) ||
+          (error as any).code === "email_not_confirmed";
+
+        if (notConfirmed) {
+          toast({
+            title: "Falta confirmar seu e-mail",
+            description: "Abra o link que enviamos para ativar sua conta. Você pode reenviá-lo agora.",
+          });
+          navigate(`/confirmar-email?email=${encodeURIComponent(validated.email)}`, {
+            state: { email: validated.email },
+          });
+          setLoading(false);
+          return;
+        }
+
+        const msg = /invalid login credentials/i.test(error.message)
+          ? "E-mail ou senha incorretos. Verifique os dados e tente novamente."
+          : error.message;
+        toast({ variant: "destructive", title: "Não foi possível entrar", description: msg });
         setLoading(false);
         return;
       }
