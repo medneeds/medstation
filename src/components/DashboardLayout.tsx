@@ -12,6 +12,7 @@ import { FloatingConsultationButton } from "@/components/FloatingConsultationBut
 import { OnboardingTour } from "@/components/OnboardingTour";
 import { AnnouncementsBanner } from "@/components/AnnouncementsBanner";
 import { NpsWidget } from "@/components/NpsWidget";
+import { AssistantPromoEngine } from "@/components/AssistantPromoEngine";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -131,6 +132,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <SupportChat />
       <OnboardingTour />
       <NpsWidget />
+      <AssistantPromoEngine />
     </>
   );
 }
