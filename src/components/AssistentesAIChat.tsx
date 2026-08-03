@@ -122,7 +122,7 @@ export function AssistentesAIChat({ className = "" }: { className?: string }) {
       </ScrollArea>
 
       {messages.length <= 1 && (
-        <div className="flex flex-wrap gap-1.5 px-4 pb-2">
+        <div className="flex flex-wrap gap-1.5 px-5 pb-3">
           {SUGGESTIONS.map((s) => (
             <button
               key={s}
@@ -136,26 +136,32 @@ export function AssistentesAIChat({ className = "" }: { className?: string }) {
         </div>
       )}
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          send(input);
-        }}
-        className="flex items-center gap-2 p-3 border-t border-border/50 bg-background/40"
-      >
-        <Input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Ex: o Clínicus serve para emergência?"
-          maxLength={2000}
-          className="h-9 text-sm"
-        />
-        <Button type="submit" size="icon" className="h-9 w-9 shrink-0" disabled={loading || !input.trim()}>
-          <Send className="w-4 h-4" />
-        </Button>
-      </form>
+      <div className="border-t border-border/50 bg-background/40 p-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            send(input);
+          }}
+          className="flex items-center gap-2"
+        >
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Ex: o Clínicus serve para emergência?"
+            maxLength={2000}
+            className="h-10 text-sm"
+          />
+          <Button type="submit" size="icon" className="h-10 w-10 shrink-0" disabled={loading || !input.trim()}>
+            <Send className="w-4 h-4" />
+          </Button>
+        </form>
+        <p className="text-[10px] text-center text-muted-foreground mt-2.5">
+          Tira dúvidas sobre a plataforma. Não substitui avaliação clínica.
+        </p>
+      </div>
     </div>
   );
 }
 
 export default AssistentesAIChat;
+
