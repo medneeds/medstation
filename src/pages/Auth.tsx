@@ -92,7 +92,7 @@ export default function Auth() {
         password: validated.password,
         options: {
           data: { full_name: validated.fullName },
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/auth?confirmed=1`,
         },
       });
       if (error) {
