@@ -79,6 +79,11 @@ export function AssistantPromoEngine() {
         description: promo.description,
         duration: 10000,
         icon: <Sparkles className="w-4 h-4 text-primary" />,
+        classNames: {
+          toast: "flex-wrap",
+          actionButton: "whitespace-nowrap",
+          cancelButton: "whitespace-nowrap",
+        },
         action: {
           label: "Assinar e liberar +10 assistentes",
           onClick: () => navigate("/pricing"),
