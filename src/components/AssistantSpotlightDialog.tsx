@@ -82,18 +82,18 @@ export function AssistantSpotlightDialog({ assistant, onClose, onPrimary, onSeco
 
   return (
     <Dialog open={!!assistant} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg overflow-hidden p-0 gap-0">
+      <DialogContent className="w-[calc(100vw-1.5rem)] max-w-lg max-h-[88dvh] overflow-y-auto overflow-x-hidden p-0 gap-0 rounded-3xl">
         {assistant && Icon && (
           <>
             {/* Cabeçalho */}
-            <div className="relative px-6 pt-7 pb-5 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent">
+            <div className="relative px-5 sm:px-6 pt-6 sm:pt-7 pb-4 sm:pb-5 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_80%_at_20%_0%,hsl(var(--primary)/0.18),transparent)]" />
-              <div className="relative flex items-start gap-4">
-                <div className="w-12 h-12 shrink-0 rounded-2xl bg-primary flex items-center justify-center shadow-[0_12px_30px_-12px_hsl(var(--primary)/0.9)]">
+              <div className="relative flex items-start gap-3 sm:gap-4 pr-8">
+                <div className="w-11 h-11 sm:w-12 sm:h-12 shrink-0 rounded-2xl bg-primary flex items-center justify-center shadow-[0_12px_30px_-12px_hsl(var(--primary)/0.9)]">
                   <Icon className="w-5 h-5 text-primary-foreground" />
                 </div>
-                <DialogHeader className="text-left space-y-1">
-                  <DialogTitle className="text-xl leading-tight flex items-center gap-2">
+                <DialogHeader className="text-left space-y-1 min-w-0">
+                  <DialogTitle className="text-lg sm:text-xl leading-tight flex flex-wrap items-center gap-2">
                     {assistant.name}
                     {assistant.free && (
                       <span className="text-[9px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-primary/15 text-primary font-semibold">
@@ -101,17 +101,17 @@ export function AssistantSpotlightDialog({ assistant, onClose, onPrimary, onSeco
                       </span>
                     )}
                   </DialogTitle>
-                  <DialogDescription className="text-xs uppercase tracking-widest">
+                  <DialogDescription className="text-[10px] sm:text-xs uppercase tracking-widest">
                     {assistant.desc}
                   </DialogDescription>
                 </DialogHeader>
               </div>
-              <p className="relative mt-4 text-base md:text-lg font-medium leading-snug text-foreground">
+              <p className="relative mt-4 text-[15px] sm:text-lg font-medium leading-snug text-foreground">
                 {assistant.hook}
               </p>
 
               {steps.length > 0 && (
-                <div className="relative mt-5 inline-flex p-1 rounded-full bg-background/70 backdrop-blur border border-border/60">
+                <div className="relative mt-4 sm:mt-5 inline-flex p-1 rounded-full bg-background/70 backdrop-blur border border-border/60">
                   {(
                     [
                       { id: "resumo", label: "Resumo" },
@@ -122,7 +122,7 @@ export function AssistantSpotlightDialog({ assistant, onClose, onPrimary, onSeco
                       key={t.id}
                       type="button"
                       onClick={() => setTab(t.id)}
-                      className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all ${
+                      className={`px-3.5 sm:px-4 py-1.5 text-xs font-semibold rounded-full transition-all ${
                         tab === t.id
                           ? "bg-primary text-primary-foreground shadow-sm"
                           : "text-muted-foreground hover:text-foreground"
@@ -136,7 +136,8 @@ export function AssistantSpotlightDialog({ assistant, onClose, onPrimary, onSeco
             </div>
 
             {/* Conteúdo */}
-            <div className="px-6 py-5 space-y-4">
+            <div className="px-5 sm:px-6 py-5 space-y-4">
+
               {tab === "resumo" || steps.length === 0 ? (
                 <>
                   <p className="text-sm text-muted-foreground leading-relaxed">{assistant.detail}</p>
