@@ -937,8 +937,10 @@ export default function PublicExaminusChat() {
           {/* Desktop: Glass clinical layout */}
           <div className="hidden md:flex flex-col gap-3">
             {/* Control bar */}
-            <div className="flex flex-wrap items-center gap-2 px-3 py-2.5 rounded-xl bg-muted/40 border border-border/50">
+            <div className="flex flex-wrap items-center gap-1.5 px-3 py-2 rounded-xl bg-muted/40 border border-border/50">
+              <span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground/70 mr-1">Ajustes de saída</span>
               <Toggle
+
                 pressed={usePipeSeparator}
                 onPressedChange={setUsePipeSeparator}
                 size="sm"
