@@ -146,23 +146,7 @@ export default function Home() {
       {/* Seção 1: Examinus por MedStation AI */}
       <section id="demo" className="pt-10 md:pt-16 pb-6 md:pb-8 px-4 md:px-6 relative overflow-hidden">
         <div className="container mx-auto max-w-4xl relative">
-          <div className="space-y-8 md:space-y-10 animate-in fade-in duration-700 text-center">
-
-            {/* Hero editorial header */}
-            <div className="space-y-4 md:space-y-5 max-w-4xl mx-auto">
-              <div className="inline-flex items-center gap-2 text-[0.65rem] uppercase tracking-[0.22em] font-mono text-muted-foreground">
-                <span className="h-px w-8 bg-primary" />
-                Para médicos ocupados
-              </div>
-              <h1 className="font-display text-[clamp(2rem,8.5vw,4.5rem)] tracking-tight leading-[1.05] text-foreground md:whitespace-nowrap">
-                Produza mais. <span className="italic text-primary">Digite menos.</span>
-              </h1>
-              <p className="text-[13px] md:text-base text-muted-foreground max-w-2xl mx-auto px-2 leading-relaxed">
-                Conheça <span className="font-medium text-foreground">Examinus</span> — um dos 10 assistentes clínicos da MedStation AI.
-                Teste agora, grátis e sem cadastro
-                <ArrowDown className="inline-block w-3.5 h-3.5 text-primary ml-1 translate-y-[2px] animate-bounce" />
-              </p>
-            </div>
+          <div className="space-y-6 md:space-y-8 animate-in fade-in duration-700 text-center">
 
             {/* Demo Card — pulso sutil para chamar interação */}
             <div className="relative group">
