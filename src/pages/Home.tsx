@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Sparkles, Activity, Brain, Calculator, Pill, FileCode, TestTube2, Wind, FileCheck, BookOpen, Compass, Stethoscope, Sigma } from "lucide-react";
+import { ArrowRight, Sparkles, Activity, Brain, Calculator, Pill, FileCode, TestTube2, Wind, FileCheck, BookOpen, Compass, Stethoscope, Sigma, MessagesSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PublicExaminusChat from "@/components/PublicExaminusChat";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -54,7 +54,7 @@ const faqs: FAQItem[] = [
   },
   {
     q: "Qual a diferença entre os planos?",
-    a: "O Pro 1 dá acesso ao ecossistema dos 10 assistentes para o trabalho clínico do dia a dia. O Pro 2 inclui o Modo Consultório com transcrição da consulta. Você ainda pode combinar com o Studius para estudo médico contínuo.",
+    a: "O Pro 1 dá acesso ao ecossistema dos 11 assistentes para o trabalho clínico do dia a dia. O Pro 2 inclui o Modo Consultório com transcrição da consulta. Você ainda pode combinar com o Studius para estudo médico contínuo.",
   },
 ];
 
@@ -70,6 +70,7 @@ const agents = [
   { name: "Atestus", icon: FileCheck, shortDesc: "Atestados", fullDesc: "Atestados prontos em um clique", color: "from-emerald-500 to-emerald-600" },
   { name: "Protocolus", icon: BookOpen, shortDesc: "Protocolos", fullDesc: "Protocolos atualizados na hora", color: "from-amber-500 to-amber-600" },
   { name: "Orientus", icon: Compass, shortDesc: "Orientações", fullDesc: "Orientações claras para o paciente", color: "from-rose-500 to-rose-600" },
+  { name: "Mediscuss", icon: MessagesSquare, shortDesc: "Discussão de casos", fullDesc: "Pareceres e discussões prontos para o prontuário", color: "from-teal-500 to-teal-600" },
 ];
 
 export default function Home() {
@@ -181,7 +182,7 @@ export default function Home() {
                 className="text-xs md:text-sm text-muted-foreground hover:text-foreground h-8 md:h-9"
                 onClick={() => scrollToSection('plataforma')}
               >
-                Ver os outros 9 assistentes ↓
+                Ver os outros 10 assistentes ↓
               </Button>
             </div>
           </div>
@@ -198,10 +199,10 @@ export default function Home() {
               Ecossistema Completo
             </Badge>
             <h2 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-tight max-w-3xl mx-auto leading-[1.05] px-4 text-foreground">
-              Dez assistentes. <span className="italic text-primary">Um único fluxo.</span>
+              Onze assistentes. <span className="italic text-primary">Um único fluxo.</span>
             </h2>
             <p className="text-sm md:text-base lg:text-lg text-muted-foreground max-w-xl mx-auto">
-              10 assistentes especializados para acelerar sua rotina médica
+              11 assistentes especializados para acelerar sua rotina médica
             </p>
           </div>
 
@@ -244,7 +245,7 @@ export default function Home() {
             {[
               { title: "Economia de tempo", desc: "Até 70% menos digitação em documentação clínica", metric: "70%" },
               { title: "Precisão", desc: "IA treinada com guidelines médicos atualizados", metric: "99.9%" },
-              { title: "Integrado", desc: "Todos os assistentes conectados em um ecossistema", metric: "10 IAs" },
+              { title: "Integrado", desc: "Todos os assistentes conectados em um ecossistema", metric: "11 IAs" },
             ].map((prop, i) => (
               <Card key={i} className="p-4 md:p-6 border-border/50 bg-card/50 backdrop-blur-sm">
                 <div className="text-2xl md:text-3xl font-bold text-primary mb-1 md:mb-2">{prop.metric}</div>
@@ -333,7 +334,7 @@ export default function Home() {
               Comece grátis, <span className="italic text-primary">monte sua estação</span>
             </h2>
             <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
-              Os 10 Assistentes e o Modo Consultório são <span className="text-foreground font-medium">produtos separados</span>. Assine só o que usa, ou junte os dois no MedStation AI Pro 2.
+              Os 11 Assistentes e o Modo Consultório são <span className="text-foreground font-medium">produtos separados</span>. Assine só o que usa, ou junte os dois no MedStation AI Pro 2.
             </p>
 
             {/* Shared billing toggle */}
@@ -373,7 +374,7 @@ export default function Home() {
                   <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Apenas Examinus</li>
                   <li className="flex gap-2"><span className="text-amber-500 mt-0.5">!</span> Limite de uso e tempo de espera entre mensagens</li>
                   <li className="flex gap-2"><span className="text-amber-500 mt-0.5">!</span> Pop-ups de upgrade</li>
-                  <li className="flex gap-2"><span className="text-amber-500 mt-0.5">!</span> Outros 9 bloqueados</li>
+                  <li className="flex gap-2"><span className="text-amber-500 mt-0.5">!</span> Outros 10 bloqueados</li>
                 </ul>
               </div>
               <Button variant="outline" className="w-full h-11 mt-5" onClick={() => { trackCtaClick({ cta: 'plano_gratis', section: 'pricing', plan: 'free', billing_period: billingPeriod, destination: '/auth' }); navigate('/auth'); }}>
@@ -382,13 +383,13 @@ export default function Home() {
               <p className="text-[10px] text-center text-muted-foreground mt-2">Sem cartão</p>
             </Card>
 
-            {/* MedStation AI Pro — 10 Assistentes */}
+            {/* MedStation AI Pro — 11 Assistentes */}
             <Card className="p-5 md:p-6 border border-hairline bg-card/60 backdrop-blur-sm flex flex-col">
               <div className="flex-1 space-y-4">
                 <div>
-                  <span className="text-[0.6rem] uppercase tracking-[0.22em] font-mono text-muted-foreground">10 Assistentes</span>
+                  <span className="text-[0.6rem] uppercase tracking-[0.22em] font-mono text-muted-foreground">11 Assistentes</span>
                   <h3 className="font-display text-2xl tracking-tight mt-1">MedStation AI Pro</h3>
-                  <p className="text-xs text-muted-foreground mt-1">Os 10 assistentes liberados, sem restrições de uso.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Os 11 assistentes liberados, sem restrições de uso.</p>
                 </div>
                 <div>
                   <div className="flex items-baseline gap-1">
@@ -423,7 +424,7 @@ export default function Home() {
                 <div>
                   <span className="text-[0.6rem] uppercase tracking-[0.22em] font-mono text-primary">Estação completa</span>
                   <h3 className="font-display text-2xl tracking-tight mt-1 text-primary">MedStation AI Pro 2</h3>
-                  <p className="text-xs text-muted-foreground mt-1">10 Assistentes + Modo Consultório no mesmo plano.</p>
+                  <p className="text-xs text-muted-foreground mt-1">11 Assistentes + Modo Consultório no mesmo plano.</p>
                 </div>
                 <div>
                   <div className="flex items-baseline gap-1">
@@ -435,7 +436,7 @@ export default function Home() {
                   </p>
                 </div>
                 <ul className="space-y-1.5 text-xs text-muted-foreground">
-                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> <span className="text-foreground"><strong>10 Assistentes</strong> ilimitados</span></li>
+                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> <span className="text-foreground"><strong>11 Assistentes</strong> ilimitados</span></li>
                   <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> <span className="text-foreground"><strong>Modo Consultório</strong> em tempo real</span></li>
                   <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Anamnese estruturada automaticamente</li>
                   <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Suporte prioritário · Garantia 7 dias</li>
@@ -453,7 +454,7 @@ export default function Home() {
                 <div>
                   <span className="text-[0.6rem] uppercase tracking-[0.22em] font-mono text-muted-foreground">Tempo real</span>
                   <h3 className="font-display text-2xl tracking-tight mt-1">Modo Consultório</h3>
-                  <p className="text-xs text-muted-foreground mt-1">Produto separado. Pode ser somado aos 10 Assistentes.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Produto separado. Pode ser somado aos 11 Assistentes.</p>
                 </div>
                 <div>
                   <div className="flex items-baseline gap-1">
