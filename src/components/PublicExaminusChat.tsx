@@ -1067,6 +1067,7 @@ export default function PublicExaminusChat() {
 
       {/* Engine de pop-ups promocionais (toasts/banners/modal rotativos) */}
       <DemoPromoEngine observeTargetId="demo" />
+      </div>
     </div>
   );
 }
