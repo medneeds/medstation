@@ -12,8 +12,6 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Toggle } from "@/components/ui/toggle";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { pdfToImages } from "@/utils/pdfToImages";
 import { DemoPromoEngine } from "@/components/demo/DemoPromoEngine";
 
