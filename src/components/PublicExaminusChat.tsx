@@ -609,7 +609,7 @@ export default function PublicExaminusChat() {
     <div
       className={
         isExpanded
-          ? "fixed inset-0 z-[70] bg-background overflow-y-auto overscroll-contain p-3 md:p-6 [contain:layout_paint]"
+          ? "fixed inset-0 z-[70] bg-background overflow-y-auto overscroll-contain p-3 md:p-6 [scrollbar-gutter:stable_both-edges]"
           : "w-full max-w-5xl mx-auto"
       }
     >
@@ -692,7 +692,7 @@ export default function PublicExaminusChat() {
         {/* Messages Area */}
         {hasMessages && (
           <ScrollArea 
-            className="p-3 md:p-5 transition-all duration-300 bg-gradient-to-b from-muted/20 to-transparent" 
+            className="p-3 md:p-5 bg-gradient-to-b from-muted/20 to-transparent" 
             style={{ height: `${messagesHeight}px` }}
             ref={scrollRef}
           >
@@ -703,7 +703,7 @@ export default function PublicExaminusChat() {
                   className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-3 duration-300`}
                 >
                   <div
-                    className={`max-w-[90%] md:max-w-[85%] rounded-2xl md:rounded-2xl shadow-sm transition-all hover:shadow-md relative group ${
+                    className={`max-w-[90%] md:max-w-[85%] rounded-2xl md:rounded-2xl shadow-sm transition-shadow duration-200 hover:shadow-md relative group will-change-auto ${
                       message.role === "user"
                         ? "bg-gradient-primary text-primary-foreground ml-2 md:ml-4 px-3 md:px-4 py-2.5 md:py-3.5 rounded-br-sm md:rounded-br-2xl"
                         : "bg-card text-card-foreground mr-2 md:mr-4 border border-border/50 px-3 md:px-4 pt-2.5 md:pt-3.5 pb-9 md:pb-10 rounded-bl-sm md:rounded-bl-2xl"
@@ -1022,7 +1022,7 @@ export default function PublicExaminusChat() {
                 placeholder={hasMessages ? "Cole mais exames aqui..." : "Cole os resultados de exames aqui (texto, imagem ou PDF)"}
                 maxLength={DEMO_MAX_CHARS}
                 aria-invalid={(input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= DEMO_MAX_CHARS}
-                className={`${isExpanded ? "min-h-[240px] max-h-[45vh]" : hasMessages ? "min-h-[110px] max-h-52" : "min-h-[168px] max-h-64"} resize-none w-full rounded-2xl transition-all text-base leading-relaxed p-5 pb-16 bg-muted/25 border-2 ${
+                className={`${isExpanded ? "min-h-[240px] max-h-[45vh]" : hasMessages ? "min-h-[110px] max-h-52" : "min-h-[168px] max-h-64"} resize-none w-full rounded-2xl transition-colors duration-200 text-base leading-relaxed p-5 pb-16 bg-muted/25 border-2 ${
                   (input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= DEMO_MAX_CHARS
                     ? "border-destructive focus:border-destructive"
                     : "border-border/40 focus:border-primary/60 focus:bg-background"
@@ -1035,7 +1035,7 @@ export default function PublicExaminusChat() {
                   size="icon"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isLoading || isExtracting}
-                  className="h-11 w-11 shrink-0 rounded-xl bg-background/90 hover:bg-primary/10 hover:border-primary/50 transition-all"
+                  className="h-11 w-11 shrink-0 rounded-xl bg-background/90 hover:bg-primary/10 hover:border-primary/50 transition-colors duration-200"
                   title="Upload de imagens ou PDF"
                 >
                   {isExtracting ? (
@@ -1047,7 +1047,7 @@ export default function PublicExaminusChat() {
                 <Button
                   onClick={handleSend}
                   disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0) || isCoolingDown || input.length > DEMO_MAX_CHARS}
-                  className="h-11 px-7 rounded-xl bg-gradient-primary hover:opacity-90 transition-all shadow-medical hover:shadow-elevated active:scale-95 font-semibold"
+                  className="h-11 px-7 rounded-xl bg-gradient-primary hover:opacity-90 transition-[opacity,box-shadow] duration-200 shadow-medical hover:shadow-elevated active:scale-95 font-semibold"
                   title={isCoolingDown ? `Aguarde ${cooldownRemaining}s — modo gratuito` : undefined}
                 >
                   {isLoading ? (
