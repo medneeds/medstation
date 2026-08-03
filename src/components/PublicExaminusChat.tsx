@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Sparkles, ArrowRight, Copy, Check, FileUp, Upload, X, Image as ImageIcon, SeparatorVertical, Clock, AlertTriangle, Stethoscope, Minimize2, FileText } from "lucide-react";
+import { Loader2, Send, Sparkles, ArrowRight, Copy, Check, FileUp, Upload, X, Image as ImageIcon, SeparatorVertical, Clock, AlertTriangle, Stethoscope, Minimize2, Maximize2, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -154,7 +154,33 @@ export default function PublicExaminusChat() {
   const navigate = useNavigate();
   const truncateToastShownRef = useRef(false);
 
-  const DEMO_MAX_CHARS = 10000;
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState(
+    typeof window !== "undefined" ? window.innerHeight : 900
+  );
+
+  useEffect(() => {
+    const onResize = () => setViewportHeight(window.innerHeight);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // Fecha o modo expandido com ESC e trava o scroll do body
+  useEffect(() => {
+    if (!isExpanded) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsExpanded(false);
+    };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [isExpanded]);
+
+  const DEMO_MAX_CHARS = 8000;
   const handleInputChange = (value: string) => {
     if (value.length > DEMO_MAX_CHARS) {
       const truncated = value.slice(0, DEMO_MAX_CHARS);
@@ -341,7 +367,7 @@ export default function PublicExaminusChat() {
     }
 
     const combined = sections.join('\n\n---\n\n');
-    const MAX = 9500;
+    const MAX = 7800;
     return combined.length > MAX
       ? `${combined.slice(0, MAX)}\n\n[Conteúdo truncado]`
       : combined;
@@ -561,12 +587,23 @@ export default function PublicExaminusChat() {
   };
 
   const hasMessages = messages.length > 0;
-  const messagesHeight = hasMessages ? Math.min(500, Math.max(200, messages.length * 80)) : 0;
+  const messagesHeight = isExpanded
+    ? Math.max(320, viewportHeight - 380)
+    : hasMessages
+      ? Math.min(500, Math.max(200, messages.length * 80))
+      : 0;
   const LIMIT = 3;
   const isCoolingDown = cooldownRemaining > 0;
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
+    <div
+      className={
+        isExpanded
+          ? "fixed inset-0 z-[70] bg-background/92 backdrop-blur-xl overflow-y-auto p-3 md:p-6 animate-in fade-in duration-200"
+          : "w-full max-w-5xl mx-auto"
+      }
+    >
+      <div className={isExpanded ? "w-full max-w-5xl mx-auto" : "contents"}>
       {/* Hero Section */}
       {!hasMessages && (
         <div className="text-center space-y-3 md:space-y-4 mb-4 md:mb-6 animate-in fade-in duration-700 slide-in-from-bottom-4">
@@ -575,8 +612,11 @@ export default function PublicExaminusChat() {
             <span className="text-[0.7rem] md:text-xs uppercase tracking-[0.18em] font-mono text-primary">Examinus · MedStation AI</span>
           </div>
 
-          <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed px-2">
-            Cole os resultados dos exames abaixo e veja a mágica acontecer.
+          <p className="text-base md:text-xl text-foreground/90 max-w-2xl mx-auto leading-snug px-2 font-display">
+            Cole o exame. Receba o resumo pronto para o prontuário.
+          </p>
+          <p className="text-xs md:text-sm text-muted-foreground max-w-xl mx-auto px-2">
+            Sem cadastro, sem instalação — em segundos.
           </p>
 
           <div className="hidden md:flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground pt-1">
@@ -595,6 +635,19 @@ export default function PublicExaminusChat() {
           </div>
         </div>
       )}
+
+      {/* Botão de expansão */}
+      <div className="flex justify-end mb-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsExpanded((v) => !v)}
+          className="h-8 px-2.5 gap-1.5 text-[11px] md:text-xs text-muted-foreground hover:text-primary rounded-full"
+        >
+          {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+          {isExpanded ? "Reduzir" : "Expandir tela"}
+        </Button>
+      </div>
 
       {/* Chat Card */}
       <Card className={`shadow-elevated border-border/50 backdrop-blur-xl bg-card/95 transition-all duration-500 ${hasMessages ? 'hover:shadow-medical' : ''}`}>
@@ -834,10 +887,10 @@ export default function PublicExaminusChat() {
                 onChange={(e) => handleInputChange(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder={hasMessages ? "Cole exames..." : "Cole exames aqui"}
-                maxLength={10000}
-                aria-invalid={(input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= 10000}
-                className={`min-h-[44px] max-h-32 resize-none flex-1 rounded-2xl text-base py-3 ${
-                  (input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= 10000
+                maxLength={DEMO_MAX_CHARS}
+                aria-invalid={(input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= DEMO_MAX_CHARS}
+                className={`${isExpanded ? "min-h-[140px] max-h-[40vh]" : "min-h-[44px] max-h-32"} resize-none flex-1 rounded-2xl text-base py-3 ${
+                  (input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= DEMO_MAX_CHARS
                     ? "border-destructive focus:border-destructive"
                     : "border-border/50 focus:border-primary/50"
                 }`}
@@ -845,7 +898,7 @@ export default function PublicExaminusChat() {
               />
               <Button
                 onClick={handleSend}
-                disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0) || isCoolingDown || input.length > 10000}
+                disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0) || isCoolingDown || input.length > DEMO_MAX_CHARS}
                 size={isCoolingDown ? "sm" : "icon"}
                 className={`${isCoolingDown ? "h-10 px-3 text-[11px] rounded-full" : "h-10 w-10 rounded-full"} bg-gradient-primary hover:opacity-90 transition-all shrink-0 shadow-md`}
                 title={isCoolingDown ? `Aguarde ${cooldownRemaining}s — modo gratuito` : undefined}
@@ -861,19 +914,19 @@ export default function PublicExaminusChat() {
             </div>
             <div className="flex items-center justify-between gap-2 mt-1 px-1">
               <span className="text-[10px] text-muted-foreground/80 truncate">
-                Demo: até 10.000 caracteres • Plataforma: 30.000
+                Demo: até 8.000 caracteres • Plataforma: 30.000
               </span>
               <span
                 className={`text-[10px] tabular-nums shrink-0 ${
-                  input.length >= 10000
+                  input.length >= DEMO_MAX_CHARS
                     ? "text-destructive font-medium"
-                    : input.length >= 9000
+                    : input.length >= DEMO_MAX_CHARS * 0.9
                     ? "text-amber-600 dark:text-amber-400"
                     : "text-muted-foreground"
                 }`}
                 aria-live="polite"
               >
-                {input.length.toLocaleString("pt-BR")}/10.000
+                {input.length.toLocaleString("pt-BR")}/8.000
               </span>
             </div>
           </div>
@@ -965,10 +1018,10 @@ export default function PublicExaminusChat() {
                 onChange={(e) => handleInputChange(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder={hasMessages ? "Cole mais exames aqui..." : "Cole os resultados de exames aqui (texto, imagem ou PDF)"}
-                maxLength={10000}
-                aria-invalid={(input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= 10000}
-                className={`min-h-[48px] max-h-40 resize-none flex-1 rounded-xl transition-colors text-sm py-3 ${
-                  (input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= 10000
+                maxLength={DEMO_MAX_CHARS}
+                aria-invalid={(input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= DEMO_MAX_CHARS}
+                className={`${isExpanded ? "min-h-[180px] max-h-[45vh]" : "min-h-[48px] max-h-40"} resize-none flex-1 rounded-xl transition-colors text-sm py-3 ${
+                  (input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= DEMO_MAX_CHARS
                     ? "border-destructive focus:border-destructive"
                     : "border-border/50 focus:border-primary/50"
                 }`}
@@ -976,7 +1029,7 @@ export default function PublicExaminusChat() {
               />
               <Button
                 onClick={handleSend}
-                disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0) || isCoolingDown || input.length > 10000}
+                disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0) || isCoolingDown || input.length > DEMO_MAX_CHARS}
                 size="lg"
                 className="h-12 px-6 rounded-xl bg-gradient-primary hover:opacity-90 transition-all shadow-medical hover:shadow-elevated"
                 title={isCoolingDown ? `Aguarde ${cooldownRemaining}s — modo gratuito` : undefined}
@@ -998,19 +1051,19 @@ export default function PublicExaminusChat() {
             </div>
             <div className="flex items-center justify-between gap-2 mt-1 px-1">
               <span className="text-xs text-muted-foreground/80">
-                Modo demonstração: até 10.000 caracteres por mensagem • Usuários da plataforma: até 30.000
+                Modo demonstração: até 8.000 caracteres por mensagem • Usuários da plataforma: até 30.000
               </span>
               <span
                 className={`text-xs tabular-nums shrink-0 ${
-                  input.length >= 10000
+                  input.length >= DEMO_MAX_CHARS
                     ? "text-destructive font-medium"
-                    : input.length >= 9000
+                    : input.length >= DEMO_MAX_CHARS * 0.9
                     ? "text-amber-600 dark:text-amber-400"
                     : "text-muted-foreground"
                 }`}
                 aria-live="polite"
               >
-                {input.length.toLocaleString("pt-BR")}/10.000 caracteres
+                {input.length.toLocaleString("pt-BR")}/8.000 caracteres
               </span>
             </div>
           </div>
@@ -1040,6 +1093,7 @@ export default function PublicExaminusChat() {
 
       {/* Engine de pop-ups promocionais (toasts/banners/modal rotativos) */}
       <DemoPromoEngine observeTargetId="demo" />
+      </div>
     </div>
   );
 }
