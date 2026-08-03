@@ -1756,7 +1756,7 @@ export function AgentChat({
             <Textarea
               ref={textareaRef}
               value={message}
-              onChange={(e) => setMessage(e.target.value.slice(0, 30000))}
+              onChange={(e) => setMessage(subscribed ? e.target.value : e.target.value.slice(0, FREE_CHAR_LIMIT))}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
@@ -1764,12 +1764,13 @@ export function AgentChat({
                 }
               }}
               placeholder={isMobile ? "Mensagem... (Shift+Enter para nova linha)" : `${placeholder}  ·  Shift+Enter para nova linha`}
-              maxLength={30000}
+              maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
               rows={1}
-              aria-invalid={(message.length > 0 && !message.trim()) || message.length >= 30000}
+              aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
               className={`w-full resize-none pr-10 py-2.5 text-base leading-relaxed min-h-[44px] rounded-2xl transition-all ${
-                (message.length > 0 && !message.trim()) || message.length >= 30000
+                (message.length > 0 && !message.trim()) || overLimit
                   ? "border-destructive focus-visible:ring-destructive"
+
                   : ""
               }`}
               style={{ maxHeight: inputExpanded ? 400 : 200 }}
