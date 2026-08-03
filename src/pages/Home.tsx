@@ -16,6 +16,7 @@ import { FAQMiniDemo } from "@/components/FAQMiniDemo";
 import { HeroVideo } from "@/components/HeroVideo";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { trackCtaClick } from "@/lib/analytics";
+import { SignupBenefitPrompt } from "@/components/demo/SignupBenefitPrompt";
 
 type FAQItem = {
   q: string;
