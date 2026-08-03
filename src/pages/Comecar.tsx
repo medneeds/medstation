@@ -166,7 +166,7 @@ export default function Comecar() {
                         {p.sub}
                       </span>
                       <span
-                        className={`mt-3 block text-xs leading-relaxed ${
+                        className={`mt-3 block text-xs leading-relaxed pr-8 pb-1 ${
                           p.primary ? "opacity-80" : "text-muted-foreground/80"
                         }`}
                       >
