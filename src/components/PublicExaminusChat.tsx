@@ -972,63 +972,16 @@ export default function PublicExaminusChat() {
           {/* Desktop: Glass clinical layout */}
           <div className="hidden md:flex flex-col gap-3">
             {/* Control bar */}
-            <div className="flex flex-nowrap items-center gap-1.5 px-3 py-2 rounded-xl bg-muted/40 border border-border/50 overflow-x-auto scrollbar-none">
+            <div className="flex flex-nowrap items-center gap-2 px-3 py-2.5 rounded-2xl bg-muted/35 border border-border/50 overflow-x-auto scrollbar-none">
               <span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground/70 mr-1 shrink-0">Ajustes de saída</span>
-              <Toggle
-
-                pressed={usePipeSeparator}
-                onPressedChange={setUsePipeSeparator}
-                size="sm"
-                className="h-8 px-2.5 rounded-lg data-[state=on]:bg-primary/15 data-[state=on]:text-primary shrink-0"
-                title="Separar exames com barra vertical |"
-              >
-                <SeparatorVertical className="w-3.5 h-3.5 mr-1.5" />
-                <span className="text-xs whitespace-nowrap">Separar com |</span>
-              </Toggle>
-              <div className="flex items-center gap-2 px-3 h-8 bg-background/70 border border-border/50 rounded-lg shrink-0">
-                <Switch
-                  id="include-time"
-                  checked={includeTime}
-                  onCheckedChange={setIncludeTime}
-                  className="data-[state=checked]:bg-primary scale-90"
-                />
-                <Label htmlFor="include-time" className="text-xs cursor-pointer flex items-center gap-1.5 whitespace-nowrap">
-                  <Clock className="w-3 h-3" />
-                  Incluir horário
-                </Label>
-              </div>
-              <div className="w-px h-5 bg-border/70 mx-1 shrink-0" />
-              <Toggle
-                pressed={onlyAltered}
-                onPressedChange={setOnlyAltered}
-                size="sm"
-                className="h-8 px-2.5 rounded-lg data-[state=on]:bg-amber-500/15 data-[state=on]:text-amber-600 dark:data-[state=on]:text-amber-400 shrink-0"
-                title="Mostrar apenas resultados alterados/críticos"
-              >
-                <AlertTriangle className="w-3.5 h-3.5 mr-1.5" />
-                <span className="text-xs whitespace-nowrap">Só alterados</span>
-              </Toggle>
-              <Toggle
-                pressed={clinicalImpression}
-                onPressedChange={setClinicalImpression}
-                size="sm"
-                className="h-8 px-2.5 rounded-lg data-[state=on]:bg-blue-500/15 data-[state=on]:text-blue-600 dark:data-[state=on]:text-blue-400 shrink-0"
-                title="Impressão clínica: análise das alterações laboratoriais"
-              >
-                <Stethoscope className="w-3.5 h-3.5 mr-1.5" />
-                <span className="text-xs whitespace-nowrap">Impressão clínica</span>
-              </Toggle>
-              <Toggle
-                pressed={compactMode}
-                onPressedChange={setCompactMode}
-                size="sm"
-                className="h-8 px-2.5 rounded-lg data-[state=on]:bg-green-500/15 data-[state=on]:text-green-600 dark:data-[state=on]:text-green-400 shrink-0"
-                title="Versão compacta: omite índices hematimétricos (VCM, HCM, CHCM, RDW)"
-              >
-                <Minimize2 className="w-3.5 h-3.5 mr-1.5" />
-                <span className="text-xs whitespace-nowrap">Compacto</span>
-              </Toggle>
+              <OutputControl icon={SeparatorVertical} tone="primary" label="Separar com |" info="Organiza os resultados em linha contínua separada por barra vertical — pronto para colar na evolução." pressed={usePipeSeparator} onPressedChange={setUsePipeSeparator} />
+              <OutputControl icon={Clock} tone="primary" label="Incluir horário" info="Mostra o horário de coleta ao lado de cada exame, útil para acompanhar a evolução no plantão." pressed={includeTime} onPressedChange={setIncludeTime} />
+              <div className="w-px h-6 bg-border/70 mx-0.5 shrink-0" />
+              <OutputControl icon={AlertTriangle} tone="amber" label="Só alterados" info="Exibe apenas os valores fora da referência, ocultando os resultados normais." pressed={onlyAltered} onPressedChange={setOnlyAltered} />
+              <OutputControl icon={Stethoscope} tone="blue" label="Impressão clínica" info="Acrescenta uma leitura interpretativa das alterações encontradas ao final do resumo." pressed={clinicalImpression} onPressedChange={setClinicalImpression} />
+              <OutputControl icon={Minimize2} tone="green" label="Compacto" info="Resumo enxuto: omite índices hematimétricos (VCM, HCM, CHCM, RDW) e detalhes secundários." pressed={compactMode} onPressedChange={setCompactMode} />
             </div>
+
 
             {/* Input area — textarea dominante com ações flutuantes */}
             <div className="relative group">
