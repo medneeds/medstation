@@ -25,6 +25,7 @@ import {
 import { Link } from "react-router-dom";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { QuickActionsHero } from "@/components/QuickActionsHero";
+import { FreeExaminusSpotlight } from "@/components/FreeExaminusSpotlight";
 import { hasSeenWelcomeTour } from "@/pages/WelcomeTour";
 
 interface Stats {
@@ -267,6 +268,8 @@ export default function Dashboard() {
       </div>
 
       {/* Hero de ações rápidas — o que o médico quer fazer agora */}
+      <FreeExaminusSpotlight />
+
       <QuickActionsHero />
 
       {/* <div>
