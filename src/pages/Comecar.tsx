@@ -50,7 +50,7 @@ const paths = [
     title: "Ver apresentação",
     sub: "Tour pela plataforma",
     hint: "Assistentes, Modo Consultório, planos e garantia.",
-    to: "/landing",
+    to: "/tour",
   },
 ];
 
