@@ -184,13 +184,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Vídeo demonstrativo — logo após o teste ao vivo */}
-            <div className="space-y-2 pt-2">
-              <p className="text-[0.65rem] uppercase tracking-[0.22em] font-mono text-muted-foreground">
-                Veja em 15 segundos
-              </p>
-              <HeroVideo />
-            </div>
 
             {/* CTA Footer */}
             <div className="flex flex-col items-center gap-2 md:gap-3 pt-2 md:pt-3">
