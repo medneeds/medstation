@@ -762,8 +762,9 @@ export default function PublicExaminusChat() {
         {/* Messages Area */}
         {hasMessages && (
           <ScrollArea 
-            className="p-3 md:p-5 bg-gradient-to-b from-muted/20 to-transparent" 
-            style={{ height: `${messagesHeight}px` }}
+            className={`p-3 md:p-5 bg-gradient-to-b from-muted/20 to-transparent ${isExpanded ? "h-[52vh]" : ""}`}
+            style={isExpanded ? undefined : { height: `${messagesHeight}px` }}
+
             ref={scrollRef}
           >
             <div className="space-y-2 md:space-y-4">
