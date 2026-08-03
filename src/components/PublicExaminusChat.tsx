@@ -154,7 +154,7 @@ export default function PublicExaminusChat() {
   const navigate = useNavigate();
   const truncateToastShownRef = useRef(false);
 
-  const DEMO_MAX_CHARS = 10000;
+  const DEMO_MAX_CHARS = 8000;
   const handleInputChange = (value: string) => {
     if (value.length > DEMO_MAX_CHARS) {
       const truncated = value.slice(0, DEMO_MAX_CHARS);
@@ -834,10 +834,10 @@ export default function PublicExaminusChat() {
                 onChange={(e) => handleInputChange(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder={hasMessages ? "Cole exames..." : "Cole exames aqui"}
-                maxLength={10000}
-                aria-invalid={(input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= 10000}
+                maxLength={DEMO_MAX_CHARS}
+                aria-invalid={(input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= DEMO_MAX_CHARS}
                 className={`min-h-[44px] max-h-32 resize-none flex-1 rounded-2xl text-base py-3 ${
-                  (input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= 10000
+                  (input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= DEMO_MAX_CHARS
                     ? "border-destructive focus:border-destructive"
                     : "border-border/50 focus:border-primary/50"
                 }`}
@@ -845,7 +845,7 @@ export default function PublicExaminusChat() {
               />
               <Button
                 onClick={handleSend}
-                disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0) || isCoolingDown || input.length > 10000}
+                disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0) || isCoolingDown || input.length > DEMO_MAX_CHARS}
                 size={isCoolingDown ? "sm" : "icon"}
                 className={`${isCoolingDown ? "h-10 px-3 text-[11px] rounded-full" : "h-10 w-10 rounded-full"} bg-gradient-primary hover:opacity-90 transition-all shrink-0 shadow-md`}
                 title={isCoolingDown ? `Aguarde ${cooldownRemaining}s — modo gratuito` : undefined}
@@ -861,19 +861,19 @@ export default function PublicExaminusChat() {
             </div>
             <div className="flex items-center justify-between gap-2 mt-1 px-1">
               <span className="text-[10px] text-muted-foreground/80 truncate">
-                Demo: até 10.000 caracteres • Plataforma: 30.000
+                Demo: até 8.000 caracteres • Plataforma: 30.000
               </span>
               <span
                 className={`text-[10px] tabular-nums shrink-0 ${
-                  input.length >= 10000
+                  input.length >= DEMO_MAX_CHARS
                     ? "text-destructive font-medium"
-                    : input.length >= 9000
+                    : input.length >= DEMO_MAX_CHARS * 0.9
                     ? "text-amber-600 dark:text-amber-400"
                     : "text-muted-foreground"
                 }`}
                 aria-live="polite"
               >
-                {input.length.toLocaleString("pt-BR")}/10.000
+                {input.length.toLocaleString("pt-BR")}/8.000
               </span>
             </div>
           </div>
@@ -965,10 +965,10 @@ export default function PublicExaminusChat() {
                 onChange={(e) => handleInputChange(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder={hasMessages ? "Cole mais exames aqui..." : "Cole os resultados de exames aqui (texto, imagem ou PDF)"}
-                maxLength={10000}
-                aria-invalid={(input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= 10000}
+                maxLength={DEMO_MAX_CHARS}
+                aria-invalid={(input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= DEMO_MAX_CHARS}
                 className={`min-h-[48px] max-h-40 resize-none flex-1 rounded-xl transition-colors text-sm py-3 ${
-                  (input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= 10000
+                  (input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= DEMO_MAX_CHARS
                     ? "border-destructive focus:border-destructive"
                     : "border-border/50 focus:border-primary/50"
                 }`}
@@ -976,7 +976,7 @@ export default function PublicExaminusChat() {
               />
               <Button
                 onClick={handleSend}
-                disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0) || isCoolingDown || input.length > 10000}
+                disabled={isLoading || isExtracting || (!input.trim() && selectedFiles.length === 0) || isCoolingDown || input.length > DEMO_MAX_CHARS}
                 size="lg"
                 className="h-12 px-6 rounded-xl bg-gradient-primary hover:opacity-90 transition-all shadow-medical hover:shadow-elevated"
                 title={isCoolingDown ? `Aguarde ${cooldownRemaining}s — modo gratuito` : undefined}
@@ -998,19 +998,19 @@ export default function PublicExaminusChat() {
             </div>
             <div className="flex items-center justify-between gap-2 mt-1 px-1">
               <span className="text-xs text-muted-foreground/80">
-                Modo demonstração: até 10.000 caracteres por mensagem • Usuários da plataforma: até 30.000
+                Modo demonstração: até 8.000 caracteres por mensagem • Usuários da plataforma: até 30.000
               </span>
               <span
                 className={`text-xs tabular-nums shrink-0 ${
-                  input.length >= 10000
+                  input.length >= DEMO_MAX_CHARS
                     ? "text-destructive font-medium"
-                    : input.length >= 9000
+                    : input.length >= DEMO_MAX_CHARS * 0.9
                     ? "text-amber-600 dark:text-amber-400"
                     : "text-muted-foreground"
                 }`}
                 aria-live="polite"
               >
-                {input.length.toLocaleString("pt-BR")}/10.000 caracteres
+                {input.length.toLocaleString("pt-BR")}/8.000 caracteres
               </span>
             </div>
           </div>
