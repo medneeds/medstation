@@ -15,6 +15,8 @@ import { exportAgentConversationToPDF } from "@/utils/pdfExport";
 import { pdfToImages } from "@/utils/pdfToImages";
 import { AgentVoiceInput } from "@/components/AgentVoiceInput";
 import { ThinkingIndicator } from "@/components/ThinkingIndicator";
+import { useSubscription } from "@/contexts/SubscriptionContext";
+
 import { 
   Send, 
   Paperclip, 
@@ -162,7 +164,15 @@ export function AgentChat({
   const { toast } = useToast();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { subscribed } = useSubscription();
   const [message, setMessage] = useState("");
+  // Assinantes: sem limite de caracteres. Cadastrados sem assinatura: 30.000.
+  const FREE_CHAR_LIMIT = 30000;
+  const charLimit = subscribed ? Infinity : FREE_CHAR_LIMIT;
+  const overLimit = message.length > charLimit;
+  const nearLimit = !subscribed && message.length >= FREE_CHAR_LIMIT * 0.9;
+
+
   const [validationAnnouncement, setValidationAnnouncement] = useState("");
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const [lastConversation, setLastConversation] = useState<Conversation | null>(null);
@@ -1746,7 +1756,7 @@ export function AgentChat({
             <Textarea
               ref={textareaRef}
               value={message}
-              onChange={(e) => setMessage(e.target.value.slice(0, 30000))}
+              onChange={(e) => setMessage(subscribed ? e.target.value : e.target.value.slice(0, FREE_CHAR_LIMIT))}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
@@ -1754,12 +1764,13 @@ export function AgentChat({
                 }
               }}
               placeholder={isMobile ? "Mensagem... (Shift+Enter para nova linha)" : `${placeholder}  ·  Shift+Enter para nova linha`}
-              maxLength={30000}
+              maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
               rows={1}
-              aria-invalid={(message.length > 0 && !message.trim()) || message.length >= 30000}
+              aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
               className={`w-full resize-none pr-10 py-2.5 text-base leading-relaxed min-h-[44px] rounded-2xl transition-all ${
-                (message.length > 0 && !message.trim()) || message.length >= 30000
+                (message.length > 0 && !message.trim()) || overLimit
                   ? "border-destructive focus-visible:ring-destructive"
+
                   : ""
               }`}
               style={{ maxHeight: inputExpanded ? 400 : 200 }}
@@ -1782,7 +1793,7 @@ export function AgentChat({
           />
           <Button
             onClick={sendMessage}
-            disabled={!message.trim() || isLoading || message.length > 30000}
+            disabled={!message.trim() || isLoading || overLimit}
             size="icon"
             className="shrink-0 h-10 w-10 rounded-full"
             title={!message.trim() ? "Digite uma mensagem para enviar" : "Enviar mensagem"}
@@ -1816,16 +1827,19 @@ export function AgentChat({
           </div>
           <span
             className={`text-xs tabular-nums shrink-0 ${
-              message.length >= 30000
+              overLimit
                 ? "text-destructive font-medium"
-                : message.length >= 27000
+                : nearLimit
                 ? "text-amber-600 dark:text-amber-400"
                 : "text-muted-foreground"
             }`}
             aria-live="polite"
           >
-            {message.length.toLocaleString("pt-BR")}/30.000
+            {subscribed
+              ? `${message.length.toLocaleString("pt-BR")} caracteres · sem limite`
+              : `${message.length.toLocaleString("pt-BR")}/30.000`}
           </span>
+
         </div>
       </div>
 

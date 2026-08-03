@@ -247,16 +247,52 @@ serve(async (req) => {
       );
     }
 
-    // Validate individual message content size (max 30,000 characters per message)
-    const MAX_MESSAGE_LENGTH = 30000;
-    for (const message of messages) {
-      if (message.content && typeof message.content === 'string' && message.content.length > MAX_MESSAGE_LENGTH) {
+    // Limite de caracteres: 30.000 para usuários cadastrados sem assinatura.
+    // Assinantes (inclui admin e cortesia) não têm limite prático — apenas um teto
+    // técnico de segurança para proteger a chamada ao modelo.
+    const FREE_MESSAGE_LENGTH = 30000;
+    const HARD_MESSAGE_LENGTH = 400000;
+    const longest = messages.reduce(
+      (acc: number, m: { content?: unknown }) =>
+        typeof m?.content === "string" ? Math.max(acc, m.content.length) : acc,
+      0,
+    );
+
+    if (longest > FREE_MESSAGE_LENGTH) {
+      let isSubscriber = false;
+      try {
+        const subRes = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/check-subscription`, {
+          method: "POST",
+          headers: {
+            Authorization: req.headers.get("Authorization") ?? "",
+            "Content-Type": "application/json",
+          },
+        });
+        if (subRes.ok) {
+          const subData = await subRes.json();
+          isSubscriber = subData?.subscribed === true;
+        }
+      } catch (e) {
+        console.error("Subscription check failed for length limit:", e);
+      }
+
+      if (!isSubscriber) {
         return new Response(
-          JSON.stringify({ error: `Mensagem muito longa. Máximo de ${MAX_MESSAGE_LENGTH} caracteres por mensagem.` }),
+          JSON.stringify({
+            error: `Mensagem muito longa. Usuários cadastrados podem enviar até ${FREE_MESSAGE_LENGTH.toLocaleString("pt-BR")} caracteres por mensagem. Assinantes não têm limite.`,
+          }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (longest > HARD_MESSAGE_LENGTH) {
+        return new Response(
+          JSON.stringify({ error: "Mensagem excede o tamanho máximo suportado. Divida o conteúdo em partes." }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
     }
+
 
     const validAgentTypes = ["clinicus", "examinus", "scorius", "numerus", "prescriptus", "codexus", "gasometrus", "atestus", "protocolus", "orientus", "mediscuss"];
     if (agentType && !validAgentTypes.includes(agentType)) {
