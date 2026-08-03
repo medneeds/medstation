@@ -189,7 +189,9 @@ const assistants: Assistant[] = [
 
 export default function Comecar() {
   const navigate = useNavigate();
+  const [selected, setSelected] = useState<Assistant | null>(null);
   useReferralCapture();
+
 
   const go = (to: string, label: string) => {
     trackCtaClick({ cta: label, section: "entrada", destination: to });
