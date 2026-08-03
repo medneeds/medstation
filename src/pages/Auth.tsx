@@ -141,9 +141,20 @@ export default function Auth() {
           console.error("Welcome email failed", e);
         }
       }
-      toast({ title: "Cadastro realizado", description: "Você já pode entrar." });
+      const createdEmail = validated.email;
       setFullName(""); setSignUpEmail(""); setSignUpPassword(""); setConfirmPassword("");
       setGender(""); setCrm(""); setCrmState(""); setSpecialty("");
+
+      if (data.session) {
+        // Confirmação automática ativa: já entra direto.
+        navigate(destination, { replace: true });
+        return;
+      }
+
+      navigate(`/confirmar-email?email=${encodeURIComponent(createdEmail)}`, {
+        replace: true,
+        state: { email: createdEmail },
+      });
     } catch (error: any) {
       toast({ variant: "destructive", title: "Dados inválidos", description: error.errors?.[0]?.message || error.message });
     } finally {
