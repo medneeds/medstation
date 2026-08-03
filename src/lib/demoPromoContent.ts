@@ -69,6 +69,13 @@ export const ASSISTANT_PROMOS: PromoItem[] = [
     cta: "Conhecer Numerus",
   },
   {
+    id: "a-mediscuss",
+    category: "assistant",
+    title: "Mediscuss — Discussão clínica de casos",
+    description: "Raciocínio diagnóstico, diferenciais e condutas discutidas passo a passo.",
+    cta: "Conhecer Mediscuss",
+  },
+  {
     id: "a-codexus",
     category: "assistant",
     title: "Codexus — CID-10 inteligente",
@@ -96,7 +103,7 @@ export const PRODUCTIVITY_PROMOS: PromoItem[] = [
     id: "p-no-repeat",
     category: "productivity",
     title: "Pare de redigitar a mesma coisa",
-    description: "10 assistentes que padronizam tudo o que você escreve no plantão.",
+    description: "11 assistentes que padronizam tudo o que você escreve no plantão.",
     cta: "Conhecer assinatura",
   },
   {
@@ -113,7 +120,7 @@ export const OFFER_PROMOS: PromoItem[] = [
     id: "o-price",
     category: "offer",
     title: "Pro a partir de R$ 29,90/mês",
-    description: "Acesso a todos os 10 assistentes médicos. Cancele quando quiser.",
+    description: "Acesso a todos os 11 assistentes médicos. Cancele quando quiser.",
     cta: "Assinar agora",
   },
   {
@@ -127,7 +134,7 @@ export const OFFER_PROMOS: PromoItem[] = [
     id: "o-no-card",
     category: "offer",
     title: "Crie sua conta sem cartão",
-    description: "Examinus grátis para experimentar (com limite de uso, espera entre mensagens e pop-ups). Pro libera os 10 assistentes sem restrições.",
+    description: "Examinus grátis para experimentar (com limite de uso, espera entre mensagens e pop-ups). Pro libera os outros 10 assistentes sem restrições.",
     cta: "Criar conta grátis",
   },
   {
@@ -162,4 +169,5 @@ export const ASSISTANTS_GRID = [
   { name: "Scorius", desc: "Scores clínicos", free: false },
   { name: "Numerus", desc: "Cálculos médicos", free: false },
   { name: "Codexus", desc: "CID-10 inteligente", free: false },
+  { name: "Mediscuss", desc: "Discussão clínica de casos", free: false },
 ];

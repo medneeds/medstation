@@ -21,14 +21,14 @@ export function UpgradeModal({ open, onOpenChange, reason = "engagement", contex
       ? "Você usou suas extrações gratuitas"
       : reason === "cooldown"
         ? "Cansou de esperar 30 segundos?"
-        : "Conheça os outros 9 assistentes";
+        : "Conheça os outros 10 assistentes";
 
   const subline =
     reason === "limit-reached"
-      ? "No Pro o Examinus fica liberado, sem restrições de uso, sem espera e sem pop-ups — e você ainda libera os outros 9 assistentes."
+      ? "No Pro o Examinus fica liberado, sem restrições de uso, sem espera e sem pop-ups — e você ainda libera os outros 10 assistentes."
       : reason === "cooldown"
-        ? "No Pro acabam a espera entre mensagens e os pop-ups. Use os 10 assistentes sem interrupção."
-        : "Examinus é só o começo (e no plano grátis tem limite de uso, espera entre mensagens e pop-ups). O Pro libera os 10 assistentes sem restrições.";
+        ? "No Pro acabam a espera entre mensagens e os pop-ups. Use os 11 assistentes sem interrupção."
+        : "Examinus é só o começo (e no plano grátis tem limite de uso, espera entre mensagens e pop-ups). O Pro libera os outros 10 assistentes sem restrições.";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -68,7 +68,7 @@ export function UpgradeModal({ open, onOpenChange, reason = "engagement", contex
         <div className="space-y-2 my-2">
           <div className="flex items-center gap-2 text-sm">
             <Check className="w-4 h-4 text-primary shrink-0" />
-            <span>Acesso aos 10 assistentes, sem espera entre mensagens</span>
+            <span>Acesso aos 11 assistentes, sem espera entre mensagens</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <Shield className="w-4 h-4 text-primary shrink-0" />
@@ -89,7 +89,7 @@ export function UpgradeModal({ open, onOpenChange, reason = "engagement", contex
             className="flex-1 bg-gradient-primary hover:opacity-90"
             size="lg"
           >
-            {context === "app" ? "Liberar os 10 assistentes" : "Criar conta grátis"}
+            {context === "app" ? "Assinar e liberar +10 assistentes" : "Criar conta grátis"}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
           <Button
@@ -101,7 +101,7 @@ export function UpgradeModal({ open, onOpenChange, reason = "engagement", contex
             size="lg"
             className="flex-1"
           >
-            {context === "app" ? "Continuar no Examinus" : "Ver planos"}
+            {context === "app" ? "Continuar com Examinus grátis" : "Ver planos"}
           </Button>
         </div>
 
