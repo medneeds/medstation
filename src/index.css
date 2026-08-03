@@ -11,73 +11,73 @@
 
 @layer base {
   :root {
-    /* Light mode — warm clinical paper */
-    --background: 40 20% 98%;
-    --foreground: 0 0% 8%;
+    /* Light mode (default) — clean clinical paper, cool neutral base */
+    --background: 150 20% 99%;
+    --foreground: 165 18% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 8%;
+    --card-foreground: 165 18% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 8%;
+    --popover-foreground: 165 18% 10%;
 
     /* Single sage accent — kept brand-relevant, used sparingly */
-    --primary: 158 35% 38%;
-    --primary-foreground: 40 20% 98%;
-    --primary-hover: 158 40% 32%;
-    --primary-rgb: 71, 138, 112;
+    --primary: 158 42% 34%;
+    --primary-foreground: 150 25% 98%;
+    --primary-hover: 158 46% 28%;
+    --primary-rgb: 50, 124, 98;
 
-    --secondary: 40 12% 94%;
-    --secondary-foreground: 0 0% 12%;
+    --secondary: 152 16% 95%;
+    --secondary-foreground: 165 18% 14%;
 
-    --muted: 40 10% 95%;
-    --muted-foreground: 0 0% 42%;
+    --muted: 152 14% 96%;
+    --muted-foreground: 165 8% 42%;
 
-    --accent: 40 12% 94%;
-    --accent-foreground: 0 0% 8%;
+    --accent: 152 20% 94%;
+    --accent-foreground: 165 18% 12%;
 
-    --destructive: 4 70% 48%;
+    --destructive: 4 70% 46%;
     --destructive-foreground: 0 0% 100%;
 
-    --warning: 32 90% 48%;
+    --warning: 32 90% 46%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 40 10% 88%;
-    --input: 40 10% 86%;
-    --ring: 158 35% 38%;
+    --border: 152 12% 90%;
+    --input: 152 12% 88%;
+    --ring: 158 42% 34%;
 
-    --examinus: 158 35% 38%;
-    --examinus-foreground: 40 20% 98%;
+    --examinus: 158 42% 34%;
+    --examinus-foreground: 150 25% 98%;
 
     /* Tight radius — no rounded-everything */
     --radius: 0.25rem;
 
     /* Sidebar */
-    --sidebar-background: 40 16% 96%;
-    --sidebar-foreground: 0 0% 18%;
-    --sidebar-primary: 158 35% 38%;
-    --sidebar-primary-foreground: 40 20% 98%;
-    --sidebar-accent: 40 12% 92%;
-    --sidebar-accent-foreground: 0 0% 12%;
-    --sidebar-border: 40 10% 88%;
-    --sidebar-ring: 158 35% 38%;
+    --sidebar-background: 152 18% 97%;
+    --sidebar-foreground: 165 14% 20%;
+    --sidebar-primary: 158 42% 34%;
+    --sidebar-primary-foreground: 150 25% 98%;
+    --sidebar-accent: 152 18% 93%;
+    --sidebar-accent-foreground: 165 18% 14%;
+    --sidebar-border: 152 12% 90%;
+    --sidebar-ring: 158 42% 34%;
 
     /* Editorial accents */
-    --accent-warm: 28 75% 55%;
+    --accent-warm: 28 75% 52%;
     --accent-warm-foreground: 0 0% 8%;
-    --hairline: 40 10% 86%;
+    --hairline: 152 12% 90%;
     --surface-elevated: 0 0% 100%;
-    --ink: 0 0% 8%;
+    --ink: 165 18% 10%;
 
     /* Gradients — restrained, single-hue */
-    --gradient-primary: linear-gradient(180deg, hsl(158 35% 38%), hsl(158 40% 30%));
-    --gradient-clinical: linear-gradient(180deg, hsl(40 16% 96%), hsl(40 12% 92%));
-    --gradient-hero: radial-gradient(ellipse at top, hsl(158 35% 38% / 0.08), transparent 60%);
+    --gradient-primary: linear-gradient(180deg, hsl(158 42% 36%), hsl(158 46% 28%));
+    --gradient-clinical: linear-gradient(180deg, hsl(152 18% 97%), hsl(152 14% 93%));
+    --gradient-hero: radial-gradient(ellipse at top, hsl(158 42% 34% / 0.10), transparent 60%);
 
-    /* Hairline-based depth instead of soft shadows */
-    --shadow-medical: 0 0 0 1px hsl(40 10% 88%);
-    --shadow-elevated: 0 1px 0 hsl(40 10% 86%), 0 0 0 1px hsl(40 10% 90%);
-    --shadow-critical: 0 0 0 1px hsl(4 70% 48% / 0.4);
+    /* Light mode gets true (but restrained) elevation */
+    --shadow-medical: 0 1px 2px hsl(165 18% 10% / 0.05), 0 0 0 1px hsl(152 12% 90%);
+    --shadow-elevated: 0 8px 24px -12px hsl(165 18% 10% / 0.14), 0 0 0 1px hsl(152 12% 90%);
+    --shadow-critical: 0 0 0 1px hsl(4 70% 46% / 0.4);
 
     --transition-smooth: all 200ms cubic-bezier(0.32, 0.72, 0, 1);
     --transition-fast: all 120ms cubic-bezier(0.32, 0.72, 0, 1);

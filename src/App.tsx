@@ -19,6 +19,7 @@ import Auth from "./pages/Auth";
 import ConfirmarEmail from "./pages/ConfirmarEmail";
 import Home from "./pages/Home";
 import Comecar from "./pages/Comecar";
+import Tour from "./pages/Tour";
 import Pricing from "./pages/Pricing";
 import Welcome from "./pages/Welcome";
 import Onboarding from "./pages/Onboarding";
@@ -82,6 +83,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Comecar />} />
             <Route path="/landing" element={<Home />} />
+            <Route path="/tour" element={<Tour />} />
             <Route path="/home" element={<Navigate to="/landing" replace />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/confirmar-email" element={<ConfirmarEmail />} />
