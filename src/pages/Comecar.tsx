@@ -1,14 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { AssistantSpotlightDialog } from "@/components/AssistantSpotlightDialog";
 
 import { Button } from "@/components/ui/button";
+
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AssistentesAIChat } from "@/components/AssistentesAIChat";
@@ -363,15 +358,19 @@ export default function Comecar() {
 
 
                   <button
-                    onClick={() => go("/consultorio-landing", "entrada_consultorio")}
-                    className="group aspect-square flex flex-col items-center justify-center text-center p-2 rounded-2xl bg-primary/5 border border-dashed border-primary/40 hover:bg-primary/10 hover:-translate-y-0.5 transition-all"
+                    type="button"
+                    onClick={() => setSelected(consultorio)}
+                    className="group relative aspect-square flex flex-col items-center justify-center text-center p-2 rounded-2xl bg-primary/5 border border-dashed border-primary/40 transition-all duration-300 hover:bg-primary/10 hover:border-primary/70 hover:-translate-y-1.5 hover:shadow-[0_18px_40px_-20px_hsl(var(--primary)/0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                   >
-                    <Mic className="w-5 h-5 text-primary mb-2" />
+                    <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/15 flex items-center justify-center mb-2 transition-all duration-300 group-hover:bg-primary group-hover:scale-110">
+                      <Mic className="w-4 h-4 text-primary group-hover:text-primary-foreground transition-colors" />
+                    </div>
                     <span className="text-[10px] font-semibold text-primary uppercase leading-tight">
                       Modo Consultório
                     </span>
                     <span className="text-[10px] text-muted-foreground leading-tight">Consulta transcrita</span>
                   </button>
+
                 </div>
 
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/50 bg-card/50 backdrop-blur-xl px-5 py-4">
