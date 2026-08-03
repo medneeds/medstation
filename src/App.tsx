@@ -69,8 +69,6 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-import PromoPreview from "./pages/PromoPreview";
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -83,7 +81,6 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/_promo-preview" element={<PromoPreview />} />
             <Route path="/confirmar-email" element={<ConfirmarEmail />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/consultorio-landing" element={<ConsultorioLanding />} />

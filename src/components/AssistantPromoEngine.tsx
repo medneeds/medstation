@@ -84,5 +84,5 @@ export function AssistantPromoEngine() {
 
   if (!active) return null;
 
-  return <UpgradeModal open={modalOpen} onOpenChange={setModalOpen} reason="engagement" />;
+  return <UpgradeModal open={modalOpen} onOpenChange={setModalOpen} reason="engagement" context="app" />;
 }
