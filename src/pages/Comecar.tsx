@@ -63,19 +63,129 @@ const paths = [
   },
 ];
 
-const assistants = [
-  { name: "Examinus", short: "EX", icon: TestTube2, desc: "Resume exames", free: true },
-  { name: "Clínicus", short: "CL", icon: Stethoscope, desc: "Anamnese pronta" },
-  { name: "Scorius", short: "SC", icon: Calculator, desc: "Scores e risco" },
-  { name: "Numerus", short: "NU", icon: Sigma, desc: "Cálculos clínicos" },
-  { name: "Prescriptus", short: "PR", icon: Pill, desc: "Bula inteligente" },
-  { name: "CODexus", short: "CO", icon: FileCode, desc: "CID-10 certo" },
-  { name: "Gasometrus", short: "GA", icon: Wind, desc: "Gasometria lida" },
-  { name: "Atestus", short: "AT", icon: FileCheck, desc: "Atestados prontos" },
-  { name: "Protocolus", short: "PT", icon: BookOpen, desc: "Protocolos atuais" },
-  { name: "Orientus", short: "OR", icon: Compass, desc: "Orientação ao paciente" },
-  { name: "Mediscuss", short: "MD", icon: MessagesSquare, desc: "Discussão de casos" },
+type Assistant = {
+  name: string;
+  short: string;
+  icon: typeof TestTube2;
+  desc: string;
+  free?: boolean;
+  hook: string;
+  detail: string;
+  bullets: string[];
+};
+
+const assistants: Assistant[] = [
+  {
+    name: "Examinus",
+    short: "EX",
+    icon: TestTube2,
+    desc: "Resume exames",
+    free: true,
+    hook: "Cole o exame. Receba a conclusão que você levaria 10 minutos para escrever.",
+    detail:
+      "Laboratoriais e laudos de imagem viram um resumo limpo, com o que é relevante em destaque e pronto para colar no prontuário.",
+    bullets: ["Texto, PDF ou foto do exame", "Alterações destacadas primeiro", "Grátis em qualquer conta"],
+  },
+  {
+    name: "Clínicus",
+    short: "CL",
+    icon: Stethoscope,
+    desc: "Anamnese pronta",
+    hook: "Sua anamnese completa antes de o paciente sair da sala.",
+    detail:
+      "Transforma informações soltas em uma anamnese estruturada, coerente e no modelo do seu contexto: consultório, enfermaria, emergência ou UTI.",
+    bullets: ["5 modelos de contexto clínico", "Texto contínuo, sem gambiarra", "Discussão ou documentação"],
+  },
+  {
+    name: "Scorius",
+    short: "SC",
+    icon: Calculator,
+    desc: "Scores e risco",
+    hook: "Risco calculado na hora, com a conduta que o score sugere.",
+    detail:
+      "Aplica os escores certos ao caso e devolve o valor, a interpretação e o que ele muda na sua decisão.",
+    bullets: ["Escores validados", "Interpretação clínica junto", "Sem abrir cinco sites"],
+  },
+  {
+    name: "Numerus",
+    short: "NU",
+    icon: Sigma,
+    desc: "Cálculos clínicos",
+    hook: "A conta certa, na dose certa, sem calculadora na mão.",
+    detail:
+      "Doses, conversões de unidade, correções e cálculos de infusão resolvidos em segundos, com o raciocínio à mostra.",
+    bullets: ["Doses e infusões", "Conversão de unidades", "Passo a passo do cálculo"],
+  },
+  {
+    name: "Prescriptus",
+    short: "PR",
+    icon: Pill,
+    desc: "Bula inteligente",
+    hook: "A bula que você queria ler: só o que muda a prescrição.",
+    detail:
+      "Discussão de prescrição baseada em evidência ou bula resumida na medida — apresentações, doses, ajustes e alertas.",
+    bullets: ["Modo discussão e Bula Inteligente", "Ajustes renal e hepático", "Interações que importam"],
+  },
+  {
+    name: "CODexus",
+    short: "CO",
+    icon: FileCode,
+    desc: "CID-10 certo",
+    hook: "O código certo na primeira tentativa — e a glosa não vem.",
+    detail: "Codificação CID-10 e TISS a partir da descrição clínica, com alternativas quando há dúvida.",
+    bullets: ["CID-10 e TISS", "Sugestões alternativas", "Menos retrabalho administrativo"],
+  },
+  {
+    name: "Gasometrus",
+    short: "GA",
+    icon: Wind,
+    desc: "Gasometria lida",
+    hook: "Gasometria interpretada como um intensivista faria à beira do leito.",
+    detail:
+      "Leitura sistemática do distúrbio, compensação, ânion gap e o que fazer agora — sem enrolação.",
+    bullets: ["Leitura sistemática (L.I.)", "Distúrbios mistos", "Conduta sugerida"],
+  },
+  {
+    name: "Atestus",
+    short: "AT",
+    icon: FileCheck,
+    desc: "Atestados prontos",
+    hook: "Atestado impecável em segundos, com o CID e nada além do necessário.",
+    detail: "Gera atestados e declarações no formato correto, protegendo o sigilo do paciente.",
+    bullets: ["Somente CID, sem descrição", "Formato pronto para assinar", "Modelos variados"],
+  },
+  {
+    name: "Protocolus",
+    short: "PT",
+    icon: BookOpen,
+    desc: "Protocolos atuais",
+    hook: "O protocolo atualizado, resumido do jeito que se usa no plantão.",
+    detail:
+      "Consulta a diretrizes globais (AHA, ESC, OMS e outras) e devolve o fluxo prático, não o PDF de 80 páginas.",
+    bullets: ["Diretrizes internacionais", "Fluxo prático", "Direto ao ponto"],
+  },
+  {
+    name: "Orientus",
+    short: "OR",
+    icon: Compass,
+    desc: "Orientação ao paciente",
+    hook: "Orientação de alta que o paciente entende — e cumpre.",
+    detail:
+      "Traduz sua conduta para uma linguagem simples, com sinais de alarme e retorno bem definidos.",
+    bullets: ["Linguagem acessível", "Sinais de alarme claros", "Pronto para imprimir"],
+  },
+  {
+    name: "Mediscuss",
+    short: "MD",
+    icon: MessagesSquare,
+    desc: "Discussão de casos",
+    hook: "Seu pedido de parecer, escrito como o especialista gostaria de receber.",
+    detail:
+      "Monta discussões, pedidos de parecer, internação, UTI e transferência prontos para o prontuário.",
+    bullets: ["Parecer e transferência", "Argumentação clínica sólida", "Pronto para colar"],
+  },
 ];
+
 
 export default function Comecar() {
   const navigate = useNavigate();
