@@ -162,12 +162,12 @@ export function AssistantSpotlightDialog({ assistant, onClose, onPrimary, onSeco
                 </>
               ) : (
                 <div className="animate-fade-in space-y-3">
-                  <Carousel setApi={setApi} opts={{ align: "start" }} className="w-full">
+                  <Carousel setApi={setApi} opts={{ align: "start" }} className="w-full overflow-hidden">
                     <CarouselContent>
                       {steps.map((step, i) => {
                         const s = kindStyles[step.kind];
                         return (
-                          <CarouselItem key={step.title}>
+                          <CarouselItem key={step.title} className="min-w-0">
                             <div className="space-y-3">
                               <div className="flex items-center gap-2">
                                 <span
@@ -177,11 +177,11 @@ export function AssistantSpotlightDialog({ assistant, onClose, onPrimary, onSeco
                                 </span>
                               </div>
                               <p className="text-sm font-semibold leading-tight">{step.title}</p>
-                              <div className={`rounded-2xl border p-4 space-y-2 ${s.frame}`}>
+                              <div className={`rounded-2xl border p-3.5 sm:p-4 space-y-2 ${s.frame}`}>
                                 {step.lines.map((line) => (
                                   <p
                                     key={line}
-                                    className={`text-[12.5px] leading-relaxed font-mono ${s.text}`}
+                                    className={`text-[11.5px] sm:text-[12.5px] leading-relaxed font-mono break-words hyphens-auto ${s.text}`}
                                   >
                                     {step.kind === "process" && (
                                       <Sparkle className="inline w-3 h-3 mr-1.5 text-primary" />
@@ -202,25 +202,31 @@ export function AssistantSpotlightDialog({ assistant, onClose, onPrimary, onSeco
                     <CarouselNext className="hidden sm:flex -right-3" />
                   </Carousel>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-1">
                       {steps.map((s, i) => (
                         <button
                           key={s.title}
                           type="button"
                           aria-label={`Passo ${i + 1}`}
                           onClick={() => api?.scrollTo(i)}
-                          className={`h-1.5 rounded-full transition-all ${
-                            current === i ? "w-6 bg-primary" : "w-1.5 bg-border hover:bg-primary/40"
-                          }`}
-                        />
+                          className="py-2 px-0.5"
+                        >
+                          <span
+                            className={`block h-1.5 rounded-full transition-all ${
+                              current === i ? "w-6 bg-primary" : "w-1.5 bg-border"
+                            }`}
+                          />
+                        </button>
                       ))}
                     </div>
-                    <span className="text-[11px] text-muted-foreground">
-                      Arraste para o lado · {current + 1}/{steps.length}
+                    <span className="text-[11px] text-muted-foreground shrink-0">
+                      <span className="hidden sm:inline">Arraste para o lado · </span>
+                      {current + 1}/{steps.length}
                     </span>
                   </div>
                 </div>
+
               )}
 
               <div className="flex flex-col sm:flex-row gap-2 pt-1">
