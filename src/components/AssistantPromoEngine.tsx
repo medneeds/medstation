@@ -77,11 +77,20 @@ export function AssistantPromoEngine() {
 
       toast(promo.title, {
         description: promo.description,
-        duration: 8000,
+        duration: 10000,
         icon: <Sparkles className="w-4 h-4 text-primary" />,
+        classNames: {
+          toast: "flex-wrap",
+          actionButton: "whitespace-nowrap",
+          cancelButton: "whitespace-nowrap",
+        },
         action: {
-          label: /criar conta/i.test(promo.cta || "") ? "Assinar" : (promo.cta || "Assinar"),
+          label: "Assinar e liberar +10 assistentes",
           onClick: () => navigate("/pricing"),
+        },
+        cancel: {
+          label: "Continuar com Examinus grátis",
+          onClick: () => navigate("/examinus"),
         },
       });
     };
