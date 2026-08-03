@@ -806,6 +806,7 @@ export default function PublicExaminusChat() {
           <div className="flex md:hidden flex-col gap-2">
             {/* Formatting options row - scrollable pills */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
+              <span className="text-[9px] uppercase tracking-[0.16em] text-muted-foreground/70 shrink-0 pr-0.5">Ajustes</span>
               <Toggle
                 pressed={usePipeSeparator}
                 onPressedChange={setUsePipeSeparator}
@@ -813,8 +814,8 @@ export default function PublicExaminusChat() {
                 className="h-7 px-2 text-[11px] rounded-full shrink-0 data-[state=on]:bg-primary/20"
                 title="Separar com |"
               >
-                <SeparatorVertical className="w-3 h-3 mr-0.5" />
-                <span>|</span>
+                <SeparatorVertical className="w-3 h-3 mr-1" />
+                <span>Separar com |</span>
               </Toggle>
               <div className="flex items-center gap-1 px-1.5 py-0.5 bg-muted/50 rounded-full h-7 shrink-0">
                 <Switch
@@ -823,9 +824,9 @@ export default function PublicExaminusChat() {
                   onCheckedChange={setIncludeTime}
                   className="data-[state=checked]:bg-primary scale-[0.65]"
                 />
-                <Label htmlFor="include-time-mobile" className="text-[10px] cursor-pointer flex items-center gap-0.5 pr-0.5">
-                  <Clock className="w-2.5 h-2.5" />
-                  Hora
+                <Label htmlFor="include-time-mobile" className="text-[11px] cursor-pointer flex items-center gap-1 pr-1 whitespace-nowrap">
+                  <Clock className="w-3 h-3" />
+                  Incluir horário
                 </Label>
               </div>
               <Toggle
@@ -833,10 +834,10 @@ export default function PublicExaminusChat() {
                 onPressedChange={setOnlyAltered}
                 size="sm"
                 className="h-7 px-2 text-[11px] rounded-full shrink-0 data-[state=on]:bg-amber-500/20 data-[state=on]:text-amber-600 dark:data-[state=on]:text-amber-400"
-                title="Apenas alterados"
+                title="Mostrar apenas resultados alterados"
               >
-                <AlertTriangle className="w-3 h-3 mr-0.5" />
-                <span>Alterados</span>
+                <AlertTriangle className="w-3 h-3 mr-1" />
+                <span className="whitespace-nowrap">Só alterados</span>
               </Toggle>
               <Toggle
                 pressed={clinicalImpression}
@@ -845,8 +846,8 @@ export default function PublicExaminusChat() {
                 className="h-7 px-2 text-[11px] rounded-full shrink-0 data-[state=on]:bg-blue-500/20 data-[state=on]:text-blue-600 dark:data-[state=on]:text-blue-400"
                 title="Impressão clínica"
               >
-                <Stethoscope className="w-3 h-3 mr-0.5" />
-                <span>Impressão</span>
+                <Stethoscope className="w-3 h-3 mr-1" />
+                <span className="whitespace-nowrap">Impressão clínica</span>
               </Toggle>
               <Toggle
                 pressed={compactMode}
@@ -855,10 +856,11 @@ export default function PublicExaminusChat() {
                 className="h-7 px-2 text-[11px] rounded-full shrink-0 data-[state=on]:bg-green-500/20 data-[state=on]:text-green-600 dark:data-[state=on]:text-green-400"
                 title="Versão compacta: sem índices hematimétricos"
               >
-                <Minimize2 className="w-3 h-3 mr-0.5" />
+                <Minimize2 className="w-3 h-3 mr-1" />
                 <span>Compacto</span>
               </Toggle>
             </div>
+
             {/* Input row */}
             <div className="flex gap-2 items-end">
               <input
