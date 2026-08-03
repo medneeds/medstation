@@ -16,6 +16,7 @@ import CaseDetail from "./pages/CaseDetail";
 import Notes from "./pages/Notes";
 import NoteDetail from "./pages/NoteDetail";
 import Auth from "./pages/Auth";
+import ConfirmarEmail from "./pages/ConfirmarEmail";
 import Home from "./pages/Home";
 import Pricing from "./pages/Pricing";
 import Welcome from "./pages/Welcome";
