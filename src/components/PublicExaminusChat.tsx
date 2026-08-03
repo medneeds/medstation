@@ -1185,6 +1185,13 @@ export default function PublicExaminusChat() {
       {/* Engine de pop-ups promocionais (toasts/banners/modal rotativos) */}
       <DemoPromoEngine observeTargetId="demo" />
       </div>
+      </div>
     </div>
   );
+
+  if (isExpanded && typeof document !== "undefined") {
+    return createPortal(shell, document.body);
+  }
+  return shell;
 }
+
