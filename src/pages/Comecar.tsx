@@ -337,24 +337,28 @@ export default function Comecar() {
                   {assistants.map((a, i) => {
                     const Icon = a.icon;
                     return (
-                      <div
+                      <button
                         key={a.name}
+                        type="button"
+                        onClick={() => setSelected(a)}
                         style={{ animationDelay: `${i * 40}ms` }}
-                        className="animate-fade-in group relative aspect-square flex flex-col items-center justify-center text-center p-2 rounded-2xl bg-card/60 backdrop-blur-xl border border-border/50 hover:border-primary/40 hover:-translate-y-0.5 transition-all"
+                        className="animate-fade-in group relative aspect-square flex flex-col items-center justify-center text-center p-2 rounded-2xl bg-card/60 backdrop-blur-xl border border-border/50 transition-all duration-300 hover:border-primary/60 hover:bg-card hover:-translate-y-1.5 hover:shadow-[0_18px_40px_-20px_hsl(var(--primary)/0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                       >
-                        <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/15 flex items-center justify-center mb-2 group-hover:bg-primary transition-colors">
+                        <span className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-b from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="relative w-9 h-9 rounded-full bg-primary/10 border border-primary/15 flex items-center justify-center mb-2 transition-all duration-300 group-hover:bg-primary group-hover:scale-110">
                           <Icon className="w-4 h-4 text-primary group-hover:text-primary-foreground transition-colors" />
                         </div>
-                        <span className="text-[11px] font-medium leading-tight">{a.name}</span>
-                        <span className="text-[10px] text-muted-foreground leading-tight">{a.desc}</span>
+                        <span className="relative text-[11px] font-medium leading-tight">{a.name}</span>
+                        <span className="relative text-[10px] text-muted-foreground leading-tight">{a.desc}</span>
                         {a.free && (
                           <span className="absolute top-1.5 right-1.5 text-[8px] uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-semibold">
                             Grátis
                           </span>
                         )}
-                      </div>
+                      </button>
                     );
                   })}
+
 
                   <button
                     onClick={() => go("/consultorio-landing", "entrada_consultorio")}
