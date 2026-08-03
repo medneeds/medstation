@@ -1,14 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { AssistantSpotlightDialog } from "@/components/AssistantSpotlightDialog";
 
 import { Button } from "@/components/ui/button";
+
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AssistentesAIChat } from "@/components/AssistentesAIChat";
@@ -185,6 +180,22 @@ const assistants: Assistant[] = [
     bullets: ["Parecer e transferência", "Argumentação clínica sólida", "Pronto para colar"],
   },
 ];
+
+const consultorio: Assistant = {
+  name: "Modo Consultório",
+  short: "MC",
+  icon: Mic,
+  desc: "Consulta transcrita",
+  hook: "Converse com o paciente. A anamnese se escreve sozinha.",
+  detail:
+    "Grave o atendimento e receba a transcrição em tempo real, com a estruturação clínica pronta ao final. Você olha para o paciente, não para o teclado.",
+  bullets: [
+    "Transcrição em tempo real",
+    "Modo unificado ou com separação de falas",
+    "Estruturação da anamnese e salvamento da consulta",
+  ],
+};
+
 
 
 export default function Comecar() {
@@ -363,15 +374,19 @@ export default function Comecar() {
 
 
                   <button
-                    onClick={() => go("/consultorio-landing", "entrada_consultorio")}
-                    className="group aspect-square flex flex-col items-center justify-center text-center p-2 rounded-2xl bg-primary/5 border border-dashed border-primary/40 hover:bg-primary/10 hover:-translate-y-0.5 transition-all"
+                    type="button"
+                    onClick={() => setSelected(consultorio)}
+                    className="group relative aspect-square flex flex-col items-center justify-center text-center p-2 rounded-2xl bg-primary/5 border border-dashed border-primary/40 transition-all duration-300 hover:bg-primary/10 hover:border-primary/70 hover:-translate-y-1.5 hover:shadow-[0_18px_40px_-20px_hsl(var(--primary)/0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                   >
-                    <Mic className="w-5 h-5 text-primary mb-2" />
+                    <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/15 flex items-center justify-center mb-2 transition-all duration-300 group-hover:bg-primary group-hover:scale-110">
+                      <Mic className="w-4 h-4 text-primary group-hover:text-primary-foreground transition-colors" />
+                    </div>
                     <span className="text-[10px] font-semibold text-primary uppercase leading-tight">
                       Modo Consultório
                     </span>
                     <span className="text-[10px] text-muted-foreground leading-tight">Consulta transcrita</span>
                   </button>
+
                 </div>
 
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/50 bg-card/50 backdrop-blur-xl px-5 py-4">
@@ -403,74 +418,20 @@ export default function Comecar() {
           </button>
         </footer>
 
-        <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
-          <DialogContent className="max-w-md overflow-hidden p-0 gap-0">
-            {selected && (
-              <>
-                <div className="relative px-6 pt-7 pb-6 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent">
-                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_80%_at_20%_0%,hsl(var(--primary)/0.18),transparent)]" />
-                  <div className="relative flex items-start gap-4">
-                    <div className="w-12 h-12 shrink-0 rounded-2xl bg-primary flex items-center justify-center shadow-[0_12px_30px_-12px_hsl(var(--primary)/0.9)]">
-                      <selected.icon className="w-5 h-5 text-primary-foreground" />
-                    </div>
-                    <DialogHeader className="text-left space-y-1">
-                      <DialogTitle className="text-xl leading-tight flex items-center gap-2">
-                        {selected.name}
-                        {selected.free && (
-                          <span className="text-[9px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-primary/15 text-primary font-semibold">
-                            Grátis
-                          </span>
-                        )}
-                      </DialogTitle>
-                      <DialogDescription className="text-xs uppercase tracking-widest">
-                        {selected.desc}
-                      </DialogDescription>
-                    </DialogHeader>
-                  </div>
-                  <p className="relative mt-5 text-base md:text-lg font-medium leading-snug text-foreground">
-                    {selected.hook}
-                  </p>
-                </div>
-
-                <div className="px-6 py-5 space-y-4">
-                  <p className="text-sm text-muted-foreground leading-relaxed">{selected.detail}</p>
-                  <ul className="space-y-2">
-                    {selected.bullets.map((b) => (
-                      <li key={b} className="flex items-start gap-2 text-sm">
-                        <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                        <span className="text-muted-foreground">{b}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="flex flex-col sm:flex-row gap-2 pt-1">
-                    <Button
-                      className="flex-1 bg-gradient-primary hover:opacity-90"
-                      onClick={() => {
-                        setSelected(null);
-                        go(selected.free ? "/auth" : "/pricing", `assistente_${selected.name.toLowerCase()}`);
-                      }}
-                    >
-                      {selected.free ? "Criar conta e usar grátis" : "Assinar e liberar"}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="sm:w-auto"
-                      onClick={() => {
-                        setSelected(null);
-                        go("/tour", `tour_${selected.name.toLowerCase()}`);
-                      }}
-                    >
-                      Ver no tour
-                    </Button>
-                  </div>
-                </div>
-              </>
-            )}
-          </DialogContent>
-        </Dialog>
-
+        <AssistantSpotlightDialog
+          assistant={selected}
+          onClose={() => setSelected(null)}
+          onPrimary={(a) => {
+            setSelected(null);
+            go(a.free ? "/auth" : "/pricing", `assistente_${a.name.toLowerCase()}`);
+          }}
+          onSecondary={(a) => {
+            setSelected(null);
+            go("/tour", `tour_${a.name.toLowerCase()}`);
+          }}
+        />
       </div>
     </div>
   );
 }
+
