@@ -1,4 +1,7 @@
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -9,8 +12,6 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Toggle } from "@/components/ui/toggle";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { pdfToImages } from "@/utils/pdfToImages";
 import { DemoPromoEngine } from "@/components/demo/DemoPromoEngine";
 
@@ -129,7 +130,85 @@ const recoverFingerprint = (): string => {
   return getStoredFingerprint();
 };
 
+type ControlTone = "primary" | "amber" | "blue" | "green";
+
+const TONE_ON: Record<ControlTone, string> = {
+  primary: "data-[state=on]:bg-primary/15 data-[state=on]:text-primary",
+  amber: "data-[state=on]:bg-amber-500/15 data-[state=on]:text-amber-600 dark:data-[state=on]:text-amber-400",
+  blue: "data-[state=on]:bg-blue-500/15 data-[state=on]:text-blue-600 dark:data-[state=on]:text-blue-400",
+  green: "data-[state=on]:bg-green-500/15 data-[state=on]:text-green-600 dark:data-[state=on]:text-green-400",
+};
+
+function InfoTip({ text, label }: { text: string; label: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label={`O que faz: ${label}`}
+          onMouseEnter={() => setOpen(true)}
+          onMouseLeave={() => setOpen(false)}
+          className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-border/70 text-[9px] font-semibold leading-none text-muted-foreground/80 transition-colors duration-150 hover:border-primary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        >
+          i
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        side="top"
+        align="center"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        className="w-60 p-3 text-xs leading-relaxed"
+      >
+        <p className="font-medium text-foreground mb-1">{label}</p>
+        <p className="text-muted-foreground">{text}</p>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function OutputControl({
+  icon: Icon,
+  label,
+  info,
+  tone,
+  pressed,
+  onPressedChange,
+  compact,
+}: {
+  icon: React.ElementType;
+  label: string;
+  info: string;
+  tone: ControlTone;
+  pressed: boolean;
+  onPressedChange: (v: boolean) => void;
+  compact?: boolean;
+}) {
+  return (
+    <div
+      className={`flex shrink-0 items-center rounded-xl border bg-background/70 transition-colors duration-150 ${
+        pressed ? "border-primary/30" : "border-border/50 hover:border-border"
+      } ${compact ? "h-7 pr-1.5" : "h-9 pr-2"}`}
+    >
+      <Toggle
+        pressed={pressed}
+        onPressedChange={onPressedChange}
+        size="sm"
+        aria-label={label}
+        className={`rounded-xl bg-transparent transition-colors duration-150 ${
+          compact ? "h-7 px-2 text-[11px]" : "h-9 px-3 text-xs"
+        } ${TONE_ON[tone]}`}
+      >
+        <Icon className={compact ? "w-3 h-3 mr-1" : "w-3.5 h-3.5 mr-1.5"} />
+        <span className="whitespace-nowrap">{label}</span>
+      </Toggle>
+      <InfoTip text={info} label={label} />
+    </div>
+  );
+}
+
 export default function PublicExaminusChat() {
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -155,24 +234,7 @@ export default function PublicExaminusChat() {
   const truncateToastShownRef = useRef(false);
 
   const [isExpanded, setIsExpanded] = useState(false);
-  const [viewportHeight, setViewportHeight] = useState(
-    typeof window !== "undefined" ? window.innerHeight : 900
-  );
 
-  useEffect(() => {
-    if (!isExpanded) return;
-    let raf = 0;
-    const onResize = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => setViewportHeight(window.innerHeight));
-    };
-    setViewportHeight(window.innerHeight);
-    window.addEventListener("resize", onResize);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", onResize);
-    };
-  }, [isExpanded]);
 
 
   // Fecha o modo expandido com ESC e trava o scroll do body
@@ -597,23 +659,29 @@ export default function PublicExaminusChat() {
   };
 
   const hasMessages = messages.length > 0;
-  const messagesHeight = isExpanded
-    ? Math.max(320, viewportHeight - 380)
-    : hasMessages
-      ? Math.min(500, Math.max(200, messages.length * 80))
-      : 0;
+  const messagesHeight = hasMessages
+    ? Math.min(500, Math.max(200, messages.length * 80))
+    : 0;
   const LIMIT = 3;
   const isCoolingDown = cooldownRemaining > 0;
 
-  return (
+  const shell = (
     <div
       className={
         isExpanded
-          ? "fixed inset-0 z-[70] bg-background overflow-y-auto overscroll-contain p-3 md:p-6 [scrollbar-gutter:stable_both-edges]"
+          ? "fixed inset-0 z-[70] bg-background flex flex-col"
           : "w-full max-w-7xl mx-auto"
       }
     >
+      <div
+        className={
+          isExpanded
+            ? "flex-1 min-h-0 overflow-y-auto overscroll-contain p-3 md:p-6 [scrollbar-gutter:stable]"
+            : "contents"
+        }
+      >
       <div className={isExpanded ? "w-full max-w-7xl mx-auto" : "contents"}>
+
       {/* Hero Section */}
       {!hasMessages && (
         <div className="text-center space-y-3 md:space-y-4 mb-4 md:mb-6 animate-in fade-in duration-700 slide-in-from-bottom-4">
@@ -692,8 +760,9 @@ export default function PublicExaminusChat() {
         {/* Messages Area */}
         {hasMessages && (
           <ScrollArea 
-            className="p-3 md:p-5 bg-gradient-to-b from-muted/20 to-transparent" 
-            style={{ height: `${messagesHeight}px` }}
+            className={`p-3 md:p-5 bg-gradient-to-b from-muted/20 to-transparent ${isExpanded ? "h-[52vh]" : ""}`}
+            style={isExpanded ? undefined : { height: `${messagesHeight}px` }}
+
             ref={scrollRef}
           >
             <div className="space-y-2 md:space-y-4">
@@ -817,59 +886,13 @@ export default function PublicExaminusChat() {
             {/* Formatting options row - scrollable pills */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
               <span className="text-[9px] uppercase tracking-[0.16em] text-muted-foreground/70 shrink-0 pr-0.5">Ajustes</span>
-              <Toggle
-                pressed={usePipeSeparator}
-                onPressedChange={setUsePipeSeparator}
-                size="sm"
-                className="h-7 px-2 text-[11px] rounded-full shrink-0 data-[state=on]:bg-primary/20"
-                title="Separar com |"
-              >
-                <SeparatorVertical className="w-3 h-3 mr-1" />
-                <span>Separar com |</span>
-              </Toggle>
-              <div className="flex items-center gap-1 px-1.5 py-0.5 bg-muted/50 rounded-full h-7 shrink-0">
-                <Switch
-                  id="include-time-mobile"
-                  checked={includeTime}
-                  onCheckedChange={setIncludeTime}
-                  className="data-[state=checked]:bg-primary scale-[0.65]"
-                />
-                <Label htmlFor="include-time-mobile" className="text-[11px] cursor-pointer flex items-center gap-1 pr-1 whitespace-nowrap">
-                  <Clock className="w-3 h-3" />
-                  Incluir horário
-                </Label>
-              </div>
-              <Toggle
-                pressed={onlyAltered}
-                onPressedChange={setOnlyAltered}
-                size="sm"
-                className="h-7 px-2 text-[11px] rounded-full shrink-0 data-[state=on]:bg-amber-500/20 data-[state=on]:text-amber-600 dark:data-[state=on]:text-amber-400"
-                title="Mostrar apenas resultados alterados"
-              >
-                <AlertTriangle className="w-3 h-3 mr-1" />
-                <span className="whitespace-nowrap">Só alterados</span>
-              </Toggle>
-              <Toggle
-                pressed={clinicalImpression}
-                onPressedChange={setClinicalImpression}
-                size="sm"
-                className="h-7 px-2 text-[11px] rounded-full shrink-0 data-[state=on]:bg-blue-500/20 data-[state=on]:text-blue-600 dark:data-[state=on]:text-blue-400"
-                title="Impressão clínica"
-              >
-                <Stethoscope className="w-3 h-3 mr-1" />
-                <span className="whitespace-nowrap">Impressão clínica</span>
-              </Toggle>
-              <Toggle
-                pressed={compactMode}
-                onPressedChange={setCompactMode}
-                size="sm"
-                className="h-7 px-2 text-[11px] rounded-full shrink-0 data-[state=on]:bg-green-500/20 data-[state=on]:text-green-600 dark:data-[state=on]:text-green-400"
-                title="Versão compacta: sem índices hematimétricos"
-              >
-                <Minimize2 className="w-3 h-3 mr-1" />
-                <span>Compacto</span>
-              </Toggle>
+              <OutputControl compact icon={SeparatorVertical} tone="primary" label="Separar com |" info="Organiza os resultados em linha contínua separada por barra vertical — pronto para colar na evolução." pressed={usePipeSeparator} onPressedChange={setUsePipeSeparator} />
+              <OutputControl compact icon={Clock} tone="primary" label="Incluir horário" info="Mostra o horário de coleta ao lado de cada exame, útil para acompanhar a evolução no plantão." pressed={includeTime} onPressedChange={setIncludeTime} />
+              <OutputControl compact icon={AlertTriangle} tone="amber" label="Só alterados" info="Exibe apenas os valores fora da referência, ocultando os resultados normais." pressed={onlyAltered} onPressedChange={setOnlyAltered} />
+              <OutputControl compact icon={Stethoscope} tone="blue" label="Impressão clínica" info="Acrescenta uma leitura interpretativa das alterações encontradas ao final do resumo." pressed={clinicalImpression} onPressedChange={setClinicalImpression} />
+              <OutputControl compact icon={Minimize2} tone="green" label="Compacto" info="Resumo enxuto: omite índices hematimétricos (VCM, HCM, CHCM, RDW) e detalhes secundários." pressed={compactMode} onPressedChange={setCompactMode} />
             </div>
+
 
             {/* Input row */}
             <div className="flex gap-2 items-end">
@@ -947,63 +970,16 @@ export default function PublicExaminusChat() {
           {/* Desktop: Glass clinical layout */}
           <div className="hidden md:flex flex-col gap-3">
             {/* Control bar */}
-            <div className="flex flex-nowrap items-center gap-1.5 px-3 py-2 rounded-xl bg-muted/40 border border-border/50 overflow-x-auto scrollbar-none">
+            <div className="flex flex-nowrap items-center gap-2 px-3 py-2.5 rounded-2xl bg-muted/35 border border-border/50 overflow-x-auto scrollbar-none">
               <span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground/70 mr-1 shrink-0">Ajustes de saída</span>
-              <Toggle
-
-                pressed={usePipeSeparator}
-                onPressedChange={setUsePipeSeparator}
-                size="sm"
-                className="h-8 px-2.5 rounded-lg data-[state=on]:bg-primary/15 data-[state=on]:text-primary shrink-0"
-                title="Separar exames com barra vertical |"
-              >
-                <SeparatorVertical className="w-3.5 h-3.5 mr-1.5" />
-                <span className="text-xs whitespace-nowrap">Separar com |</span>
-              </Toggle>
-              <div className="flex items-center gap-2 px-3 h-8 bg-background/70 border border-border/50 rounded-lg shrink-0">
-                <Switch
-                  id="include-time"
-                  checked={includeTime}
-                  onCheckedChange={setIncludeTime}
-                  className="data-[state=checked]:bg-primary scale-90"
-                />
-                <Label htmlFor="include-time" className="text-xs cursor-pointer flex items-center gap-1.5 whitespace-nowrap">
-                  <Clock className="w-3 h-3" />
-                  Incluir horário
-                </Label>
-              </div>
-              <div className="w-px h-5 bg-border/70 mx-1 shrink-0" />
-              <Toggle
-                pressed={onlyAltered}
-                onPressedChange={setOnlyAltered}
-                size="sm"
-                className="h-8 px-2.5 rounded-lg data-[state=on]:bg-amber-500/15 data-[state=on]:text-amber-600 dark:data-[state=on]:text-amber-400 shrink-0"
-                title="Mostrar apenas resultados alterados/críticos"
-              >
-                <AlertTriangle className="w-3.5 h-3.5 mr-1.5" />
-                <span className="text-xs whitespace-nowrap">Só alterados</span>
-              </Toggle>
-              <Toggle
-                pressed={clinicalImpression}
-                onPressedChange={setClinicalImpression}
-                size="sm"
-                className="h-8 px-2.5 rounded-lg data-[state=on]:bg-blue-500/15 data-[state=on]:text-blue-600 dark:data-[state=on]:text-blue-400 shrink-0"
-                title="Impressão clínica: análise das alterações laboratoriais"
-              >
-                <Stethoscope className="w-3.5 h-3.5 mr-1.5" />
-                <span className="text-xs whitespace-nowrap">Impressão clínica</span>
-              </Toggle>
-              <Toggle
-                pressed={compactMode}
-                onPressedChange={setCompactMode}
-                size="sm"
-                className="h-8 px-2.5 rounded-lg data-[state=on]:bg-green-500/15 data-[state=on]:text-green-600 dark:data-[state=on]:text-green-400 shrink-0"
-                title="Versão compacta: omite índices hematimétricos (VCM, HCM, CHCM, RDW)"
-              >
-                <Minimize2 className="w-3.5 h-3.5 mr-1.5" />
-                <span className="text-xs whitespace-nowrap">Compacto</span>
-              </Toggle>
+              <OutputControl icon={SeparatorVertical} tone="primary" label="Separar com |" info="Organiza os resultados em linha contínua separada por barra vertical — pronto para colar na evolução." pressed={usePipeSeparator} onPressedChange={setUsePipeSeparator} />
+              <OutputControl icon={Clock} tone="primary" label="Incluir horário" info="Mostra o horário de coleta ao lado de cada exame, útil para acompanhar a evolução no plantão." pressed={includeTime} onPressedChange={setIncludeTime} />
+              <div className="w-px h-6 bg-border/70 mx-0.5 shrink-0" />
+              <OutputControl icon={AlertTriangle} tone="amber" label="Só alterados" info="Exibe apenas os valores fora da referência, ocultando os resultados normais." pressed={onlyAltered} onPressedChange={setOnlyAltered} />
+              <OutputControl icon={Stethoscope} tone="blue" label="Impressão clínica" info="Acrescenta uma leitura interpretativa das alterações encontradas ao final do resumo." pressed={clinicalImpression} onPressedChange={setClinicalImpression} />
+              <OutputControl icon={Minimize2} tone="green" label="Compacto" info="Resumo enxuto: omite índices hematimétricos (VCM, HCM, CHCM, RDW) e detalhes secundários." pressed={compactMode} onPressedChange={setCompactMode} />
             </div>
+
 
             {/* Input area — textarea dominante com ações flutuantes */}
             <div className="relative group">
@@ -1115,6 +1091,13 @@ export default function PublicExaminusChat() {
       {/* Engine de pop-ups promocionais (toasts/banners/modal rotativos) */}
       <DemoPromoEngine observeTargetId="demo" />
       </div>
+      </div>
     </div>
   );
+
+  if (isExpanded && typeof document !== "undefined") {
+    return createPortal(shell, document.body);
+  }
+  return shell;
 }
+
