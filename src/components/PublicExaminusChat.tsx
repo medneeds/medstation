@@ -189,7 +189,7 @@ export default function PublicExaminusChat() {
         truncateToastShownRef.current = true;
         toast({
           title: "Limite de caracteres atingido",
-          description: `O modo demonstração aceita até ${DEMO_MAX_CHARS.toLocaleString("pt-BR")} caracteres. Usuários da plataforma têm até 30.000.`,
+          description: `O modo demonstração aceita até ${DEMO_MAX_CHARS.toLocaleString("pt-BR")} caracteres. Cadastre-se gratuitamente e libere até 30.000.`,
           variant: "destructive",
         });
         setTimeout(() => { truncateToastShownRef.current = false; }, 4000);
@@ -915,7 +915,7 @@ export default function PublicExaminusChat() {
             </div>
             <div className="flex items-center justify-between gap-2 mt-1 px-1">
               <span className="text-[10px] text-muted-foreground/80 truncate">
-                Demo: até 8.000 caracteres • Plataforma: 30.000
+                Demo: até 8.000 caracteres • Cadastrar gratuitamente: 30.000
               </span>
               <span
                 className={`text-[10px] tabular-nums shrink-0 ${
@@ -1057,7 +1057,7 @@ export default function PublicExaminusChat() {
             <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-muted/30 border border-border/40">
               <span className="text-[11px] text-muted-foreground flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary/70" />
-                Modo demonstração: até 8.000 caracteres por mensagem • Usuários da plataforma: até 30.000
+                Modo demonstração: até 8.000 caracteres por mensagem • Cadastrar gratuitamente libera até 30.000
               </span>
               <span
                 className={`text-[11px] tabular-nums shrink-0 px-2 py-0.5 rounded-md bg-background/80 border border-border/50 ${
