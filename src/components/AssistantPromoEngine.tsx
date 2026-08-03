@@ -8,26 +8,38 @@ import {
   ASSISTANT_PROMOS,
   PRODUCTIVITY_PROMOS,
   OFFER_PROMOS,
-  pickRandom,
+  createPromoRotator,
   type PromoItem,
 } from "@/lib/demoPromoContent";
 
 const FIRST_DELAY_MS = 3 * 60_000;   // primeiro pop após 3 min de uso
 const INTERVAL_MS = 7 * 60_000;      // depois, a cada 7 min
 const MODAL_EVERY = 4;               // a cada 4 pops, mostra o modal completo
-const SHOWN_KEY = "ms_app_promo_shown";
+const COUNT_KEY = "ms_app_promo_count";
+const LAST_AT_KEY = "ms_app_promo_last_at";
+
+const readNum = (key: string) => {
+  try {
+    const v = Number(localStorage.getItem(key));
+    return Number.isFinite(v) ? v : 0;
+  } catch {
+    return 0;
+  }
+};
 
 /**
  * Pop-ups periódicos, no ambiente pós-login, mostrando as vantagens dos
  * demais assistentes. Só para usuários sem assinatura ativa.
+ *
+ * Rotação: cada categoria tem sua própria fila embaralhada e persistida —
+ * todos os assistentes (incluindo Mediscuss) aparecem antes de qualquer
+ * repetição, e nunca o mesmo dois pops seguidos.
  */
 export function AssistantPromoEngine() {
   const { subscribed, loading } = useSubscription();
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
-  const countRef = useRef(0);
-  const recentRef = useRef<string[]>([]);
   const pathRef = useRef(pathname);
   pathRef.current = pathname;
 
@@ -36,26 +48,32 @@ export function AssistantPromoEngine() {
   useEffect(() => {
     if (!active) return;
 
-    const pools = [ASSISTANT_PROMOS, PRODUCTIVITY_PROMOS, OFFER_PROMOS];
+    const rotators = [
+      createPromoRotator(ASSISTANT_PROMOS, "ms_rot_assistants"),
+      createPromoRotator(PRODUCTIVITY_PROMOS, "ms_rot_productivity"),
+      createPromoRotator(OFFER_PROMOS, "ms_rot_offers"),
+    ];
 
     const show = () => {
       // não interrompe em telas de compra/checkout
       if (/^\/(pricing|welcome|welcome-tour|onboarding)/.test(pathRef.current)) return;
       if (document.hidden) return;
 
-      countRef.current += 1;
-      if (countRef.current % MODAL_EVERY === 0) {
+      const count = readNum(COUNT_KEY) + 1;
+      try {
+        localStorage.setItem(COUNT_KEY, String(count));
+        localStorage.setItem(LAST_AT_KEY, String(Date.now()));
+      } catch {}
+
+      if (count % MODAL_EVERY === 0) {
         setModalOpen(true);
         return;
       }
 
-      const pool = pools[countRef.current % pools.length];
-      const promo: PromoItem | null = pickRandom(pool, recentRef.current);
+      // assistentes com peso maior: 2 de cada 3 pops são de assistentes
+      const rotator = count % 3 === 0 ? rotators[(count / 3) % 2 === 0 ? 1 : 2] : rotators[0];
+      const promo: PromoItem | null = rotator.next();
       if (!promo) return;
-      recentRef.current = [promo.id, ...recentRef.current].slice(0, 8);
-      try {
-        sessionStorage.setItem(SHOWN_KEY, String(countRef.current));
-      } catch {}
 
       toast(promo.title, {
         description: promo.description,
@@ -68,17 +86,21 @@ export function AssistantPromoEngine() {
       });
     };
 
-    const intervalRef = { current: 0 as number };
+    // agenda consistente: respeita o tempo já decorrido desde o último pop
+    const lastAt = readNum(LAST_AT_KEY);
+    const elapsed = lastAt ? Date.now() - lastAt : 0;
+    const base = lastAt ? INTERVAL_MS : FIRST_DELAY_MS;
+    const firstDelay = Math.max(15_000, base - elapsed);
 
-    const first = window.setTimeout(() => {
+    let intervalId = 0;
+    const timeoutId = window.setTimeout(() => {
       show();
-      intervalRef.current = window.setInterval(show, INTERVAL_MS);
-    }, FIRST_DELAY_MS);
-
+      intervalId = window.setInterval(show, INTERVAL_MS);
+    }, firstDelay);
 
     return () => {
-      window.clearTimeout(first);
-      if (intervalRef.current) window.clearInterval(intervalRef.current);
+      window.clearTimeout(timeoutId);
+      if (intervalId) window.clearInterval(intervalId);
     };
   }, [active, navigate]);
 
@@ -86,3 +108,4 @@ export function AssistantPromoEngine() {
 
   return <UpgradeModal open={modalOpen} onOpenChange={setModalOpen} reason="engagement" context="app" />;
 }
+
