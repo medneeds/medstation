@@ -154,6 +154,32 @@ export default function PublicExaminusChat() {
   const navigate = useNavigate();
   const truncateToastShownRef = useRef(false);
 
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState(
+    typeof window !== "undefined" ? window.innerHeight : 900
+  );
+
+  useEffect(() => {
+    const onResize = () => setViewportHeight(window.innerHeight);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // Fecha o modo expandido com ESC e trava o scroll do body
+  useEffect(() => {
+    if (!isExpanded) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsExpanded(false);
+    };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [isExpanded]);
+
   const DEMO_MAX_CHARS = 8000;
   const handleInputChange = (value: string) => {
     if (value.length > DEMO_MAX_CHARS) {
