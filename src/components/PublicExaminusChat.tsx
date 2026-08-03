@@ -661,23 +661,29 @@ export default function PublicExaminusChat() {
   };
 
   const hasMessages = messages.length > 0;
-  const messagesHeight = isExpanded
-    ? Math.max(320, viewportHeight - 380)
-    : hasMessages
-      ? Math.min(500, Math.max(200, messages.length * 80))
-      : 0;
+  const messagesHeight = hasMessages
+    ? Math.min(500, Math.max(200, messages.length * 80))
+    : 0;
   const LIMIT = 3;
   const isCoolingDown = cooldownRemaining > 0;
 
-  return (
+  const shell = (
     <div
       className={
         isExpanded
-          ? "fixed inset-0 z-[70] bg-background overflow-y-auto overscroll-contain p-3 md:p-6 [scrollbar-gutter:stable_both-edges]"
+          ? "fixed inset-0 z-[70] bg-background flex flex-col"
           : "w-full max-w-7xl mx-auto"
       }
     >
+      <div
+        className={
+          isExpanded
+            ? "flex-1 min-h-0 overflow-y-auto overscroll-contain p-3 md:p-6 [scrollbar-gutter:stable]"
+            : "contents"
+        }
+      >
       <div className={isExpanded ? "w-full max-w-7xl mx-auto" : "contents"}>
+
       {/* Hero Section */}
       {!hasMessages && (
         <div className="text-center space-y-3 md:space-y-4 mb-4 md:mb-6 animate-in fade-in duration-700 slide-in-from-bottom-4">
