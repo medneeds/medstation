@@ -72,21 +72,26 @@ export function AssistentesAIChat({ className = "" }: { className?: string }) {
 
   return (
     <div
-      className={`flex flex-col rounded-2xl border border-border/60 bg-card/70 backdrop-blur-xl overflow-hidden ${className}`}
+      className={`flex flex-col h-full min-h-0 rounded-3xl border border-border/60 bg-card/70 backdrop-blur-xl overflow-hidden shadow-[0_24px_70px_-40px_hsl(var(--primary)/0.5)] ${className}`}
     >
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border/50 bg-background/40">
-        <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-border/50 bg-background/40">
+        <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
           <MessageCircleQuestion className="w-4 h-4 text-primary" />
         </div>
         <div className="leading-tight">
-          <p className="text-sm font-medium">Tire suas dúvidas agora</p>
+          <p className="text-[15px] font-semibold">Concierge MedStation</p>
           <p className="text-[11px] text-muted-foreground">
             Pergunte sobre qualquer assistente — resposta na hora, sem cadastro
           </p>
         </div>
+        <span className="ml-auto flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-primary">
+          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+          Online
+        </span>
       </div>
 
-      <ScrollArea className="h-[280px] px-4 py-3">
+      <ScrollArea className="flex-1 min-h-0 px-5 py-4">
+
         <div className="space-y-3">
           {messages.map((m, i) => (
             <div key={i} className={m.role === "user" ? "flex justify-end" : "flex gap-2"}>
@@ -117,7 +122,7 @@ export function AssistentesAIChat({ className = "" }: { className?: string }) {
       </ScrollArea>
 
       {messages.length <= 1 && (
-        <div className="flex flex-wrap gap-1.5 px-4 pb-2">
+        <div className="flex flex-wrap gap-1.5 px-5 pb-3">
           {SUGGESTIONS.map((s) => (
             <button
               key={s}
@@ -131,26 +136,32 @@ export function AssistentesAIChat({ className = "" }: { className?: string }) {
         </div>
       )}
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          send(input);
-        }}
-        className="flex items-center gap-2 p-3 border-t border-border/50 bg-background/40"
-      >
-        <Input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Ex: o Clínicus serve para emergência?"
-          maxLength={2000}
-          className="h-9 text-sm"
-        />
-        <Button type="submit" size="icon" className="h-9 w-9 shrink-0" disabled={loading || !input.trim()}>
-          <Send className="w-4 h-4" />
-        </Button>
-      </form>
+      <div className="border-t border-border/50 bg-background/40 p-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            send(input);
+          }}
+          className="flex items-center gap-2"
+        >
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Ex: o Clínicus serve para emergência?"
+            maxLength={2000}
+            className="h-10 text-sm"
+          />
+          <Button type="submit" size="icon" className="h-10 w-10 shrink-0" disabled={loading || !input.trim()}>
+            <Send className="w-4 h-4" />
+          </Button>
+        </form>
+        <p className="text-[10px] text-center text-muted-foreground mt-2.5">
+          Tira dúvidas sobre a plataforma. Não substitui avaliação clínica.
+        </p>
+      </div>
     </div>
   );
 }
 
 export default AssistentesAIChat;
+
