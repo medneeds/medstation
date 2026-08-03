@@ -68,13 +68,13 @@ export function AssistantPromoEngine() {
       });
     };
 
+    const intervalRef = { current: 0 as number };
+
     const first = window.setTimeout(() => {
       show();
-      const id = window.setInterval(show, INTERVAL_MS);
-      intervalRef.current = id;
+      intervalRef.current = window.setInterval(show, INTERVAL_MS);
     }, FIRST_DELAY_MS);
 
-    const intervalRef = { current: 0 as number };
 
     return () => {
       window.clearTimeout(first);
