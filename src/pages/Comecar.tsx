@@ -181,6 +181,22 @@ const assistants: Assistant[] = [
   },
 ];
 
+const consultorio: Assistant = {
+  name: "Modo Consultório",
+  short: "MC",
+  icon: Mic,
+  desc: "Consulta transcrita",
+  hook: "Converse com o paciente. A anamnese se escreve sozinha.",
+  detail:
+    "Grave o atendimento e receba a transcrição em tempo real, com a estruturação clínica pronta ao final. Você olha para o paciente, não para o teclado.",
+  bullets: [
+    "Transcrição em tempo real",
+    "Modo unificado ou com separação de falas",
+    "Estruturação da anamnese e salvamento da consulta",
+  ],
+};
+
+
 
 export default function Comecar() {
   const navigate = useNavigate();
