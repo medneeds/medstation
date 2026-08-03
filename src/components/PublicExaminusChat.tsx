@@ -160,10 +160,20 @@ export default function PublicExaminusChat() {
   );
 
   useEffect(() => {
-    const onResize = () => setViewportHeight(window.innerHeight);
+    if (!isExpanded) return;
+    let raf = 0;
+    const onResize = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => setViewportHeight(window.innerHeight));
+    };
+    setViewportHeight(window.innerHeight);
     window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [isExpanded]);
+
 
   // Fecha o modo expandido com ESC e trava o scroll do body
   useEffect(() => {
