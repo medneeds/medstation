@@ -888,59 +888,13 @@ export default function PublicExaminusChat() {
             {/* Formatting options row - scrollable pills */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
               <span className="text-[9px] uppercase tracking-[0.16em] text-muted-foreground/70 shrink-0 pr-0.5">Ajustes</span>
-              <Toggle
-                pressed={usePipeSeparator}
-                onPressedChange={setUsePipeSeparator}
-                size="sm"
-                className="h-7 px-2 text-[11px] rounded-full shrink-0 data-[state=on]:bg-primary/20"
-                title="Separar com |"
-              >
-                <SeparatorVertical className="w-3 h-3 mr-1" />
-                <span>Separar com |</span>
-              </Toggle>
-              <div className="flex items-center gap-1 px-1.5 py-0.5 bg-muted/50 rounded-full h-7 shrink-0">
-                <Switch
-                  id="include-time-mobile"
-                  checked={includeTime}
-                  onCheckedChange={setIncludeTime}
-                  className="data-[state=checked]:bg-primary scale-[0.65]"
-                />
-                <Label htmlFor="include-time-mobile" className="text-[11px] cursor-pointer flex items-center gap-1 pr-1 whitespace-nowrap">
-                  <Clock className="w-3 h-3" />
-                  Incluir horário
-                </Label>
-              </div>
-              <Toggle
-                pressed={onlyAltered}
-                onPressedChange={setOnlyAltered}
-                size="sm"
-                className="h-7 px-2 text-[11px] rounded-full shrink-0 data-[state=on]:bg-amber-500/20 data-[state=on]:text-amber-600 dark:data-[state=on]:text-amber-400"
-                title="Mostrar apenas resultados alterados"
-              >
-                <AlertTriangle className="w-3 h-3 mr-1" />
-                <span className="whitespace-nowrap">Só alterados</span>
-              </Toggle>
-              <Toggle
-                pressed={clinicalImpression}
-                onPressedChange={setClinicalImpression}
-                size="sm"
-                className="h-7 px-2 text-[11px] rounded-full shrink-0 data-[state=on]:bg-blue-500/20 data-[state=on]:text-blue-600 dark:data-[state=on]:text-blue-400"
-                title="Impressão clínica"
-              >
-                <Stethoscope className="w-3 h-3 mr-1" />
-                <span className="whitespace-nowrap">Impressão clínica</span>
-              </Toggle>
-              <Toggle
-                pressed={compactMode}
-                onPressedChange={setCompactMode}
-                size="sm"
-                className="h-7 px-2 text-[11px] rounded-full shrink-0 data-[state=on]:bg-green-500/20 data-[state=on]:text-green-600 dark:data-[state=on]:text-green-400"
-                title="Versão compacta: sem índices hematimétricos"
-              >
-                <Minimize2 className="w-3 h-3 mr-1" />
-                <span>Compacto</span>
-              </Toggle>
+              <OutputControl compact icon={SeparatorVertical} tone="primary" label="Separar com |" info="Organiza os resultados em linha contínua separada por barra vertical — pronto para colar na evolução." pressed={usePipeSeparator} onPressedChange={setUsePipeSeparator} />
+              <OutputControl compact icon={Clock} tone="primary" label="Incluir horário" info="Mostra o horário de coleta ao lado de cada exame, útil para acompanhar a evolução no plantão." pressed={includeTime} onPressedChange={setIncludeTime} />
+              <OutputControl compact icon={AlertTriangle} tone="amber" label="Só alterados" info="Exibe apenas os valores fora da referência, ocultando os resultados normais." pressed={onlyAltered} onPressedChange={setOnlyAltered} />
+              <OutputControl compact icon={Stethoscope} tone="blue" label="Impressão clínica" info="Acrescenta uma leitura interpretativa das alterações encontradas ao final do resumo." pressed={clinicalImpression} onPressedChange={setClinicalImpression} />
+              <OutputControl compact icon={Minimize2} tone="green" label="Compacto" info="Resumo enxuto: omite índices hematimétricos (VCM, HCM, CHCM, RDW) e detalhes secundários." pressed={compactMode} onPressedChange={setCompactMode} />
             </div>
+
 
             {/* Input row */}
             <div className="flex gap-2 items-end">
