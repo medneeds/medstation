@@ -82,18 +82,18 @@ export function AssistantSpotlightDialog({ assistant, onClose, onPrimary, onSeco
 
   return (
     <Dialog open={!!assistant} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg overflow-hidden p-0 gap-0">
+      <DialogContent className="w-[calc(100vw-1.5rem)] max-w-lg max-h-[88dvh] overflow-y-auto overflow-x-hidden p-0 gap-0 rounded-3xl">
         {assistant && Icon && (
           <>
             {/* Cabeçalho */}
-            <div className="relative px-6 pt-7 pb-5 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent">
+            <div className="relative min-w-0 px-5 sm:px-6 pt-6 sm:pt-7 pb-4 sm:pb-5 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_80%_at_20%_0%,hsl(var(--primary)/0.18),transparent)]" />
-              <div className="relative flex items-start gap-4">
-                <div className="w-12 h-12 shrink-0 rounded-2xl bg-primary flex items-center justify-center shadow-[0_12px_30px_-12px_hsl(var(--primary)/0.9)]">
+              <div className="relative flex items-start gap-3 sm:gap-4 pr-8">
+                <div className="w-11 h-11 sm:w-12 sm:h-12 shrink-0 rounded-2xl bg-primary flex items-center justify-center shadow-[0_12px_30px_-12px_hsl(var(--primary)/0.9)]">
                   <Icon className="w-5 h-5 text-primary-foreground" />
                 </div>
-                <DialogHeader className="text-left space-y-1">
-                  <DialogTitle className="text-xl leading-tight flex items-center gap-2">
+                <DialogHeader className="text-left space-y-1 min-w-0">
+                  <DialogTitle className="text-lg sm:text-xl leading-tight flex flex-wrap items-center gap-2">
                     {assistant.name}
                     {assistant.free && (
                       <span className="text-[9px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-primary/15 text-primary font-semibold">
@@ -101,17 +101,17 @@ export function AssistantSpotlightDialog({ assistant, onClose, onPrimary, onSeco
                       </span>
                     )}
                   </DialogTitle>
-                  <DialogDescription className="text-xs uppercase tracking-widest">
+                  <DialogDescription className="text-[10px] sm:text-xs uppercase tracking-widest">
                     {assistant.desc}
                   </DialogDescription>
                 </DialogHeader>
               </div>
-              <p className="relative mt-4 text-base md:text-lg font-medium leading-snug text-foreground">
+              <p className="relative mt-4 text-[15px] sm:text-lg font-medium leading-snug text-foreground">
                 {assistant.hook}
               </p>
 
               {steps.length > 0 && (
-                <div className="relative mt-5 inline-flex p-1 rounded-full bg-background/70 backdrop-blur border border-border/60">
+                <div className="relative mt-4 sm:mt-5 inline-flex p-1 rounded-full bg-background/70 backdrop-blur border border-border/60">
                   {(
                     [
                       { id: "resumo", label: "Resumo" },
@@ -122,7 +122,7 @@ export function AssistantSpotlightDialog({ assistant, onClose, onPrimary, onSeco
                       key={t.id}
                       type="button"
                       onClick={() => setTab(t.id)}
-                      className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all ${
+                      className={`px-3.5 sm:px-4 py-1.5 text-xs font-semibold rounded-full transition-all ${
                         tab === t.id
                           ? "bg-primary text-primary-foreground shadow-sm"
                           : "text-muted-foreground hover:text-foreground"
@@ -136,7 +136,8 @@ export function AssistantSpotlightDialog({ assistant, onClose, onPrimary, onSeco
             </div>
 
             {/* Conteúdo */}
-            <div className="px-6 py-5 space-y-4">
+            <div className="min-w-0 px-5 sm:px-6 py-5 space-y-4">
+
               {tab === "resumo" || steps.length === 0 ? (
                 <>
                   <p className="text-sm text-muted-foreground leading-relaxed">{assistant.detail}</p>
@@ -161,12 +162,12 @@ export function AssistantSpotlightDialog({ assistant, onClose, onPrimary, onSeco
                 </>
               ) : (
                 <div className="animate-fade-in space-y-3">
-                  <Carousel setApi={setApi} opts={{ align: "start" }} className="w-full">
+                  <Carousel setApi={setApi} opts={{ align: "start" }} className="w-full overflow-hidden">
                     <CarouselContent>
                       {steps.map((step, i) => {
                         const s = kindStyles[step.kind];
                         return (
-                          <CarouselItem key={step.title}>
+                          <CarouselItem key={step.title} className="min-w-0">
                             <div className="space-y-3">
                               <div className="flex items-center gap-2">
                                 <span
@@ -176,11 +177,11 @@ export function AssistantSpotlightDialog({ assistant, onClose, onPrimary, onSeco
                                 </span>
                               </div>
                               <p className="text-sm font-semibold leading-tight">{step.title}</p>
-                              <div className={`rounded-2xl border p-4 space-y-2 ${s.frame}`}>
+                              <div className={`rounded-2xl border p-3.5 sm:p-4 space-y-2 ${s.frame}`}>
                                 {step.lines.map((line) => (
                                   <p
                                     key={line}
-                                    className={`text-[12.5px] leading-relaxed font-mono ${s.text}`}
+                                    className={`text-[11.5px] sm:text-[12.5px] leading-relaxed font-mono break-words hyphens-auto ${s.text}`}
                                   >
                                     {step.kind === "process" && (
                                       <Sparkle className="inline w-3 h-3 mr-1.5 text-primary" />
@@ -201,37 +202,44 @@ export function AssistantSpotlightDialog({ assistant, onClose, onPrimary, onSeco
                     <CarouselNext className="hidden sm:flex -right-3" />
                   </Carousel>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-1">
                       {steps.map((s, i) => (
                         <button
                           key={s.title}
                           type="button"
                           aria-label={`Passo ${i + 1}`}
                           onClick={() => api?.scrollTo(i)}
-                          className={`h-1.5 rounded-full transition-all ${
-                            current === i ? "w-6 bg-primary" : "w-1.5 bg-border hover:bg-primary/40"
-                          }`}
-                        />
+                          className="py-2 px-0.5"
+                        >
+                          <span
+                            className={`block h-1.5 rounded-full transition-all ${
+                              current === i ? "w-6 bg-primary" : "w-1.5 bg-border"
+                            }`}
+                          />
+                        </button>
                       ))}
                     </div>
-                    <span className="text-[11px] text-muted-foreground">
-                      Arraste para o lado · {current + 1}/{steps.length}
+                    <span className="text-[11px] text-muted-foreground shrink-0">
+                      <span className="hidden sm:inline">Arraste para o lado · </span>
+                      {current + 1}/{steps.length}
                     </span>
                   </div>
                 </div>
+
               )}
 
-              <div className="flex flex-col sm:flex-row gap-2 pt-1">
+              <div className="flex flex-col sm:flex-row gap-2 pt-1 sticky bottom-0 -mx-5 sm:mx-0 px-5 sm:px-0 pb-1 bg-background/95 backdrop-blur sm:bg-transparent sm:backdrop-blur-none">
                 <Button
-                  className="flex-1 bg-gradient-primary hover:opacity-90"
+                  className="flex-1 h-11 bg-gradient-primary hover:opacity-90"
                   onClick={() => onPrimary(assistant)}
                 >
                   {assistant.free ? "Criar conta e usar grátis" : "Assinar e liberar"}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
-                <Button variant="ghost" className="sm:w-auto" onClick={() => onSecondary(assistant)}>
+                <Button variant="ghost" className="h-11 sm:w-auto" onClick={() => onSecondary(assistant)}>
                   Ver no tour
+
                 </Button>
               </div>
             </div>
