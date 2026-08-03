@@ -619,10 +619,10 @@ export default function PublicExaminusChat() {
         <div className="text-center space-y-3 md:space-y-4 mb-4 md:mb-6 animate-in fade-in duration-700 slide-in-from-bottom-4">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
             <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <span className="text-[0.7rem] md:text-xs uppercase tracking-[0.18em] font-mono text-primary">Examinus · MedStation AI</span>
+            <span className="text-[0.7rem] md:text-xs uppercase tracking-[0.18em] font-mono text-primary">Conheça o Examinus | MedStation AI</span>
           </div>
 
-          <p className="text-2xl md:text-4xl text-foreground max-w-2xl mx-auto leading-tight px-2 font-display">
+          <p className="text-3xl md:text-5xl text-foreground max-w-3xl mx-auto leading-[1.1] px-2 font-display">
             Cole o exame. Receba o <span className="italic text-primary">resumo pronto</span>.
           </p>
 
