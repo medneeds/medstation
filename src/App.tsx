@@ -18,6 +18,7 @@ import NoteDetail from "./pages/NoteDetail";
 import Auth from "./pages/Auth";
 import ConfirmarEmail from "./pages/ConfirmarEmail";
 import Home from "./pages/Home";
+import Comecar from "./pages/Comecar";
 import Pricing from "./pages/Pricing";
 import Welcome from "./pages/Welcome";
 import Onboarding from "./pages/Onboarding";
