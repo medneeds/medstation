@@ -944,10 +944,10 @@ export default function PublicExaminusChat() {
                 pressed={usePipeSeparator}
                 onPressedChange={setUsePipeSeparator}
                 size="sm"
-                className="h-8 px-3 rounded-lg data-[state=on]:bg-primary/15 data-[state=on]:text-primary"
+                className="h-8 px-2.5 rounded-lg data-[state=on]:bg-primary/15 data-[state=on]:text-primary"
                 title="Separar exames com barra vertical |"
               >
-                <SeparatorVertical className="w-4 h-4 mr-2" />
+                <SeparatorVertical className="w-3.5 h-3.5 mr-1.5" />
                 <span className="text-xs">Separar com |</span>
               </Toggle>
               <div className="flex items-center gap-2 px-3 h-8 bg-background/70 border border-border/50 rounded-lg">
@@ -967,30 +967,30 @@ export default function PublicExaminusChat() {
                 pressed={onlyAltered}
                 onPressedChange={setOnlyAltered}
                 size="sm"
-                className="h-8 px-3 rounded-lg data-[state=on]:bg-amber-500/15 data-[state=on]:text-amber-600 dark:data-[state=on]:text-amber-400"
+                className="h-8 px-2.5 rounded-lg data-[state=on]:bg-amber-500/15 data-[state=on]:text-amber-600 dark:data-[state=on]:text-amber-400"
                 title="Mostrar apenas resultados alterados/críticos"
               >
-                <AlertTriangle className="w-4 h-4 mr-2" />
+                <AlertTriangle className="w-3.5 h-3.5 mr-1.5" />
                 <span className="text-xs">Só alterados</span>
               </Toggle>
               <Toggle
                 pressed={clinicalImpression}
                 onPressedChange={setClinicalImpression}
                 size="sm"
-                className="h-8 px-3 rounded-lg data-[state=on]:bg-blue-500/15 data-[state=on]:text-blue-600 dark:data-[state=on]:text-blue-400"
+                className="h-8 px-2.5 rounded-lg data-[state=on]:bg-blue-500/15 data-[state=on]:text-blue-600 dark:data-[state=on]:text-blue-400"
                 title="Impressão clínica: análise das alterações laboratoriais"
               >
-                <Stethoscope className="w-4 h-4 mr-2" />
+                <Stethoscope className="w-3.5 h-3.5 mr-1.5" />
                 <span className="text-xs">Impressão clínica</span>
               </Toggle>
               <Toggle
                 pressed={compactMode}
                 onPressedChange={setCompactMode}
                 size="sm"
-                className="h-8 px-3 rounded-lg data-[state=on]:bg-green-500/15 data-[state=on]:text-green-600 dark:data-[state=on]:text-green-400"
+                className="h-8 px-2.5 rounded-lg data-[state=on]:bg-green-500/15 data-[state=on]:text-green-600 dark:data-[state=on]:text-green-400"
                 title="Versão compacta: omite índices hematimétricos (VCM, HCM, CHCM, RDW)"
               >
-                <Minimize2 className="w-4 h-4 mr-2" />
+                <Minimize2 className="w-3.5 h-3.5 mr-1.5" />
                 <span className="text-xs">Compacto</span>
               </Toggle>
             </div>
@@ -1049,7 +1049,7 @@ export default function PublicExaminusChat() {
                     </>
                   ) : (
                     <>
-                      <Send className="w-4 h-4 mr-2" />
+                      <Send className="w-3.5 h-3.5 mr-1.5" />
                       Enviar
                     </>
                   )}
