@@ -18,6 +18,7 @@ import NoteDetail from "./pages/NoteDetail";
 import Auth from "./pages/Auth";
 import ConfirmarEmail from "./pages/ConfirmarEmail";
 import Home from "./pages/Home";
+import Comecar from "./pages/Comecar";
 import Pricing from "./pages/Pricing";
 import Welcome from "./pages/Welcome";
 import Onboarding from "./pages/Onboarding";
@@ -79,7 +80,9 @@ const App = () => (
           <BrowserRouter>
           <AnalyticsTracker />
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Comecar />} />
+            <Route path="/landing" element={<Home />} />
+            <Route path="/home" element={<Navigate to="/landing" replace />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/confirmar-email" element={<ConfirmarEmail />} />
             <Route path="/pricing" element={<Pricing />} />

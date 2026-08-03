@@ -78,3 +78,6 @@ verify_jwt = false
 
 [functions.handle-email-suppression]
 verify_jwt = false
+
+[functions.public-assistants-chat]
+verify_jwt = false
