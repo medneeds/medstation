@@ -145,7 +145,7 @@ export default function Home() {
 
       {/* Seção 1: Examinus por MedStation AI */}
       <section id="demo" className="pt-10 md:pt-16 pb-6 md:pb-8 px-4 md:px-6 relative overflow-hidden">
-        <div className="container mx-auto max-w-4xl relative">
+        <div className="container mx-auto max-w-7xl relative">
           <div className="space-y-6 md:space-y-8 animate-in fade-in duration-700 text-center">
 
             {/* Demo Card — pulso sutil para chamar interação */}

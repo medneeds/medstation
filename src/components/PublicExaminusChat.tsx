@@ -610,10 +610,10 @@ export default function PublicExaminusChat() {
       className={
         isExpanded
           ? "fixed inset-0 z-[70] bg-background overflow-y-auto overscroll-contain p-3 md:p-6 [scrollbar-gutter:stable_both-edges]"
-          : "w-full max-w-5xl mx-auto"
+          : "w-full max-w-7xl mx-auto"
       }
     >
-      <div className={isExpanded ? "w-full max-w-5xl mx-auto" : "contents"}>
+      <div className={isExpanded ? "w-full max-w-7xl mx-auto" : "contents"}>
       {/* Hero Section */}
       {!hasMessages && (
         <div className="text-center space-y-3 md:space-y-4 mb-4 md:mb-6 animate-in fade-in duration-700 slide-in-from-bottom-4">
