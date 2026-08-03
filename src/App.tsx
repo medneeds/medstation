@@ -69,7 +69,7 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const PromoPreview = lazy(() => import("./pages/PromoPreview"));
+import PromoPreview from "./pages/PromoPreview";
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
