@@ -69,6 +69,8 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const PromoPreview = lazy(() => import("./pages/PromoPreview"));
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
