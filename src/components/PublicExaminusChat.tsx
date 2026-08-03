@@ -160,10 +160,20 @@ export default function PublicExaminusChat() {
   );
 
   useEffect(() => {
-    const onResize = () => setViewportHeight(window.innerHeight);
+    if (!isExpanded) return;
+    let raf = 0;
+    const onResize = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => setViewportHeight(window.innerHeight));
+    };
+    setViewportHeight(window.innerHeight);
     window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [isExpanded]);
+
 
   // Fecha o modo expandido com ESC e trava o scroll do body
   useEffect(() => {
@@ -599,7 +609,7 @@ export default function PublicExaminusChat() {
     <div
       className={
         isExpanded
-          ? "fixed inset-0 z-[70] bg-background/92 backdrop-blur-xl overflow-y-auto p-3 md:p-6 animate-in fade-in duration-200"
+          ? "fixed inset-0 z-[70] bg-background overflow-y-auto overscroll-contain p-3 md:p-6 [contain:layout_paint]"
           : "w-full max-w-5xl mx-auto"
       }
     >
@@ -651,7 +661,7 @@ export default function PublicExaminusChat() {
       </div>
 
       {/* Chat Card */}
-      <Card className={`shadow-elevated border-border/50 backdrop-blur-xl bg-card/95 transition-all duration-500 ${hasMessages ? 'hover:shadow-medical' : ''}`}>
+      <Card className={`shadow-elevated border-border/50 ${isExpanded ? "bg-card" : "backdrop-blur-xl bg-card/95 transition-all duration-500"} ${hasMessages && !isExpanded ? 'hover:shadow-medical' : ''}`}>
         {/* Compact Header (only shown when there are messages) */}
         {hasMessages && (
           <div className="bg-gradient-primary p-3 md:p-4 rounded-t-2xl relative overflow-hidden">
@@ -757,7 +767,7 @@ export default function PublicExaminusChat() {
         )}
 
         {/* Input Area */}
-        <div className={`p-3 md:p-5 bg-muted/20 backdrop-blur ${hasMessages ? 'border-t border-border/50 rounded-b-2xl' : 'rounded-2xl'}`}>
+        <div className={`p-3 md:p-5 bg-muted/20 ${isExpanded ? "" : "backdrop-blur"} ${hasMessages ? 'border-t border-border/50 rounded-b-2xl' : 'rounded-2xl'}`}>
           {/* SR-only live region for blocked send attempts */}
           <span role="status" aria-live="assertive" className="sr-only">
             {validationAnnouncement}
