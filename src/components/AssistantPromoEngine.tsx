@@ -62,7 +62,7 @@ export function AssistantPromoEngine() {
         duration: 8000,
         icon: <Sparkles className="w-4 h-4 text-primary" />,
         action: {
-          label: promo.cta || "Ver planos",
+          label: /criar conta/i.test(promo.cta || "") ? "Assinar" : (promo.cta || "Assinar"),
           onClick: () => navigate("/pricing"),
         },
       });
