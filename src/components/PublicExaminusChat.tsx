@@ -561,12 +561,23 @@ export default function PublicExaminusChat() {
   };
 
   const hasMessages = messages.length > 0;
-  const messagesHeight = hasMessages ? Math.min(500, Math.max(200, messages.length * 80)) : 0;
+  const messagesHeight = isExpanded
+    ? Math.max(320, viewportHeight - 380)
+    : hasMessages
+      ? Math.min(500, Math.max(200, messages.length * 80))
+      : 0;
   const LIMIT = 3;
   const isCoolingDown = cooldownRemaining > 0;
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
+    <div
+      className={
+        isExpanded
+          ? "fixed inset-0 z-[70] bg-background/92 backdrop-blur-xl overflow-y-auto p-3 md:p-6 animate-in fade-in duration-200"
+          : "w-full max-w-5xl mx-auto"
+      }
+    >
+      <div className={isExpanded ? "w-full max-w-5xl mx-auto" : "contents"}>
       {/* Hero Section */}
       {!hasMessages && (
         <div className="text-center space-y-3 md:space-y-4 mb-4 md:mb-6 animate-in fade-in duration-700 slide-in-from-bottom-4">
@@ -575,8 +586,11 @@ export default function PublicExaminusChat() {
             <span className="text-[0.7rem] md:text-xs uppercase tracking-[0.18em] font-mono text-primary">Examinus · MedStation AI</span>
           </div>
 
-          <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed px-2">
-            Cole os resultados dos exames abaixo e veja a mágica acontecer.
+          <p className="text-base md:text-xl text-foreground/90 max-w-2xl mx-auto leading-snug px-2 font-display">
+            Cole o exame. Receba o resumo pronto para o prontuário.
+          </p>
+          <p className="text-xs md:text-sm text-muted-foreground max-w-xl mx-auto px-2">
+            Sem cadastro, sem instalação — em segundos.
           </p>
 
           <div className="hidden md:flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground pt-1">
@@ -595,6 +609,19 @@ export default function PublicExaminusChat() {
           </div>
         </div>
       )}
+
+      {/* Botão de expansão */}
+      <div className="flex justify-end mb-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsExpanded((v) => !v)}
+          className="h-8 px-2.5 gap-1.5 text-[11px] md:text-xs text-muted-foreground hover:text-primary rounded-full"
+        >
+          {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+          {isExpanded ? "Reduzir" : "Expandir tela"}
+        </Button>
+      </div>
 
       {/* Chat Card */}
       <Card className={`shadow-elevated border-border/50 backdrop-blur-xl bg-card/95 transition-all duration-500 ${hasMessages ? 'hover:shadow-medical' : ''}`}>
