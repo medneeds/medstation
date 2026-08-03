@@ -273,8 +273,8 @@ export default function Comecar() {
 
         <footer className="container mx-auto px-4 md:px-8 py-8 border-t border-border/50 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
           <span>© {new Date().getFullYear()} MedStation AI</span>
-          <button className="hover:text-foreground transition-colors" onClick={() => go("/landing", "entrada_footer")}>
-            Ver apresentação completa
+          <button className="hover:text-foreground transition-colors" onClick={() => go("/tour", "entrada_footer")}>
+            Ver tour completo da plataforma
           </button>
         </footer>
       </div>
