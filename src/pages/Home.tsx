@@ -164,9 +164,6 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Hero video — 15s, IA + narração + música */}
-            <HeroVideo />
-
             {/* Demo Card — pulso sutil para chamar interação */}
             <div className="relative group">
               {/* Glow pulsante */}
@@ -185,6 +182,14 @@ export default function Home() {
               <div className="relative transition-transform duration-500 group-hover:-translate-y-0.5">
                 <PublicExaminusChat />
               </div>
+            </div>
+
+            {/* Vídeo demonstrativo — logo após o teste ao vivo */}
+            <div className="space-y-2 pt-2">
+              <p className="text-[0.65rem] uppercase tracking-[0.22em] font-mono text-muted-foreground">
+                Veja em 15 segundos
+              </p>
+              <HeroVideo />
             </div>
 
             {/* CTA Footer */}
