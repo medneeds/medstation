@@ -158,6 +158,63 @@ export function pickRandom<T>(arr: T[], excludeIds: string[] = []): T | null {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
+/**
+ * Rotação determinística e persistente: percorre toda a lista (em ordem
+ * embaralhada) antes de repetir qualquer item, e nunca mostra o mesmo item
+ * duas vezes seguidas entre ciclos.
+ */
+export function createPromoRotator(items: PromoItem[], storageKey: string) {
+  const shuffle = (ids: string[], avoidFirst?: string) => {
+    const out = [...ids];
+    for (let i = out.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [out[i], out[j]] = [out[j], out[i]];
+    }
+    if (avoidFirst && out.length > 1 && out[0] === avoidFirst) {
+      [out[0], out[1]] = [out[1], out[0]];
+    }
+    return out;
+  };
+
+  const allIds = () => items.map((i) => i.id);
+
+  const read = (): { queue: string[]; last?: string } => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed?.queue)) {
+          const valid = allIds();
+          return {
+            queue: parsed.queue.filter((id: string) => valid.includes(id)),
+            last: parsed.last,
+          };
+        }
+      }
+    } catch {}
+    return { queue: [] };
+  };
+
+  const write = (state: { queue: string[]; last?: string }) => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    } catch {}
+  };
+
+  return {
+    next(): PromoItem | null {
+      if (items.length === 0) return null;
+      const state = read();
+      let queue = state.queue;
+      // novo ciclo: reembaralha incluindo itens novos (ex.: Mediscuss)
+      if (queue.length === 0) queue = shuffle(allIds(), state.last);
+      const id = queue.shift()!;
+      write({ queue, last: id });
+      return items.find((i) => i.id === id) ?? null;
+    },
+  };
+}
+
 export const ASSISTANTS_GRID = [
   { name: "Examinus", desc: "Exames laboratoriais e imagem", free: true },
   { name: "Clínicus", desc: "Anamnese estruturada", free: false },
