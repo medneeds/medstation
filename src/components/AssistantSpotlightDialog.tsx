@@ -229,16 +229,17 @@ export function AssistantSpotlightDialog({ assistant, onClose, onPrimary, onSeco
 
               )}
 
-              <div className="flex flex-col sm:flex-row gap-2 pt-1">
+              <div className="flex flex-col sm:flex-row gap-2 pt-1 sticky bottom-0 -mx-5 sm:mx-0 px-5 sm:px-0 pb-1 bg-background/95 backdrop-blur sm:bg-transparent sm:backdrop-blur-none">
                 <Button
-                  className="flex-1 bg-gradient-primary hover:opacity-90"
+                  className="flex-1 h-11 bg-gradient-primary hover:opacity-90"
                   onClick={() => onPrimary(assistant)}
                 >
                   {assistant.free ? "Criar conta e usar grátis" : "Assinar e liberar"}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
-                <Button variant="ghost" className="sm:w-auto" onClick={() => onSecondary(assistant)}>
+                <Button variant="ghost" className="h-11 sm:w-auto" onClick={() => onSecondary(assistant)}>
                   Ver no tour
+
                 </Button>
               </div>
             </div>
