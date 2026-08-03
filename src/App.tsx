@@ -83,6 +83,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/_promo-preview" element={<PromoPreview />} />
             <Route path="/confirmar-email" element={<ConfirmarEmail />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/consultorio-landing" element={<ConsultorioLanding />} />
