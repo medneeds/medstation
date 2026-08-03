@@ -13,7 +13,6 @@ import {
   Check,
   Clock,
   ShieldCheck,
-  Sparkles,
   TestTube2,
   Stethoscope,
   Calculator,
@@ -23,7 +22,6 @@ import {
   Wind,
   FileCheck,
   BookOpen,
-  Compass as CompassIcon,
   MessagesSquare,
   Mic,
 } from "lucide-react";
@@ -32,56 +30,42 @@ const paths = [
   {
     id: "testar",
     icon: PlayCircle,
-    eyebrow: "Sem cadastro · 1 minuto",
-    title: "Testar agora, sem criar conta",
-    body:
-      "Cole um exame e veja o Examinus organizar tudo em segundos. É a demonstração pública — tem limite de uso e pequenas esperas entre mensagens.",
-    bullets: ["Nenhum dado pessoal pedido", "Resultado real, na hora", "Ideal para quem quer prova antes de conversa"],
-    cta: "Testar o Examinus agora",
+    title: "Explorar agora",
+    sub: "Testar sem cadastro",
+    hint: "Cole um exame e veja o resultado em segundos.",
     to: "/landing#demo",
   },
   {
     id: "dentro",
     icon: UserPlus,
-    eyebrow: "Conta grátis · sem cartão",
-    title: "Conhecer a MedStation por dentro",
-    body:
-      "Criando conta você entra na plataforma e usa o Examinus completo de graça: sem espera entre mensagens, sem pop-ups e com histórico salvo.",
-    bullets: [
-      "Examinus liberado, gratuito e sem cartão",
-      "Você vê a plataforma real, não um vídeo",
-      "Os outros assistentes ficam visíveis para quando quiser",
-    ],
-    cta: "Criar conta grátis",
+    title: "Criar conta grátis",
+    sub: "Inclui Examinus gratuito",
+    hint: "Sem cartão, sem espera entre mensagens.",
     to: "/auth",
-    highlight: true,
+    primary: true,
   },
   {
     id: "conhecer",
     icon: Compass,
-    eyebrow: "Ainda não conheço",
-    title: "Entender o que é a MedStation",
-    body:
-      "Comece pela apresentação completa: a dor da burocracia clínica, o que cada assistente resolve, o Modo Consultório, preços e garantia.",
-    bullets: ["Vídeo curto de apresentação", "Os 11 assistentes explicados", "Planos, preços e garantia de 7 dias"],
-    cta: "Ver a apresentação",
+    title: "Ver apresentação",
+    sub: "Tour pela plataforma",
+    hint: "Assistentes, Modo Consultório, planos e garantia.",
     to: "/landing",
   },
 ];
 
 const assistants = [
-  { name: "Examinus", icon: TestTube2, desc: "Resume exames", free: true },
-  { name: "Clínicus", icon: Stethoscope, desc: "Anamnese pronta" },
-  { name: "Scorius", icon: Calculator, desc: "Scores e risco" },
-  { name: "Numerus", icon: Sigma, desc: "Cálculos clínicos" },
-  { name: "Prescriptus", icon: Pill, desc: "Bula inteligente" },
-  { name: "CODexus", icon: FileCode, desc: "CID-10 certo" },
-  { name: "Gasometrus", icon: Wind, desc: "Gasometria lida" },
-  { name: "Atestus", icon: FileCheck, desc: "Atestados prontos" },
-  { name: "Protocolus", icon: BookOpen, desc: "Protocolos atuais" },
-  { name: "Orientus", icon: CompassIcon, desc: "Orientação ao paciente" },
-  { name: "Mediscuss", icon: MessagesSquare, desc: "Discussão de casos" },
-  { name: "Modo Consultório", icon: Mic, desc: "Consulta transcrita" },
+  { name: "Examinus", short: "EX", icon: TestTube2, desc: "Resume exames", free: true },
+  { name: "Clínicus", short: "CL", icon: Stethoscope, desc: "Anamnese pronta" },
+  { name: "Scorius", short: "SC", icon: Calculator, desc: "Scores e risco" },
+  { name: "Numerus", short: "NU", icon: Sigma, desc: "Cálculos clínicos" },
+  { name: "Prescriptus", short: "PR", icon: Pill, desc: "Bula inteligente" },
+  { name: "CODexus", short: "CO", icon: FileCode, desc: "CID-10 certo" },
+  { name: "Gasometrus", short: "GA", icon: Wind, desc: "Gasometria lida" },
+  { name: "Atestus", short: "AT", icon: FileCheck, desc: "Atestados prontos" },
+  { name: "Protocolus", short: "PT", icon: BookOpen, desc: "Protocolos atuais" },
+  { name: "Orientus", short: "OR", icon: Compass, desc: "Orientação ao paciente" },
+  { name: "Mediscuss", short: "MD", icon: MessagesSquare, desc: "Discussão de casos" },
 ];
 
 export default function Comecar() {
@@ -101,12 +85,12 @@ export default function Comecar() {
 
   return (
     <div className="min-h-screen relative">
-      <div className="fixed inset-0 bg-gradient-to-br from-primary/12 via-background to-primary/8 pointer-events-none" />
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_120%_80%_at_50%_-10%,rgba(var(--primary-rgb),0.25),transparent)] pointer-events-none" />
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_100%,rgba(var(--primary-rgb),0.12),transparent)] pointer-events-none" />
+      <div className="fixed inset-0 bg-gradient-to-br from-primary/10 via-background to-background pointer-events-none" />
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_90%_60%_at_15%_-5%,hsl(var(--primary)/0.20),transparent)] pointer-events-none" />
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_70%_50%_at_95%_35%,hsl(var(--primary)/0.10),transparent)] pointer-events-none" />
 
       <div className="relative z-10">
-        <header className="container mx-auto px-4 md:px-6 py-5 flex items-center justify-between">
+        <header className="container mx-auto px-4 md:px-8 py-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Logo size="sm" />
             <span className="hidden md:inline-block text-[0.65rem] uppercase tracking-[0.22em] font-mono text-muted-foreground border-l border-border/60 pl-3">
@@ -121,133 +105,173 @@ export default function Comecar() {
           </div>
         </header>
 
-        {/* Hero */}
-        <section className="container mx-auto px-4 md:px-6 pt-6 pb-10 text-center max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-5">
-            <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <span className="text-xs font-medium text-primary">Assistentes clínicos de IA para médicos</span>
-          </div>
-          <h1 className="text-3xl md:text-5xl font-semibold tracking-tight leading-[1.1]">
-            Menos burocracia. Mais tempo com o paciente.
-          </h1>
-          <p className="mt-4 text-base md:text-lg text-muted-foreground">
-            A MedStation AI escreve com você: exames resumidos, anamnese estruturada, protocolos e a consulta
-            transcrita. Escolha por onde quer começar — cada caminho leva poucos minutos.
-          </p>
-        </section>
-
-        {/* 3 caminhos */}
-        <section className="container mx-auto px-4 md:px-6 pb-4">
-          <div className="grid md:grid-cols-3 gap-4 md:gap-5">
-            {paths.map((p) => {
-              const Icon = p.icon;
-              return (
-                <div
-                  key={p.id}
-                  onClick={() => go(p.to, `entrada_${p.id}`)}
-                  className={`group cursor-pointer relative flex flex-col rounded-2xl border p-5 md:p-6 transition-all duration-300 hover:-translate-y-1 ${
-                    p.highlight
-                      ? "border-primary/40 bg-card/80 shadow-[0_18px_50px_-24px_hsl(var(--primary)/0.55)]"
-                      : "border-border/60 bg-card/60 hover:border-primary/30"
-                  } backdrop-blur-xl`}
-                >
-                  {p.highlight && (
-                    <span className="absolute -top-2.5 left-5 text-[10px] uppercase tracking-wider font-medium px-2 py-0.5 rounded-full bg-primary text-primary-foreground">
-                      Mais escolhido
-                    </span>
-                  )}
-                  <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-4">
-                    <Icon className="w-5 h-5 text-primary" />
-                  </div>
-                  <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground mb-1.5">{p.eyebrow}</p>
-                  <h2 className="text-lg md:text-xl font-semibold leading-snug">{p.title}</h2>
-                  <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{p.body}</p>
-                  <ul className="mt-4 space-y-1.5 flex-1">
-                    {p.bullets.map((b) => (
-                      <li key={b} className="flex items-start gap-2 text-[13px] text-muted-foreground">
-                        <Check className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
-                        <span>{b}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button
-                    className={`mt-5 w-full ${p.highlight ? "bg-gradient-primary hover:opacity-90" : ""}`}
-                    variant={p.highlight ? "default" : "outline"}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      go(p.to, `entrada_${p.id}`);
-                    }}
-                  >
-                    {p.cta}
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                  </Button>
+        <main className="container mx-auto px-4 md:px-8 pb-14 pt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Coluna principal */}
+            <div className="lg:col-span-8 space-y-10 md:space-y-12">
+              <section className="space-y-4 animate-fade-in">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                  <span className="text-primary text-[11px] font-semibold uppercase tracking-wider">
+                    Assistentes clínicos de IA
+                  </span>
                 </div>
-              );
-            })}
-          </div>
+                <h1 className="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.05]">
+                  Menos burocracia.{" "}
+                  <span className="text-primary">Mais tempo com o paciente.</span>
+                </h1>
+                <p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed">
+                  A MedStation AI escreve com você: exames resumidos, anamnese estruturada, protocolos e
+                  a consulta transcrita. Escolha por onde começar — cada caminho leva poucos minutos.
+                </p>
+              </section>
 
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-6 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-primary" /> Dados protegidos, conforme a LGPD
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-primary" /> Sem instalar nada, roda no navegador
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-primary" /> 7 dias de garantia nos planos pagos
-            </span>
-          </div>
-        </section>
-
-        {/* Atalho direto para assinatura + chat de dúvidas */}
-        <section className="container mx-auto px-4 md:px-6 py-12">
-          <div className="grid lg:grid-cols-[1.15fr_1fr] gap-6 items-start">
-            <div className="rounded-2xl border border-border/60 bg-card/60 backdrop-blur-xl p-5 md:p-6">
-              <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                <div>
-                  <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">Já sei o que quero</p>
-                  <h2 className="text-lg md:text-xl font-semibold">Tudo que a assinatura libera</h2>
-                </div>
-                <Button
-                  size="sm"
-                  className="bg-gradient-primary hover:opacity-90"
-                  onClick={() => go("/pricing", "entrada_assinar")}
-                >
-                  Ver planos e assinar
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                {assistants.map((a) => {
-                  const Icon = a.icon;
+              {/* Três caminhos */}
+              <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {paths.map((p) => {
+                  const Icon = p.icon;
                   return (
-                    <div
-                      key={a.name}
-                      className="relative rounded-xl border border-border/50 bg-background/40 p-3 hover:border-primary/30 transition-colors"
+                    <button
+                      key={p.id}
+                      onClick={() => go(p.to, `entrada_${p.id}`)}
+                      className={`group relative p-5 rounded-2xl text-left transition-all duration-300 hover:-translate-y-1 ${
+                        p.primary
+                          ? "bg-primary text-primary-foreground border border-primary shadow-[0_20px_50px_-24px_hsl(var(--primary)/0.9)] hover:shadow-[0_24px_60px_-20px_hsl(var(--primary)/0.8)]"
+                          : "bg-card/60 backdrop-blur-xl border border-border/50 hover:border-primary/40"
+                      }`}
                     >
-                      <Icon className="w-4 h-4 text-primary mb-1.5" />
-                      <p className="text-[13px] font-medium leading-tight">{a.name}</p>
-                      <p className="text-[11px] text-muted-foreground leading-tight">{a.desc}</p>
-                      {a.free && (
-                        <span className="absolute top-2 right-2 text-[9px] uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-primary/15 text-primary">
-                          Grátis
+                      <div
+                        className={`mb-4 p-2 w-fit rounded-xl transition-colors ${
+                          p.primary
+                            ? "bg-background/15"
+                            : "bg-muted/40 group-hover:bg-primary/10"
+                        }`}
+                      >
+                        <Icon
+                          className={`w-5 h-5 ${
+                            p.primary
+                              ? "text-primary-foreground"
+                              : "text-muted-foreground group-hover:text-primary transition-colors"
+                          }`}
+                        />
+                      </div>
+                      <span className={`block font-semibold ${p.primary ? "text-lg" : "text-base"}`}>
+                        {p.title}
+                      </span>
+                      <span
+                        className={`block text-sm ${
+                          p.primary ? "opacity-90 font-medium" : "text-muted-foreground"
+                        }`}
+                      >
+                        {p.sub}
+                      </span>
+                      <span
+                        className={`mt-3 block text-xs leading-relaxed ${
+                          p.primary ? "opacity-80" : "text-muted-foreground/80"
+                        }`}
+                      >
+                        {p.hint}
+                      </span>
+                      <ArrowRight
+                        className={`absolute bottom-5 right-5 w-4 h-4 transition-transform group-hover:translate-x-1 ${
+                          p.primary ? "" : "text-muted-foreground group-hover:text-primary"
+                        }`}
+                      />
+                      {p.primary && (
+                        <span className="absolute top-4 right-4 flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-foreground opacity-60" />
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-foreground" />
                         </span>
                       )}
-                    </div>
+                    </button>
                   );
                 })}
+              </section>
+
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-primary" /> Dados protegidos, conforme a LGPD
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-primary" /> Sem instalar nada, roda no navegador
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Check className="w-3.5 h-3.5 text-primary" /> 7 dias de garantia nos planos pagos
+                </span>
               </div>
-              <p className="mt-4 text-xs text-muted-foreground">
-                O Examinus é gratuito para qualquer conta. A assinatura libera os demais assistentes e, no plano
-                superior, o Modo Consultório.
-              </p>
+
+              {/* Ecossistema */}
+              <section className="space-y-5">
+                <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border/50 pb-4">
+                  <div>
+                    <h2 className="text-xl font-semibold">Ecossistema de assistentes</h2>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      O Examinus é grátis para qualquer conta. A assinatura libera os demais.
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
+                    11 assistentes + Consultório
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+                  {assistants.map((a, i) => {
+                    const Icon = a.icon;
+                    return (
+                      <div
+                        key={a.name}
+                        style={{ animationDelay: `${i * 40}ms` }}
+                        className="animate-fade-in group relative aspect-square flex flex-col items-center justify-center text-center p-2 rounded-2xl bg-card/60 backdrop-blur-xl border border-border/50 hover:border-primary/40 hover:-translate-y-0.5 transition-all"
+                      >
+                        <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/15 flex items-center justify-center mb-2 group-hover:bg-primary transition-colors">
+                          <Icon className="w-4 h-4 text-primary group-hover:text-primary-foreground transition-colors" />
+                        </div>
+                        <span className="text-[11px] font-medium leading-tight">{a.name}</span>
+                        <span className="text-[10px] text-muted-foreground leading-tight">{a.desc}</span>
+                        {a.free && (
+                          <span className="absolute top-1.5 right-1.5 text-[8px] uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-semibold">
+                            Grátis
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  <button
+                    onClick={() => go("/consultorio-landing", "entrada_consultorio")}
+                    className="group aspect-square flex flex-col items-center justify-center text-center p-2 rounded-2xl bg-primary/5 border border-dashed border-primary/40 hover:bg-primary/10 hover:-translate-y-0.5 transition-all"
+                  >
+                    <Mic className="w-5 h-5 text-primary mb-2" />
+                    <span className="text-[10px] font-semibold text-primary uppercase leading-tight">
+                      Modo Consultório
+                    </span>
+                    <span className="text-[10px] text-muted-foreground leading-tight">Consulta transcrita</span>
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/50 bg-card/50 backdrop-blur-xl px-5 py-4">
+                  <p className="text-sm text-muted-foreground">
+                    Já sabe o que quer? Assine e libere os 10 assistentes pagos + Modo Consultório.
+                  </p>
+                  <Button
+                    className="bg-gradient-primary hover:opacity-90"
+                    onClick={() => go("/pricing", "entrada_assinar")}
+                  >
+                    Ver planos e assinar
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              </section>
             </div>
 
-            <AssistentesAIChat />
+            {/* Concierge */}
+            <aside className="lg:col-span-4 lg:sticky lg:top-8">
+              <AssistentesAIChat className="h-[600px]" />
+            </aside>
           </div>
-        </section>
+        </main>
 
-        <footer className="container mx-auto px-4 md:px-6 py-8 border-t border-border/50 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
+        <footer className="container mx-auto px-4 md:px-8 py-8 border-t border-border/50 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
           <span>© {new Date().getFullYear()} MedStation AI</span>
           <button className="hover:text-foreground transition-colors" onClick={() => go("/landing", "entrada_footer")}>
             Ver apresentação completa
