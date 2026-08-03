@@ -79,7 +79,9 @@ const App = () => (
           <BrowserRouter>
           <AnalyticsTracker />
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Comecar />} />
+            <Route path="/landing" element={<Home />} />
+            <Route path="/home" element={<Navigate to="/landing" replace />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/confirmar-email" element={<ConfirmarEmail />} />
             <Route path="/pricing" element={<Pricing />} />
