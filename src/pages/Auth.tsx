@@ -96,7 +96,10 @@ export default function Auth() {
         },
       });
       if (error) {
-        toast({ variant: "destructive", title: "Erro no cadastro", description: error.message });
+        const msg = /already registered|already been registered|User already/i.test(error.message)
+          ? "Este e-mail já possui cadastro. Tente entrar ou recuperar a senha."
+          : error.message;
+        toast({ variant: "destructive", title: "Erro no cadastro", description: msg });
         setLoading(false);
         return;
       }
