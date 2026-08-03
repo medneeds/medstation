@@ -16,6 +16,7 @@ import CaseDetail from "./pages/CaseDetail";
 import Notes from "./pages/Notes";
 import NoteDetail from "./pages/NoteDetail";
 import Auth from "./pages/Auth";
+import ConfirmarEmail from "./pages/ConfirmarEmail";
 import Home from "./pages/Home";
 import Pricing from "./pages/Pricing";
 import Welcome from "./pages/Welcome";
@@ -80,6 +81,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/confirmar-email" element={<ConfirmarEmail />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/consultorio-landing" element={<ConsultorioLanding />} />
             <Route

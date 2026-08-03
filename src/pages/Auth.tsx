@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import { Eye, EyeOff } from "lucide-react";
 export default function Auth() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
@@ -41,7 +42,31 @@ export default function Auth() {
   const fromPath = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
   const destination = fromPath && fromPath !== "/auth" ? fromPath : "/dashboard";
 
+  // Fluxo de retorno da confirmação de e-mail: encerra a sessão criada pelo link
+  // e mantém o usuário na tela de login.
+  const justConfirmed = searchParams.get("confirmed") === "1";
+  const [confirmHandled, setConfirmHandled] = useState(!justConfirmed);
+
   useEffect(() => {
+    if (!justConfirmed) return;
+    (async () => {
+      try {
+        await supabase.auth.signOut();
+      } catch {
+        /* noop */
+      }
+      setConfirmHandled(true);
+      toast({
+        title: "E-mail confirmado",
+        description: "Sua conta está ativa. Entre com seu e-mail e senha.",
+      });
+      setSearchParams({}, { replace: true });
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [justConfirmed]);
+
+  useEffect(() => {
+    if (!confirmHandled) return;
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) navigate(destination, { replace: true });
     });
@@ -49,7 +74,8 @@ export default function Auth() {
       if (session) navigate(destination, { replace: true });
     });
     return () => subscription.unsubscribe();
-  }, [navigate, destination]);
+  }, [navigate, destination, confirmHandled]);
+
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,11 +92,14 @@ export default function Auth() {
         password: validated.password,
         options: {
           data: { full_name: validated.fullName },
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/auth?confirmed=1`,
         },
       });
       if (error) {
-        toast({ variant: "destructive", title: "Erro no cadastro", description: error.message });
+        const msg = /already registered|already been registered|User already/i.test(error.message)
+          ? "Este e-mail já possui cadastro. Tente entrar ou recuperar a senha."
+          : error.message;
+        toast({ variant: "destructive", title: "Erro no cadastro", description: msg });
         setLoading(false);
         return;
       }
@@ -112,9 +141,20 @@ export default function Auth() {
           console.error("Welcome email failed", e);
         }
       }
-      toast({ title: "Cadastro realizado", description: "Você já pode entrar." });
+      const createdEmail = validated.email;
       setFullName(""); setSignUpEmail(""); setSignUpPassword(""); setConfirmPassword("");
       setGender(""); setCrm(""); setCrmState(""); setSpecialty("");
+
+      if (data.session) {
+        // Confirmação automática ativa: já entra direto.
+        navigate(destination, { replace: true });
+        return;
+      }
+
+      navigate(`/confirmar-email?email=${encodeURIComponent(createdEmail)}`, {
+        replace: true,
+        state: { email: createdEmail },
+      });
     } catch (error: any) {
       toast({ variant: "destructive", title: "Dados inválidos", description: error.errors?.[0]?.message || error.message });
     } finally {
@@ -131,7 +171,26 @@ export default function Auth() {
         email: validated.email, password: validated.password,
       });
       if (error) {
-        toast({ variant: "destructive", title: "Erro no login", description: error.message });
+        const notConfirmed =
+          /email not confirmed|not confirmed|email_not_confirmed/i.test(error.message) ||
+          (error as any).code === "email_not_confirmed";
+
+        if (notConfirmed) {
+          toast({
+            title: "Falta confirmar seu e-mail",
+            description: "Abra o link que enviamos para ativar sua conta. Você pode reenviá-lo agora.",
+          });
+          navigate(`/confirmar-email?email=${encodeURIComponent(validated.email)}`, {
+            state: { email: validated.email },
+          });
+          setLoading(false);
+          return;
+        }
+
+        const msg = /invalid login credentials/i.test(error.message)
+          ? "E-mail ou senha incorretos. Verifique os dados e tente novamente."
+          : error.message;
+        toast({ variant: "destructive", title: "Não foi possível entrar", description: msg });
         setLoading(false);
         return;
       }

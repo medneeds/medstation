@@ -16,6 +16,7 @@ import { FAQMiniDemo } from "@/components/FAQMiniDemo";
 import { HeroVideo } from "@/components/HeroVideo";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { trackCtaClick } from "@/lib/analytics";
+import { SignupBenefitPrompt } from "@/components/demo/SignupBenefitPrompt";
 
 type FAQItem = {
   q: string;
@@ -93,6 +94,8 @@ export default function Home() {
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_100%,rgba(var(--primary-rgb),0.12),transparent)] pointer-events-none" />
       
       <div className="relative z-10">
+      <SignupBenefitPrompt />
+
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/50">
         <div className="container mx-auto px-4 md:px-6 py-3 md:py-4 flex justify-between items-center">
