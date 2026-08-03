@@ -1827,16 +1827,19 @@ export function AgentChat({
           </div>
           <span
             className={`text-xs tabular-nums shrink-0 ${
-              message.length >= 30000
+              overLimit
                 ? "text-destructive font-medium"
-                : message.length >= 27000
+                : nearLimit
                 ? "text-amber-600 dark:text-amber-400"
                 : "text-muted-foreground"
             }`}
             aria-live="polite"
           >
-            {message.length.toLocaleString("pt-BR")}/30.000
+            {subscribed
+              ? `${message.length.toLocaleString("pt-BR")} caracteres · sem limite`
+              : `${message.length.toLocaleString("pt-BR")}/30.000`}
           </span>
+
         </div>
       </div>
 
