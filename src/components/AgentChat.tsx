@@ -1793,7 +1793,7 @@ export function AgentChat({
           />
           <Button
             onClick={sendMessage}
-            disabled={!message.trim() || isLoading || message.length > 30000}
+            disabled={!message.trim() || isLoading || overLimit}
             size="icon"
             className="shrink-0 h-10 w-10 rounded-full"
             title={!message.trim() ? "Digite uma mensagem para enviar" : "Enviar mensagem"}
