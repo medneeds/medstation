@@ -17,6 +17,7 @@ import { Eye, EyeOff } from "lucide-react";
 export default function Auth() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
