@@ -1,4 +1,13 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -54,23 +63,135 @@ const paths = [
   },
 ];
 
-const assistants = [
-  { name: "Examinus", short: "EX", icon: TestTube2, desc: "Resume exames", free: true },
-  { name: "Clínicus", short: "CL", icon: Stethoscope, desc: "Anamnese pronta" },
-  { name: "Scorius", short: "SC", icon: Calculator, desc: "Scores e risco" },
-  { name: "Numerus", short: "NU", icon: Sigma, desc: "Cálculos clínicos" },
-  { name: "Prescriptus", short: "PR", icon: Pill, desc: "Bula inteligente" },
-  { name: "CODexus", short: "CO", icon: FileCode, desc: "CID-10 certo" },
-  { name: "Gasometrus", short: "GA", icon: Wind, desc: "Gasometria lida" },
-  { name: "Atestus", short: "AT", icon: FileCheck, desc: "Atestados prontos" },
-  { name: "Protocolus", short: "PT", icon: BookOpen, desc: "Protocolos atuais" },
-  { name: "Orientus", short: "OR", icon: Compass, desc: "Orientação ao paciente" },
-  { name: "Mediscuss", short: "MD", icon: MessagesSquare, desc: "Discussão de casos" },
+type Assistant = {
+  name: string;
+  short: string;
+  icon: typeof TestTube2;
+  desc: string;
+  free?: boolean;
+  hook: string;
+  detail: string;
+  bullets: string[];
+};
+
+const assistants: Assistant[] = [
+  {
+    name: "Examinus",
+    short: "EX",
+    icon: TestTube2,
+    desc: "Resume exames",
+    free: true,
+    hook: "Cole o exame. Receba a conclusão que você levaria 10 minutos para escrever.",
+    detail:
+      "Laboratoriais e laudos de imagem viram um resumo limpo, com o que é relevante em destaque e pronto para colar no prontuário.",
+    bullets: ["Texto, PDF ou foto do exame", "Alterações destacadas primeiro", "Grátis em qualquer conta"],
+  },
+  {
+    name: "Clínicus",
+    short: "CL",
+    icon: Stethoscope,
+    desc: "Anamnese pronta",
+    hook: "Sua anamnese completa antes de o paciente sair da sala.",
+    detail:
+      "Transforma informações soltas em uma anamnese estruturada, coerente e no modelo do seu contexto: consultório, enfermaria, emergência ou UTI.",
+    bullets: ["5 modelos de contexto clínico", "Texto contínuo, sem gambiarra", "Discussão ou documentação"],
+  },
+  {
+    name: "Scorius",
+    short: "SC",
+    icon: Calculator,
+    desc: "Scores e risco",
+    hook: "Risco calculado na hora, com a conduta que o score sugere.",
+    detail:
+      "Aplica os escores certos ao caso e devolve o valor, a interpretação e o que ele muda na sua decisão.",
+    bullets: ["Escores validados", "Interpretação clínica junto", "Sem abrir cinco sites"],
+  },
+  {
+    name: "Numerus",
+    short: "NU",
+    icon: Sigma,
+    desc: "Cálculos clínicos",
+    hook: "A conta certa, na dose certa, sem calculadora na mão.",
+    detail:
+      "Doses, conversões de unidade, correções e cálculos de infusão resolvidos em segundos, com o raciocínio à mostra.",
+    bullets: ["Doses e infusões", "Conversão de unidades", "Passo a passo do cálculo"],
+  },
+  {
+    name: "Prescriptus",
+    short: "PR",
+    icon: Pill,
+    desc: "Bula inteligente",
+    hook: "A bula que você queria ler: só o que muda a prescrição.",
+    detail:
+      "Discussão de prescrição baseada em evidência ou bula resumida na medida — apresentações, doses, ajustes e alertas.",
+    bullets: ["Modo discussão e Bula Inteligente", "Ajustes renal e hepático", "Interações que importam"],
+  },
+  {
+    name: "CODexus",
+    short: "CO",
+    icon: FileCode,
+    desc: "CID-10 certo",
+    hook: "O código certo na primeira tentativa — e a glosa não vem.",
+    detail: "Codificação CID-10 e TISS a partir da descrição clínica, com alternativas quando há dúvida.",
+    bullets: ["CID-10 e TISS", "Sugestões alternativas", "Menos retrabalho administrativo"],
+  },
+  {
+    name: "Gasometrus",
+    short: "GA",
+    icon: Wind,
+    desc: "Gasometria lida",
+    hook: "Gasometria interpretada como um intensivista faria à beira do leito.",
+    detail:
+      "Leitura sistemática do distúrbio, compensação, ânion gap e o que fazer agora — sem enrolação.",
+    bullets: ["Leitura sistemática (L.I.)", "Distúrbios mistos", "Conduta sugerida"],
+  },
+  {
+    name: "Atestus",
+    short: "AT",
+    icon: FileCheck,
+    desc: "Atestados prontos",
+    hook: "Atestado impecável em segundos, com o CID e nada além do necessário.",
+    detail: "Gera atestados e declarações no formato correto, protegendo o sigilo do paciente.",
+    bullets: ["Somente CID, sem descrição", "Formato pronto para assinar", "Modelos variados"],
+  },
+  {
+    name: "Protocolus",
+    short: "PT",
+    icon: BookOpen,
+    desc: "Protocolos atuais",
+    hook: "O protocolo atualizado, resumido do jeito que se usa no plantão.",
+    detail:
+      "Consulta a diretrizes globais (AHA, ESC, OMS e outras) e devolve o fluxo prático, não o PDF de 80 páginas.",
+    bullets: ["Diretrizes internacionais", "Fluxo prático", "Direto ao ponto"],
+  },
+  {
+    name: "Orientus",
+    short: "OR",
+    icon: Compass,
+    desc: "Orientação ao paciente",
+    hook: "Orientação de alta que o paciente entende — e cumpre.",
+    detail:
+      "Traduz sua conduta para uma linguagem simples, com sinais de alarme e retorno bem definidos.",
+    bullets: ["Linguagem acessível", "Sinais de alarme claros", "Pronto para imprimir"],
+  },
+  {
+    name: "Mediscuss",
+    short: "MD",
+    icon: MessagesSquare,
+    desc: "Discussão de casos",
+    hook: "Seu pedido de parecer, escrito como o especialista gostaria de receber.",
+    detail:
+      "Monta discussões, pedidos de parecer, internação, UTI e transferência prontos para o prontuário.",
+    bullets: ["Parecer e transferência", "Argumentação clínica sólida", "Pronto para colar"],
+  },
 ];
+
 
 export default function Comecar() {
   const navigate = useNavigate();
+  const [selected, setSelected] = useState<Assistant | null>(null);
   useReferralCapture();
+
 
   const go = (to: string, label: string) => {
     trackCtaClick({ cta: label, section: "entrada", destination: to });
@@ -218,24 +339,28 @@ export default function Comecar() {
                   {assistants.map((a, i) => {
                     const Icon = a.icon;
                     return (
-                      <div
+                      <button
                         key={a.name}
+                        type="button"
+                        onClick={() => setSelected(a)}
                         style={{ animationDelay: `${i * 40}ms` }}
-                        className="animate-fade-in group relative aspect-square flex flex-col items-center justify-center text-center p-2 rounded-2xl bg-card/60 backdrop-blur-xl border border-border/50 hover:border-primary/40 hover:-translate-y-0.5 transition-all"
+                        className="animate-fade-in group relative aspect-square flex flex-col items-center justify-center text-center p-2 rounded-2xl bg-card/60 backdrop-blur-xl border border-border/50 transition-all duration-300 hover:border-primary/60 hover:bg-card hover:-translate-y-1.5 hover:shadow-[0_18px_40px_-20px_hsl(var(--primary)/0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                       >
-                        <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/15 flex items-center justify-center mb-2 group-hover:bg-primary transition-colors">
+                        <span className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-b from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="relative w-9 h-9 rounded-full bg-primary/10 border border-primary/15 flex items-center justify-center mb-2 transition-all duration-300 group-hover:bg-primary group-hover:scale-110">
                           <Icon className="w-4 h-4 text-primary group-hover:text-primary-foreground transition-colors" />
                         </div>
-                        <span className="text-[11px] font-medium leading-tight">{a.name}</span>
-                        <span className="text-[10px] text-muted-foreground leading-tight">{a.desc}</span>
+                        <span className="relative text-[11px] font-medium leading-tight">{a.name}</span>
+                        <span className="relative text-[10px] text-muted-foreground leading-tight">{a.desc}</span>
                         {a.free && (
                           <span className="absolute top-1.5 right-1.5 text-[8px] uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-semibold">
                             Grátis
                           </span>
                         )}
-                      </div>
+                      </button>
                     );
                   })}
+
 
                   <button
                     onClick={() => go("/consultorio-landing", "entrada_consultorio")}
@@ -277,6 +402,74 @@ export default function Comecar() {
             Ver tour completo da plataforma
           </button>
         </footer>
+
+        <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
+          <DialogContent className="max-w-md overflow-hidden p-0 gap-0">
+            {selected && (
+              <>
+                <div className="relative px-6 pt-7 pb-6 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent">
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_80%_at_20%_0%,hsl(var(--primary)/0.18),transparent)]" />
+                  <div className="relative flex items-start gap-4">
+                    <div className="w-12 h-12 shrink-0 rounded-2xl bg-primary flex items-center justify-center shadow-[0_12px_30px_-12px_hsl(var(--primary)/0.9)]">
+                      <selected.icon className="w-5 h-5 text-primary-foreground" />
+                    </div>
+                    <DialogHeader className="text-left space-y-1">
+                      <DialogTitle className="text-xl leading-tight flex items-center gap-2">
+                        {selected.name}
+                        {selected.free && (
+                          <span className="text-[9px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-primary/15 text-primary font-semibold">
+                            Grátis
+                          </span>
+                        )}
+                      </DialogTitle>
+                      <DialogDescription className="text-xs uppercase tracking-widest">
+                        {selected.desc}
+                      </DialogDescription>
+                    </DialogHeader>
+                  </div>
+                  <p className="relative mt-5 text-base md:text-lg font-medium leading-snug text-foreground">
+                    {selected.hook}
+                  </p>
+                </div>
+
+                <div className="px-6 py-5 space-y-4">
+                  <p className="text-sm text-muted-foreground leading-relaxed">{selected.detail}</p>
+                  <ul className="space-y-2">
+                    {selected.bullets.map((b) => (
+                      <li key={b} className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                        <span className="text-muted-foreground">{b}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                    <Button
+                      className="flex-1 bg-gradient-primary hover:opacity-90"
+                      onClick={() => {
+                        setSelected(null);
+                        go(selected.free ? "/auth" : "/pricing", `assistente_${selected.name.toLowerCase()}`);
+                      }}
+                    >
+                      {selected.free ? "Criar conta e usar grátis" : "Assinar e liberar"}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="sm:w-auto"
+                      onClick={() => {
+                        setSelected(null);
+                        go("/tour", `tour_${selected.name.toLowerCase()}`);
+                      }}
+                    >
+                      Ver no tour
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
+
       </div>
     </div>
   );
