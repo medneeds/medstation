@@ -367,7 +367,7 @@ export default function PublicExaminusChat() {
     }
 
     const combined = sections.join('\n\n---\n\n');
-    const MAX = 9500;
+    const MAX = 7800;
     return combined.length > MAX
       ? `${combined.slice(0, MAX)}\n\n[Conteúdo truncado]`
       : combined;
@@ -889,7 +889,7 @@ export default function PublicExaminusChat() {
                 placeholder={hasMessages ? "Cole exames..." : "Cole exames aqui"}
                 maxLength={DEMO_MAX_CHARS}
                 aria-invalid={(input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= DEMO_MAX_CHARS}
-                className={`min-h-[44px] max-h-32 resize-none flex-1 rounded-2xl text-base py-3 ${
+                className={`${isExpanded ? "min-h-[140px] max-h-[40vh]" : "min-h-[44px] max-h-32"} resize-none flex-1 rounded-2xl text-base py-3 ${
                   (input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= DEMO_MAX_CHARS
                     ? "border-destructive focus:border-destructive"
                     : "border-border/50 focus:border-primary/50"
@@ -1020,7 +1020,7 @@ export default function PublicExaminusChat() {
                 placeholder={hasMessages ? "Cole mais exames aqui..." : "Cole os resultados de exames aqui (texto, imagem ou PDF)"}
                 maxLength={DEMO_MAX_CHARS}
                 aria-invalid={(input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= DEMO_MAX_CHARS}
-                className={`min-h-[48px] max-h-40 resize-none flex-1 rounded-xl transition-colors text-sm py-3 ${
+                className={`${isExpanded ? "min-h-[180px] max-h-[45vh]" : "min-h-[48px] max-h-40"} resize-none flex-1 rounded-xl transition-colors text-sm py-3 ${
                   (input.length > 0 && !input.trim() && selectedFiles.length === 0) || input.length >= DEMO_MAX_CHARS
                     ? "border-destructive focus:border-destructive"
                     : "border-border/50 focus:border-primary/50"
