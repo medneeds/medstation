@@ -81,6 +81,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/confirmar-email" element={<ConfirmarEmail />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/consultorio-landing" element={<ConsultorioLanding />} />
             <Route
