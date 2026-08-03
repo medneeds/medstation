@@ -86,7 +86,7 @@ export function AssistantSpotlightDialog({ assistant, onClose, onPrimary, onSeco
         {assistant && Icon && (
           <>
             {/* Cabeçalho */}
-            <div className="relative px-5 sm:px-6 pt-6 sm:pt-7 pb-4 sm:pb-5 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent">
+            <div className="relative min-w-0 px-5 sm:px-6 pt-6 sm:pt-7 pb-4 sm:pb-5 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_80%_at_20%_0%,hsl(var(--primary)/0.18),transparent)]" />
               <div className="relative flex items-start gap-3 sm:gap-4 pr-8">
                 <div className="w-11 h-11 sm:w-12 sm:h-12 shrink-0 rounded-2xl bg-primary flex items-center justify-center shadow-[0_12px_30px_-12px_hsl(var(--primary)/0.9)]">
@@ -136,7 +136,7 @@ export function AssistantSpotlightDialog({ assistant, onClose, onPrimary, onSeco
             </div>
 
             {/* Conteúdo */}
-            <div className="px-5 sm:px-6 py-5 space-y-4">
+            <div className="min-w-0 px-5 sm:px-6 py-5 space-y-4">
 
               {tab === "resumo" || steps.length === 0 ? (
                 <>
