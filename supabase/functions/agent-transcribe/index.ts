@@ -115,6 +115,9 @@ serve(async (req) => {
       console.log("[AGENT-TRANSCRIBE] User has active Pro subscription");
     } else {
       console.log(`[AGENT-TRANSCRIBE] Access granted (${isAdmin ? "admin" : "courtesy"})`);
+    }
+
+
 
 
     // Parse request
