@@ -237,8 +237,18 @@ export function AgentVoiceInput({ onTranscription, disabled = false, context }: 
   };
 
   const processAudio = async (audioBlob: Blob) => {
+    if (audioBlob.size < 2000) {
+      toast({
+        title: "Gravação muito curta",
+        description: "Fale por alguns segundos antes de parar a gravação.",
+        variant: "destructive",
+      });
+      setRecordingTime(0);
+      return;
+    }
     setIsProcessing(true);
     try {
+
       const reader = new FileReader();
       const base64Audio = await new Promise<string>((resolve, reject) => {
         reader.onloadend = () => {
@@ -256,7 +266,21 @@ export function AgentVoiceInput({ onTranscription, disabled = false, context }: 
         headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
       });
 
-      if (error) throw new Error(error.message || "Erro na transcrição");
+      if (error) {
+        let detail = error.message || "Erro na transcrição";
+        const ctx: any = (error as any).context;
+        if (ctx && typeof ctx.text === "function") {
+          try {
+            const body = await ctx.text();
+            const parsed = JSON.parse(body);
+            if (parsed?.error) detail = parsed.error;
+          } catch {
+            /* keep default */
+          }
+        }
+        throw new Error(detail);
+      }
+
 
       if (data?.requiresPro) {
         toast({

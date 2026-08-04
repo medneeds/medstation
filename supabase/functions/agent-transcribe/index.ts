@@ -57,16 +57,6 @@ serve(async (req) => {
 
     console.log(`[AGENT-TRANSCRIBE] User authenticated: ${user.id}`);
 
-    // Check subscription status using Stripe
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) {
-      console.error("[AGENT-TRANSCRIBE] STRIPE_SECRET_KEY not set");
-      return new Response(
-        JSON.stringify({ error: "Funcionalidade não disponível", requiresPro: true }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     // Check if user is admin (bypass subscription check)
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const { data: adminRole } = await supabase
@@ -78,45 +68,57 @@ serve(async (req) => {
 
     const isAdmin = !!adminRole;
 
+    // Courtesy / referral access counts as active access (same rule as check-subscription)
+    let hasCourtesy = false;
     if (!isAdmin) {
+      const { data: courtesy } = await supabase.rpc("has_active_courtesy", { _user_id: user.id });
+      hasCourtesy = !!courtesy;
+    }
+
+    if (!isAdmin && !hasCourtesy) {
+      const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+      if (!stripeKey) {
+        console.error("[AGENT-TRANSCRIBE] STRIPE_SECRET_KEY not set");
+        return new Response(
+          JSON.stringify({ error: "Funcionalidade não disponível", requiresPro: true }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       // Check Stripe subscription
       const Stripe = (await import("https://esm.sh/stripe@14.21.0")).default;
       const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
       const customers = await stripe.customers.list({ email: user.email!, limit: 1 });
-      
-      if (customers.data.length === 0) {
-        console.log("[AGENT-TRANSCRIBE] No Stripe customer found - requires Pro");
-        return new Response(
-          JSON.stringify({ 
-            error: "Reconhecimento de voz disponível apenas no plano Pro",
-            requiresPro: true 
-          }),
-          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+
+      let active = false;
+      if (customers.data.length > 0) {
+        const subscriptions = await stripe.subscriptions.list({
+          customer: customers.data[0].id,
+          status: "active",
+          limit: 1,
+        });
+        active = subscriptions.data.length > 0;
       }
 
-      const subscriptions = await stripe.subscriptions.list({
-        customer: customers.data[0].id,
-        status: "active",
-        limit: 1,
-      });
-
-      if (subscriptions.data.length === 0) {
+      if (!active) {
         console.log("[AGENT-TRANSCRIBE] No active subscription - requires Pro");
         return new Response(
-          JSON.stringify({ 
+          JSON.stringify({
             error: "Reconhecimento de voz disponível apenas no plano Pro",
-            requiresPro: true 
+            requiresPro: true,
           }),
-          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
       console.log("[AGENT-TRANSCRIBE] User has active Pro subscription");
     } else {
-      console.log("[AGENT-TRANSCRIBE] User is admin - bypassing subscription check");
+      console.log(`[AGENT-TRANSCRIBE] Access granted (${isAdmin ? "admin" : "courtesy"})`);
     }
+
+
+
 
     // Parse request
     const { audio, language = "pt", context, mimeType: clientMimeType } = await req.json();
