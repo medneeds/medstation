@@ -237,8 +237,18 @@ export function AgentVoiceInput({ onTranscription, disabled = false, context }: 
   };
 
   const processAudio = async (audioBlob: Blob) => {
+    if (audioBlob.size < 2000) {
+      toast({
+        title: "Gravação muito curta",
+        description: "Fale por alguns segundos antes de parar a gravação.",
+        variant: "destructive",
+      });
+      setRecordingTime(0);
+      return;
+    }
     setIsProcessing(true);
     try {
+
       const reader = new FileReader();
       const base64Audio = await new Promise<string>((resolve, reject) => {
         reader.onloadend = () => {
