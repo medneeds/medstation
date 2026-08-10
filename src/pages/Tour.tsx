@@ -1,3 +1,4 @@
+import { Seo } from "@/components/Seo";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -176,6 +177,7 @@ export default function Tour() {
 
   return (
     <div className="min-h-screen relative bg-background">
+      <Seo path="/tour" title="Tour pela MedStation AI — como funciona" description="Conheça em detalhes os 11 assistentes clínicos, o Modo Consultório e como economizar horas de digitação por plantão." />
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_50%_at_20%_-10%,hsl(var(--primary)/0.12),transparent)]" />
 
       <div className="relative z-10">
