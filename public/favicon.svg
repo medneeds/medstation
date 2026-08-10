@@ -1,14 +1,7 @@
-<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-  <style>
-    .front { fill: none; stroke: #0F172A; }
-    .back-fill { fill: #A7E8C7; opacity: 0.9; }
-    .back-stroke { stroke: #5BBF8A; }
-    @media (prefers-color-scheme: dark) {
-      .front { stroke: #F8FAFC; }
-      .back-fill { fill: #5BBF8A; opacity: 0.95; }
-      .back-stroke { stroke: #A7E8C7; }
-    }
-  </style>
-  <path class="back-fill back-stroke" d="M14 24 L20 11 L26 24 Z" stroke-width="1.75" stroke-linejoin="miter"/>
-  <path class="front" d="M5 24 L13 6 L21 24 Z" stroke-width="2.5" stroke-linejoin="miter" stroke-linecap="square"/>
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MedStation AI">
+  <rect x="0" y="0" width="64" height="64" rx="14" fill="#0F172A"/>
+  <g transform="translate(1.2,1.5) scale(1.06)">
+    <path d="M28 45 L38 22 L48 45 Z" fill="#A7E8C7" fill-opacity="0.92" stroke="#5BBF8A" stroke-width="3" stroke-linejoin="miter"/>
+    <path d="M11 45 L25 13 L39 45 Z" fill="none" stroke="#F8FAFC" stroke-width="4.5" stroke-linejoin="miter" stroke-linecap="square"/>
+  </g>
 </svg>
