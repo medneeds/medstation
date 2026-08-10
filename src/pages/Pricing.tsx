@@ -1,3 +1,4 @@
+import { Seo } from "@/components/Seo";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -162,6 +163,7 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo path="/pricing" title="Planos e preços — MedStation AI" description="Assine os 11 assistentes clínicos de IA e o Modo Consultório. Garantia incondicional de 7 dias e cancelamento a qualquer momento." />
       <div className="container mx-auto px-4 py-10 md:py-16 lg:py-20 max-w-6xl">
         {/* Header */}
         <div className="text-center mb-10 md:mb-14 space-y-4">

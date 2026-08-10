@@ -1,3 +1,4 @@
+import { Seo } from "@/components/Seo";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -107,6 +108,7 @@ export default function ConsultorioLanding() {
 
   return (
     <div className="min-h-screen relative">
+      <Seo path="/consultorio-landing" title="Modo Consultório — anamnese pronta pela sua voz" description="Grave a consulta e receba a transcrição e a anamnese estruturada pronta para copiar no prontuário." />
       {/* Background gradient */}
       <div className="fixed inset-0 bg-gradient-to-br from-primary/12 via-background to-primary/8 pointer-events-none" />
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_120%_80%_at_50%_-10%,rgba(var(--primary-rgb),0.25),transparent)] pointer-events-none" />

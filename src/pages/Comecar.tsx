@@ -1,3 +1,4 @@
+import { Seo } from "@/components/Seo";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AssistantSpotlightDialog } from "@/components/AssistantSpotlightDialog";
@@ -217,6 +218,7 @@ export default function Comecar() {
 
   return (
     <div className="min-h-screen relative">
+      <Seo path="/" title="MedStation AI — comece pelo teste grátis" description="Escolha como conhecer a MedStation: teste sem cadastro, crie sua conta com Examinus grátis ou faça o tour da plataforma." />
       <div className="fixed inset-0 bg-gradient-to-br from-primary/10 via-background to-background pointer-events-none" />
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_90%_60%_at_15%_-5%,hsl(var(--primary)/0.20),transparent)] pointer-events-none" />
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_70%_50%_at_95%_35%,hsl(var(--primary)/0.10),transparent)] pointer-events-none" />

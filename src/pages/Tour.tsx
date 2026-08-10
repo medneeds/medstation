@@ -1,3 +1,4 @@
+import { Seo } from "@/components/Seo";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -153,15 +154,8 @@ const faqs = [
 export default function Tour() {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    document.title = "Tour pela MedStation AI — como funciona na prática";
-    const desc = document.querySelector('meta[name="description"]');
-    if (desc)
-      desc.setAttribute(
-        "content",
-        "Veja passo a passo como a MedStation AI reduz a burocracia médica: 11 assistentes clínicos, Modo Consultório por voz e texto pronto para o prontuário."
-      );
-  }, []);
+  // Título e descrição desta rota são definidos pelo componente <Seo /> abaixo.
+
 
   const go = (to: string, label: string) => {
     trackCtaClick({ cta: label, section: "tour", destination: to });
@@ -176,6 +170,7 @@ export default function Tour() {
 
   return (
     <div className="min-h-screen relative bg-background">
+      <Seo path="/tour" title="Tour pela MedStation AI — como funciona" description="Conheça em detalhes os 11 assistentes clínicos, o Modo Consultório e como economizar horas de digitação por plantão." />
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_50%_at_20%_-10%,hsl(var(--primary)/0.12),transparent)]" />
 
       <div className="relative z-10">
