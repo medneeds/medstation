@@ -154,15 +154,8 @@ const faqs = [
 export default function Tour() {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    document.title = "Tour pela MedStation AI — como funciona na prática";
-    const desc = document.querySelector('meta[name="description"]');
-    if (desc)
-      desc.setAttribute(
-        "content",
-        "Veja passo a passo como a MedStation AI reduz a burocracia médica: 11 assistentes clínicos, Modo Consultório por voz e texto pronto para o prontuário."
-      );
-  }, []);
+  // Título e descrição desta rota são definidos pelo componente <Seo /> abaixo.
+
 
   const go = (to: string, label: string) => {
     trackCtaClick({ cta: label, section: "tour", destination: to });
