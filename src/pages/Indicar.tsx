@@ -36,12 +36,9 @@ export default function Indicar() {
           .order("created_at", { ascending: false });
         setReferrals(rows || []);
 
-        const { data: settings } = await supabase
-          .from("referral_settings")
-          .select("max_rewards_per_referrer")
-          .eq("id", 1)
-          .maybeSingle();
-        if (settings?.max_rewards_per_referrer) setMaxRewards(settings.max_rewards_per_referrer);
+        const { data: settings } = await supabase.rpc("get_public_referral_settings");
+        const maxFromSettings = Array.isArray(settings) ? settings[0]?.max_rewards_per_referrer : null;
+        if (maxFromSettings) setMaxRewards(maxFromSettings);
       } catch (e: any) {
         toast({ variant: "destructive", title: "Erro", description: e.message });
       } finally {
