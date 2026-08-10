@@ -162,7 +162,7 @@ export default function Welcome() {
               >
                 <Loader2 className="w-10 h-10 mx-auto text-primary animate-spin" />
                 <div>
-                  <h1 className="text-2xl font-semibold tracking-tight">Processando</h2>
+                  <h1 className="text-2xl font-semibold tracking-tight">Processando</h1>
                   <p className="text-muted-foreground mt-2 text-sm">
                     Estamos finalizando seu pagamento e preparando sua conta.
                   </p>
@@ -184,7 +184,7 @@ export default function Welcome() {
                   </div>
                 </div>
                 <div>
-                  <h1 className="text-2xl font-semibold tracking-tight text-foreground">Pagamento confirmado</h2>
+                  <h1 className="text-2xl font-semibold tracking-tight text-foreground">Pagamento confirmado</h1>
                   <p className="text-muted-foreground mt-2 text-sm">
                     {message}
                   </p>
@@ -203,7 +203,7 @@ export default function Welcome() {
                   <CheckCircle2 className="w-7 h-7 text-primary" strokeWidth={1.75} />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-semibold tracking-tight">Pagamento confirmado</h2>
+                  <h1 className="text-2xl font-semibold tracking-tight">Pagamento confirmado</h1>
                   <p className="text-muted-foreground mt-2 text-sm">
                     Sua conta foi criada com {email}. Como você pagou via carteira digital,
                     enviaremos um link seguro para você definir sua senha.
@@ -257,7 +257,7 @@ export default function Welcome() {
                   </div>
                   <h1 className="text-2xl font-semibold tracking-tight">
                     {userExists ? "Bem-vindo de volta" : "Conta criada"}
-                  </h2>
+                  </h1>
                   <p className="text-muted-foreground mt-2 text-sm">
                     {userExists 
                       ? "Faça login para acessar sua assinatura." 
@@ -325,7 +325,7 @@ export default function Welcome() {
                   <span className="text-destructive text-2xl font-light">!</span>
                 </div>
                 <div>
-                  <h1 className="text-2xl font-semibold tracking-tight text-destructive">Algo deu errado</h2>
+                  <h1 className="text-2xl font-semibold tracking-tight text-destructive">Algo deu errado</h1>
                   <p className="text-muted-foreground mt-2 text-sm">{message}</p>
                 </div>
                 <div className="flex flex-col gap-2">
