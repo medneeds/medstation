@@ -95,7 +95,46 @@ export default function Home() {
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_100%,rgba(var(--primary-rgb),0.12),transparent)] pointer-events-none" />
       
       <div className="relative z-10">
+      <Seo
+        path="/landing"
+        title="MedStation AI — 11 assistentes de IA para médicos"
+        description="Anamnese, exames, prescrição e documentação clínica em segundos. Teste o Examinus grátis, sem cadastro."
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "MedStation AI",
+            url: "https://medstation-ai.com.br/",
+            description: "Plataforma de assistentes de inteligência artificial para médicos.",
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "MedStation AI",
+            url: "https://medstation-ai.com.br/",
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            name: "MedStation AI",
+            applicationCategory: "HealthApplication",
+            operatingSystem: "Web",
+            description: "Onze assistentes clínicos de IA para anamnese, exames, prescrição, scores e documentação médica.",
+            url: "https://medstation-ai.com.br/landing",
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: faqs.map((f) => ({
+              "@type": "Question",
+              name: f.q,
+              acceptedAnswer: { "@type": "Answer", text: f.a },
+            })),
+          },
+        ]}
+      />
       <SignupBenefitPrompt />
+
 
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/50">
