@@ -1506,6 +1506,15 @@ export type Database = {
       generate_document_number: { Args: { doc_type: string }; Returns: string }
       generate_exam_request_number: { Args: never; Returns: string }
       generate_prescription_number: { Args: never; Returns: string }
+      get_public_referral_settings: {
+        Args: never
+        Returns: {
+          active: boolean
+          max_rewards_per_referrer: number
+          referred_discount_percent: number
+          referrer_reward_days: number
+        }[]
+      }
       has_active_courtesy: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
