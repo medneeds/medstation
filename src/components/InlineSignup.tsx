@@ -189,7 +189,7 @@ export function InlineSignup() {
           )}
         </Button>
 
-        <GoogleAuthButton label="Criar conta com Google" redirectTo="/dashboard" />
+        <GoogleAuthButton label="Criar conta com Google" redirectTo="/dashboard" hideDivider />
 
         <p className="text-[11px] text-center text-muted-foreground">
           Você recebe um e-mail para confirmar o cadastro. Já tem conta?{" "}
