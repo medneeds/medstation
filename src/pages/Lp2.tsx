@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Seo } from "@/components/Seo";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { QuickCheckout } from "@/components/QuickCheckout";
+import { Lp2SignupDialog } from "@/components/Lp2SignupDialog";
 import { trackCtaClick } from "@/lib/analytics";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
 import {
@@ -89,6 +90,7 @@ const testimonials = [
 
 export default function Lp2() {
   const navigate = useNavigate();
+  const [signupOpen, setSignupOpen] = useState(false);
   useReferralCapture();
 
   useEffect(() => {
@@ -109,9 +111,9 @@ export default function Lp2() {
     document.getElementById("planos")?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const goSignup = (label: string) => {
-    trackCtaClick({ cta: label, section: "lp2", destination: "/auth" });
-    navigate("/auth");
+  const openSignup = (label: string) => {
+    trackCtaClick({ cta: label, section: "lp2", destination: "popup_cadastro" });
+    setSignupOpen(true);
   };
 
   return (
@@ -161,8 +163,8 @@ export default function Lp2() {
                 Ver planos e assinar
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-              <Button size="lg" variant="outline" className="text-base" onClick={() => goSignup("hero_demo")}>
-                Testar a demonstração
+              <Button size="lg" variant="outline" className="text-base" onClick={() => openSignup("hero_criar_conta")}>
+                Criar conta e testar 7 dias
               </Button>
             </div>
 
@@ -171,7 +173,7 @@ export default function Lp2() {
                 <ShieldCheck className="w-3.5 h-3.5 text-primary" /> 7 dias de garantia
               </span>
               <span className="flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5 text-primary" /> Examinus grátis ao criar conta
+                <Check className="w-3.5 h-3.5 text-primary" /> 7 dias grátis, sem cartão
               </span>
               <span className="flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-primary" /> Sem instalar nada
@@ -233,7 +235,7 @@ export default function Lp2() {
         <section className="border-y border-border/60 bg-muted/20">
           <div className="container mx-auto px-4 md:px-8 py-16 md:py-20">
             <h2 className="text-2xl md:text-4xl font-semibold tracking-tight max-w-2xl">
-              Médicos que já deixaram de digitar
+              O que dizem os médicos que usam
             </h2>
             <div className="mt-10 grid md:grid-cols-2 gap-5">
               {testimonials.map((t) => (
@@ -269,7 +271,7 @@ export default function Lp2() {
         <section id="planos" className="container mx-auto px-4 md:px-8 py-16 md:py-24">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-2xl md:text-4xl font-semibold tracking-tight">
-              Menos de R$ 1 por dia para nunca mais digitar burocracia
+              Assinatura por menos de R$ 1 por dia
             </h2>
             <p className="mt-3 text-muted-foreground">
               Assinatura mensal, cancele quando quiser. 7 dias de garantia incondicional.
@@ -280,8 +282,8 @@ export default function Lp2() {
           </div>
           <p className="mt-6 text-center text-xs text-muted-foreground">
             Prefere conhecer antes?{" "}
-            <button className="underline hover:text-foreground" onClick={() => goSignup("planos_conta_gratis")}>
-              Crie sua conta grátis e use o Examinus
+            <button className="underline hover:text-foreground" onClick={() => openSignup("planos_conta_gratis")}>
+              Crie sua conta e teste 7 dias sem cartão
             </button>
           </p>
         </section>
@@ -293,6 +295,8 @@ export default function Lp2() {
           <span>A decisão clínica final é sempre do médico.</span>
         </div>
       </footer>
+
+      <Lp2SignupDialog open={signupOpen} onOpenChange={setSignupOpen} />
     </div>
   );
 }
