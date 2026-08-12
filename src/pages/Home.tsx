@@ -208,8 +208,9 @@ export default function Home() {
             <span className="italic text-primary">Sem digitar burocracia.</span>
           </h1>
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Exame resumido, anamnese estruturada, prescrição e atestado prontos em segundos.
-            O trabalho repetitivo sai do seu ombro e volta o tempo de ser médico.
+            Exame resumido, anamnese estruturada, prescrição direcionada ao caso, parecer clínico
+            organizado e orientações de alta que o paciente entende. Tudo pronto em segundos — o
+            trabalho repetitivo sai do seu ombro e volta o tempo de ser médico.
           </p>
 
 
