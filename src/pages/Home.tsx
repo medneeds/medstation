@@ -210,7 +210,8 @@ export default function Home() {
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Exame resumido, anamnese estruturada, prescrição direcionada ao caso, parecer clínico
             organizado e orientações de alta que o paciente entende. Tudo pronto em segundos — o
-            trabalho repetitivo sai do seu ombro e volta o tempo de ser médico.
+            trabalho repetitivo sai do seu ombro e você volta ao que escolheu fazer: pensar no
+            caso, olhar o paciente, ser médico de verdade.
           </p>
 
 
