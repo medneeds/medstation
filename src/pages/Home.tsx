@@ -88,6 +88,17 @@ export default function Home() {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const openLiveDemo = () => {
+    trackCtaClick({ cta: 'badge_teste_agora', section: 'demo', destination: '#demo-live' });
+    const card = document.getElementById('demo-live');
+    card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    window.setTimeout(() => {
+      const field = card?.querySelector<HTMLTextAreaElement | HTMLInputElement>('textarea, input[type="text"]');
+      field?.focus({ preventScroll: true });
+    }, 650);
+  };
+
+
   const activeAgent = activeAssistant ? agents.find(a => a.name === activeAssistant) : null;
   const activeIndex = activeAgent ? agents.findIndex(a => a.name === activeAgent.name) : -1;
 
