@@ -285,27 +285,6 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
         </Card>
       </div>
 
-      {/* Limites clínicos */}
-      <Card className="p-4 md:p-5 border border-hairline bg-muted/20">
-        <div className="flex items-start gap-3">
-          <div className="w-7 h-7 rounded border border-hairline bg-amber-500/10 flex items-center justify-center shrink-0">
-            <ShieldAlert className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" strokeWidth={1.5} />
-          </div>
-          <div className="space-y-2">
-            <h4 className="font-display text-sm md:text-base tracking-tight text-foreground">
-              Uso responsável: o que a MedStation faz e o que continua sendo seu
-            </h4>
-            <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-1.5 text-[11px] md:text-xs text-muted-foreground">
-              <li>· Ferramenta de apoio à documentação e ao raciocínio — não emite diagnóstico nem prescreve por você</li>
-              <li>· Toda conduta, dose e via exige conferência e assinatura do médico responsável</li>
-              <li>· Demonstração com caso fictício; não use dados identificáveis de paciente em modo público</li>
-              <li>· Em emergência, a conduta imediata segue o protocolo do serviço e o seu julgamento clínico</li>
-            </ul>
-          </div>
-        </div>
-      </Card>
-
-
       {/* Rodapé de tempo */}
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3 text-center">
         <div className="inline-flex items-center gap-2 rounded-full border border-hairline bg-card/60 px-3.5 py-1.5">
