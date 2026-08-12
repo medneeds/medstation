@@ -447,7 +447,7 @@ export default function Home() {
       </section>
 
       {/* Modo Consultório - novo produto */}
-      <section id="consultorio" className="py-12 md:py-20 px-4 md:px-6 relative overflow-hidden">
+      <section id="consultorio" className="py-12 md:py-20 px-4 md:px-6 relative overflow-hidden scroll-mt-20">
         <div className="container mx-auto max-w-5xl relative">
           <Card className="p-6 md:p-10 lg:p-14 border-2 border-primary/30 bg-gradient-to-br from-primary/8 via-card/80 to-card/60 backdrop-blur-sm relative overflow-hidden">
             <div className="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
@@ -496,7 +496,7 @@ export default function Home() {
       </section>
 
       {/* Planos */}
-      <section id="planos" className="py-12 md:py-20 lg:py-24 px-4 md:px-6 relative overflow-hidden">
+      <section id="planos" className="py-12 md:py-20 lg:py-24 px-4 md:px-6 relative overflow-hidden scroll-mt-20">
         <div className="absolute inset-0 bg-muted/30 backdrop-blur-3xl"></div>
         <div className="container mx-auto text-center max-w-7xl relative">
           <div className="mb-8 md:mb-10 lg:mb-12 space-y-3 md:space-y-4 px-4">
