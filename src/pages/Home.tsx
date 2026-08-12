@@ -210,7 +210,8 @@ export default function Home() {
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Exame resumido, anamnese estruturada, prescrição direcionada ao caso, parecer clínico
             organizado e orientações de alta que o paciente entende. Tudo pronto em segundos — o
-            trabalho repetitivo sai do seu ombro e volta o tempo de ser médico.
+            trabalho repetitivo sai do seu ombro e você volta ao que escolheu fazer: pensar no
+            caso, olhar o paciente, ser médico de verdade.
           </p>
 
 
@@ -272,11 +273,29 @@ export default function Home() {
       {/* Seção 1: Examinus por MedStation AI */}
       <section id="demo" className="pt-8 md:pt-12 pb-6 md:pb-8 px-4 md:px-6 relative overflow-hidden scroll-mt-20">
 
-        <div className="container mx-auto max-w-7xl relative">
-          <div className="space-y-6 md:space-y-8 animate-in fade-in duration-700 text-center">
+          <div className="container mx-auto max-w-7xl relative">
+            <div className="space-y-6 md:space-y-8 animate-in fade-in duration-700 text-center">
 
-            {/* Demo Card — pulso sutil para chamar interação */}
-            <div className="relative group">
+              {/* Cabeçalho da demo — deixa claro: dá pra testar AGORA */}
+              <div className="space-y-3 md:space-y-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary text-primary-foreground shadow-md">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-primary-foreground opacity-60 animate-ping"></span>
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-primary-foreground"></span>
+                  </span>
+                  <span className="text-xs md:text-sm font-semibold uppercase tracking-[0.18em]">Teste agora · sem cadastro</span>
+                </div>
+                <h2 className="font-display text-2xl md:text-4xl tracking-tight text-foreground">
+                  É pra usar <span className="italic text-primary">agora</span>. Apareceu a dúvida, cola aqui.
+                </h2>
+                <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
+                  Sem login, sem cartão, sem install. Cole o exame embaixo e veja o resumo sair pronto
+                  em segundos. É o Examinus — e ele é grátis para sempre.
+                </p>
+              </div>
+
+              {/* Demo Card — pulso sutil para chamar interação */}
+              <div className="relative group">
               {/* Glow pulsante */}
               <div className="absolute -inset-1 bg-primary/20 rounded-3xl blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-700 animate-[pulse_4s_ease-in-out_infinite]"></div>
               {/* Hairline ring que respira */}
