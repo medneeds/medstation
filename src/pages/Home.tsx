@@ -18,6 +18,7 @@ import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { trackCtaClick } from "@/lib/analytics";
 import { SignupBenefitPrompt } from "@/components/demo/SignupBenefitPrompt";
 import { Seo } from "@/components/Seo";
+import { ConciergeFab } from "@/components/ConciergeFab";
 import { InlineSignup } from "@/components/InlineSignup";
 
 
@@ -736,6 +737,8 @@ export default function Home() {
           code={String(activeIndex + 1).padStart(2, "0")}
         />
       )}
+
+      <ConciergeFab />
     </div>
   );
 }
