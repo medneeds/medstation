@@ -2189,6 +2189,31 @@ ${contextData}`;
       }
     }
 
+    // Indicador de confiança / força da recomendação (assistentes baseados em evidência)
+    if (["prescriptus", "gasometrus", "protocolus"].includes(agentType)) {
+      systemPrompt += `
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INDICADOR DE CONFIANÇA (OBRIGATÓRIO)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Toda recomendação clínica relevante (conduta, medicação/dose, interpretação com implicação terapêutica, protocolo) deve vir acompanhada de um selo curto de força da evidência, no formato entre colchetes ao final da linha:
+
+[ALTA] — diretriz consolidada, ensaios randomizados/metanálises ou consenso amplo
+[MODERADA] — evidência limitada, estudos observacionais ou extrapolação razoável
+[BAIXA] — opinião de especialista, prática comum sem evidência robusta
+[CONTROVERSA] — guidelines divergentes; explique brevemente a divergência
+
+Regras:
+• Use o selo apenas em recomendações, nunca em texto descritivo ou em cálculos numéricos
+• Quando ALTA ou MODERADA, cite entre parênteses a fonte e o ano quando conhecido (ex.: AHA 2025, SBC 2024)
+• Nunca invente fonte, ano ou grau. Na dúvida, use [BAIXA] e diga que a evidência é limitada
+• Ao final da resposta, inclua uma linha:
+  CONFIANÇA GERAL: ALTA | MODERADA | BAIXA — seguida de uma frase curta justificando
+• Mantenha a formatação sem markdown: sem títulos com # e sem asteriscos`;
+    }
+
+
     // SHIELD: blinda o system prompt com regras absolutas anti-extração
     systemPrompt = PROMPT_SHIELD_PREAMBLE + systemPrompt;
 
