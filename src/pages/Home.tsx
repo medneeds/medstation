@@ -99,7 +99,7 @@ export default function Home() {
       
       <div className="relative z-10">
       <Seo
-        path="/landing"
+        path="/"
         title="MedStation AI — 11 assistentes de IA para médicos"
         description="Anamnese, exames, prescrição e documentação clínica em segundos. Teste o Examinus grátis, sem cadastro."
         jsonLd={[
