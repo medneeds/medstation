@@ -312,8 +312,58 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Como funciona — didático, à prova de dúvida */}
+      <section id="como-funciona" className="py-12 md:py-16 px-4 md:px-6 relative scroll-mt-20">
+        <div className="container mx-auto max-w-5xl relative">
+          <div className="text-center mb-8 md:mb-12 space-y-3">
+            <Badge variant="secondary" className="text-xs md:text-sm">Como funciona</Badge>
+            <h2 className="font-display text-3xl md:text-4xl tracking-tight text-foreground">
+              Três passos. <span className="italic text-primary">Só isso.</span>
+            </h2>
+            <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
+              Nada para instalar, nada para configurar. Funciona no computador e no celular.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+            {[
+              {
+                n: "01",
+                t: "Você joga a informação",
+                d: "Cole o exame, escreva o caso ou grave a consulta pelo microfone. Do jeito que for mais rápido para você.",
+              },
+              {
+                n: "02",
+                t: "O assistente organiza",
+                d: "Em segundos, o texto volta estruturado no padrão clínico: resumo do exame, anamnese, prescrição, atestado ou parecer.",
+              },
+              {
+                n: "03",
+                t: "Você revisa e copia",
+                d: "Leia, ajuste se quiser e clique em copiar. Cola no seu prontuário e o atendimento acabou.",
+              },
+            ].map((s) => (
+              <Card key={s.n} className="p-5 md:p-6 border border-hairline bg-card/60 backdrop-blur-sm">
+                <span className="text-[0.6rem] uppercase tracking-[0.22em] font-mono text-primary">Passo {s.n}</span>
+                <h3 className="font-display text-lg md:text-xl tracking-tight mt-2">{s.t}</h3>
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{s.d}</p>
+              </Card>
+            ))}
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
+            <Button size="lg" onClick={() => { trackCtaClick({ cta: 'como_criar_conta', section: 'como_funciona', plan: 'free', destination: '#cadastro' }); scrollToSection('cadastro'); }}>
+              Criar conta grátis
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+            <Button size="lg" variant="outline" onClick={() => { trackCtaClick({ cta: 'como_testar', section: 'como_funciona', destination: '#demo' }); scrollToSection('demo'); }}>
+              Testar sem cadastro
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Seção 2: MedStation AI - Plataforma Completa */}
-      <section id="plataforma" className="py-12 md:py-16 lg:py-20 px-4 md:px-6 relative overflow-hidden">
+      <section id="plataforma" className="py-12 md:py-16 lg:py-20 px-4 md:px-6 relative overflow-hidden scroll-mt-20">
+
         <div className="absolute inset-0 bg-muted/20 backdrop-blur-3xl"></div>
         
         <div className="container mx-auto max-w-6xl relative">
