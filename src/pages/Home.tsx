@@ -209,16 +209,18 @@ export default function Home() {
       {/* Hero — promessa em uma frase + 3 caminhos, todos na mesma página */}
       <section id="inicio" className="pt-10 md:pt-16 px-4 md:px-6 relative">
         <div className="container mx-auto max-w-4xl text-center space-y-5 md:space-y-6">
-          <Badge variant="secondary" className="text-xs md:text-sm whitespace-nowrap">
-            Assistentes de IA para médicos
-          </Badge>
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl tracking-tight leading-[1.05] text-foreground">
+          <div className="animate-fade-in" style={{ animationDelay: '0ms' }}>
+            <Badge variant="secondary" className="text-xs md:text-sm whitespace-nowrap">
+              Assistentes de IA para médicos
+            </Badge>
+          </div>
+          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl tracking-tight leading-[1.05] text-foreground animate-fade-in" style={{ animationDelay: '80ms' }}>
             Recupere até 40 horas por mês.
           </h1>
-          <p className="font-display text-xl sm:text-2xl md:text-3xl tracking-tight leading-snug text-primary max-w-3xl mx-auto">
+          <p className="font-display text-xl sm:text-2xl md:text-3xl tracking-tight leading-snug text-primary max-w-3xl mx-auto animate-fade-in" style={{ animationDelay: '160ms' }}>
             Ferramentas que aliviam na burocracia e devolvem seu tempo com o paciente.
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 pt-1 max-w-3xl mx-auto">
+          <div className="flex flex-wrap items-center justify-center gap-2 md:gap-2.5 pt-1 max-w-4xl mx-auto animate-fade-in" style={{ animationDelay: '240ms' }}>
             {[
               'Exame resumido',
               'Anamnese estruturada',
@@ -228,13 +230,13 @@ export default function Home() {
             ].map((item) => (
               <span
                 key={item}
-                className="rounded-full border border-border/70 bg-secondary/40 px-3 py-1.5 text-xs md:text-sm font-medium text-foreground/80 whitespace-nowrap"
+                className="rounded-full border border-primary/20 bg-primary/[0.04] px-3 py-1.5 text-xs md:text-sm font-medium text-foreground/80 whitespace-nowrap transition-colors hover:border-primary/40 hover:bg-primary/[0.08]"
               >
                 {item}
               </span>
             ))}
           </div>
-          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed animate-fade-in" style={{ animationDelay: '320ms' }}>
             Tudo pronto em segundos — o trabalho repetitivo sai do seu ombro e você volta ao que
             escolheu fazer: pensar no caso, olhar o paciente, ser médico de verdade.
           </p>
