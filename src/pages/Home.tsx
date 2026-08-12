@@ -514,7 +514,7 @@ export default function Home() {
                   <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Reconhecimento de voz treinado para vocabulário médico</li>
                 </ul>
               </div>
-              <Button variant="outline" className="w-full h-11 mt-5" onClick={() => { trackCtaClick({ cta: 'plano_consultorio', section: 'pricing', plan: billingPeriod === 'yearly' ? 'consultorio_yearly' : 'consultorio_monthly', billing_period: billingPeriod, destination: '/consultorio-landing' }); navigate('/consultorio-landing'); }}>
+              <Button variant="outline" className="w-full h-11 mt-5" onClick={() => { trackCtaClick({ cta: 'plano_consultorio', section: 'pricing', plan: billingPeriod === 'yearly' ? 'consultorio_yearly' : 'consultorio_monthly', billing_period: billingPeriod, destination: '#consultorio' }); scrollToSection('consultorio'); }}>
                 Conhecer o Consultório
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
