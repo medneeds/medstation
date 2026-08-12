@@ -1,0 +1,290 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Seo } from "@/components/Seo";
+import { Logo } from "@/components/Logo";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { QuickCheckout } from "@/components/QuickCheckout";
+import { trackCtaClick } from "@/lib/analytics";
+import { useReferralCapture } from "@/hooks/useReferralCapture";
+import {
+  ArrowRight,
+  Check,
+  Clock,
+  FileText,
+  Mic,
+  Pill,
+  ShieldCheck,
+  Star,
+  Stethoscope,
+  TestTube2,
+  Quote,
+} from "lucide-react";
+
+const pains = [
+  "Sai do plantão e ainda tem evolução e alta para escrever",
+  "Consulta termina e a anamnese fica para depois — some o tempo do almoço",
+  "Exame com 40 linhas para transformar em três frases úteis",
+  "Prescrição, atestado, orientação de alta: sempre digitando o mesmo",
+];
+
+const gains = [
+  {
+    icon: TestTube2,
+    title: "Exame resumido",
+    text: "Cole o laboratorial ou o laudo e receba a conclusão pronta para o prontuário.",
+  },
+  {
+    icon: Stethoscope,
+    title: "Anamnese estruturada",
+    text: "Informação solta vira texto clínico coerente no modelo do seu contexto.",
+  },
+  {
+    icon: Pill,
+    title: "Conduta e prescrição",
+    text: "Doses, ajustes e alertas com base em medicina baseada em evidências.",
+  },
+  {
+    icon: FileText,
+    title: "Alta e documentos",
+    text: "Orientação ao paciente, atestado e parecer prontos para assinar.",
+  },
+  {
+    icon: Mic,
+    title: "Modo Consultório",
+    text: "Grave a consulta e receba a transcrição com a anamnese estruturada.",
+  },
+  {
+    icon: Clock,
+    title: "Até 40h por mês",
+    text: "O trabalho repetitivo sai do seu ombro e o tempo volta para o paciente.",
+  },
+];
+
+const audience = [
+  {
+    title: "Médico plantonista",
+    text: "Volume alto, tempo curto. Evolução, exame e alta saem em segundos, entre um leito e outro.",
+    bullets: ["Exames e gasometria interpretados", "Evolução e parecer prontos", "Protocolos direto ao ponto"],
+  },
+  {
+    title: "Especialista em consultório",
+    text: "Você olha para o paciente, não para o teclado. A consulta vira documento sozinha.",
+    bullets: ["Consulta gravada e transcrita", "Anamnese estruturada", "Orientação de alta em linguagem simples"],
+  },
+];
+
+const testimonials = [
+  {
+    name: "Dr. Leandro Albuquerque",
+    role: "Médico",
+    text: "Utilizar a MedStation possibilitou otimizar meu processo de trabalho tanto do ponto de vista técnico como no auxílio na tomada de decisões nas condutas. Consigo executar minhas atividades de forma mais ágil e acurada, melhorando a qualidade da assistência prestada ao paciente.",
+  },
+  {
+    name: "Dra. Luciara Duarte",
+    role: "Médica",
+    text: "A minha experiência com a plataforma foi a melhor possível, porque otimiza muito o meu tempo. Consigo fazer minhas atividades com mais qualidade, além do tempo. Muito bom mesmo. Excelente!",
+  },
+];
+
+export default function Lp2() {
+  const navigate = useNavigate();
+  useReferralCapture();
+
+  useEffect(() => {
+    document.documentElement.classList.add("light");
+    document.documentElement.classList.remove("dark");
+  }, []);
+
+  const goPlans = (label: string) => {
+    trackCtaClick({ cta: label, section: "lp2", destination: "#planos" });
+    document.getElementById("planos")?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const goSignup = (label: string) => {
+    trackCtaClick({ cta: label, section: "lp2", destination: "/auth" });
+    navigate("/auth");
+  };
+
+  return (
+    <div className="light min-h-screen bg-background text-foreground">
+      <Seo
+        path="/lp2"
+        title="MedStation AI — recupere até 40h por mês de burocracia"
+        description="Assistentes de IA feitos para a prática clínica: exame resumido, anamnese estruturada, conduta e alta em segundos. Teste com garantia de 7 dias."
+      />
+
+      <header className="sticky top-0 z-30 bg-background/90 backdrop-blur border-b border-border/60">
+        <div className="container mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
+          <Logo size="sm" />
+          <Button size="sm" onClick={() => goPlans("header_planos")}>
+            Ver planos
+          </Button>
+        </div>
+      </header>
+
+      <main>
+        {/* 1. Hero — dor + promessa + CTA */}
+        <section className="container mx-auto px-4 md:px-8 pt-14 pb-16 md:pt-20 md:pb-24">
+          <div className="max-w-3xl">
+            <Badge variant="secondary" className="mb-5 whitespace-nowrap">
+              IA criada para a prática clínica
+            </Badge>
+            <h1 className="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.05]">
+              Recupere até 40 horas por mês.{" "}
+              <span className="text-primary">Sem digitar burocracia.</span>
+            </h1>
+            <p className="mt-5 text-lg md:text-xl text-muted-foreground leading-relaxed">
+              Exame resumido, anamnese estruturada, conduta e orientação de alta prontos em segundos.
+              Você volta ao que escolheu fazer: cuidar do paciente.
+            </p>
+
+            <ul className="mt-8 grid sm:grid-cols-2 gap-x-6 gap-y-3">
+              {pains.map((p) => (
+                <li key={p} className="flex gap-2.5 text-sm text-muted-foreground">
+                  <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                  {p}
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-9 flex flex-col sm:flex-row gap-3">
+              <Button size="lg" className="text-base" onClick={() => goPlans("hero_assinar")}>
+                Ver planos e assinar
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+              <Button size="lg" variant="outline" className="text-base" onClick={() => goSignup("hero_demo")}>
+                Testar a demonstração
+              </Button>
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-primary" /> 7 dias de garantia
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-primary" /> Examinus grátis ao criar conta
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-primary" /> Sem instalar nada
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* 2. O que a pessoa ganha */}
+        <section className="border-y border-border/60 bg-muted/20">
+          <div className="container mx-auto px-4 md:px-8 py-16 md:py-20">
+            <h2 className="text-2xl md:text-4xl font-semibold tracking-tight max-w-2xl">
+              O que a IA faz por você, todo dia
+            </h2>
+            <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {gains.map((g) => {
+                const Icon = g.icon;
+                return (
+                  <div
+                    key={g.title}
+                    className="rounded-2xl border border-border/60 bg-background p-5 transition-colors hover:border-primary/40"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                      <Icon className="w-5 h-5 text-primary" />
+                    </div>
+                    <h3 className="font-semibold">{g.title}</h3>
+                    <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{g.text}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* 3. Para quem é */}
+        <section className="container mx-auto px-4 md:px-8 py-16 md:py-20">
+          <h2 className="text-2xl md:text-4xl font-semibold tracking-tight max-w-2xl">
+            Para quem é a MedStation AI
+          </h2>
+          <div className="mt-10 grid md:grid-cols-2 gap-5">
+            {audience.map((a) => (
+              <div key={a.title} className="rounded-2xl border border-border/60 p-6">
+                <h3 className="text-lg font-semibold">{a.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{a.text}</p>
+                <ul className="mt-4 space-y-2">
+                  {a.bullets.map((b) => (
+                    <li key={b} className="flex gap-2 text-sm">
+                      <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 4. Depoimentos */}
+        <section className="border-y border-border/60 bg-muted/20">
+          <div className="container mx-auto px-4 md:px-8 py-16 md:py-20">
+            <h2 className="text-2xl md:text-4xl font-semibold tracking-tight max-w-2xl">
+              Médicos que já deixaram de digitar
+            </h2>
+            <div className="mt-10 grid md:grid-cols-2 gap-5">
+              {testimonials.map((t) => (
+                <figure
+                  key={t.name}
+                  className="relative rounded-2xl border border-border/60 bg-background p-6"
+                >
+                  <Quote className="absolute top-5 right-5 w-7 h-7 text-primary/15" />
+                  <div className="flex gap-0.5 mb-4">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} className="w-4 h-4 text-primary fill-primary" />
+                    ))}
+                  </div>
+                  <blockquote className="text-sm leading-relaxed text-muted-foreground">
+                    “{t.text}”
+                  </blockquote>
+                  <figcaption className="mt-5 flex items-center gap-3">
+                    <span className="w-9 h-9 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center">
+                      {t.name.split(" ").slice(-2).map((n) => n[0]).join("")}
+                    </span>
+                    <span>
+                      <span className="block text-sm font-medium">{t.name}</span>
+                      <span className="block text-xs text-muted-foreground">{t.role}</span>
+                    </span>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* 5. Planos + CTA final */}
+        <section id="planos" className="container mx-auto px-4 md:px-8 py-16 md:py-24">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-2xl md:text-4xl font-semibold tracking-tight">
+              Menos de R$ 1 por dia para nunca mais digitar burocracia
+            </h2>
+            <p className="mt-3 text-muted-foreground">
+              Assinatura mensal, cancele quando quiser. 7 dias de garantia incondicional.
+            </p>
+          </div>
+          <div className="mt-10 max-w-xl mx-auto">
+            <QuickCheckout origin="lp2" />
+          </div>
+          <p className="mt-6 text-center text-xs text-muted-foreground">
+            Prefere conhecer antes?{" "}
+            <button className="underline hover:text-foreground" onClick={() => goSignup("planos_conta_gratis")}>
+              Crie sua conta grátis e use o Examinus
+            </button>
+          </p>
+        </section>
+      </main>
+
+      <footer className="border-t border-border/60">
+        <div className="container mx-auto px-4 md:px-8 py-8 text-xs text-muted-foreground flex flex-wrap justify-between gap-3">
+          <span>© {new Date().getFullYear()} MedStation AI</span>
+          <span>A decisão clínica final é sempre do médico.</span>
+        </div>
+      </footer>
+    </div>
+  );
+}
