@@ -340,7 +340,7 @@ export default function Home() {
                   <li className="flex gap-2"><span className="text-primary mt-1">→</span> Anamnese estruturada automaticamente, pronta para revisar e registrar</li>
                 </ul>
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                  <Button size="lg" onClick={() => navigate('/consultorio-landing')}>
+                  <Button size="lg" onClick={() => { trackCtaClick({ cta: 'consultorio_ver_planos', section: 'consultorio', destination: '#planos' }); scrollToSection('planos'); }}>
                     Conhecer o Modo Consultório
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
