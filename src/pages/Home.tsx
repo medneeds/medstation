@@ -364,6 +364,80 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Para quem é a MedStation — dois perfis, um único objetivo */}
+      <section id="para-quem" className="py-12 md:py-16 px-4 md:px-6 relative scroll-mt-20">
+        <div className="container mx-auto max-w-5xl relative">
+          <div className="text-center mb-8 md:mb-12 space-y-3">
+            <Badge variant="secondary" className="text-xs md:text-sm">Para quem é</Badge>
+            <h2 className="font-display text-3xl md:text-4xl tracking-tight text-foreground">
+              Feita para a sua rotina. <span className="italic text-primary">Seja qual for.</span>
+            </h2>
+            <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
+              Do plantão de madrugada à consulta marcada: a MedStation se encaixa no seu dia, não o contrário.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            {/* Plantonista */}
+            <Card className="p-5 md:p-7 border border-hairline bg-card/60 backdrop-blur-sm relative overflow-hidden">
+              <div className="absolute -right-16 -top-16 w-40 h-40 rounded-full bg-primary/8 blur-3xl pointer-events-none" />
+              <div className="relative space-y-4">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 border border-primary/30 rounded-full">
+                  <Activity className="w-3 h-3 text-primary" />
+                  <span className="text-[0.6rem] uppercase tracking-[0.2em] font-mono text-primary">Emergência · UTI · Plantão</span>
+                </div>
+                <h3 className="font-display text-2xl tracking-tight">Para o plantonista</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Cinco exames abertos, gasometria às 3 da manhã, paciente complicando e prontuário
+                  para fechar. Os 11 assistentes fazem o trabalho braçal: resumem exames, leem
+                  gasometria, calculam scores, montam a prescrição e organizam o parecer — em
+                  segundos, à beira do leito.
+                </p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span><strong>Examinus</strong> resume todos os exames de uma vez</span></li>
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span><strong>Gasometrus</strong> lê o ácido-base passo a passo</span></li>
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span><strong>Scorius</strong> estratifica risco na hora da decisão</span></li>
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span><strong>Prescriptus</strong> sugere a prescrição certa para o caso</span></li>
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span><strong>Mediscuss</strong> organiza o parecer e a discussão clínica</span></li>
+                </ul>
+              </div>
+            </Card>
+
+            {/* Especialista no consultório */}
+            <Card className="p-5 md:p-7 border-2 border-primary/30 bg-gradient-to-br from-primary/8 via-card/80 to-card/60 backdrop-blur-sm relative overflow-hidden">
+              <div className="absolute -right-16 -top-16 w-40 h-40 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
+              <div className="relative space-y-4">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary/15 border border-primary/40 rounded-full">
+                  <Stethoscope className="w-3 h-3 text-primary" />
+                  <span className="text-[0.6rem] uppercase tracking-[0.2em] font-mono text-primary">Ambulatório · Consultório</span>
+                </div>
+                <h3 className="font-display text-2xl tracking-tight">Para o especialista no consultório</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Cada paciente tem 20 minutos. Você atende, conversa, examina — e a consulta se
+                  escreve sozinha. O Modo Consultório transcreve o atendimento ao vivo e devolve a
+                  anamnese estruturada no momento em que o paciente sai, no modelo que você já usa.
+                </p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span><strong>Clínicus</strong> estrutura a anamnese no seu padrão</span></li>
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span><strong>Orientus</strong> escreve a alta em linguagem do paciente</span></li>
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span><strong>Atestus</strong> gera o atestado em um clique</span></li>
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span><strong>Protocolus</strong> traz a diretriz na hora da conduta</span></li>
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span>Tudo isso enquanto você olha para o paciente</span></li>
+                </ul>
+              </div>
+            </Card>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
+            <Button size="lg" onClick={() => { trackCtaClick({ cta: 'para_quem_criar', section: 'para_quem', destination: '#cadastro' }); scrollToSection('cadastro'); }}>
+              Criar conta grátis
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+            <Button size="lg" variant="outline" onClick={() => { trackCtaClick({ cta: 'para_quem_testar', section: 'para_quem', destination: '#demo' }); scrollToSection('demo'); }}>
+              Testar sem cadastro
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Seção 2: MedStation AI - Plataforma Completa */}
       <section id="plataforma" className="py-12 md:py-16 lg:py-20 px-4 md:px-6 relative overflow-hidden scroll-mt-20">
 
