@@ -576,6 +576,7 @@ export default function Home() {
                 <h3 className="font-display text-xl md:text-2xl tracking-tight text-foreground">O que você ganha de uma IA feita para a medicina</h3>
                 <ul className="space-y-2.5 text-sm">
                   <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span>Saída estruturada: resumo, anamnese, prescrição e parecer no formato do prontuário</span></li>
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span>Respostas construídas com foco em medicina baseada em evidências — Prescriptus, Gasometrus, Protocolus e demais assistentes citam a base que sustenta cada conduta</span></li>
                   <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span>CID-10, scores, gasometria e protocolos embutidos no raciocínio</span></li>
                   <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span>Prescrição direcionada ao caso — posologia, via e alerta de interação</span></li>
                   <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span>Orientações de alta em linguagem que o paciente entende</span></li>
