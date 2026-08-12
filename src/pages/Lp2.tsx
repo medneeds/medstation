@@ -324,6 +324,7 @@ export default function Lp2() {
       </footer>
 
       <Lp2SignupDialog open={signupOpen} onOpenChange={setSignupOpen} />
+      <ConciergeFab />
     </div>
   );
 }
