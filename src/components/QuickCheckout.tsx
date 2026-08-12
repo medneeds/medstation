@@ -94,7 +94,12 @@ export function QuickCheckout({
               <Zap className="w-3 h-3 mr-1" />
               Checkout Rápido
             </Badge>
-            <div className="flex items-baseline justify-center gap-1">
+            <div className="flex items-baseline justify-center gap-2">
+              {billingPeriod === "monthly" && (
+                <span className="text-lg text-muted-foreground line-through">
+                  R$ 59,90
+                </span>
+              )}
               <span className="text-3xl font-bold text-primary">
                 R$ {price.toFixed(2).replace(".", ",")}
               </span>
@@ -102,6 +107,11 @@ export function QuickCheckout({
                 /{billingPeriod === "yearly" ? "ano" : "mês"}
               </span>
             </div>
+            {billingPeriod === "monthly" && (
+              <p className="mt-1 text-xs font-medium text-primary">
+                por tempo limitado
+              </p>
+            )}
           </div>
         )}
 
