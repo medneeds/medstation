@@ -318,7 +318,7 @@ export default function Home() {
 
 
               {/* Demo Card — pulso sutil para chamar interação */}
-              <div className="relative group">
+              <div id="demo-live" className="relative group scroll-mt-24">
               {/* Glow pulsante */}
               <div className="absolute -inset-1 bg-primary/20 rounded-3xl blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-700 animate-[pulse_4s_ease-in-out_infinite]"></div>
               {/* Hairline ring que respira */}
