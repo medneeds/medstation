@@ -276,13 +276,9 @@ export default function Home() {
 
               {/* Cabeçalho da demo — deixa claro: dá pra testar AGORA */}
               <div className="space-y-3 md:space-y-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary text-primary-foreground shadow-md">
-                  <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full rounded-full bg-primary-foreground opacity-60 animate-ping"></span>
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-primary-foreground"></span>
-                  </span>
-                  <span className="text-xs md:text-sm font-semibold uppercase tracking-[0.18em]">Teste agora · sem cadastro</span>
-                </div>
+                <Badge variant="secondary" className="text-xs md:text-sm">
+                  Teste agora · sem cadastro
+                </Badge>
                 <h2 className="font-display text-2xl md:text-4xl tracking-tight text-foreground">
                   É pra usar <span className="italic text-primary">agora</span>. Apareceu a dúvida, cola aqui.
                 </h2>
