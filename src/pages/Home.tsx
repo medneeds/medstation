@@ -218,7 +218,7 @@ export default function Home() {
             Recupere até 40 horas por mês.
           </h1>
           <p className="font-display text-xl sm:text-2xl md:text-3xl tracking-tight leading-snug text-primary max-w-3xl mx-auto animate-fade-in" style={{ animationDelay: '160ms' }}>
-            Ferramentas que aliviam na burocracia e devolvem seu tempo com o paciente.
+            Ferramentas que aliviam na burocracia, potencializam sua prática médica e devolvem seu tempo com o paciente.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2 md:gap-2.5 pt-1 max-w-4xl mx-auto animate-fade-in" style={{ animationDelay: '240ms' }}>
             {[
@@ -237,8 +237,7 @@ export default function Home() {
             ))}
           </div>
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed animate-fade-in" style={{ animationDelay: '320ms' }}>
-            Tudo pronto em segundos — o trabalho repetitivo sai do seu ombro e você volta ao que
-            escolheu fazer: pensar no caso, olhar o paciente, ser médico de verdade.
+            Tudo pronto em segundos — o trabalho repetitivo sai do seu ombro e você volta ao que escolheu fazer: pensar no caso, olhar o paciente, ser médico de verdade.
           </p>
 
 
