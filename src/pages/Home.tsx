@@ -201,7 +201,8 @@ export default function Home() {
               className="text-xs md:text-sm h-8 md:h-9 px-3 md:px-4"
               onClick={() => { trackCtaClick({ cta: 'header_comecar', section: 'header', destination: '#cadastro' }); scrollToSection('cadastro'); }}
             >
-              Criar conta grátis
+              <span className="sm:hidden">Criar conta</span>
+              <span className="hidden sm:inline">Criar conta grátis</span>
             </Button>
           </nav>
         </div>
@@ -842,10 +843,10 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             {/* Dr. Leandro Albuquerque */}
             <Card className="relative p-6 md:p-8 border-border/50 bg-card/70 backdrop-blur-sm hover:border-primary/40 transition-colors duration-300 overflow-hidden">
-              <Quote className="absolute -top-3 -left-3 w-16 h-16 text-primary/8 rotate-180" strokeWidth={1} />
+              <Quote className="absolute -top-2 -right-2 w-12 h-12 md:w-16 md:h-16 text-primary/8 rotate-180 pointer-events-none" strokeWidth={1} />
               <div className="relative space-y-4">
                 <div className="flex items-center gap-0.5">
                   {[...Array(5)].map((_, i) => (
@@ -869,7 +870,7 @@ export default function Home() {
 
             {/* Dra. Luciara Duarte */}
             <Card className="relative p-6 md:p-8 border-border/50 bg-card/70 backdrop-blur-sm hover:border-primary/40 transition-colors duration-300 overflow-hidden">
-              <Quote className="absolute -top-3 -left-3 w-16 h-16 text-primary/8 rotate-180" strokeWidth={1} />
+              <Quote className="absolute -top-2 -right-2 w-12 h-12 md:w-16 md:h-16 text-primary/8 rotate-180 pointer-events-none" strokeWidth={1} />
               <div className="relative space-y-4">
                 <div className="flex items-center gap-0.5">
                   {[...Array(5)].map((_, i) => (
@@ -987,8 +988,8 @@ export default function Home() {
 
             {/* MedStation AI Pro 2 — destaque */}
             <Card className="p-5 md:p-6 border-2 border-primary bg-card/85 backdrop-blur-sm flex flex-col relative overflow-hidden lg:scale-[1.03]">
-              <div className="absolute -top-1 -right-1">
-                <Badge className="bg-primary text-primary-foreground border-0 px-3 py-1 text-[0.6rem] uppercase tracking-[0.18em] font-mono rounded-sm">
+              <div className="absolute top-0 right-0">
+                <Badge className="bg-primary text-primary-foreground border-0 px-2.5 md:px-3 py-1 text-[0.55rem] md:text-[0.6rem] uppercase tracking-[0.16em] font-mono rounded-none rounded-bl-md">
                   Recomendado
                 </Badge>
               </div>

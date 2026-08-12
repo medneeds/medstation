@@ -187,7 +187,7 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
       </Card>
 
       {/* Linha do tempo */}
-      <div className="-mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto scrollbar-none">
+      <div className="-mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto scrollbar-none snap-x snap-mandatory scroll-px-4">
         <div className="flex items-stretch gap-2 min-w-max md:min-w-0">
           {stages.map((s, i) => {
             const Icon = s.icon;
@@ -200,7 +200,7 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
                 onClick={() => setActive(i)}
                 aria-pressed={isActive}
                 className={cn(
-                  "flex-1 min-w-[9.5rem] text-left rounded-xl border px-3 py-2.5 transition-all duration-300",
+                  "snap-start flex-1 min-w-[9.5rem] text-left rounded-xl border px-3 py-2.5 transition-all duration-300",
                   isActive
                     ? "border-primary/50 bg-primary/10 shadow-[0_10px_28px_-20px_hsl(var(--primary)/0.9)]"
                     : "border-border/60 bg-card/50 hover:border-primary/35 hover:-translate-y-0.5",

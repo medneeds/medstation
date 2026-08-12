@@ -53,7 +53,7 @@ export function AssistantPracticeShowcase({ onPrimary }: Props) {
   return (
     <div className="space-y-5">
       {/* Seletor de assistentes */}
-      <div className="-mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto scrollbar-none">
+      <div className="-mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto scrollbar-none snap-x snap-mandatory scroll-px-4">
         <div className="flex md:flex-wrap md:justify-center gap-2 min-w-max md:min-w-0">
           {order.map(({ name, icon: Icon, tag }) => {
             const selected = name === active;
@@ -64,7 +64,7 @@ export function AssistantPracticeShowcase({ onPrimary }: Props) {
                 onClick={() => setActive(name)}
                 aria-pressed={selected}
                 className={cn(
-                  "group flex items-center gap-2 rounded-full border px-3.5 py-2 text-xs md:text-sm whitespace-nowrap transition-all duration-200",
+                  "group snap-start flex items-center gap-2 rounded-full border px-3.5 py-2 text-xs md:text-sm whitespace-nowrap transition-all duration-200",
                   selected
                     ? "border-primary/50 bg-primary text-primary-foreground shadow-[0_10px_24px_-14px_hsl(var(--primary)/0.9)]"
                     : "border-border/60 bg-card/60 text-muted-foreground hover:text-foreground hover:border-primary/40 hover:-translate-y-0.5",
