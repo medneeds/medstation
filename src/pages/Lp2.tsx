@@ -186,30 +186,29 @@ export default function Lp2() {
 
         {/* 2. Como funciona na prática (demonstração) */}
         <section className="border-y border-border/60 bg-muted/20">
-          <div className="container mx-auto px-4 md:px-8 py-16 md:py-20">
+          <div className="container mx-auto px-4 md:px-8 py-12 md:py-16">
             <h2 className="text-2xl md:text-4xl font-semibold tracking-tight max-w-2xl">
               Veja o fluxo na prática
             </h2>
-            <p className="mt-3 text-muted-foreground max-w-2xl">
-              Você cola ou dita a informação do caso. O assistente devolve o texto clínico pronto para o prontuário.
-              Três passos, alguns segundos.
+            <p className="mt-2.5 text-sm md:text-base text-muted-foreground max-w-2xl">
+              Você cola ou dita a informação do caso. O assistente devolve o texto pronto para o prontuário.
             </p>
 
-            <div className="mt-8 grid sm:grid-cols-3 gap-3">
+            <div className="mt-6 grid sm:grid-cols-3 gap-2.5">
               {steps.map((s, i) => (
-                <div key={s.title} className="rounded-2xl border border-border/60 bg-background p-5">
-                  <span className="text-xs font-semibold text-primary">Passo {i + 1}</span>
-                  <h3 className="mt-1.5 font-semibold">{s.title}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{s.text}</p>
+                <div key={s.title} className="rounded-xl border border-border/60 bg-background px-4 py-3">
+                  <span className="text-[0.7rem] font-semibold text-primary">Passo {i + 1}</span>
+                  <h3 className="mt-0.5 text-sm font-semibold">{s.title}</h3>
+                  <p className="mt-0.5 text-[0.8rem] text-muted-foreground leading-relaxed">{s.text}</p>
                 </div>
               ))}
             </div>
 
-            <div className="mt-10">
+            <div className="mt-7">
               <ClinicalFlowDemo onPrimary={() => openSignup("flow_demo")} />
             </div>
 
-            <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+            <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3.5">
               {gains.map((g) => {
                 const Icon = g.icon;
                 return (
