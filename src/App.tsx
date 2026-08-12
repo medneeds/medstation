@@ -81,10 +81,12 @@ const App = () => (
           <BrowserRouter>
           <AnalyticsTracker />
           <Routes>
-            <Route path="/" element={<Comecar />} />
-            <Route path="/landing" element={<Home />} />
-            <Route path="/tour" element={<Tour />} />
-            <Route path="/home" element={<Navigate to="/landing" replace />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/landing" element={<Navigate to="/" replace />} />
+            <Route path="/tour" element={<Navigate to="/" replace />} />
+            <Route path="/comecar" element={<Comecar />} />
+            <Route path="/home" element={<Navigate to="/" replace />} />
+
             <Route path="/auth" element={<Auth />} />
             <Route path="/confirmar-email" element={<ConfirmarEmail />} />
             <Route path="/pricing" element={<Pricing />} />
