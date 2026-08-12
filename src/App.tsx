@@ -19,6 +19,7 @@ import Auth from "./pages/Auth";
 import ConfirmarEmail from "./pages/ConfirmarEmail";
 import Home from "./pages/Home";
 import Comecar from "./pages/Comecar";
+import Lp2 from "./pages/Lp2";
 import Tour from "./pages/Tour";
 import Pricing from "./pages/Pricing";
 import Welcome from "./pages/Welcome";
@@ -85,6 +86,7 @@ const App = () => (
             <Route path="/landing" element={<Navigate to="/" replace />} />
             <Route path="/tour" element={<Navigate to="/" replace />} />
             <Route path="/comecar" element={<Comecar />} />
+            <Route path="/lp2" element={<Lp2 />} />
             <Route path="/home" element={<Navigate to="/" replace />} />
 
             <Route path="/auth" element={<Auth />} />
