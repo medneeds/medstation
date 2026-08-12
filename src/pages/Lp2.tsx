@@ -15,7 +15,6 @@ import {
   Check,
   Clock,
   FileText,
-  Mic,
   Pill,
   ShieldCheck,
   Star,
@@ -26,7 +25,7 @@ import {
 
 const pains = [
   "Sai do plantão e ainda tem evolução e alta para escrever",
-  "Consulta termina e a anamnese fica para depois — some o tempo do almoço",
+  "Paciente grave chega e a anamnese precisa sair na hora",
   "Exame com 40 linhas para transformar em três frases úteis",
   "Prescrição, atestado, orientação de alta: sempre digitando o mesmo",
 ];
@@ -53,11 +52,6 @@ const gains = [
     text: "Orientação ao paciente, atestado e parecer prontos para assinar.",
   },
   {
-    icon: Mic,
-    title: "Modo Consultório",
-    text: "Grave a consulta e receba a transcrição com a anamnese estruturada.",
-  },
-  {
     icon: Clock,
     title: "Até 40h por mês",
     text: "O trabalho repetitivo sai do seu ombro e o tempo volta para o paciente.",
@@ -72,14 +66,14 @@ const steps = [
 
 const audience = [
   {
-    title: "Médico plantonista",
+    title: "Emergência",
     text: "Volume alto, tempo curto. Evolução, exame e alta saem em segundos, entre um leito e outro.",
     bullets: ["Exames e gasometria interpretados", "Evolução e parecer prontos", "Protocolos direto ao ponto"],
   },
   {
-    title: "Especialista em consultório",
-    text: "Você olha para o paciente, não para o teclado. A consulta vira documento sozinha.",
-    bullets: ["Consulta gravada e transcrita", "Anamnese estruturada", "Orientação de alta em linguagem simples"],
+    title: "UTI",
+    text: "Paciente complexo, decisão rápida. Conduta, prescrição e balanço estruturados na hora.",
+    bullets: ["Conduta e prescrição com alertas", "Gasometria e exames à beira do leito", "Evolução e balanços prontos"],
   },
 ];
 
