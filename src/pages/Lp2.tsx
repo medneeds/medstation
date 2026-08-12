@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { QuickCheckout } from "@/components/QuickCheckout";
 import { Lp2SignupDialog } from "@/components/Lp2SignupDialog";
+import { ClinicalFlowDemo } from "@/components/ClinicalFlowDemo";
 import { trackCtaClick } from "@/lib/analytics";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
 import {
@@ -60,6 +61,12 @@ const gains = [
     title: "Até 40h por mês",
     text: "O trabalho repetitivo sai do seu ombro e o tempo volta para o paciente.",
   },
+];
+
+const steps = [
+  { title: "Cole ou dite", text: "Exame bruto, laudo ou a sua fala sobre o caso — do jeito que já está." },
+  { title: "Escolha o assistente", text: "Exame, anamnese, conduta, alta ou documento. Cada um com foco clínico próprio." },
+  { title: "Copie e siga", text: "Texto pronto no padrão do prontuário. Você revisa, copia e segue para o próximo paciente." },
 ];
 
 const audience = [
