@@ -18,6 +18,8 @@ import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { trackCtaClick } from "@/lib/analytics";
 import { SignupBenefitPrompt } from "@/components/demo/SignupBenefitPrompt";
 import { Seo } from "@/components/Seo";
+import { InlineSignup } from "@/components/InlineSignup";
+
 
 type FAQItem = {
   q: string;
