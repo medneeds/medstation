@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { QuickCheckout } from "@/components/QuickCheckout";
 import { Lp2SignupDialog } from "@/components/Lp2SignupDialog";
+import { ClinicalFlowDemo } from "@/components/ClinicalFlowDemo";
 import { trackCtaClick } from "@/lib/analytics";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
 import {
@@ -60,6 +61,12 @@ const gains = [
     title: "Até 40h por mês",
     text: "O trabalho repetitivo sai do seu ombro e o tempo volta para o paciente.",
   },
+];
+
+const steps = [
+  { title: "Cole ou dite", text: "Exame bruto, laudo ou a sua fala sobre o caso — do jeito que já está." },
+  { title: "Escolha o assistente", text: "Exame, anamnese, conduta, alta ou documento. Cada um com foco clínico próprio." },
+  { title: "Copie e siga", text: "Texto pronto no padrão do prontuário. Você revisa, copia e segue para o próximo paciente." },
 ];
 
 const audience = [
@@ -182,31 +189,50 @@ export default function Lp2() {
           </div>
         </section>
 
-        {/* 2. O que a pessoa ganha */}
+        {/* 2. Como funciona na prática (demonstração) */}
         <section className="border-y border-border/60 bg-muted/20">
           <div className="container mx-auto px-4 md:px-8 py-16 md:py-20">
             <h2 className="text-2xl md:text-4xl font-semibold tracking-tight max-w-2xl">
-              O que a IA faz por você, todo dia
+              Veja o fluxo na prática
             </h2>
-            <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <p className="mt-3 text-muted-foreground max-w-2xl">
+              Você cola ou dita a informação do caso. O assistente devolve o texto clínico pronto para o prontuário.
+              Três passos, alguns segundos.
+            </p>
+
+            <div className="mt-8 grid sm:grid-cols-3 gap-3">
+              {steps.map((s, i) => (
+                <div key={s.title} className="rounded-2xl border border-border/60 bg-background p-5">
+                  <span className="text-xs font-semibold text-primary">Passo {i + 1}</span>
+                  <h3 className="mt-1.5 font-semibold">{s.title}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{s.text}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-10">
+              <ClinicalFlowDemo onPrimary={() => openSignup("flow_demo")} />
+            </div>
+
+            <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
               {gains.map((g) => {
                 const Icon = g.icon;
                 return (
-                  <div
-                    key={g.title}
-                    className="rounded-2xl border border-border/60 bg-background p-5 transition-colors hover:border-primary/40"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                      <Icon className="w-5 h-5 text-primary" />
+                  <div key={g.title} className="flex gap-3">
+                    <span className="w-9 h-9 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <Icon className="w-4.5 h-4.5 text-primary" />
+                    </span>
+                    <div>
+                      <h3 className="text-sm font-semibold leading-tight">{g.title}</h3>
+                      <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{g.text}</p>
                     </div>
-                    <h3 className="font-semibold">{g.title}</h3>
-                    <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{g.text}</p>
                   </div>
                 );
               })}
             </div>
           </div>
         </section>
+
 
         {/* 3. Para quem é */}
         <section className="container mx-auto px-4 md:px-8 py-16 md:py-20">
