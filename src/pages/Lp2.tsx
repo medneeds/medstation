@@ -232,8 +232,12 @@ export default function Lp2() {
         {/* 3. Para quem é */}
         <section className="container mx-auto px-4 md:px-8 py-16 md:py-20">
           <h2 className="text-2xl md:text-4xl font-semibold tracking-tight max-w-2xl">
-            Para quem é a MedStation AI
+            Feito para o médico plantonista
           </h2>
+          <p className="mt-3 text-muted-foreground max-w-2xl">
+            Da chegada do paciente grave à evolução do plantão. Tudo o que você
+            precisa entre um leito e outro, na velocidade que a emergência e a UTI exigem.
+          </p>
           <div className="mt-10 grid md:grid-cols-2 gap-5">
             {audience.map((a) => (
               <div key={a.title} className="rounded-2xl border border-border/60 p-6">
