@@ -341,7 +341,7 @@ export default function Home() {
                 </ul>
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                   <Button size="lg" onClick={() => { trackCtaClick({ cta: 'consultorio_ver_planos', section: 'consultorio', destination: '#planos' }); scrollToSection('planos'); }}>
-                    Conhecer o Modo Consultório
+                    Ver planos do Modo Consultório
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                   <span className="text-xs text-muted-foreground self-center">A partir de R$ 29,90/mês</span>
