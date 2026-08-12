@@ -536,41 +536,21 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Final */}
-      <section id="cadastro" className="py-12 md:py-20 lg:py-24 px-4 md:px-6 relative overflow-hidden">
-        <div className="container mx-auto max-w-2xl text-center relative space-y-6 md:space-y-8">
-          <div className="space-y-3 md:space-y-4">
+      {/* Cadastro inline — o usuário cria a conta sem sair da página */}
+      <section id="cadastro" className="py-12 md:py-20 lg:py-24 px-4 md:px-6 relative overflow-hidden scroll-mt-20">
+        <div className="container mx-auto max-w-6xl relative space-y-6 md:space-y-8">
+          <div className="text-center space-y-3 md:space-y-4 max-w-2xl mx-auto">
             <h2 className="font-display text-3xl md:text-4xl lg:text-5xl tracking-tight text-foreground">
               Comece em <span className="italic text-primary">30 segundos</span>
             </h2>
             <p className="text-sm md:text-base lg:text-lg text-muted-foreground">
-              Sem cartão. Sem burocracia. Examinus grátis para experimentar (com restrições) — Pro libera os 10 ilimitados de verdade.
+              Preencha aqui mesmo. Sem cartão, sem burocracia, sem sair desta página.
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button 
-              size="lg"
-              className="shadow-medical hover:shadow-elevated transition-all hover:scale-105 h-11 md:h-12 text-sm md:text-base"
-              onClick={() => { trackCtaClick({ cta: 'final_criar_conta', section: 'cta_final', plan: 'free', destination: '/auth' }); navigate('/auth'); }}
-            >
-              Criar conta gratuita
-              <ArrowRight className="ml-2 h-3.5 md:h-4 w-3.5 md:w-4" />
-            </Button>
-            <Button 
-              size="lg"
-              variant="outline"
-              className="h-11 md:h-12 text-sm md:text-base"
-              onClick={() => { trackCtaClick({ cta: 'final_testar_demo', section: 'cta_final', destination: '#demo' }); scrollToSection('demo'); }}
-            >
-              Testar sem cadastro
-            </Button>
-          </div>
-          <p className="text-[10px] md:text-xs text-muted-foreground flex flex-wrap items-center justify-center gap-1.5 md:gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-            <span>Examinus grátis com restrições • Pro R$ 29,90/mês ou R$ 299,90/ano</span>
-          </p>
+          <InlineSignup />
         </div>
       </section>
+
 
       {/* FAQ */}
       <section id="faq" className="py-16 md:py-24 px-4 md:px-6 relative">
