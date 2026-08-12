@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Sparkles, Activity, Brain, Calculator, Pill, FileCode, TestTube2, Wind, FileCheck, BookOpen, Compass, Stethoscope, Sigma, MessagesSquare } from "lucide-react";
+import { ArrowRight, Sparkles, Activity, Brain, Calculator, Pill, FileCode, TestTube2, Wind, FileCheck, BookOpen, Compass, Stethoscope, Sigma, MessagesSquare, ShieldAlert } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PublicExaminusChat from "@/components/PublicExaminusChat";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -585,6 +585,33 @@ export default function Home() {
               </div>
             </Card>
           </div>
+
+          {/* Limites clínicos e uso responsável */}
+          <Card className="mt-4 md:mt-6 p-5 md:p-6 border border-amber-500/25 bg-amber-500/[0.04]">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg border border-amber-500/30 bg-amber-500/10 flex items-center justify-center shrink-0">
+                <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400" strokeWidth={1.5} />
+              </div>
+              <div className="space-y-3">
+                <h3 className="font-display text-lg md:text-xl tracking-tight text-foreground">
+                  Onde a IA para e o médico começa
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Ser feita para a clínica não significa decidir pelo médico. A MedStation é ferramenta de apoio:
+                  organiza, estrutura e fundamenta — a responsabilidade clínica e legal continua inteiramente sua.
+                </p>
+                <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-xs md:text-sm text-muted-foreground">
+                  <li className="flex gap-2"><span className="text-amber-600 dark:text-amber-400 mt-0.5">·</span> Não substitui a decisão médica, o exame do paciente nem a avaliação presencial</li>
+                  <li className="flex gap-2"><span className="text-amber-600 dark:text-amber-400 mt-0.5">·</span> Toda prescrição, dose, via e conduta deve ser conferida e assinada pelo médico</li>
+                  <li className="flex gap-2"><span className="text-amber-600 dark:text-amber-400 mt-0.5">·</span> Não é dispositivo de diagnóstico automático nem serviço de urgência</li>
+                  <li className="flex gap-2"><span className="text-amber-600 dark:text-amber-400 mt-0.5">·</span> Evite dados identificáveis do paciente; siga LGPD e o sigilo profissional</li>
+                  <li className="flex gap-2"><span className="text-amber-600 dark:text-amber-400 mt-0.5">·</span> Diretrizes mudam: confirme atualizações e o protocolo do seu serviço</li>
+                  <li className="flex gap-2"><span className="text-amber-600 dark:text-amber-400 mt-0.5">·</span> Cada recomendação vem com indicador de confiança da evidência — leia antes de aplicar</li>
+                </ul>
+              </div>
+            </div>
+          </Card>
+
 
           <div className="text-center mt-7 md:mt-9 max-w-2xl mx-auto">
             <p className="text-sm md:text-base text-muted-foreground leading-relaxed">

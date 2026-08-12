@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   TestTube2, Stethoscope, Pill, MessagesSquare, Compass,
-  Play, RotateCcw, Check, Clock, Copy, ArrowRight,
+  Play, RotateCcw, Check, Clock, Copy, ArrowRight, ShieldAlert,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -256,12 +256,21 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
           </div>
           <h4 className="font-display text-base md:text-lg tracking-tight mb-3">{stage.title}</h4>
           {revealed ? (
-            <div className="rounded-xl border border-border/50 bg-background/60 p-3 space-y-1 animate-fade-in">
-              {stage.output.map((line, j) => (
-                <p key={j} className="text-xs md:text-[0.8rem] font-mono leading-relaxed text-foreground/90">
-                  {line || "\u00A0"}
+            <div className="space-y-3 animate-fade-in">
+              <div className="rounded-xl border border-border/50 bg-background/60 p-3 space-y-1">
+                {stage.output.map((line, j) => (
+                  <p key={j} className="text-xs md:text-[0.8rem] font-mono leading-relaxed text-foreground/90">
+                    {line || "\u00A0"}
+                  </p>
+                ))}
+              </div>
+              <div className="flex gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2">
+                <ShieldAlert className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <p className="text-[11px] md:text-xs text-muted-foreground leading-relaxed">
+                  Saída de apoio, gerada por IA a partir do que foi informado. Revise doses, alergias, contraindicações
+                  e dados do paciente antes de usar. Não substitui sua avaliação nem sua decisão médica.
                 </p>
-              ))}
+              </div>
             </div>
           ) : (
             <div className="rounded-xl border border-dashed border-border/50 bg-background/40 p-6 text-center space-y-2">
@@ -275,6 +284,27 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
           )}
         </Card>
       </div>
+
+      {/* Limites clínicos */}
+      <Card className="p-4 md:p-5 border border-hairline bg-muted/20">
+        <div className="flex items-start gap-3">
+          <div className="w-7 h-7 rounded border border-hairline bg-amber-500/10 flex items-center justify-center shrink-0">
+            <ShieldAlert className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" strokeWidth={1.5} />
+          </div>
+          <div className="space-y-2">
+            <h4 className="font-display text-sm md:text-base tracking-tight text-foreground">
+              Uso responsável: o que a MedStation faz e o que continua sendo seu
+            </h4>
+            <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-1.5 text-[11px] md:text-xs text-muted-foreground">
+              <li>· Ferramenta de apoio à documentação e ao raciocínio — não emite diagnóstico nem prescreve por você</li>
+              <li>· Toda conduta, dose e via exige conferência e assinatura do médico responsável</li>
+              <li>· Demonstração com caso fictício; não use dados identificáveis de paciente em modo público</li>
+              <li>· Em emergência, a conduta imediata segue o protocolo do serviço e o seu julgamento clínico</li>
+            </ul>
+          </div>
+        </div>
+      </Card>
+
 
       {/* Rodapé de tempo */}
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3 text-center">
