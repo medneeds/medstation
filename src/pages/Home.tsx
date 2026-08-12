@@ -589,8 +589,10 @@ export default function Home() {
           <div className="text-center mt-7 md:mt-9 max-w-2xl mx-auto">
             <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
               A MedStation não é um chatbot com um prompt médico colado por cima. Cada um dos 11 assistentes foi
-              desenhado do zero para uma tarefa clínica real — do exame de plantão à alta do ambulatório. É o
-              trabalho repetitivo saindo da sua manga para uma ferramenta que entende o que você está vendo.
+              desenhado do zero para uma tarefa clínica real — do exame de plantão à alta do ambulatório. Prescrições,
+              pareceres e condutas são gerados com foco em medicina baseada em evidências, citando a fundamentação
+              por trás de cada decisão. É o trabalho repetitivo saindo da sua manga para uma ferramenta que entende o
+              que você está vendo.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
               <Button size="lg" onClick={() => { trackCtaClick({ cta: 'proposito_criar', section: 'proposito', destination: '#cadastro' }); scrollToSection('cadastro'); }}>
