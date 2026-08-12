@@ -148,14 +148,14 @@ export default function Home() {
               Produza mais. Digite menos.
             </span>
           </div>
-          <nav className="flex gap-2 md:gap-8 items-center">
+          <nav className="flex gap-1 md:gap-6 items-center">
             <Button 
               variant="ghost" 
               size="sm"
               className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground"
               onClick={() => scrollToSection('demo')}
             >
-              Demo
+              Testar grátis
             </Button>
             <Button 
               variant="ghost" 
@@ -163,7 +163,15 @@ export default function Home() {
               className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground"
               onClick={() => scrollToSection('plataforma')}
             >
-              Plataforma
+              Assistentes
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground"
+              onClick={() => scrollToSection('planos')}
+            >
+              Planos
             </Button>
             <ThemeToggle />
             <Button 
@@ -172,22 +180,95 @@ export default function Home() {
               className="text-xs md:text-sm h-8 md:h-9 px-3 md:px-4"
               onClick={() => { trackCtaClick({ cta: 'header_login', section: 'header', destination: '/auth' }); navigate('/auth'); }}
             >
-              Login
+              Entrar
             </Button>
             <Button 
-              variant="outline" 
               size="sm"
               className="text-xs md:text-sm h-8 md:h-9 px-3 md:px-4"
               onClick={() => { trackCtaClick({ cta: 'header_comecar', section: 'header', destination: '#cadastro' }); scrollToSection('cadastro'); }}
             >
-              Começar
+              Criar conta grátis
             </Button>
           </nav>
         </div>
       </header>
 
+      {/* Hero — promessa em uma frase + 3 caminhos, todos na mesma página */}
+      <section id="inicio" className="pt-10 md:pt-16 px-4 md:px-6 relative">
+        <div className="container mx-auto max-w-4xl text-center space-y-5 md:space-y-7">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/25">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            <span className="text-primary text-[11px] font-semibold uppercase tracking-wider">
+              Assistentes de IA para médicos
+            </span>
+          </div>
+          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl tracking-tight leading-[1.05] text-foreground">
+            Você atende.{" "}
+            <span className="italic text-primary">A MedStation escreve.</span>
+          </h1>
+          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Cole um exame e receba o resumo pronto. Grave a consulta e receba a anamnese estruturada.
+            Tudo em segundos, direto no navegador.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 pt-2 text-left">
+            {[
+              {
+                id: 'demo',
+                titulo: '1 · Testar agora',
+                sub: 'Sem cadastro, aqui embaixo',
+                cta: 'Explorar agora',
+                target: 'demo',
+                primary: false,
+              },
+              {
+                id: 'cadastro',
+                titulo: '2 · Criar conta grátis',
+                sub: 'R$ 0, sem cartão',
+                cta: 'Criar conta grátis',
+                target: 'cadastro',
+                primary: true,
+              },
+              {
+                id: 'como',
+                titulo: '3 · Entender como funciona',
+                sub: '3 passos, 1 minuto de leitura',
+                cta: 'Ver como funciona',
+                target: 'como-funciona',
+                primary: false,
+              },
+            ].map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => { trackCtaClick({ cta: `hero_${c.id}`, section: 'hero', destination: `#${c.target}` }); scrollToSection(c.target); }}
+                className={`group rounded-2xl p-4 md:p-5 border transition-all duration-300 hover:-translate-y-1 ${
+                  c.primary
+                    ? 'bg-primary text-primary-foreground border-primary shadow-medical'
+                    : 'bg-card/60 backdrop-blur-sm border-border/60 hover:border-primary/40'
+                }`}
+              >
+                <span className={`block text-[0.6rem] uppercase tracking-[0.2em] font-mono ${c.primary ? 'opacity-80' : 'text-muted-foreground'}`}>
+                  {c.sub}
+                </span>
+                <span className="block font-display text-lg md:text-xl tracking-tight mt-1.5">{c.titulo}</span>
+                <span className={`mt-3 inline-flex items-center gap-1.5 text-sm font-medium ${c.primary ? '' : 'text-primary'}`}>
+                  {c.cta}
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            Você não sai desta página. Cada botão leva você para a seção logo abaixo.
+          </p>
+        </div>
+      </section>
+
       {/* Seção 1: Examinus por MedStation AI */}
-      <section id="demo" className="pt-10 md:pt-16 pb-6 md:pb-8 px-4 md:px-6 relative overflow-hidden">
+      <section id="demo" className="pt-8 md:pt-12 pb-6 md:pb-8 px-4 md:px-6 relative overflow-hidden scroll-mt-20">
+
         <div className="container mx-auto max-w-7xl relative">
           <div className="space-y-6 md:space-y-8 animate-in fade-in duration-700 text-center">
 
