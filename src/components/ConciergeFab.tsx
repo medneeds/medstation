@@ -32,7 +32,7 @@ export function ConciergeFab() {
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-3 right-3 z-10 h-8 w-8 rounded-full bg-background/70 backdrop-blur-sm"
+            className="absolute -top-3 -right-2 z-10 h-8 w-8 rounded-full border border-border/70 bg-card shadow-elevated hover:bg-muted"
             onClick={() => setOpen(false)}
             aria-label="Fechar concierge"
           >
