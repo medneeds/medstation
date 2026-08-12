@@ -92,8 +92,16 @@ export default function Lp2() {
   useReferralCapture();
 
   useEffect(() => {
-    document.documentElement.classList.add("light");
-    document.documentElement.classList.remove("dark");
+    const root = document.documentElement;
+    const wasDark = root.classList.contains("dark");
+    root.classList.remove("dark");
+    root.classList.add("light");
+    return () => {
+      if (wasDark) {
+        root.classList.remove("light");
+        root.classList.add("dark");
+      }
+    };
   }, []);
 
   const goPlans = (label: string) => {
