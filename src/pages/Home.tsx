@@ -276,7 +276,7 @@ export default function Home() {
 
               {/* Cabeçalho da demo — deixa claro: dá pra testar AGORA */}
               <div className="space-y-3 md:space-y-4">
-                <Badge variant="secondary" className="text-xs md:text-sm">
+                <Badge variant="secondary" className="text-xs md:text-sm whitespace-nowrap">
                   Teste agora · sem cadastro
                 </Badge>
                 <h2 className="font-display text-2xl md:text-4xl tracking-tight text-foreground">
