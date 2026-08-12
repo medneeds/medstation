@@ -459,13 +459,14 @@ export default function Home() {
                   <span className="text-[0.6rem] uppercase tracking-[0.2em] font-mono text-primary">Novo · Tempo real</span>
                 </div>
                 <h2 className="font-display text-3xl md:text-4xl lg:text-5xl tracking-tight leading-[1.05]">
-                  Modo Consultório.
+                  Você atende.
                   <br />
-                  <span className="italic text-primary">Em tempo real.</span>
+                  <span className="italic text-primary">A MedStation escreve.</span>
                 </h2>
                 <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
-                  Atenda como sempre. Nós transcrevemos a consulta ao vivo e devolvemos a anamnese estruturada no momento em que o paciente sai.
+                  Modo Consultório, em tempo real: atenda como sempre. Nós transcrevemos a consulta ao vivo e devolvemos a anamnese estruturada no momento em que o paciente sai.
                 </p>
+
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex gap-2"><span className="text-primary mt-1">→</span> Transcrição em tempo real, com revisão final do áudio</li>
                   <li className="flex gap-2"><span className="text-primary mt-1">→</span> Sem invenções: registra apenas o que foi dito</li>
