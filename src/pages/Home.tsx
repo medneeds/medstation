@@ -18,6 +18,8 @@ import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { trackCtaClick } from "@/lib/analytics";
 import { SignupBenefitPrompt } from "@/components/demo/SignupBenefitPrompt";
 import { Seo } from "@/components/Seo";
+import { InlineSignup } from "@/components/InlineSignup";
+
 
 type FAQItem = {
   q: string;
@@ -97,7 +99,7 @@ export default function Home() {
       
       <div className="relative z-10">
       <Seo
-        path="/landing"
+        path="/"
         title="MedStation AI — 11 assistentes de IA para médicos"
         description="Anamnese, exames, prescrição e documentação clínica em segundos. Teste o Examinus grátis, sem cadastro."
         jsonLd={[
@@ -146,14 +148,14 @@ export default function Home() {
               Produza mais. Digite menos.
             </span>
           </div>
-          <nav className="flex gap-2 md:gap-8 items-center">
+          <nav className="flex gap-1 md:gap-6 items-center">
             <Button 
               variant="ghost" 
               size="sm"
               className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground"
               onClick={() => scrollToSection('demo')}
             >
-              Demo
+              Testar grátis
             </Button>
             <Button 
               variant="ghost" 
@@ -161,7 +163,15 @@ export default function Home() {
               className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground"
               onClick={() => scrollToSection('plataforma')}
             >
-              Plataforma
+              Assistentes
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="hidden md:inline-flex text-sm text-muted-foreground hover:text-foreground"
+              onClick={() => scrollToSection('planos')}
+            >
+              Planos
             </Button>
             <ThemeToggle />
             <Button 
@@ -170,22 +180,95 @@ export default function Home() {
               className="text-xs md:text-sm h-8 md:h-9 px-3 md:px-4"
               onClick={() => { trackCtaClick({ cta: 'header_login', section: 'header', destination: '/auth' }); navigate('/auth'); }}
             >
-              Login
+              Entrar
             </Button>
             <Button 
-              variant="outline" 
               size="sm"
               className="text-xs md:text-sm h-8 md:h-9 px-3 md:px-4"
               onClick={() => { trackCtaClick({ cta: 'header_comecar', section: 'header', destination: '#cadastro' }); scrollToSection('cadastro'); }}
             >
-              Começar
+              Criar conta grátis
             </Button>
           </nav>
         </div>
       </header>
 
+      {/* Hero — promessa em uma frase + 3 caminhos, todos na mesma página */}
+      <section id="inicio" className="pt-10 md:pt-16 px-4 md:px-6 relative">
+        <div className="container mx-auto max-w-4xl text-center space-y-5 md:space-y-7">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/25">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            <span className="text-primary text-[11px] font-semibold uppercase tracking-wider">
+              Assistentes de IA para médicos
+            </span>
+          </div>
+          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl tracking-tight leading-[1.05] text-foreground">
+            Você atende.{" "}
+            <span className="italic text-primary">A MedStation escreve.</span>
+          </h1>
+          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Cole um exame e receba o resumo pronto. Grave a consulta e receba a anamnese estruturada.
+            Tudo em segundos, direto no navegador.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 pt-2 text-left">
+            {[
+              {
+                id: 'demo',
+                titulo: '1 · Testar agora',
+                sub: 'Sem cadastro, aqui embaixo',
+                cta: 'Explorar agora',
+                target: 'demo',
+                primary: false,
+              },
+              {
+                id: 'cadastro',
+                titulo: '2 · Criar conta grátis',
+                sub: 'R$ 0, sem cartão',
+                cta: 'Criar conta grátis',
+                target: 'cadastro',
+                primary: true,
+              },
+              {
+                id: 'como',
+                titulo: '3 · Entender como funciona',
+                sub: '3 passos, 1 minuto de leitura',
+                cta: 'Ver como funciona',
+                target: 'como-funciona',
+                primary: false,
+              },
+            ].map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => { trackCtaClick({ cta: `hero_${c.id}`, section: 'hero', destination: `#${c.target}` }); scrollToSection(c.target); }}
+                className={`group rounded-2xl p-4 md:p-5 border transition-all duration-300 hover:-translate-y-1 ${
+                  c.primary
+                    ? 'bg-primary text-primary-foreground border-primary shadow-medical'
+                    : 'bg-card/60 backdrop-blur-sm border-border/60 hover:border-primary/40'
+                }`}
+              >
+                <span className={`block text-[0.6rem] uppercase tracking-[0.2em] font-mono ${c.primary ? 'opacity-80' : 'text-muted-foreground'}`}>
+                  {c.sub}
+                </span>
+                <span className="block font-display text-lg md:text-xl tracking-tight mt-1.5">{c.titulo}</span>
+                <span className={`mt-3 inline-flex items-center gap-1.5 text-sm font-medium ${c.primary ? '' : 'text-primary'}`}>
+                  {c.cta}
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            Você não sai desta página. Cada botão leva você para a seção logo abaixo.
+          </p>
+        </div>
+      </section>
+
       {/* Seção 1: Examinus por MedStation AI */}
-      <section id="demo" className="pt-10 md:pt-16 pb-6 md:pb-8 px-4 md:px-6 relative overflow-hidden">
+      <section id="demo" className="pt-8 md:pt-12 pb-6 md:pb-8 px-4 md:px-6 relative overflow-hidden scroll-mt-20">
+
         <div className="container mx-auto max-w-7xl relative">
           <div className="space-y-6 md:space-y-8 animate-in fade-in duration-700 text-center">
 
@@ -229,8 +312,58 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Como funciona — didático, à prova de dúvida */}
+      <section id="como-funciona" className="py-12 md:py-16 px-4 md:px-6 relative scroll-mt-20">
+        <div className="container mx-auto max-w-5xl relative">
+          <div className="text-center mb-8 md:mb-12 space-y-3">
+            <Badge variant="secondary" className="text-xs md:text-sm">Como funciona</Badge>
+            <h2 className="font-display text-3xl md:text-4xl tracking-tight text-foreground">
+              Três passos. <span className="italic text-primary">Só isso.</span>
+            </h2>
+            <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
+              Nada para instalar, nada para configurar. Funciona no computador e no celular.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+            {[
+              {
+                n: "01",
+                t: "Você joga a informação",
+                d: "Cole o exame, escreva o caso ou grave a consulta pelo microfone. Do jeito que for mais rápido para você.",
+              },
+              {
+                n: "02",
+                t: "O assistente organiza",
+                d: "Em segundos, o texto volta estruturado no padrão clínico: resumo do exame, anamnese, prescrição, atestado ou parecer.",
+              },
+              {
+                n: "03",
+                t: "Você revisa e copia",
+                d: "Leia, ajuste se quiser e clique em copiar. Cola no seu prontuário e o atendimento acabou.",
+              },
+            ].map((s) => (
+              <Card key={s.n} className="p-5 md:p-6 border border-hairline bg-card/60 backdrop-blur-sm">
+                <span className="text-[0.6rem] uppercase tracking-[0.22em] font-mono text-primary">Passo {s.n}</span>
+                <h3 className="font-display text-lg md:text-xl tracking-tight mt-2">{s.t}</h3>
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{s.d}</p>
+              </Card>
+            ))}
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
+            <Button size="lg" onClick={() => { trackCtaClick({ cta: 'como_criar_conta', section: 'como_funciona', plan: 'free', destination: '#cadastro' }); scrollToSection('cadastro'); }}>
+              Criar conta grátis
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+            <Button size="lg" variant="outline" onClick={() => { trackCtaClick({ cta: 'como_testar', section: 'como_funciona', destination: '#demo' }); scrollToSection('demo'); }}>
+              Testar sem cadastro
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Seção 2: MedStation AI - Plataforma Completa */}
-      <section id="plataforma" className="py-12 md:py-16 lg:py-20 px-4 md:px-6 relative overflow-hidden">
+      <section id="plataforma" className="py-12 md:py-16 lg:py-20 px-4 md:px-6 relative overflow-hidden scroll-mt-20">
+
         <div className="absolute inset-0 bg-muted/20 backdrop-blur-3xl"></div>
         
         <div className="container mx-auto max-w-6xl relative">
@@ -238,9 +371,9 @@ export default function Home() {
             <Badge variant="secondary" className="px-3 md:px-4 py-1.5 text-xs md:text-sm font-medium backdrop-blur-sm">
               Ecossistema Completo
             </Badge>
-            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-tight max-w-3xl mx-auto leading-[1.05] px-4 text-foreground">
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-tight max-w-3xl mx-auto leading-[1.05] px-4 text-foreground">
               Onze assistentes. <span className="italic text-primary">Um único fluxo.</span>
-            </h1>
+            </h2>
             <p className="text-sm md:text-base lg:text-lg text-muted-foreground max-w-xl mx-auto">
               11 assistentes especializados para acelerar sua rotina médica
             </p>
@@ -314,7 +447,7 @@ export default function Home() {
       </section>
 
       {/* Modo Consultório - novo produto */}
-      <section id="consultorio" className="py-12 md:py-20 px-4 md:px-6 relative overflow-hidden">
+      <section id="consultorio" className="py-12 md:py-20 px-4 md:px-6 relative overflow-hidden scroll-mt-20">
         <div className="container mx-auto max-w-5xl relative">
           <Card className="p-6 md:p-10 lg:p-14 border-2 border-primary/30 bg-gradient-to-br from-primary/8 via-card/80 to-card/60 backdrop-blur-sm relative overflow-hidden">
             <div className="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
@@ -338,8 +471,8 @@ export default function Home() {
                   <li className="flex gap-2"><span className="text-primary mt-1">→</span> Anamnese estruturada automaticamente, pronta para revisar e registrar</li>
                 </ul>
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                  <Button size="lg" onClick={() => navigate('/consultorio-landing')}>
-                    Conhecer o Modo Consultório
+                  <Button size="lg" onClick={() => { trackCtaClick({ cta: 'consultorio_ver_planos', section: 'consultorio', destination: '#planos' }); scrollToSection('planos'); }}>
+                    Ver planos do Modo Consultório
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                   <span className="text-xs text-muted-foreground self-center">A partir de R$ 29,90/mês</span>
@@ -363,7 +496,7 @@ export default function Home() {
       </section>
 
       {/* Planos */}
-      <section id="planos" className="py-12 md:py-20 lg:py-24 px-4 md:px-6 relative overflow-hidden">
+      <section id="planos" className="py-12 md:py-20 lg:py-24 px-4 md:px-6 relative overflow-hidden scroll-mt-20">
         <div className="absolute inset-0 bg-muted/30 backdrop-blur-3xl"></div>
         <div className="container mx-auto text-center max-w-7xl relative">
           <div className="mb-8 md:mb-10 lg:mb-12 space-y-3 md:space-y-4 px-4">
@@ -512,7 +645,7 @@ export default function Home() {
                   <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Reconhecimento de voz treinado para vocabulário médico</li>
                 </ul>
               </div>
-              <Button variant="outline" className="w-full h-11 mt-5" onClick={() => { trackCtaClick({ cta: 'plano_consultorio', section: 'pricing', plan: billingPeriod === 'yearly' ? 'consultorio_yearly' : 'consultorio_monthly', billing_period: billingPeriod, destination: '/consultorio-landing' }); navigate('/consultorio-landing'); }}>
+              <Button variant="outline" className="w-full h-11 mt-5" onClick={() => { trackCtaClick({ cta: 'plano_consultorio', section: 'pricing', plan: billingPeriod === 'yearly' ? 'consultorio_yearly' : 'consultorio_monthly', billing_period: billingPeriod, destination: '#consultorio' }); scrollToSection('consultorio'); }}>
                 Conhecer o Consultório
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -536,41 +669,21 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Final */}
-      <section id="cadastro" className="py-12 md:py-20 lg:py-24 px-4 md:px-6 relative overflow-hidden">
-        <div className="container mx-auto max-w-2xl text-center relative space-y-6 md:space-y-8">
-          <div className="space-y-3 md:space-y-4">
+      {/* Cadastro inline — o usuário cria a conta sem sair da página */}
+      <section id="cadastro" className="py-12 md:py-20 lg:py-24 px-4 md:px-6 relative overflow-hidden scroll-mt-20">
+        <div className="container mx-auto max-w-6xl relative space-y-6 md:space-y-8">
+          <div className="text-center space-y-3 md:space-y-4 max-w-2xl mx-auto">
             <h2 className="font-display text-3xl md:text-4xl lg:text-5xl tracking-tight text-foreground">
               Comece em <span className="italic text-primary">30 segundos</span>
             </h2>
             <p className="text-sm md:text-base lg:text-lg text-muted-foreground">
-              Sem cartão. Sem burocracia. Examinus grátis para experimentar (com restrições) — Pro libera os 10 ilimitados de verdade.
+              Preencha aqui mesmo. Sem cartão, sem burocracia, sem sair desta página.
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button 
-              size="lg"
-              className="shadow-medical hover:shadow-elevated transition-all hover:scale-105 h-11 md:h-12 text-sm md:text-base"
-              onClick={() => { trackCtaClick({ cta: 'final_criar_conta', section: 'cta_final', plan: 'free', destination: '/auth' }); navigate('/auth'); }}
-            >
-              Criar conta gratuita
-              <ArrowRight className="ml-2 h-3.5 md:h-4 w-3.5 md:w-4" />
-            </Button>
-            <Button 
-              size="lg"
-              variant="outline"
-              className="h-11 md:h-12 text-sm md:text-base"
-              onClick={() => { trackCtaClick({ cta: 'final_testar_demo', section: 'cta_final', destination: '#demo' }); scrollToSection('demo'); }}
-            >
-              Testar sem cadastro
-            </Button>
-          </div>
-          <p className="text-[10px] md:text-xs text-muted-foreground flex flex-wrap items-center justify-center gap-1.5 md:gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-            <span>Examinus grátis com restrições • Pro R$ 29,90/mês ou R$ 299,90/ano</span>
-          </p>
+          <InlineSignup />
         </div>
       </section>
+
 
       {/* FAQ */}
       <section id="faq" className="py-16 md:py-24 px-4 md:px-6 relative">
