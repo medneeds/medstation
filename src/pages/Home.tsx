@@ -18,6 +18,7 @@ import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { trackCtaClick } from "@/lib/analytics";
 import { SignupBenefitPrompt } from "@/components/demo/SignupBenefitPrompt";
 import { Seo } from "@/components/Seo";
+import { ConciergeFab } from "@/components/ConciergeFab";
 import { InlineSignup } from "@/components/InlineSignup";
 
 
@@ -203,13 +204,14 @@ export default function Home() {
             </span>
           </div>
           <h1 className="font-display text-4xl sm:text-5xl md:text-6xl tracking-tight leading-[1.05] text-foreground">
-            Você atende.{" "}
-            <span className="italic text-primary">A MedStation escreve.</span>
+            Recupere até 40 horas por mês.{" "}
+            <span className="italic text-primary">Sem digitar burocracia.</span>
           </h1>
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Cole um exame e receba o resumo pronto. Grave a consulta e receba a anamnese estruturada.
-            Tudo em segundos, direto no navegador.
+            Exame resumido, anamnese estruturada, prescrição e atestado prontos em segundos.
+            O trabalho repetitivo sai do seu ombro e volta o tempo de ser médico.
           </p>
+
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 pt-2 text-left">
             {[
@@ -458,13 +460,14 @@ export default function Home() {
                   <span className="text-[0.6rem] uppercase tracking-[0.2em] font-mono text-primary">Novo · Tempo real</span>
                 </div>
                 <h2 className="font-display text-3xl md:text-4xl lg:text-5xl tracking-tight leading-[1.05]">
-                  Modo Consultório.
+                  Você atende.
                   <br />
-                  <span className="italic text-primary">Em tempo real.</span>
+                  <span className="italic text-primary">A MedStation escreve.</span>
                 </h2>
                 <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
-                  Atenda como sempre. Nós transcrevemos a consulta ao vivo e devolvemos a anamnese estruturada no momento em que o paciente sai.
+                  Modo Consultório, em tempo real: atenda como sempre. Nós transcrevemos a consulta ao vivo e devolvemos a anamnese estruturada no momento em que o paciente sai.
                 </p>
+
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex gap-2"><span className="text-primary mt-1">→</span> Transcrição em tempo real, com revisão final do áudio</li>
                   <li className="flex gap-2"><span className="text-primary mt-1">→</span> Sem invenções: registra apenas o que foi dito</li>
@@ -734,6 +737,8 @@ export default function Home() {
           code={String(activeIndex + 1).padStart(2, "0")}
         />
       )}
+
+      <ConciergeFab />
     </div>
   );
 }
