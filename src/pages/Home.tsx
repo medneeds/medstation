@@ -412,7 +412,24 @@ export default function Home() {
             ))}
           </div>
 
+          {/* Fluxo completo do atendimento, em segundos */}
+          <div className="mt-12 md:mt-16">
+            <div className="text-center mb-6 space-y-2">
+              <Badge variant="secondary" className="text-xs md:text-sm whitespace-nowrap">Fluxo completo</Badge>
+              <h3 className="font-display text-2xl md:text-3xl tracking-tight text-foreground">
+                Um caso real, <span className="italic text-primary">do exame à alta</span>
+              </h3>
+              <p className="text-sm text-muted-foreground max-w-xl mx-auto">
+                Rode a demonstração e acompanhe o mesmo paciente passando por exame resumido, anamnese, prescrição, parecer e orientações de alta — tudo em segundos.
+              </p>
+            </div>
+            <ClinicalFlowDemo
+              onPrimary={() => { trackCtaClick({ cta: 'fluxo_testar', section: 'como_funciona', destination: '#demo' }); scrollToSection('demo'); }}
+            />
+          </div>
+
           {/* Veja o que cada assistente faz com a sua informação */}
+
           <div className="mt-12 md:mt-16">
             <div className="text-center mb-6 space-y-2">
               <Badge variant="secondary" className="text-xs md:text-sm">Ver na prática</Badge>
