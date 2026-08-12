@@ -214,7 +214,7 @@ export default function Home() {
           </Badge>
           <h1 className="font-display text-4xl sm:text-5xl md:text-6xl tracking-tight leading-[1.05] text-foreground">
             Recupere até 40 horas por mês.{" "}
-            <span className="italic text-primary">Sem digitar burocracia.</span>
+            <span className="italic text-primary">Ferramentas que aliviam na burocracia e devolvem seu tempo com o paciente.</span>
           </h1>
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Exame resumido, anamnese estruturada, prescrição direcionada ao caso, parecer clínico
