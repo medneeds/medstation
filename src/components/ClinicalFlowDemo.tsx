@@ -181,15 +181,15 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-3.5">
       {/* Caso base */}
-      <Card className="p-4 md:p-5 border border-hairline bg-card/60 backdrop-blur-sm">
-        <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-5">
+      <Card className="p-3 md:p-4 border border-hairline bg-card/60 backdrop-blur-sm">
+        <div className="flex flex-col md:flex-row md:items-center gap-2.5 md:gap-4">
           <div className="flex-1 space-y-1.5">
             <span className="text-[0.6rem] uppercase tracking-[0.22em] font-mono text-primary">
               Caso do plantão
             </span>
-            <p className="text-sm md:text-base text-foreground/90 leading-relaxed">{CASE_SUMMARY}</p>
+            <p className="text-[0.8rem] md:text-sm text-foreground/90 leading-relaxed">{CASE_SUMMARY}</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <Button onClick={play} disabled={playing} className="whitespace-nowrap">
@@ -219,7 +219,7 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
                 onClick={() => setActive(i)}
                 aria-pressed={isActive}
                 className={cn(
-                  "snap-start flex-1 min-w-[9.5rem] text-left rounded-xl border px-3 py-2.5 transition-all duration-300",
+                  "snap-start flex-1 min-w-[8.25rem] text-left rounded-xl border px-2.5 py-2 transition-all duration-300",
                   isActive
                     ? "border-primary/50 bg-primary/10 shadow-[0_10px_28px_-20px_hsl(var(--primary)/0.9)]"
                     : "border-border/60 bg-card/50 hover:border-primary/35 hover:-translate-y-0.5",
@@ -250,16 +250,16 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
       </div>
 
       {/* Painel do passo */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card className="md:col-span-2 p-4 md:p-5 border border-hairline bg-muted/30">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <Card className="md:col-span-2 p-3.5 md:p-4 border border-hairline bg-muted/30">
           <Badge variant="secondary" className="text-[0.65rem]">O que você entrega</Badge>
-          <h4 className="font-display text-base md:text-lg tracking-tight mt-3">{stage.assistant}</h4>
-          <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{stage.input}</p>
+          <h4 className="font-display text-sm md:text-base tracking-tight mt-2">{stage.assistant}</h4>
+          <p className="text-[0.8rem] text-muted-foreground mt-1.5 leading-relaxed">{stage.input}</p>
         </Card>
 
         <Card
           className={cn(
-            "md:col-span-3 p-4 md:p-5 border transition-all duration-500",
+            "md:col-span-3 p-3.5 md:p-4 border transition-all duration-500",
             revealed
               ? "border-primary/40 bg-card shadow-[0_18px_40px_-24px_hsl(var(--primary)/0.55)]"
               : "border-dashed border-border/60 bg-card/40",
@@ -273,12 +273,12 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
               </Button>
             )}
           </div>
-          <h4 className="font-display text-base md:text-lg tracking-tight mb-3">{stage.title}</h4>
+          <h4 className="font-display text-sm md:text-base tracking-tight mb-2">{stage.title}</h4>
           {revealed ? (
             <div className="space-y-3 animate-fade-in">
-              <div className="rounded-xl border border-border/50 bg-background/60 p-3 space-y-1">
+              <div className="rounded-xl border border-border/50 bg-background/60 p-2.5 space-y-0.5">
                 {stage.output.map((line, j) => (
-                  <p key={j} className="text-xs md:text-[0.8rem] font-mono leading-relaxed text-foreground/90">
+                  <p key={j} className="text-[0.7rem] md:text-xs font-mono leading-relaxed text-foreground/90">
                     {line || "\u00A0"}
                   </p>
                 ))}
@@ -292,7 +292,7 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
               </div>
             </div>
           ) : (
-            <div className="rounded-xl border border-dashed border-border/50 bg-background/40 p-6 text-center space-y-2">
+            <div className="rounded-xl border border-dashed border-border/50 bg-background/40 p-5 text-center space-y-2">
               <p className="text-sm text-muted-foreground">
                 {playing ? "Organizando as informações…" : "Clique em “Rodar o fluxo completo” para ver o resultado."}
               </p>
