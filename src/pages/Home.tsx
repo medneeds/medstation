@@ -88,6 +88,17 @@ export default function Home() {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const openLiveDemo = () => {
+    trackCtaClick({ cta: 'badge_teste_agora', section: 'demo', destination: '#demo-live' });
+    const card = document.getElementById('demo-live');
+    card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    window.setTimeout(() => {
+      const field = card?.querySelector<HTMLTextAreaElement | HTMLInputElement>('textarea, input[type="text"]');
+      field?.focus({ preventScroll: true });
+    }, 650);
+  };
+
+
   const activeAgent = activeAssistant ? agents.find(a => a.name === activeAssistant) : null;
   const activeIndex = activeAgent ? agents.findIndex(a => a.name === activeAgent.name) : -1;
 
@@ -276,9 +287,19 @@ export default function Home() {
 
               {/* Cabeçalho da demo — deixa claro: dá pra testar AGORA */}
               <div className="space-y-3 md:space-y-4">
-                <Badge variant="secondary" className="text-xs md:text-sm whitespace-nowrap">
-                  Teste agora · sem cadastro
-                </Badge>
+                <button
+                  type="button"
+                  onClick={openLiveDemo}
+                  aria-label="Abrir a demonstração ao vivo do Examinus nesta página"
+                  className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <Badge
+                    variant="secondary"
+                    className="text-xs md:text-sm whitespace-nowrap cursor-pointer transition-transform hover:scale-[1.03]"
+                  >
+                    Teste agora · sem cadastro
+                  </Badge>
+                </button>
                 <h2 className="font-display text-2xl md:text-4xl tracking-tight text-foreground">
                   É pra usar <span className="italic text-primary">agora</span>. Apareceu a dúvida, cola aqui.
                 </h2>
@@ -286,10 +307,18 @@ export default function Home() {
                   Sem login, sem cartão, sem install. Cole o exame embaixo e veja o resumo sair pronto
                   em segundos. É o Examinus — e ele é grátis para sempre.
                 </p>
+                <button
+                  type="button"
+                  onClick={() => { trackCtaClick({ cta: 'demo_ver_na_pratica', section: 'demo', destination: '#como-funciona' }); scrollToSection('como-funciona'); }}
+                  className="text-xs md:text-sm text-primary underline underline-offset-4 hover:opacity-80"
+                >
+                  Ou veja "Ver na prática" — o que cada assistente faz ↓
+                </button>
               </div>
 
+
               {/* Demo Card — pulso sutil para chamar interação */}
-              <div className="relative group">
+              <div id="demo-live" className="relative group scroll-mt-24">
               {/* Glow pulsante */}
               <div className="absolute -inset-1 bg-primary/20 rounded-3xl blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-700 animate-[pulse_4s_ease-in-out_infinite]"></div>
               {/* Hairline ring que respira */}
