@@ -28,7 +28,6 @@ export function ConciergeFab() {
         aria-label="Concierge MedStation"
         aria-hidden={!open}
       >
-        <div className="rounded-2xl border border-border/70 bg-card shadow-elevated overflow-hidden">
         <div className="relative">
           <Button
             variant="ghost"
@@ -42,7 +41,6 @@ export function ConciergeFab() {
           <AssistentesAIChat className="h-[60vh] max-h-[520px] sm:h-[480px]" />
         </div>
 
-        </div>
       </div>
 
       {/* Botão flutuante */}
