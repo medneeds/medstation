@@ -576,6 +576,7 @@ export default function Home() {
                 <h3 className="font-display text-xl md:text-2xl tracking-tight text-foreground">O que você ganha de uma IA feita para a medicina</h3>
                 <ul className="space-y-2.5 text-sm">
                   <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span>Saída estruturada: resumo, anamnese, prescrição e parecer no formato do prontuário</span></li>
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span>Respostas construídas com foco em medicina baseada em evidências — Prescriptus, Gasometrus, Protocolus e demais assistentes citam a base que sustenta cada conduta</span></li>
                   <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span>CID-10, scores, gasometria e protocolos embutidos no raciocínio</span></li>
                   <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span>Prescrição direcionada ao caso — posologia, via e alerta de interação</span></li>
                   <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span>Orientações de alta em linguagem que o paciente entende</span></li>
@@ -588,8 +589,10 @@ export default function Home() {
           <div className="text-center mt-7 md:mt-9 max-w-2xl mx-auto">
             <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
               A MedStation não é um chatbot com um prompt médico colado por cima. Cada um dos 11 assistentes foi
-              desenhado do zero para uma tarefa clínica real — do exame de plantão à alta do ambulatório. É o
-              trabalho repetitivo saindo da sua manga para uma ferramenta que entende o que você está vendo.
+              desenhado do zero para uma tarefa clínica real — do exame de plantão à alta do ambulatório. Prescrições,
+              pareceres e condutas são gerados com foco em medicina baseada em evidências, citando a fundamentação
+              por trás de cada decisão. É o trabalho repetitivo saindo da sua manga para uma ferramenta que entende o
+              que você está vendo.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
               <Button size="lg" onClick={() => { trackCtaClick({ cta: 'proposito_criar', section: 'proposito', destination: '#cadastro' }); scrollToSection('cadastro'); }}>
