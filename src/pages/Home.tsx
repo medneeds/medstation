@@ -198,12 +198,9 @@ export default function Home() {
       {/* Hero — promessa em uma frase + 3 caminhos, todos na mesma página */}
       <section id="inicio" className="pt-10 md:pt-16 px-4 md:px-6 relative">
         <div className="container mx-auto max-w-4xl text-center space-y-5 md:space-y-7">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/25">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            <span className="text-primary text-[11px] font-semibold uppercase tracking-wider">
-              Assistentes de IA para médicos
-            </span>
-          </div>
+          <Badge variant="secondary" className="text-xs md:text-sm">
+            Assistentes de IA para médicos
+          </Badge>
           <h1 className="font-display text-4xl sm:text-5xl md:text-6xl tracking-tight leading-[1.05] text-foreground">
             Recupere até 40 horas por mês.{" "}
             <span className="italic text-primary">Sem digitar burocracia.</span>
