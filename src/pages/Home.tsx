@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Sparkles, Activity, Brain, Calculator, Pill, FileCode, TestTube2, Wind, FileCheck, BookOpen, Compass, Stethoscope, Sigma, MessagesSquare, ShieldAlert } from "lucide-react";
+import { ArrowRight, Sparkles, Activity, Brain, Calculator, Pill, FileCode, TestTube2, Wind, FileCheck, BookOpen, Compass, Stethoscope, Sigma, MessagesSquare, ShieldAlert, Quote, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PublicExaminusChat from "@/components/PublicExaminusChat";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -823,6 +823,74 @@ export default function Home() {
       <section className="py-10 md:py-14 px-4 md:px-6 relative">
         <div className="container mx-auto max-w-6xl relative">
           <TimeSavingsComparison />
+        </div>
+      </section>
+
+      {/* Depoimentos — prova social real de médicos */}
+      <section id="depoimentos" className="py-12 md:py-16 px-4 md:px-6 relative scroll-mt-20">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent pointer-events-none" />
+        <div className="container mx-auto max-w-6xl relative">
+          <div className="text-center mb-10 md:mb-12 space-y-3 md:space-y-4">
+            <Badge variant="secondary" className="px-3 md:px-4 py-1.5 text-xs md:text-sm font-medium backdrop-blur-sm">
+              Depoimentos
+            </Badge>
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-tight max-w-3xl mx-auto leading-[1.05] px-4 text-foreground">
+              Médicos que já recuperaram <span className="italic text-primary">seu tempo</span>
+            </h2>
+            <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
+              O que mudou na rotina de quem usa a MedStation todos os dias
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 px-4">
+            {/* Dr. Leandro Albuquerque */}
+            <Card className="relative p-6 md:p-8 border-border/50 bg-card/70 backdrop-blur-sm hover:border-primary/40 transition-colors duration-300 overflow-hidden">
+              <Quote className="absolute -top-3 -left-3 w-16 h-16 text-primary/8 rotate-180" strokeWidth={1} />
+              <div className="relative space-y-4">
+                <div className="flex items-center gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-primary text-primary" strokeWidth={0} />
+                  ))}
+                </div>
+                <p className="text-sm md:text-base leading-relaxed text-foreground/90">
+                  Utilizar a MedStation possibilitou otimizar meu processo de trabalho tanto do ponto de vista técnico como no auxílio na tomada de decisões nas condutas. Consigo executar minhas atividades de forma mais ágil e acurada, melhorando consequentemente a qualidade da assistência prestada ao paciente. Com a otimização do tempo é possível uma avaliação mais minuciosa e criteriosa, e isso interfere diretamente na melhora da qualidade da assistência.
+                </p>
+                <div className="flex items-center gap-3 pt-2">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center font-display text-primary text-sm">
+                    LA
+                  </div>
+                  <div>
+                    <p className="font-display text-sm font-semibold text-foreground">Dr. Leandro Albuquerque</p>
+                    <p className="text-xs text-muted-foreground">Médico</p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Dra. Luciara Duarte */}
+            <Card className="relative p-6 md:p-8 border-border/50 bg-card/70 backdrop-blur-sm hover:border-primary/40 transition-colors duration-300 overflow-hidden">
+              <Quote className="absolute -top-3 -left-3 w-16 h-16 text-primary/8 rotate-180" strokeWidth={1} />
+              <div className="relative space-y-4">
+                <div className="flex items-center gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-primary text-primary" strokeWidth={0} />
+                  ))}
+                </div>
+                <p className="text-sm md:text-base leading-relaxed text-foreground/90">
+                  A minha experiência com a plataforma foi a melhor possível, porque otimiza muito o meu tempo. Consigo fazer as minhas atividades com mais qualidade, além de ganhar tempo. Muito bom mesmo. Excelente!
+                </p>
+                <div className="flex items-center gap-3 pt-2">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center font-display text-primary text-sm">
+                    LD
+                  </div>
+                  <div>
+                    <p className="font-display text-sm font-semibold text-foreground">Dra. Luciara Duarte</p>
+                    <p className="text-xs text-muted-foreground">Médica</p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
         </div>
       </section>
 
