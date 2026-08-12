@@ -29,24 +29,19 @@ export function ConciergeFab() {
         aria-hidden={!open}
       >
         <div className="rounded-2xl border border-border/70 bg-card shadow-elevated overflow-hidden">
-          <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border/60 bg-primary/5">
-            <div className="min-w-0">
-              <p className="font-display text-sm font-semibold leading-tight">Concierge MedStation</p>
-              <p className="text-[11px] text-muted-foreground leading-tight">
-                Tire qualquer dúvida sobre a plataforma
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0"
-              onClick={() => setOpen(false)}
-              aria-label="Fechar concierge"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          <AssistentesAIChat className="h-[60vh] max-h-[520px] sm:h-[480px] border-0 rounded-none shadow-none" />
+        <div className="relative">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-3 right-3 z-10 h-8 w-8 rounded-full bg-background/70 backdrop-blur-sm"
+            onClick={() => setOpen(false)}
+            aria-label="Fechar concierge"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+          <AssistentesAIChat className="h-[60vh] max-h-[520px] sm:h-[480px]" />
+        </div>
+
         </div>
       </div>
 
