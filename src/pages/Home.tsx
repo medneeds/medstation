@@ -10,6 +10,7 @@ import { InlineCheckout } from "@/components/QuickCheckout";
 import { Logo } from "@/components/Logo";
 import { AssistantShowcaseDialog } from "@/components/AssistantShowcaseDialog";
 import { AssistantPracticeShowcase } from "@/components/AssistantPracticeShowcase";
+import { ClinicalFlowDemo } from "@/components/ClinicalFlowDemo";
 import { assistantSlides } from "@/lib/assistantSlides";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { TimeSavingsComparison } from "@/components/TimeSavingsComparison";
