@@ -532,6 +532,78 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Seção: Saia das IAs genéricas */}
+      <section id="proposito" className="py-12 md:py-16 lg:py-20 px-4 md:px-6 relative scroll-mt-20">
+        <div className="container mx-auto max-w-5xl relative">
+          <div className="text-center mb-8 md:mb-12 space-y-3">
+            <Badge variant="secondary" className="text-xs md:text-sm">Por que não uma IA genérica</Badge>
+            <h2 className="font-display text-3xl md:text-4xl tracking-tight text-foreground max-w-2xl mx-auto">
+              Saia das IAs genéricas. <span className="italic text-primary">Use uma feita 100% para a prática clínica.</span>
+            </h2>
+            <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
+              Um chatbot qualquer escreve. A MedStation pensa dentro do raciocínio médico — e devolve pronto para usar.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 items-stretch">
+            {/* IA genérica */}
+            <Card className="p-5 md:p-7 border border-hairline bg-muted/30 backdrop-blur-sm relative overflow-hidden">
+              <div className="absolute -left-16 -top-16 w-40 h-40 rounded-full bg-muted-foreground/8 blur-3xl pointer-events-none" />
+              <div className="relative space-y-4 opacity-90">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-muted-foreground/10 border border-muted-foreground/25 rounded-full">
+                  <Brain className="w-3 h-3 text-muted-foreground" />
+                  <span className="text-[0.6rem] uppercase tracking-[0.2em] font-mono text-muted-foreground">IA genérica</span>
+                </div>
+                <h3 className="font-display text-xl md:text-2xl tracking-tight text-muted-foreground">O que você ganha de um chatbot qualquer</h3>
+                <ul className="space-y-2.5 text-sm text-muted-foreground">
+                  <li className="flex gap-2"><span className="mt-1">·</span> <span>Resposta solta, sem formato clínico — você reescreve tudo</span></li>
+                  <li className="flex gap-2"><span className="mt-1">·</span> <span>Não conhece CID-10, nem protocolo, nem prescrição do caso</span></li>
+                  <li className="flex gap-2"><span className="mt-1">·</span> <span>Halla sobre o que não sabe e inventa dosagem com cara de verdade</span></li>
+                  <li className="flex gap-2"><span className="mt-1">·</span> <span>Gasometria virou parágrafo; exame virou texto corrido</span></li>
+                  <li className="flex gap-2"><span className="mt-1">·</span> <span>Você vira revisor de IA. A burocracia continua sua.</span></li>
+                </ul>
+              </div>
+            </Card>
+
+            {/* MedStation AI */}
+            <Card className="p-5 md:p-7 border-2 border-primary/30 bg-gradient-to-br from-primary/8 via-card/80 to-card/60 backdrop-blur-sm relative overflow-hidden">
+              <div className="absolute -right-16 -top-16 w-40 h-40 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
+              <div className="relative space-y-4">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary/15 border border-primary/40 rounded-full">
+                  <Sparkles className="w-3 h-3 text-primary" />
+                  <span className="text-[0.6rem] uppercase tracking-[0.2em] font-mono text-primary">MedStation AI · 100% clínica</span>
+                </div>
+                <h3 className="font-display text-xl md:text-2xl tracking-tight text-foreground">O que você ganha de uma IA feita para a medicina</h3>
+                <ul className="space-y-2.5 text-sm">
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span>Saída estruturada: resumo, anamnese, prescrição e parecer no formato do prontuário</span></li>
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span>CID-10, scores, gasometria e protocolos embutidos no raciocínio</span></li>
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span>Prescrição direcionada ao caso — posologia, via e alerta de interação</span></li>
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span>Orientações de alta em linguagem que o paciente entende</span></li>
+                  <li className="flex gap-2"><span className="text-primary mt-1">→</span> <span>Você revisa e copia. A burocracia sai do seu ombro.</span></li>
+                </ul>
+              </div>
+            </Card>
+          </div>
+
+          <div className="text-center mt-7 md:mt-9 max-w-2xl mx-auto">
+            <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+              A MedStation não é um chatbot com um prompt médico colado por cima. Cada um dos 11 assistentes foi
+              desenhado do zero para uma tarefa clínica real — do exame de plantão à alta do ambulatório. É o
+              trabalho repetitivo saindo da sua manga para uma ferramenta que entende o que você está vendo.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
+              <Button size="lg" onClick={() => { trackCtaClick({ cta: 'proposito_criar', section: 'proposito', destination: '#cadastro' }); scrollToSection('cadastro'); }}>
+                Criar conta grátis
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+              <Button size="lg" variant="outline" onClick={() => { trackCtaClick({ cta: 'proposito_testar', section: 'proposito', destination: '#demo' }); scrollToSection('demo'); }}>
+                Testar sem cadastro
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Seção 2: MedStation AI - Plataforma Completa */}
       <section id="plataforma" className="py-12 md:py-16 lg:py-20 px-4 md:px-6 relative overflow-hidden scroll-mt-20">
 
