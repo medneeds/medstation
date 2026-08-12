@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { InlineCheckout } from "@/components/QuickCheckout";
 import { Logo } from "@/components/Logo";
 import { AssistantShowcaseDialog } from "@/components/AssistantShowcaseDialog";
+import { AssistantPracticeShowcase } from "@/components/AssistantPracticeShowcase";
 import { assistantSlides } from "@/lib/assistantSlides";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { TimeSavingsComparison } from "@/components/TimeSavingsComparison";
@@ -371,6 +372,23 @@ export default function Home() {
               </Card>
             ))}
           </div>
+
+          {/* Veja o que cada assistente faz com a sua informação */}
+          <div className="mt-12 md:mt-16">
+            <div className="text-center mb-6 space-y-2">
+              <Badge variant="secondary" className="text-xs md:text-sm">Ver na prática</Badge>
+              <h3 className="font-display text-2xl md:text-3xl tracking-tight text-foreground">
+                O que cada assistente faz <span className="italic text-primary">com a sua informação</span>
+              </h3>
+              <p className="text-sm text-muted-foreground max-w-xl mx-auto">
+                Escolha um assistente abaixo e veja, passo a passo, o que entra, como ele organiza e o que sai pronto para o prontuário.
+              </p>
+            </div>
+            <AssistantPracticeShowcase
+              onPrimary={() => { trackCtaClick({ cta: 'pratica_testar', section: 'como_funciona', destination: '#demo' }); scrollToSection('demo'); }}
+            />
+          </div>
+
           <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
             <Button size="lg" onClick={() => { trackCtaClick({ cta: 'como_criar_conta', section: 'como_funciona', plan: 'free', destination: '#cadastro' }); scrollToSection('cadastro'); }}>
               Criar conta grátis
