@@ -607,6 +607,63 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Seção: Medicina Baseada em Evidências */}
+      <section id="evidencias" className="py-12 md:py-16 px-4 md:px-6 relative overflow-hidden scroll-mt-20">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
+        <div className="container mx-auto max-w-6xl relative">
+          <div className="text-center mb-8 md:mb-12 space-y-3 md:space-y-4">
+            <Badge variant="secondary" className="px-3 md:px-4 py-1.5 text-xs md:text-sm font-medium">
+              <BookOpen className="w-3.5 h-3.5 mr-1.5" />
+              Medicina Baseada em Evidências
+            </Badge>
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl tracking-tight max-w-2xl mx-auto leading-[1.1] text-foreground">
+              Cada resposta tem uma <span className="text-primary">fonte por trás.</span>
+            </h2>
+            <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">
+              Prescriptus, Gasometrus, Protocolus e os demais assistentes clínicos não inventam condutas.
+              Cada recomendação é construída sobre diretrizes e fontes reconhecidas pela prática médica.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+            {[
+              { name: "Diretrizes da SBC", desc: "Sociedade Brasileira de Cardiologia", scope: "Protocolus · Gasometrus" },
+              { name: "Guidelines AHA/ACC", desc: "American Heart Association", scope: "Protocolus · Gasometrus" },
+              { name: "Guidelines ESC", desc: "European Society of Cardiology", scope: "Protocolus · Gasometrus" },
+              { name: "OMS / WHO", desc: "Organização Mundial da Saúde", scope: "Protocolus · Orientus" },
+              { name: "UpToDate / BMJ", desc: "Bases de evidência clínica", scope: "Prescriptus · Clínicus" },
+              { name: "Bulas ANVISA", desc: "Agência Nacional de Vigilância Sanitária", scope: "Prescriptus" },
+              { name: "CID-10 / CID-11", desc: "Classificação Internacional de Doenças", scope: "Examinus · Clínicus" },
+              { name: "Sociedades de Especialidade", desc: "SBP, SBI, SBR, SBPneumo e demais", scope: "Todos os assistentes" },
+            ].map((src, i) => (
+              <Card
+                key={src.name}
+                className="p-4 md:p-5 border border-hairline bg-card/60 backdrop-blur-sm hover:border-primary/30 hover:bg-card transition-all duration-300"
+                style={{ animationDelay: `${i * 40}ms` }}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-7 h-7 rounded border border-hairline bg-primary/8 flex items-center justify-center shrink-0">
+                    <BookOpen className="w-3.5 h-3.5 text-primary" strokeWidth={1.5} />
+                  </div>
+                  <h4 className="font-display text-xs md:text-sm tracking-tight text-foreground leading-tight">{src.name}</h4>
+                </div>
+                <p className="text-[11px] md:text-xs text-muted-foreground leading-relaxed">{src.desc}</p>
+                <span className="inline-block mt-2 text-[0.55rem] uppercase tracking-[0.15em] font-mono text-primary/70">
+                  {src.scope}
+                </span>
+              </Card>
+            ))}
+          </div>
+
+          <div className="text-center mt-8 md:mt-10 max-w-2xl mx-auto">
+            <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
+              As fontes guiam o raciocínio do assistente, mas a decisão final é sempre sua. A IA estrutura e sugere —
+              você revisa, ajusta e valida antes de levar ao prontuário.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Seção 2: MedStation AI - Plataforma Completa */}
       <section id="plataforma" className="py-12 md:py-16 lg:py-20 px-4 md:px-6 relative overflow-hidden scroll-mt-20">
 
