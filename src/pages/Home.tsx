@@ -558,7 +558,7 @@ export default function Home() {
                 <ul className="space-y-2.5 text-sm text-muted-foreground">
                   <li className="flex gap-2"><span className="mt-1">·</span> <span>Resposta solta, sem formato clínico — você reescreve tudo</span></li>
                   <li className="flex gap-2"><span className="mt-1">·</span> <span>Não conhece CID-10, nem protocolo, nem prescrição do caso</span></li>
-                  <li className="flex gap-2"><span className="mt-1">·</span> <span>Halla sobre o que não sabe e inventa dosagem com cara de verdade</span></li>
+                  <li className="flex gap-2"><span className="mt-1">·</span> <span>Alucina: responde o que não sabe e inventa dosagens que parecem certas — sem nenhuma garantia clínica</span></li>
                   <li className="flex gap-2"><span className="mt-1">·</span> <span>Gasometria virou parágrafo; exame virou texto corrido</span></li>
                   <li className="flex gap-2"><span className="mt-1">·</span> <span>Você vira revisor de IA. A burocracia continua sua.</span></li>
                 </ul>
