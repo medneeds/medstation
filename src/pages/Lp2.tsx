@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { QuickCheckout } from "@/components/QuickCheckout";
 import { Lp2SignupDialog } from "@/components/Lp2SignupDialog";
+import { ConciergeFab } from "@/components/ConciergeFab";
 import { ClinicalFlowDemo } from "@/components/ClinicalFlowDemo";
 import { trackCtaClick } from "@/lib/analytics";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
@@ -323,6 +324,7 @@ export default function Lp2() {
       </footer>
 
       <Lp2SignupDialog open={signupOpen} onOpenChange={setSignupOpen} />
+      <ConciergeFab />
     </div>
   );
 }
