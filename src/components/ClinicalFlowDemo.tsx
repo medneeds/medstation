@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   TestTube2, Stethoscope, Pill, MessagesSquare, Compass,
-  Play, RotateCcw, Check, Clock, Copy, ArrowRight,
+  Play, RotateCcw, Check, Clock, Copy, ArrowRight, ShieldAlert,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
