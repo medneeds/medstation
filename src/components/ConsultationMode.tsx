@@ -1,8 +1,22 @@
 import { useState, useCallback, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { motion } from "framer-motion";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
   Mic,
@@ -11,7 +25,6 @@ import {
   CheckCircle2,
   Clock,
   Copy,
-  Download,
   Save,
   MessageSquare,
   FileText,
@@ -19,6 +32,12 @@ import {
   Stethoscope,
   User,
   Users,
+  ChevronUp,
+  ChevronDown,
+  Sparkles,
+  Send,
+  Columns2,
+  Maximize2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useConsultation } from "@/hooks/useConsultation";
@@ -29,6 +48,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { copyText } from "@/lib/clipboard";
+import { buildAnamnesisText, countFilledSections } from "@/lib/anamnesis";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ConsultationModeProps {
@@ -36,13 +57,18 @@ interface ConsultationModeProps {
   onExit: () => void;
 }
 
+type FocusPane = "split" | "transcription" | "structure";
+
 export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [showFinishDialog, setShowFinishDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("transcription");
   const [caseName, setCaseName] = useState<string>("");
   const [isSavingCase, setIsSavingCase] = useState(false);
   const [savedCaseId, setSavedCaseId] = useState<string | null>(null);
+  const [barExpanded, setBarExpanded] = useState(true);
+  const [focusPane, setFocusPane] = useState<FocusPane>("split");
   const [unifiedMode, setUnifiedMode] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem('consultorio-unified-mode') === '1';
@@ -52,6 +78,9 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
       localStorage.setItem('consultorio-unified-mode', unifiedMode ? '1' : '0');
     }
   }, [unifiedMode]);
+
+
+
 
   const {
     segments,
@@ -67,6 +96,11 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     currentSpeaker,
     audioLevel,
     error,
+    changedFields,
+    lastStructuredAt,
+    smartSummary,
+    isSummarizing,
+    generateSummary,
     startRecording,
     stopRecording,
     pauseRecording,
@@ -80,9 +114,16 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     setCurrentSpeaker,
   } = useConsultation({ caseId });
 
+
   useEffect(() => {
     if (error) toast.error(error);
   }, [error]);
+
+  // Ao engrenar a conversa, a área de gravação recolhe sozinha e libera espaço
+  useEffect(() => {
+    if (segments.length === 2) setBarExpanded(false);
+  }, [segments.length]);
+
 
   // Keyboard shortcuts: 1=Médico, 2=Paciente, 3=Acompanhante (durante gravação)
   useEffect(() => {
@@ -123,50 +164,53 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     onExit();
   }, [isRecording, stopRecording, stopTimer, reset, onExit]);
 
-  const handleCopyToClipboard = useCallback(() => {
-    const text = Object.entries(structure)
-      .filter(([_, value]) => value?.trim())
-      .map(([key, value]) => {
-        const labels: Record<string, string> = {
-          chiefComplaint: 'QUEIXA PRINCIPAL',
-          historyPresentIllness: 'HISTÓRIA DA DOENÇA ATUAL',
-          pastMedicalHistory: 'HISTÓRIA PATOLÓGICA PREGRESSA',
-          familyHistory: 'HISTÓRIA FAMILIAR',
-          medications: 'MEDICAMENTOS EM USO',
-          allergies: 'ALERGIAS',
-          socialHistory: 'HÁBITOS DE VIDA',
-          reviewOfSystems: 'REVISÃO DE SISTEMAS',
-          physicalExam: 'EXAME FÍSICO',
-          diagnosticHypotheses: 'HIPÓTESES DIAGNÓSTICAS',
-          plan: 'CONDUTA',
-        };
-        return `${labels[key] || key}:\n${value}`;
+  const buildStructuredText = useCallback(() => buildAnamnesisText(structure), [structure]);
+
+  const handleCopyToClipboard = useCallback(async () => {
+    const text = buildStructuredText();
+    if (!text) {
+      toast.error('Gere a estruturação antes de copiar.');
+      return;
+    }
+    const ok = await copyText(text);
+    toast[ok ? 'success' : 'error'](
+      ok ? 'Copiado 👏 Cole direto no prontuário.' : 'Não foi possível copiar. Selecione o texto e use Ctrl+C.'
+    );
+  }, [buildStructuredText]);
+
+  const handleCopyTranscript = useCallback(async () => {
+    const text = segments
+      .map((s) => {
+        const t = s.text.trim();
+        if (!t) return '';
+        if (unifiedMode) return t;
+        const who = s.speaker === 'doctor' ? 'Médico' : s.speaker === 'patient' ? 'Paciente' : 'Acompanhante';
+        return `${who}: ${t}`;
       })
+      .filter(Boolean)
       .join('\n\n');
+    if (!text) {
+      toast.error('Ainda não há transcrição.');
+      return;
+    }
+    const ok = await copyText(text);
+    toast[ok ? 'success' : 'error'](ok ? 'Transcrição copiada 👏' : 'Não foi possível copiar.');
+  }, [segments, unifiedMode]);
 
-    navigator.clipboard.writeText(text);
-    toast.success('Copiado 👏 Cole direto no prontuário.');
-  }, [structure]);
+  const handleSendToAssistant = useCallback(
+    (route: string) => {
+      const text = buildStructuredText();
+      if (!text) {
+        toast.error('Gere a estruturação antes de enviar.');
+        return;
+      }
+      sessionStorage.setItem('agent-prefill', text);
+      toast.success('Consulta enviada para o assistente 👏');
+      navigate(route);
+    },
+    [buildStructuredText, navigate]
+  );
 
-  const buildStructuredText = useCallback(() => {
-    const labels: Record<string, string> = {
-      chiefComplaint: 'QUEIXA PRINCIPAL',
-      historyPresentIllness: 'HISTÓRIA DA DOENÇA ATUAL',
-      pastMedicalHistory: 'HISTÓRIA PATOLÓGICA PREGRESSA',
-      familyHistory: 'HISTÓRIA FAMILIAR',
-      medications: 'MEDICAMENTOS EM USO',
-      allergies: 'ALERGIAS',
-      socialHistory: 'HÁBITOS DE VIDA',
-      reviewOfSystems: 'REVISÃO DE SISTEMAS',
-      physicalExam: 'EXAME FÍSICO',
-      diagnosticHypotheses: 'HIPÓTESES DIAGNÓSTICAS',
-      plan: 'CONDUTA',
-    };
-    return Object.entries(structure)
-      .filter(([_, v]) => v?.trim())
-      .map(([k, v]) => `${labels[k] || k}:\n${v}`)
-      .join('\n\n');
-  }, [structure]);
 
   const handleSaveCase = useCallback(async () => {
     const name = caseName.trim();
@@ -304,8 +348,23 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           </>
         )}
 
-        <div className="relative flex flex-col items-center gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3">
-          {(isRecording || !segments.length) && (
+        {/* Alternador de altura da barra de áudio */}
+        <button
+          type="button"
+          onClick={() => setBarExpanded((v) => !v)}
+          aria-expanded={barExpanded}
+          aria-label={barExpanded ? 'Recolher área de gravação' : 'Expandir área de gravação'}
+          className="absolute right-2 top-1.5 z-10 inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] md:text-xs text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+        >
+          {barExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          <span className="hidden sm:inline">{barExpanded ? 'Recolher' : 'Expandir'}</span>
+        </button>
+
+        <div className={cn(
+          "relative flex flex-col items-center px-3 md:px-4",
+          barExpanded ? "gap-2 md:gap-3 py-2.5 md:py-3" : "gap-1.5 py-1.5"
+        )}>
+          {barExpanded && (isRecording || !segments.length) && (
             <AudioVisualizer
               level={audioLevel}
               isActive={isRecording && !isPaused}
@@ -313,6 +372,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               className="w-full max-w-[260px] md:max-w-xs"
             />
           )}
+
 
           {/* Speaker switcher — quem está falando agora (afeta os próximos segmentos) */}
           {isRecording && !isPaused && !unifiedMode && (
@@ -349,21 +409,27 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                   );
                 })}
               </div>
-              <p className="text-[10px] text-muted-foreground/70 hidden md:block">Toque ou use 1 / 2 / 3 para trocar quem está falando</p>
+              {barExpanded && (
+                <p className="text-[10px] text-muted-foreground/70 hidden md:block">Toque ou use 1 / 2 / 3 para trocar quem está falando</p>
+              )}
             </motion.div>
           )}
           {/* Live partial transcript indicator */}
           {isRecording && !isPaused && (
-            <div className="text-center min-h-[1.5rem] max-w-md px-3">
+            <div className={cn("text-center min-h-[1.25rem] max-w-md px-3", barExpanded && "min-h-[1.5rem]")}>
               {partialTranscription ? (
                 <motion.p
                   key={partialTranscription}
                   initial={{ opacity: 0, y: 4 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-sm text-foreground/80 italic leading-relaxed"
+                  className={cn(
+                    "text-foreground/80 italic leading-relaxed",
+                    barExpanded ? "text-sm" : "text-xs line-clamp-1"
+                  )}
                 >
                   {partialTranscription}
                 </motion.p>
+
               ) : (
                 <p className="text-xs text-muted-foreground/70 inline-flex items-center gap-1.5">
                   <span className="inline-flex gap-0.5">
@@ -449,17 +515,29 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-3"
+              className="flex flex-wrap items-center justify-center gap-2"
             >
               <Button
                 onClick={handleGenerateStructure}
                 disabled={isStructuring}
-                size="lg"
+                size={barExpanded ? "lg" : "sm"}
                 variant="secondary"
-                className="gap-2 px-6 rounded-full bg-gradient-to-b from-primary/15 to-primary/5 hover:from-primary/25 hover:to-primary/10 text-primary ring-1 ring-primary/25 shadow-[0_6px_20px_-8px_hsl(var(--primary)/0.4)]"
+                className="gap-2 px-5 rounded-full bg-gradient-to-b from-primary/15 to-primary/5 hover:from-primary/25 hover:to-primary/10 text-primary ring-1 ring-primary/25 shadow-[0_6px_20px_-8px_hsl(var(--primary)/0.4)]"
               >
-                <FileText className="h-5 w-5" />
-                <span className="font-medium">{isStructuring ? 'Estruturando...' : 'Gerar Estruturação Clínica'}</span>
+                <FileText className="h-4 w-4" />
+                <span className="font-medium">{isStructuring ? 'Estruturando…' : 'Atualizar estruturação'}</span>
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleCopyTranscript} className="gap-1.5 rounded-full text-muted-foreground hover:text-foreground">
+                <Copy className="h-3.5 w-3.5" />
+                Transcrição
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleCopyToClipboard} className="gap-1.5 rounded-full text-muted-foreground hover:text-foreground">
+                <Copy className="h-3.5 w-3.5" />
+                Anamnese
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setShowFinishDialog(true)} className="gap-1.5 rounded-full text-muted-foreground hover:text-foreground">
+                <Save className="h-3.5 w-3.5" />
+                Salvar caso
               </Button>
             </motion.div>
           )}
@@ -476,7 +554,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
             </TabsTrigger>
             <TabsTrigger value="structure" className="gap-2 data-[state=active]:bg-muted">
               <FileText className="h-4 w-4" />
-              Estrutura
+              Anamnese
             </TabsTrigger>
           </TabsList>
           <TabsContent value="transcription" className="flex-1 m-0 overflow-hidden">
@@ -494,30 +572,79 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               structure={structure}
               isStructuring={isStructuring}
               onUpdateField={updateStructureField}
+              changedFields={changedFields}
+              lastStructuredAt={lastStructuredAt}
+              smartSummary={smartSummary}
+              isSummarizing={isSummarizing}
+              onGenerateSummary={generateSummary}
+              onSendToAssistant={() => handleSendToAssistant('/clinicus')}
             />
           </TabsContent>
         </Tabs>
       ) : (
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-0 overflow-hidden">
-          <Card className="rounded-none border-0 border-r h-full overflow-hidden">
-            <TranscriptionPane
-              segments={segments}
-              isTranscribing={isTranscribing}
-              isRecording={isRecording && !isPaused}
-              onChangeSpeaker={changeSpeaker}
-              onDeleteSegment={deleteSegment}
-              unifiedMode={unifiedMode}
-            />
-          </Card>
-          <Card className="rounded-none border-0 h-full overflow-hidden">
-            <StructuredPane
-              structure={structure}
-              isStructuring={isStructuring}
-              onUpdateField={updateStructureField}
-            />
-          </Card>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Barra de foco de painéis */}
+          <div className="flex items-center justify-end gap-1 px-3 py-1 border-b bg-muted/20">
+            {([
+              { key: 'split' as const, label: 'Dividido', Icon: Columns2 },
+              { key: 'transcription' as const, label: 'Transcrição', Icon: MessageSquare },
+              { key: 'structure' as const, label: 'Anamnese', Icon: Maximize2 },
+            ]).map(({ key, label, Icon }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setFocusPane(key)}
+                aria-pressed={focusPane === key}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ring-1",
+                  focusPane === key
+                    ? "bg-primary/12 text-primary ring-primary/25"
+                    : "text-muted-foreground ring-transparent hover:text-foreground hover:bg-muted/60"
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <ResizablePanelGroup direction="horizontal" className="flex-1 overflow-hidden">
+            {focusPane !== 'structure' && (
+              <ResizablePanel defaultSize={focusPane === 'transcription' ? 100 : 45} minSize={25}>
+                <Card className="rounded-none border-0 h-full overflow-hidden">
+                  <TranscriptionPane
+                    segments={segments}
+                    isTranscribing={isTranscribing}
+                    isRecording={isRecording && !isPaused}
+                    onChangeSpeaker={changeSpeaker}
+                    onDeleteSegment={deleteSegment}
+                    unifiedMode={unifiedMode}
+                  />
+                </Card>
+              </ResizablePanel>
+            )}
+            {focusPane === 'split' && <ResizableHandle withHandle />}
+            {focusPane !== 'transcription' && (
+              <ResizablePanel defaultSize={focusPane === 'structure' ? 100 : 55} minSize={25}>
+                <Card className="rounded-none border-0 h-full overflow-hidden">
+                  <StructuredPane
+                    structure={structure}
+                    isStructuring={isStructuring}
+                    onUpdateField={updateStructureField}
+                    changedFields={changedFields}
+                    lastStructuredAt={lastStructuredAt}
+                    smartSummary={smartSummary}
+                    isSummarizing={isSummarizing}
+                    onGenerateSummary={generateSummary}
+                    onSendToAssistant={() => handleSendToAssistant('/clinicus')}
+                  />
+                </Card>
+              </ResizablePanel>
+            )}
+          </ResizablePanelGroup>
         </div>
       )}
+
 
       {/* Finish Dialog */}
       {showFinishDialog && (

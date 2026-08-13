@@ -31,7 +31,7 @@ serve(async (req) => {
       throw new Error('Usuário não autenticado');
     }
 
-    const { transcription } = await req.json();
+    const { transcription, mode } = await req.json();
 
     if (!transcription) {
       throw new Error('Transcrição não fornecida');
@@ -42,7 +42,85 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY não configurada');
     }
 
-    console.log('Structuring anamnesis from transcription...');
+    // ---- Modo resumo inteligente ------------------------------------------
+    if (mode === 'summary') {
+      const summaryPrompt = `Você é um médico experiente resumindo uma consulta para o prontuário.
+
+REGRAS DE FORMATAÇÃO OBRIGATÓRIAS:
+- NUNCA use markdown: nada de #, ##, **, *, _ ou tabelas
+- Use APENAS cabeçalhos em CAIXA ALTA, linhas em branco e marcadores com "-"
+
+REGRAS CLÍNICAS:
+- Use somente o que foi dito na consulta; não invente nem infira dados
+- Preserve negativas relevantes (nega alergias, nega HAS)
+- Linguagem técnica de prontuário, objetiva
+
+ESTRUTURA DO RESUMO:
+
+SÍNTESE DO CASO
+- 2 a 4 linhas com o quadro central
+
+PONTOS-CHAVE
+- marcadores com os achados mais relevantes
+
+PENDÊNCIAS E ALERTAS
+- o que ficou em aberto, sinais de alarme, informações faltantes
+
+PRÓXIMOS PASSOS
+- conduta e seguimento mencionados; se não houver, escreva "Não registrado na consulta"`;
+
+      const sres = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-3-flash-preview',
+          messages: [
+            { role: 'system', content: summaryPrompt },
+            { role: 'user', content: `Transcrição da consulta:\n\n${transcription}` },
+          ],
+        }),
+      });
+
+      if (!sres.ok) {
+        const errText = await sres.text();
+        console.error('Lovable AI summary error:', errText);
+        if (sres.status === 429) {
+          return new Response(
+            JSON.stringify({ error: 'Limite de requisições excedido. Tente novamente em alguns segundos.' }),
+            { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        if (sres.status === 402) {
+          return new Response(
+            JSON.stringify({ error: 'Créditos de IA esgotados.' }),
+            { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        throw new Error(`Erro no resumo: ${sres.status}`);
+      }
+
+      const sdata = await sres.json();
+      void logAIUsage({
+        userId: user.id,
+        assistant: 'consultorio',
+        functionName: 'structure-anamnesis:summary',
+        model: 'google/gemini-3-flash-preview',
+        inputTokens: sdata.usage?.prompt_tokens,
+        outputTokens: sdata.usage?.completion_tokens,
+        totalTokens: sdata.usage?.total_tokens,
+        status: 'ok',
+      });
+
+      const summary = (sdata.choices?.[0]?.message?.content || '').trim();
+      return new Response(
+        JSON.stringify({ summary }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
 
     const systemPrompt = `Você é um assistente médico especializado em estruturação de anamneses.
 

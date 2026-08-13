@@ -7,6 +7,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import type { TranscriptionSegment, SpeakerType } from "@/hooks/useConsultation";
 import { cn } from "@/lib/utils";
+import { copyText } from "@/lib/clipboard";
+
 
 interface TranscriptionPaneProps {
   segments: TranscriptionSegment[];
@@ -69,17 +71,32 @@ export function TranscriptionPane({
   const [newSegmentIds, setNewSegmentIds] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
 
-  const handleCopyAll = () => {
-    const text = segments.map((s) => s.text.trim()).filter(Boolean).join("\n\n");
+  const handleCopyAll = async () => {
+    const text = segments
+      .map((s) => {
+        const t = s.text.trim();
+        if (!t) return "";
+        if (unifiedMode) return t;
+        const who = s.speaker === 'doctor' ? 'Médico' : s.speaker === 'patient' ? 'Paciente' : 'Acompanhante';
+        return `${who}: ${t}`;
+      })
+      .filter(Boolean)
+      .join("\n\n");
+
     if (!text) {
       toast.error("Nada para copiar ainda.");
       return;
     }
-    navigator.clipboard.writeText(text);
+    const ok = await copyText(text);
+    if (!ok) {
+      toast.error("Não foi possível copiar. Selecione o texto e use Ctrl+C.");
+      return;
+    }
     setCopied(true);
     toast.success("Transcrição copiada 👏");
     setTimeout(() => setCopied(false), 1800);
   };
+
 
   // Track new segments for typing animation
   useEffect(() => {

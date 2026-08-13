@@ -74,6 +74,11 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
   const [segments, setSegments] = useState<TranscriptionSegment[]>([]);
   const [partialTranscription, setPartialTranscription] = useState('');
   const [structure, setStructure] = useState<AnamnesisStructure>(EMPTY_ANAMNESIS);
+  const [changedFields, setChangedFields] = useState<Set<keyof AnamnesisStructure>>(new Set());
+  const [lastStructuredAt, setLastStructuredAt] = useState<Date | null>(null);
+  const [smartSummary, setSmartSummary] = useState('');
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [reviewedTranscript, setReviewedTranscript] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -84,11 +89,22 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
   const [audioLevel, setAudioLevel] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [currentSpeaker, setCurrentSpeakerState] = useState<SpeakerType>('doctor');
+  const [liveStructuring, setLiveStructuring] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true;
+    return localStorage.getItem('consultorio-live-structuring') !== '0';
+  });
   const currentSpeakerRef = useRef<SpeakerType>('doctor');
   const setCurrentSpeaker = useCallback((s: SpeakerType) => {
     currentSpeakerRef.current = s;
     setCurrentSpeakerState(s);
   }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('consultorio-live-structuring', liveStructuring ? '1' : '0');
+    }
+  }, [liveStructuring]);
+
 
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -282,7 +298,9 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     stopAudioLevelMonitor();
   }, [stopAudioLevelMonitor]);
 
-  // Final review pass: send full session audio to Whisper for high-precision rewrite
+  // Final review pass: transcreve o áudio completo em alta precisão.
+  // Os segmentos por falante são PRESERVADOS — o texto revisado vira uma
+  // camada extra usada para estruturar a anamnese com mais fidelidade.
   const runFinalReview = useCallback(async (audioBlob: Blob) => {
     if (!audioBlob || audioBlob.size < 2000) return;
     setIsFinalizing(true);
@@ -304,18 +322,8 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
       if (fnError) throw fnError;
       const finalText = (data?.text || '').trim();
       if (finalText && !isHallucination(finalText)) {
-        // Replace live segments with single high-precision final segment
-        setSegments([
-          {
-            id: crypto.randomUUID(),
-            speaker: 'doctor',
-            text: finalText,
-            timestamp: new Date(),
-            confidence: 0.99,
-            isEdited: false,
-          },
-        ]);
-        toast.success('Revisão final concluída (Whisper)');
+        setReviewedTranscript(finalText);
+        toast.success('Revisão final concluída — falantes preservados');
       }
     } catch (err) {
       console.error('[useConsultation] final review failed:', err);
@@ -355,25 +363,113 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     }
   }, [scribe, stopTimer, stopMediaResources, runFinalReview]);
 
-  const updateStructure = useCallback(async () => {
-    if (segments.length === 0) return;
-    setIsStructuring(true);
+  const buildTranscriptForAI = useCallback(
+    (opts?: { preferReviewed?: boolean }) => {
+      if (opts?.preferReviewed && reviewedTranscript) return reviewedTranscript;
+      return segments
+        .map((s) => {
+          const who = s.speaker === 'doctor' ? 'Médico' : s.speaker === 'patient' ? 'Paciente' : 'Acompanhante';
+          return `${who}: ${s.text}`;
+        })
+        .join('\n');
+    },
+    [segments, reviewedTranscript]
+  );
+
+  const structuringRef = useRef(false);
+
+  const runStructuring = useCallback(
+    async (opts?: { silent?: boolean; preferReviewed?: boolean }) => {
+      if (structuringRef.current) return;
+      const transcriptionText = buildTranscriptForAI({ preferReviewed: opts?.preferReviewed });
+      if (!transcriptionText.trim()) return;
+
+      structuringRef.current = true;
+      setIsStructuring(true);
+      try {
+        const { data, error: fnError } = await supabase.functions.invoke('structure-anamnesis', {
+          body: { transcription: transcriptionText },
+        });
+        if (fnError) throw fnError;
+        if (data?.structure) {
+          setStructure((prev) => {
+            const next = { ...prev, ...data.structure } as AnamnesisStructure;
+            const changed = new Set<keyof AnamnesisStructure>();
+            (Object.keys(next) as (keyof AnamnesisStructure)[]).forEach((k) => {
+              if ((next[k] || '').trim() && (next[k] || '').trim() !== (prev[k] || '').trim()) {
+                changed.add(k);
+              }
+            });
+            setChangedFields(changed);
+            return next;
+          });
+          setLastStructuredAt(new Date());
+        }
+      } catch (err) {
+        console.error('Error structuring anamnesis:', err);
+        if (!opts?.silent) toast.error('Erro ao estruturar anamnese');
+      } finally {
+        structuringRef.current = false;
+        setIsStructuring(false);
+      }
+    },
+    [buildTranscriptForAI]
+  );
+
+  const updateStructure = useCallback(
+    () => runStructuring({ preferReviewed: true }),
+    [runStructuring]
+  );
+
+  // ---- Estruturação ao vivo -------------------------------------------------
+  // A cada nova leva de falas (debounce) reprocessa a anamnese enquanto o
+  // médico ainda está conversando, dando movimento real ao painel direito.
+  const lastLiveCountRef = useRef(0);
+  useEffect(() => {
+    if (!liveStructuring || !isRecording || isPaused) return;
+    if (segments.length < 3) return;
+    if (segments.length - lastLiveCountRef.current < 3) return;
+
+    const timer = setTimeout(() => {
+      lastLiveCountRef.current = segments.length;
+      void runStructuring({ silent: true });
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, [segments.length, liveStructuring, isRecording, isPaused, runStructuring]);
+
+  // Limpa o realce dos campos alterados
+  useEffect(() => {
+    if (changedFields.size === 0) return;
+    const t = setTimeout(() => setChangedFields(new Set()), 2600);
+    return () => clearTimeout(t);
+  }, [changedFields]);
+
+  // Resumo clínico inteligente da consulta
+  const generateSummary = useCallback(async () => {
+    const transcriptionText = buildTranscriptForAI({ preferReviewed: true });
+    if (!transcriptionText.trim()) {
+      toast.error('Não há transcrição para resumir.');
+      return;
+    }
+    setIsSummarizing(true);
     try {
-      const transcriptionText = segments.map((s) => s.text).join('\n');
       const { data, error: fnError } = await supabase.functions.invoke('structure-anamnesis', {
-        body: { transcription: transcriptionText },
+        body: { transcription: transcriptionText, mode: 'summary' },
       });
       if (fnError) throw fnError;
-      if (data?.structure) {
-        setStructure((prev) => ({ ...prev, ...data.structure }));
-      }
+      const text = (data?.summary || '').trim();
+      if (!text) throw new Error('Resumo vazio');
+      setSmartSummary(text);
+      toast.success('Resumo inteligente pronto 👏');
     } catch (err) {
-      console.error('Error structuring anamnesis:', err);
-      toast.error('Erro ao estruturar anamnese');
+      console.error('Error generating summary:', err);
+      toast.error('Não foi possível gerar o resumo agora.');
     } finally {
-      setIsStructuring(false);
+      setIsSummarizing(false);
     }
-  }, [segments]);
+  }, [buildTranscriptForAI]);
+
 
   const changeSpeaker = useCallback((segmentId: string, newSpeaker: SpeakerType) => {
     setSegments((prev) => prev.map((s) => (s.id === segmentId ? { ...s, speaker: newSpeaker, isEdited: true, confidence: 1 } : s)));
@@ -395,10 +491,16 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     setSegments([]);
     setPartialTranscription('');
     setStructure(EMPTY_ANAMNESIS);
+    setChangedFields(new Set());
+    setSmartSummary('');
+    setReviewedTranscript('');
+    setLastStructuredAt(null);
+    lastLiveCountRef.current = 0;
     setStartTime(null);
     setElapsedTime(0);
     stopTimer();
   }, [stopTimer]);
+
 
   const formatElapsedTime = useCallback(() => {
     const h = Math.floor(elapsedTime / 3600);
@@ -427,6 +529,13 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     partialTranscription,
     currentTranscription: partialTranscription, // backward-compat
     structure,
+    changedFields,
+    lastStructuredAt,
+    smartSummary,
+    isSummarizing,
+    reviewedTranscript,
+    liveStructuring,
+    setLiveStructuring,
     isRecording,
     isPaused,
     isConnecting,
@@ -448,10 +557,13 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     pauseRecording,
     resumeRecording,
     updateStructure,
+    generateSummary,
+    buildTranscriptForAI,
     changeSpeaker,
     editSegmentText,
     deleteSegment,
     updateStructureField,
+
     startTimer,
     stopTimer,
     reset,
