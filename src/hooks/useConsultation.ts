@@ -74,6 +74,11 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
   const [segments, setSegments] = useState<TranscriptionSegment[]>([]);
   const [partialTranscription, setPartialTranscription] = useState('');
   const [structure, setStructure] = useState<AnamnesisStructure>(EMPTY_ANAMNESIS);
+  const [changedFields, setChangedFields] = useState<Set<keyof AnamnesisStructure>>(new Set());
+  const [lastStructuredAt, setLastStructuredAt] = useState<Date | null>(null);
+  const [smartSummary, setSmartSummary] = useState('');
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [reviewedTranscript, setReviewedTranscript] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -84,11 +89,22 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
   const [audioLevel, setAudioLevel] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [currentSpeaker, setCurrentSpeakerState] = useState<SpeakerType>('doctor');
+  const [liveStructuring, setLiveStructuring] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true;
+    return localStorage.getItem('consultorio-live-structuring') !== '0';
+  });
   const currentSpeakerRef = useRef<SpeakerType>('doctor');
   const setCurrentSpeaker = useCallback((s: SpeakerType) => {
     currentSpeakerRef.current = s;
     setCurrentSpeakerState(s);
   }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('consultorio-live-structuring', liveStructuring ? '1' : '0');
+    }
+  }, [liveStructuring]);
+
 
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
