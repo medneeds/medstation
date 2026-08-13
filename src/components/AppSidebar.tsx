@@ -59,6 +59,12 @@ const agentModules = [
 
 const consultorioModule = { title: "Modo Consultório", url: "/consultorio", icon: Mic, code: "C" };
 
+const consultorioSubItems = [
+  { title: "Novo atendimento", url: "/consultorio", icon: Mic },
+  { title: "Histórico", url: "/consultorio/historico", icon: FolderOpen },
+];
+
+
 const recordsModules = [
   { title: "Notas", url: "/notes", icon: NotebookPen },
 ];
