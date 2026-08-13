@@ -391,8 +391,28 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
 
           {/* Tempo + status + controles */}
           <div className="ml-auto flex items-center gap-1.5 md:gap-2">
+            {/* Onda mínima no mobile (o chip completo fica escondido) */}
+            {isMobile && (
+              <span className="flex items-center gap-[2.5px] h-4 overflow-hidden shrink-0" aria-hidden>
+                {[0.5, 0.9, 0.65, 1, 0.6].map((factor, i) => {
+                  const active = isRecording && !isPaused;
+                  const h = active
+                    ? Math.max(3, Math.min(14, 3 + audioLevel * 26 * factor))
+                    : [5, 9, 6, 10, 5][i];
+                  return (
+                    <motion.span
+                      key={i}
+                      className={cn("w-[2px] rounded-full", active ? "bg-primary" : isPaused ? "bg-muted-foreground/40" : "bg-primary/30")}
+                      animate={{ height: h }}
+                      transition={{ type: "spring", stiffness: 320, damping: 22 }}
+                      style={{ height: h }}
+                    />
+                  );
+                })}
+              </span>
+            )}
             <div className={cn(
-              "flex items-center gap-2 text-xs px-2.5 h-8 rounded-xl border transition-colors",
+              "flex items-center gap-1.5 md:gap-2 text-xs px-2 md:px-2.5 h-8 rounded-xl border transition-colors",
               isRecording && !isPaused
                 ? "bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400"
                 : isPaused
@@ -409,6 +429,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               )}
               <span className="font-mono tabular-nums tracking-tight">{formattedTime}</span>
             </div>
+
 
             {!isRecording ? (
               <div className="relative group">
