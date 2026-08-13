@@ -53,7 +53,10 @@ const agents = [
   { name: "Atestus", path: "/atestus", icon: FileCheck, color: "text-emerald-500", description: "Geração de atestados médicos e declarações" },
   { name: "Protocolus", path: "/protocolus", icon: BookOpen, color: "text-amber-500", description: "Consulta a protocolos e guidelines nacionais e internacionais" },
   { name: "Orientus", path: "/orientus", icon: Compass, color: "text-rose-500", description: "Orientações ao paciente e instruções de alta hospitalar" },
+  { name: "Mediscuss", path: "/mediscuss", icon: MessagesSquare, color: "text-primary", description: "Pareceres, discussão clínica, internação, UTI e regulação" },
+  { name: "Legalis", path: "/legalis", icon: Scale, color: "text-amber-600", description: "Proteção jurídica, blindagem de registro e ética médica (CFM)" },
 ];
+
 
 const quickActions: { name: string; path: string; icon: typeof StickyNote; description: string }[] = [];
 
