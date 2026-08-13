@@ -238,10 +238,39 @@ export type Database = {
         }
         Relationships: []
       }
+      case_folders: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cases: {
         Row: {
           chief_complaint: string | null
+          consultation_date: string
           created_at: string
+          folder_id: string | null
           id: string
           notes: string | null
           patient_id: string | null
@@ -253,7 +282,9 @@ export type Database = {
         }
         Insert: {
           chief_complaint?: string | null
+          consultation_date?: string
           created_at?: string
+          folder_id?: string | null
           id?: string
           notes?: string | null
           patient_id?: string | null
@@ -265,7 +296,9 @@ export type Database = {
         }
         Update: {
           chief_complaint?: string | null
+          consultation_date?: string
           created_at?: string
+          folder_id?: string | null
           id?: string
           notes?: string | null
           patient_id?: string | null
@@ -276,6 +309,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "cases_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "case_folders"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "cases_patient_id_fkey"
             columns: ["patient_id"]
