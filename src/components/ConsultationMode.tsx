@@ -119,10 +119,8 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     if (error) toast.error(error);
   }, [error]);
 
-  // Ao engrenar a conversa, a área de gravação recolhe sozinha e libera espaço
-  useEffect(() => {
-    if (segments.length === 2) setBarExpanded(false);
-  }, [segments.length]);
+
+
 
 
   // Keyboard shortcuts: 1=Médico, 2=Paciente, 3=Acompanhante (durante gravação)
