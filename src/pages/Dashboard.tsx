@@ -21,6 +21,9 @@ import {
   BookOpen,
   Compass,
   Sigma,
+  MessagesSquare,
+  Scale,
+
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSubscription } from "@/contexts/SubscriptionContext";
