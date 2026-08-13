@@ -34,6 +34,18 @@ export const SUBSCRIPTION_TIERS = {
       price: 19.90,
     },
   },
+  PRO_COMPLETO: {
+    MONTHLY: {
+      priceId: "price_1U42o0ACiwQRloW4Q3GhrlUj",
+      productId: "prod_V4BACwTTBf5tBk",
+      price: 99.90,
+    },
+    YEARLY: {
+      priceId: "price_1U42oIACiwQRloW4R9tDmHOE",
+      productId: "prod_V4BACwTTBf5tBk",
+      price: 999.90,
+    },
+  },
   PRO2_BUNDLE: {
     MONTHLY: {
       priceId: "price_1TVga8ACiwQRloW4fPGUzAF9",
@@ -53,6 +65,7 @@ export const AGENTS_PRODUCT_IDS = [
   "prod_TgR7u5urUle7om", // Agents standalone
   "prod_UUfvAeta3d1Rn5", // Agents upgrade
   "prod_UUfw2uz4UPwkco", // Pro 2 bundle
+  "prod_V4BACwTTBf5tBk", // Pro Completo (assistentes + consultório)
 ];
 
 // All product IDs that grant access to "consultório" capability
@@ -60,12 +73,14 @@ export const CONSULTORIO_PRODUCT_IDS = [
   "prod_UUfuDkH9yfcfb3", // Consultório standalone
   "prod_UUfu9AzBtaGsCW", // Consultório upgrade
   "prod_UUfw2uz4UPwkco", // Pro 2 bundle
+  "prod_V4BACwTTBf5tBk", // Pro Completo (assistentes + consultório)
 ];
 
 export const PRODUCT_IDS = {
   AGENTS: "prod_TgR7u5urUle7om",
   CONSULTORIO: "prod_UUfuDkH9yfcfb3",
   PRO2_BUNDLE: "prod_UUfw2uz4UPwkco",
+  PRO_COMPLETO: "prod_V4BACwTTBf5tBk",
 };
 
 export function hasAgentsAccess(productIds: string[]): boolean {
@@ -85,7 +100,9 @@ export type PlanSlug =
   | "consultorio_yearly"
   | "consultorio_upgrade"
   | "pro2_bundle"
-  | "pro2_bundle_yearly";
+  | "pro2_bundle_yearly"
+  | "pro_completo"
+  | "pro_completo_yearly";
 
 /**
  * Preços de exibição nas landing pages.
@@ -94,8 +111,8 @@ export type PlanSlug =
  */
 export const DISPLAY_PRICING = {
   bundle: {
-    monthly: { list: 179.9, now: 49.9 },
-    yearly: { list: 1799.0, now: 499.9 },
+    monthly: { list: 179.9, now: 99.9 },
+    yearly: { list: 1799.0, now: 999.9 },
   },
   agents: {
     monthly: { list: 89.9, now: 29.9 },
