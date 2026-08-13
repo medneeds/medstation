@@ -1,8 +1,22 @@
 import { useState, useCallback, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { motion } from "framer-motion";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
   Mic,
@@ -11,7 +25,6 @@ import {
   CheckCircle2,
   Clock,
   Copy,
-  Download,
   Save,
   MessageSquare,
   FileText,
@@ -19,6 +32,12 @@ import {
   Stethoscope,
   User,
   Users,
+  ChevronUp,
+  ChevronDown,
+  Sparkles,
+  Send,
+  Columns2,
+  Maximize2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useConsultation } from "@/hooks/useConsultation";
@@ -29,6 +48,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { copyText } from "@/lib/clipboard";
+import { buildAnamnesisText, countFilledSections } from "@/lib/anamnesis";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ConsultationModeProps {
@@ -36,13 +57,18 @@ interface ConsultationModeProps {
   onExit: () => void;
 }
 
+type FocusPane = "split" | "transcription" | "structure";
+
 export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [showFinishDialog, setShowFinishDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("transcription");
   const [caseName, setCaseName] = useState<string>("");
   const [isSavingCase, setIsSavingCase] = useState(false);
   const [savedCaseId, setSavedCaseId] = useState<string | null>(null);
+  const [barExpanded, setBarExpanded] = useState(true);
+  const [focusPane, setFocusPane] = useState<FocusPane>("split");
   const [unifiedMode, setUnifiedMode] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem('consultorio-unified-mode') === '1';
@@ -52,6 +78,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
       localStorage.setItem('consultorio-unified-mode', unifiedMode ? '1' : '0');
     }
   }, [unifiedMode]);
+
 
   const {
     segments,
