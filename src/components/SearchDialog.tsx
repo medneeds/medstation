@@ -25,6 +25,9 @@ import {
   Compass,
   StickyNote,
   ArrowRight,
+  MessagesSquare,
+  Scale,
+
 } from "lucide-react";
 
 interface SearchResult {
