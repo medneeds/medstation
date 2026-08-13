@@ -507,17 +507,29 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-3"
+              className="flex flex-wrap items-center justify-center gap-2"
             >
               <Button
                 onClick={handleGenerateStructure}
                 disabled={isStructuring}
-                size="lg"
+                size={barExpanded ? "lg" : "sm"}
                 variant="secondary"
-                className="gap-2 px-6 rounded-full bg-gradient-to-b from-primary/15 to-primary/5 hover:from-primary/25 hover:to-primary/10 text-primary ring-1 ring-primary/25 shadow-[0_6px_20px_-8px_hsl(var(--primary)/0.4)]"
+                className="gap-2 px-5 rounded-full bg-gradient-to-b from-primary/15 to-primary/5 hover:from-primary/25 hover:to-primary/10 text-primary ring-1 ring-primary/25 shadow-[0_6px_20px_-8px_hsl(var(--primary)/0.4)]"
               >
-                <FileText className="h-5 w-5" />
-                <span className="font-medium">{isStructuring ? 'Estruturando...' : 'Gerar Estruturação Clínica'}</span>
+                <FileText className="h-4 w-4" />
+                <span className="font-medium">{isStructuring ? 'Estruturando…' : 'Atualizar estruturação'}</span>
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleCopyTranscript} className="gap-1.5 rounded-full text-muted-foreground hover:text-foreground">
+                <Copy className="h-3.5 w-3.5" />
+                Transcrição
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleCopyToClipboard} className="gap-1.5 rounded-full text-muted-foreground hover:text-foreground">
+                <Copy className="h-3.5 w-3.5" />
+                Anamnese
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setShowFinishDialog(true)} className="gap-1.5 rounded-full text-muted-foreground hover:text-foreground">
+                <Save className="h-3.5 w-3.5" />
+                Salvar caso
               </Button>
             </motion.div>
           )}
@@ -534,7 +546,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
             </TabsTrigger>
             <TabsTrigger value="structure" className="gap-2 data-[state=active]:bg-muted">
               <FileText className="h-4 w-4" />
-              Estrutura
+              Anamnese
             </TabsTrigger>
           </TabsList>
           <TabsContent value="transcription" className="flex-1 m-0 overflow-hidden">
@@ -552,30 +564,79 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               structure={structure}
               isStructuring={isStructuring}
               onUpdateField={updateStructureField}
+              changedFields={changedFields}
+              lastStructuredAt={lastStructuredAt}
+              smartSummary={smartSummary}
+              isSummarizing={isSummarizing}
+              onGenerateSummary={generateSummary}
+              onSendToAssistant={() => handleSendToAssistant('/clinicus')}
             />
           </TabsContent>
         </Tabs>
       ) : (
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-0 overflow-hidden">
-          <Card className="rounded-none border-0 border-r h-full overflow-hidden">
-            <TranscriptionPane
-              segments={segments}
-              isTranscribing={isTranscribing}
-              isRecording={isRecording && !isPaused}
-              onChangeSpeaker={changeSpeaker}
-              onDeleteSegment={deleteSegment}
-              unifiedMode={unifiedMode}
-            />
-          </Card>
-          <Card className="rounded-none border-0 h-full overflow-hidden">
-            <StructuredPane
-              structure={structure}
-              isStructuring={isStructuring}
-              onUpdateField={updateStructureField}
-            />
-          </Card>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Barra de foco de painéis */}
+          <div className="flex items-center justify-end gap-1 px-3 py-1 border-b bg-muted/20">
+            {([
+              { key: 'split' as const, label: 'Dividido', Icon: Columns2 },
+              { key: 'transcription' as const, label: 'Transcrição', Icon: MessageSquare },
+              { key: 'structure' as const, label: 'Anamnese', Icon: Maximize2 },
+            ]).map(({ key, label, Icon }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setFocusPane(key)}
+                aria-pressed={focusPane === key}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ring-1",
+                  focusPane === key
+                    ? "bg-primary/12 text-primary ring-primary/25"
+                    : "text-muted-foreground ring-transparent hover:text-foreground hover:bg-muted/60"
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <ResizablePanelGroup direction="horizontal" className="flex-1 overflow-hidden">
+            {focusPane !== 'structure' && (
+              <ResizablePanel defaultSize={focusPane === 'transcription' ? 100 : 45} minSize={25}>
+                <Card className="rounded-none border-0 h-full overflow-hidden">
+                  <TranscriptionPane
+                    segments={segments}
+                    isTranscribing={isTranscribing}
+                    isRecording={isRecording && !isPaused}
+                    onChangeSpeaker={changeSpeaker}
+                    onDeleteSegment={deleteSegment}
+                    unifiedMode={unifiedMode}
+                  />
+                </Card>
+              </ResizablePanel>
+            )}
+            {focusPane === 'split' && <ResizableHandle withHandle />}
+            {focusPane !== 'transcription' && (
+              <ResizablePanel defaultSize={focusPane === 'structure' ? 100 : 55} minSize={25}>
+                <Card className="rounded-none border-0 h-full overflow-hidden">
+                  <StructuredPane
+                    structure={structure}
+                    isStructuring={isStructuring}
+                    onUpdateField={updateStructureField}
+                    changedFields={changedFields}
+                    lastStructuredAt={lastStructuredAt}
+                    smartSummary={smartSummary}
+                    isSummarizing={isSummarizing}
+                    onGenerateSummary={generateSummary}
+                    onSendToAssistant={() => handleSendToAssistant('/clinicus')}
+                  />
+                </Card>
+              </ResizablePanel>
+            )}
+          </ResizablePanelGroup>
         </div>
       )}
+
 
       {/* Finish Dialog */}
       {showFinishDialog && (
