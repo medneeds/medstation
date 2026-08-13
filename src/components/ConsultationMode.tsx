@@ -291,24 +291,26 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                 ? "bg-primary/10 border-primary/25"
                 : "bg-muted/40 border-border/60"
             )}>
-              {isRecording && !isPaused ? (
-                <AudioVisualizer
-                  level={audioLevel}
-                  isActive
-                  currentSpeaker={!unifiedMode ? currentSpeaker : undefined}
-                  className="w-20 md:w-24"
-                />
-              ) : (
-                <span className="flex items-end gap-[3px] h-4">
-                  {[6, 10, 5, 13, 8, 11, 6].map((h, i) => (
-                    <span
+              <span className="flex items-center gap-[2.5px] h-4 overflow-hidden">
+                {[0.45, 0.75, 1, 0.85, 0.6, 0.95, 0.5].map((factor, i) => {
+                  const active = isRecording && !isPaused;
+                  const h = active
+                    ? Math.max(3, Math.min(14, 3 + audioLevel * 26 * factor))
+                    : [5, 8, 5, 10, 6, 9, 5][i];
+                  return (
+                    <motion.span
                       key={i}
-                      className={cn("w-[2px] rounded-full", isPaused ? "bg-muted-foreground/40" : "bg-primary/40")}
-                      style={{ height: `${h}px` }}
+                      className={cn(
+                        "w-[2px] rounded-full",
+                        active ? "bg-primary" : isPaused ? "bg-muted-foreground/40" : "bg-primary/35"
+                      )}
+                      animate={{ height: h }}
+                      transition={{ type: "spring", stiffness: 320, damping: 22 }}
+                      style={{ height: h }}
                     />
-                  ))}
-                </span>
-              )}
+                  );
+                })}
+              </span>
               <span className={cn(
                 "text-[10px] font-medium uppercase tracking-wider",
                 isRecording && !isPaused ? "text-primary" : "text-muted-foreground"
@@ -316,6 +318,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                 {isRecording ? (isPaused ? 'Pausado' : 'Ao vivo') : 'Pronto'}
               </span>
             </div>
+
 
             {/* Modo de transcrição — segmentado, estado ativo óbvio */}
             <div className="inline-flex shrink-0 p-1 rounded-xl bg-muted/60 border border-border/60">
