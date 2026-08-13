@@ -32,8 +32,6 @@ import {
   Stethoscope,
   User,
   Users,
-  ChevronUp,
-  ChevronDown,
   Sparkles,
   Send,
   Columns2,
@@ -70,7 +68,6 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
   const [caseName, setCaseName] = useState<string>("");
   const [isSavingCase, setIsSavingCase] = useState(false);
   const [savedCaseId, setSavedCaseId] = useState<string | null>(null);
-  const [barExpanded, setBarExpanded] = useState(true);
   const [focusPane, setFocusPane] = useState<FocusPane>("split");
   const [unifiedMode, setUnifiedMode] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
