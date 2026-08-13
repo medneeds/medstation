@@ -713,6 +713,14 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           totalSections={11}
           caseName={caseName}
           onCaseNameChange={setCaseName}
+          folders={folders}
+          folderId={caseFolderId}
+          onFolderChange={setCaseFolderId}
+          onCreateFolder={createFolder}
+          isCreatingFolder={isCreatingFolder}
+          consultationDate={consultationDate}
+          onConsultationDateChange={setConsultationDate}
+
           isSavingCase={isSavingCase}
           savedCaseId={savedCaseId}
           onSaveCase={handleSaveCase}
