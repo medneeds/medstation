@@ -283,7 +283,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           </div>
 
           {/* Centro: estado do áudio + seletores segmentados */}
-          <div className="flex items-center gap-2 md:gap-4 flex-1 justify-center flex-wrap">
+          <div className="flex items-center gap-2 md:gap-3 flex-1 justify-center min-w-0">
             {/* Estado do áudio — sempre visível, intencional mesmo ocioso */}
             <div className={cn(
               "hidden sm:flex items-center gap-2 h-8 px-2.5 rounded-xl border transition-colors",
@@ -337,7 +337,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                   )}
                 >
                   <Icon className="h-3.5 w-3.5" />
-                  <span className="hidden md:inline">{label}</span>
+                  <span className="hidden lg:inline">{label}</span>
                 </button>
               ))}
             </div>
