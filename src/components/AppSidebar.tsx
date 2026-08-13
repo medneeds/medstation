@@ -190,19 +190,17 @@ export function AppSidebar() {
 
 
               {/* Subitens hierarquizados */}
-              {consultorioSubItems.map((sub) => (
+              {consultorioSubItems.map((sub) => {
+                const isActive = pathname === sub.url;
+                return (
                 <SidebarMenuItem key={sub.url}>
-                  <SidebarMenuButton asChild tooltip={sub.title} className="p-0 h-auto bg-transparent hover:bg-transparent">
+                  <SidebarMenuButton asChild tooltip={sub.title} isActive={isActive} className="p-0 h-auto bg-transparent hover:bg-transparent">
                     <NavLink
                       to={sub.url}
                       end
-                      className={({ isActive }) =>
-                        cn(
-                          subItemClass({ isActive }),
-                          collapsed && "ml-0 pl-3 border-l-0",
-                        )
-                      }
+                      className={cn(subItemClass({ isActive }), collapsed && "ml-0 pl-3 border-l-0")}
                     >
+
                       {!collapsed && (
                         <span className="absolute left-0 top-1/2 h-px w-2 -translate-y-1/2 bg-border" aria-hidden />
                       )}
