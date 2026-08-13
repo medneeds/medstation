@@ -156,50 +156,53 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     onExit();
   }, [isRecording, stopRecording, stopTimer, reset, onExit]);
 
-  const handleCopyToClipboard = useCallback(() => {
-    const text = Object.entries(structure)
-      .filter(([_, value]) => value?.trim())
-      .map(([key, value]) => {
-        const labels: Record<string, string> = {
-          chiefComplaint: 'QUEIXA PRINCIPAL',
-          historyPresentIllness: 'HISTÓRIA DA DOENÇA ATUAL',
-          pastMedicalHistory: 'HISTÓRIA PATOLÓGICA PREGRESSA',
-          familyHistory: 'HISTÓRIA FAMILIAR',
-          medications: 'MEDICAMENTOS EM USO',
-          allergies: 'ALERGIAS',
-          socialHistory: 'HÁBITOS DE VIDA',
-          reviewOfSystems: 'REVISÃO DE SISTEMAS',
-          physicalExam: 'EXAME FÍSICO',
-          diagnosticHypotheses: 'HIPÓTESES DIAGNÓSTICAS',
-          plan: 'CONDUTA',
-        };
-        return `${labels[key] || key}:\n${value}`;
+  const buildStructuredText = useCallback(() => buildAnamnesisText(structure), [structure]);
+
+  const handleCopyToClipboard = useCallback(async () => {
+    const text = buildStructuredText();
+    if (!text) {
+      toast.error('Gere a estruturação antes de copiar.');
+      return;
+    }
+    const ok = await copyText(text);
+    toast[ok ? 'success' : 'error'](
+      ok ? 'Copiado 👏 Cole direto no prontuário.' : 'Não foi possível copiar. Selecione o texto e use Ctrl+C.'
+    );
+  }, [buildStructuredText]);
+
+  const handleCopyTranscript = useCallback(async () => {
+    const text = segments
+      .map((s) => {
+        const t = s.text.trim();
+        if (!t) return '';
+        if (unifiedMode) return t;
+        const who = s.speaker === 'doctor' ? 'Médico' : s.speaker === 'patient' ? 'Paciente' : 'Acompanhante';
+        return `${who}: ${t}`;
       })
+      .filter(Boolean)
       .join('\n\n');
+    if (!text) {
+      toast.error('Ainda não há transcrição.');
+      return;
+    }
+    const ok = await copyText(text);
+    toast[ok ? 'success' : 'error'](ok ? 'Transcrição copiada 👏' : 'Não foi possível copiar.');
+  }, [segments, unifiedMode]);
 
-    navigator.clipboard.writeText(text);
-    toast.success('Copiado 👏 Cole direto no prontuário.');
-  }, [structure]);
+  const handleSendToAssistant = useCallback(
+    (route: string) => {
+      const text = buildStructuredText();
+      if (!text) {
+        toast.error('Gere a estruturação antes de enviar.');
+        return;
+      }
+      sessionStorage.setItem('agent-prefill', text);
+      toast.success('Consulta enviada para o assistente 👏');
+      navigate(route);
+    },
+    [buildStructuredText, navigate]
+  );
 
-  const buildStructuredText = useCallback(() => {
-    const labels: Record<string, string> = {
-      chiefComplaint: 'QUEIXA PRINCIPAL',
-      historyPresentIllness: 'HISTÓRIA DA DOENÇA ATUAL',
-      pastMedicalHistory: 'HISTÓRIA PATOLÓGICA PREGRESSA',
-      familyHistory: 'HISTÓRIA FAMILIAR',
-      medications: 'MEDICAMENTOS EM USO',
-      allergies: 'ALERGIAS',
-      socialHistory: 'HÁBITOS DE VIDA',
-      reviewOfSystems: 'REVISÃO DE SISTEMAS',
-      physicalExam: 'EXAME FÍSICO',
-      diagnosticHypotheses: 'HIPÓTESES DIAGNÓSTICAS',
-      plan: 'CONDUTA',
-    };
-    return Object.entries(structure)
-      .filter(([_, v]) => v?.trim())
-      .map(([k, v]) => `${labels[k] || k}:\n${v}`)
-      .join('\n\n');
-  }, [structure]);
 
   const handleSaveCase = useCallback(async () => {
     const name = caseName.trim();
