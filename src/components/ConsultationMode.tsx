@@ -44,6 +44,7 @@ import { StructuredPane } from "@/components/consultation/StructuredPane";
 import { FinalizeFlow, type FinalizePhase } from "@/components/consultation/FinalizeFlow";
 import { useCaseFolders } from "@/hooks/useCaseFolders";
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,6 +59,31 @@ interface ConsultationModeProps {
 }
 
 type FocusPane = "split" | "transcription" | "structure";
+
+const CONSULTATION_SPECIALTIES = [
+  "Clínica Médica",
+  "Medicina de Emergência",
+  "Medicina Intensiva",
+  "Cardiologia",
+  "Pneumologia",
+  "Gastroenterologia",
+  "Endocrinologia",
+  "Nefrologia",
+  "Neurologia",
+  "Psiquiatria",
+  "Pediatria",
+  "Ginecologia e Obstetrícia",
+  "Ortopedia",
+  "Dermatologia",
+  "Infectologia",
+  "Geriatria",
+  "Reumatologia",
+  "Urologia",
+  "Oftalmologia",
+  "Otorrinolaringologia",
+  "Cirurgia Geral",
+  "Medicina de Família",
+];
 
 export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
   const isMobile = useIsMobile();
@@ -120,6 +146,9 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     stopTimer,
     reset,
     setCurrentSpeaker,
+    specialty,
+    setSpecialty,
+    detectedSpecialty,
   } = useConsultation({ caseId });
 
 
@@ -358,6 +387,30 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               ))}
             </div>
 
+            {/* Especialidade — automática por padrão */}
+            <div className="hidden lg:flex shrink-0 items-center gap-1.5">
+              <Select value={specialty} onValueChange={setSpecialty}>
+                <SelectTrigger
+                  className="h-8 w-[168px] rounded-xl bg-muted/60 border-border/60 text-[11px]"
+                  title="Especialidade do atendimento"
+                >
+                  <Stethoscope className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <SelectValue placeholder="Especialidade" />
+                </SelectTrigger>
+                <SelectContent className="z-[80] max-h-72">
+                  <SelectItem value="auto">Automático</SelectItem>
+                  {CONSULTATION_SPECIALTIES.map((s) => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {specialty === "auto" && detectedSpecialty && (
+                <span className="text-[10px] text-primary/80 whitespace-nowrap max-w-[120px] truncate" title={detectedSpecialty}>
+                  {detectedSpecialty}
+                </span>
+              )}
+            </div>
+
             {/* Foco de painéis (desktop) */}
             {!isMobile && (
               <div className="inline-flex shrink-0 p-1 rounded-xl bg-muted/60 border border-border/60">
@@ -501,6 +554,23 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                   {label}
                 </button>
               ))}
+            </div>
+            <div className="mt-1 flex items-center gap-1.5">
+              <Select value={specialty} onValueChange={setSpecialty}>
+                <SelectTrigger className="h-8 flex-1 rounded-xl bg-muted/60 border-border/60 text-[12px]">
+                  <Stethoscope className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <SelectValue placeholder="Especialidade" />
+                </SelectTrigger>
+                <SelectContent className="z-[80] max-h-72">
+                  <SelectItem value="auto">Especialidade: automático</SelectItem>
+                  {CONSULTATION_SPECIALTIES.map((s) => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {specialty === "auto" && detectedSpecialty && (
+                <span className="text-[10px] text-primary/80 whitespace-nowrap max-w-[92px] truncate">{detectedSpecialty}</span>
+              )}
             </div>
           </div>
         )}
