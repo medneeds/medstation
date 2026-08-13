@@ -175,7 +175,7 @@ export function QuickCheckout({
 
 // Versão inline (apenas input + botão)
 interface InlineCheckoutProps {
-  product?: "agents";
+  product?: "agents" | "pro_completo";
   billingPeriod?: "monthly" | "yearly";
   buttonText?: string;
   placeholder?: string;
@@ -196,11 +196,15 @@ export function InlineCheckout({
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  const isCompleto = product === "pro_completo";
+  const plan = isCompleto
+    ? billingPeriod === "yearly" ? "pro_completo_yearly" : "pro_completo"
+    : billingPeriod === "yearly" ? "agents_yearly" : "agents_monthly";
+
   const price = isCompleto
     ? billingPeriod === "yearly" ? 999.9 : 99.9
     : billingPeriod === "yearly" ? 299.9 : 29.9;
 
-  const listPrice = isCompleto ? 179.9 : 59.9;
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
