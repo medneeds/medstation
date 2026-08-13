@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 
 interface QuickCheckoutProps {
-  product?: "agents";
+  product?: "agents" | "pro_completo";
   billingPeriod?: "monthly" | "yearly";
   showPricing?: boolean;
   className?: string;
@@ -25,9 +25,19 @@ export function QuickCheckout({
   className = "",
   origin = "quick_checkout",
 }: QuickCheckoutProps) {
+  const isCompleto = product === "pro_completo";
+  const plan = isCompleto
+    ? billingPeriod === "yearly" ? "pro_completo_yearly" : "pro_completo"
+    : billingPeriod === "yearly" ? "agents_yearly" : "agents_monthly";
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+
+  const price = isCompleto
+    ? billingPeriod === "yearly" ? 999.9 : 99.9
+    : billingPeriod === "yearly" ? 299.9 : 29.9;
+
+  const listPrice = isCompleto ? 179.9 : 59.9;
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,14 +55,14 @@ export function QuickCheckout({
     trackCheckoutStarted({
       origin,
       product,
-      plan: billingPeriod === "yearly" ? "agents_yearly" : "agents_monthly",
+      plan,
       billing_period: billingPeriod,
-      price_brl: billingPeriod === "yearly" ? 299.9 : 29.9,
+      price_brl: price,
       auth_state: "guest",
     });
     try {
       const { data, error } = await supabase.functions.invoke("guest-checkout", {
-        body: { email, product, billingPeriod },
+        body: { email, product, billingPeriod, plan },
       });
 
       if (error) throw error;
@@ -74,13 +84,6 @@ export function QuickCheckout({
     }
   };
 
-  const prices = {
-    agents: { monthly: 29.90, yearly: 299.90 },
-  };
-
-  const price = billingPeriod === "yearly"
-    ? prices.agents.yearly
-    : prices.agents.monthly;
 
   return (
     <Card className={`p-6 border-2 border-primary/50 bg-card/80 backdrop-blur-sm relative overflow-hidden ${className}`}>
@@ -97,7 +100,7 @@ export function QuickCheckout({
             <div className="flex items-baseline justify-center gap-2">
               {billingPeriod === "monthly" && (
                 <span className="text-lg text-muted-foreground line-through">
-                  R$ 59,90
+                  R$ {listPrice.toFixed(2).replace(".", ",")}
                 </span>
               )}
               <span className="text-3xl font-bold text-primary">
@@ -193,6 +196,12 @@ export function InlineCheckout({
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  const price = isCompleto
+    ? billingPeriod === "yearly" ? 999.9 : 99.9
+    : billingPeriod === "yearly" ? 299.9 : 29.9;
+
+  const listPrice = isCompleto ? 179.9 : 59.9;
+
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -209,14 +218,14 @@ export function InlineCheckout({
     trackCheckoutStarted({
       origin,
       product,
-      plan: billingPeriod === "yearly" ? "agents_yearly" : "agents_monthly",
+      plan,
       billing_period: billingPeriod,
-      price_brl: billingPeriod === "yearly" ? 299.9 : 29.9,
+      price_brl: price,
       auth_state: "guest",
     });
     try {
       const { data, error } = await supabase.functions.invoke("guest-checkout", {
-        body: { email, product, billingPeriod },
+        body: { email, product, billingPeriod, plan },
       });
 
       if (error) throw error;

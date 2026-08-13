@@ -296,7 +296,7 @@ export default function Lp3() {
           </p>
 
           <div className="mt-6 max-w-xl mx-auto">
-            <QuickCheckout origin="lp3" billingPeriod={billing} showPricing={false} />
+            <QuickCheckout origin="lp3" product="pro_completo" billingPeriod={billing} showPricing={false} />
           </div>
 
           <div className="mt-14 max-w-2xl mx-auto">
