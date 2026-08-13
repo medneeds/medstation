@@ -205,7 +205,17 @@ export function AgentChat({
   const [focusMode, setFocusMode] = useState(false);
   const [readingMessage, setReadingMessage] = useState<Message | null>(null);
 
+  // Conteúdo enviado de outra tela (ex.: Modo Consultório)
+  useEffect(() => {
+    const prefill = sessionStorage.getItem("agent-prefill");
+    if (prefill) {
+      setMessage(prefill);
+      sessionStorage.removeItem("agent-prefill");
+    }
+  }, []);
+
   // ESC to exit focus mode
+
   useEffect(() => {
     if (!focusMode) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setFocusMode(false); };
