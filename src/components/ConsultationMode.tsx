@@ -65,8 +65,15 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
   const [finalizeError, setFinalizeError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("transcription");
   const [caseName, setCaseName] = useState<string>("");
+  const [caseFolderId, setCaseFolderId] = useState<string | null>(null);
+  const [consultationDate, setConsultationDate] = useState<string>(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  });
+  const { folders, isCreating: isCreatingFolder, createFolder } = useCaseFolders();
   const [isSavingCase, setIsSavingCase] = useState(false);
   const [savedCaseId, setSavedCaseId] = useState<string | null>(null);
+
   const [focusPane, setFocusPane] = useState<FocusPane>("split");
   const [unifiedMode, setUnifiedMode] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
