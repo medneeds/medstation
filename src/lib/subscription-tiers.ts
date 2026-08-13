@@ -86,3 +86,26 @@ export type PlanSlug =
   | "consultorio_upgrade"
   | "pro2_bundle"
   | "pro2_bundle_yearly";
+
+/**
+ * Preços de exibição nas landing pages.
+ * `list` é o valor de referência (ancoragem) e `now` é o valor efetivamente cobrado hoje.
+ * Alterar `now` exige criar o preço correspondente no provedor de pagamento.
+ */
+export const DISPLAY_PRICING = {
+  bundle: {
+    monthly: { list: 179.9, now: 49.9 },
+    yearly: { list: 1799.0, now: 499.9 },
+  },
+  agents: {
+    monthly: { list: 89.9, now: 29.9 },
+    yearly: { list: 899.0, now: 299.9 },
+  },
+  consultorio: {
+    monthly: { list: 129.9, now: 29.9 },
+    yearly: { list: 1299.0, now: 299.9 },
+  },
+} as const;
+
+export const brl = (v: number) =>
+  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 });
