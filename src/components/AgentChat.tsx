@@ -265,6 +265,10 @@ export function AgentChat({
   const [quickCIDMode, setQuickCIDMode] = useState(false);
   const [mediscussMode, setMediscussMode] = useState("auto");
   const [mediscussSpecialty, setMediscussSpecialty] = useState("auto");
+  const [legalisMode, setLegalisMode] = useState("auto");
+  const [legalisScenario, setLegalisScenario] = useState("auto");
+  const [legalisTopic, setLegalisTopic] = useState("auto");
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
