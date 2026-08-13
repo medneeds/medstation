@@ -283,10 +283,10 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           </div>
 
           {/* Centro: estado do áudio + seletores segmentados */}
-          <div className="flex items-center gap-2 md:gap-3 flex-1 justify-center min-w-0">
+          <div className="flex items-center gap-2 md:gap-3 flex-1 justify-center min-w-0 overflow-x-auto no-scrollbar">
             {/* Estado do áudio — sempre visível, intencional mesmo ocioso */}
             <div className={cn(
-              "hidden sm:flex items-center gap-2 h-8 px-2.5 rounded-xl border transition-colors",
+              "hidden sm:flex shrink-0 items-center gap-2 h-8 px-2.5 rounded-xl border transition-colors",
               isRecording && !isPaused
                 ? "bg-primary/10 border-primary/25"
                 : "bg-muted/40 border-border/60"
@@ -318,7 +318,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
             </div>
 
             {/* Modo de transcrição — segmentado, estado ativo óbvio */}
-            <div className="inline-flex p-1 rounded-xl bg-muted/60 border border-border/60">
+            <div className="inline-flex shrink-0 p-1 rounded-xl bg-muted/60 border border-border/60">
               {([
                 { key: false, label: 'Identificar falantes', Icon: Users },
                 { key: true, label: 'Transcrição contínua', Icon: MessageSquare },
@@ -337,14 +337,14 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                   )}
                 >
                   <Icon className="h-3.5 w-3.5" />
-                  <span className="hidden lg:inline">{label}</span>
+                  <span className="hidden xl:inline">{label}</span>
                 </button>
               ))}
             </div>
 
             {/* Foco de painéis (desktop) */}
             {!isMobile && (
-              <div className="inline-flex p-1 rounded-xl bg-muted/60 border border-border/60">
+              <div className="inline-flex shrink-0 p-1 rounded-xl bg-muted/60 border border-border/60">
                 {([
                   { key: 'split' as const, label: 'Dividido', Icon: Columns2 },
                   { key: 'transcription' as const, label: 'Transcrição', Icon: MessageSquare },
