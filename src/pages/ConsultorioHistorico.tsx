@@ -192,7 +192,7 @@ export default function ConsultorioHistorico() {
                       {items.map((c) => (
                         <li
                           key={c.id}
-                          className="flex items-center justify-between gap-3 rounded-md border border-border/60 px-3 py-2 hover:bg-muted/40 transition-colors"
+                          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 rounded-md border border-border/60 px-3 py-2 hover:bg-muted/40 transition-colors"
                         >
                           <div className="min-w-0">
                             <p className="text-sm font-medium truncate">{c.title}</p>
@@ -201,10 +201,11 @@ export default function ConsultorioHistorico() {
                             )}
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
-                            <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => handleCopy(c)}>
+                            <Button variant="ghost" size="sm" className="gap-1.5 h-9 flex-1 sm:flex-none" onClick={() => handleCopy(c)}>
                               <Copy className="h-3.5 w-3.5" />
-                              <span className="hidden sm:inline text-xs">Copiar</span>
+                              <span className="text-xs">Copiar</span>
                             </Button>
+
                             <Button
                               variant="ghost"
                               size="sm"
