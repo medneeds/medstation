@@ -79,10 +79,6 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     }
   }, [unifiedMode]);
 
-  // Ao engrenar a conversa, a área de gravação recolhe sozinha e libera espaço
-  useEffect(() => {
-    if (segments.length === 2) setBarExpanded(false);
-  }, [segments.length]);
 
 
 
