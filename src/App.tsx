@@ -292,6 +292,17 @@ const App = () => (
               }
             />
             <Route
+              path="/legalis"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <Legalis />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
               path="/settings"
               element={
                 <ProtectedRoute>
