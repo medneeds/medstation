@@ -151,6 +151,37 @@ const CLINICUS_CONTEXTS = [
 
 type ClinicusContext = (typeof CLINICUS_CONTEXTS)[number]["value"];
 
+const CLINICUS_REPORT_TYPES = [
+  { value: "relatorio_medico", label: "Relatório médico" },
+  { value: "passagem_caso", label: "Passagem de caso" },
+] as const;
+
+type ClinicusReportType = (typeof CLINICUS_REPORT_TYPES)[number]["value"];
+
+const CLINICUS_REPORT_PURPOSES = [
+  { value: "geral", label: "Finalidade geral" },
+  { value: "justificar_exame", label: "Justificar exame" },
+  { value: "justificar_internacao", label: "Justificar internação" },
+  { value: "justificar_medicacao", label: "Justificar medicação / alto custo" },
+  { value: "convenio_pericia", label: "Convênio / perícia" },
+  { value: "encaminhamento", label: "Encaminhamento" },
+] as const;
+
+const CLINICUS_HANDOFF_TARGETS = [
+  { value: "auto", label: "Sem especialidade definida" },
+  { value: "clinica_medica", label: "Clínica Médica" },
+  { value: "cardiologia", label: "Cardiologia" },
+  { value: "neurologia", label: "Neurologia" },
+  { value: "neurocirurgia", label: "Neurocirurgia" },
+  { value: "cirurgia", label: "Cirurgia Geral" },
+  { value: "infectologia", label: "Infectologia" },
+  { value: "nefrologia", label: "Nefrologia" },
+  { value: "hematologia", label: "Hematologia" },
+  { value: "ortopedia", label: "Ortopedia" },
+  { value: "uti", label: "Terapia Intensiva (UTI)" },
+  { value: "plantao", label: "Plantão seguinte (mesmo setor)" },
+] as const;
+
 
 
 export function AgentChat({ 
