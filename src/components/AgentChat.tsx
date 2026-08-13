@@ -1094,7 +1094,7 @@ export function AgentChat({
               <SelectTrigger className="w-full h-9 md:h-10 text-xs md:text-sm">
                 <SelectValue placeholder="Selecionar caso" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[80]">
                 <SelectItem value="none">Sem caso específico</SelectItem>
                 {cases.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
@@ -1537,7 +1537,7 @@ export function AgentChat({
                 <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[80]">
                   {CLINICUS_CONTEXTS.map((c) => (
                     <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
                   ))}
@@ -1560,7 +1560,7 @@ export function AgentChat({
                   <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[80]">
                     {CLINICUS_REPORT_TYPES.map((r) => (
                       <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
                     ))}
@@ -1571,7 +1571,7 @@ export function AgentChat({
                     <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-[80]">
                       {CLINICUS_REPORT_PURPOSES.map((p) => (
                         <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
                       ))}
@@ -1582,7 +1582,7 @@ export function AgentChat({
                     <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-[80]">
                       {CLINICUS_HANDOFF_TARGETS.map((s) => (
                         <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
                       ))}
@@ -1641,7 +1641,7 @@ export function AgentChat({
               <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[80]">
                 {MEDISCUSS_MODES.map((m) => (
                   <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
                 ))}
@@ -1651,7 +1651,7 @@ export function AgentChat({
               <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[80]">
                 {MEDISCUSS_SPECIALTIES.map((s) => (
                   <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
                 ))}
@@ -1698,7 +1698,7 @@ export function AgentChat({
                       <span className="text-muted-foreground">Contexto:</span>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-[80]">
                       {CLINICUS_CONTEXTS.map((c) => (
                         <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
                       ))}
@@ -1722,7 +1722,7 @@ export function AgentChat({
                         <span className="text-muted-foreground">Tipo:</span>
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-[80]">
                         {CLINICUS_REPORT_TYPES.map((r) => (
                           <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
                         ))}
@@ -1734,7 +1734,7 @@ export function AgentChat({
                           <span className="text-muted-foreground">Finalidade:</span>
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="z-[80]">
                           {CLINICUS_REPORT_PURPOSES.map((p) => (
                             <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
                           ))}
@@ -1746,7 +1746,7 @@ export function AgentChat({
                           <span className="text-muted-foreground">Destino:</span>
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="z-[80]">
                           {CLINICUS_HANDOFF_TARGETS.map((s) => (
                             <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
                           ))}
@@ -1800,7 +1800,7 @@ export function AgentChat({
                     <span className="text-muted-foreground">Modo:</span>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[80]">
                     {MEDISCUSS_MODES.map((m) => (
                       <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
                     ))}
@@ -1811,7 +1811,7 @@ export function AgentChat({
                     <span className="text-muted-foreground">Especialidade:</span>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[80]">
                     {MEDISCUSS_SPECIALTIES.map((s) => (
                       <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
                     ))}
