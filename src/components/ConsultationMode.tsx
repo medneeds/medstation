@@ -516,30 +516,6 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
         </Tabs>
       ) : (
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Barra de foco de painéis */}
-          <div className="flex items-center justify-end gap-1 px-3 py-1 border-b bg-muted/20">
-            {([
-              { key: 'split' as const, label: 'Dividido', Icon: Columns2 },
-              { key: 'transcription' as const, label: 'Transcrição', Icon: MessageSquare },
-              { key: 'structure' as const, label: 'Anamnese', Icon: Maximize2 },
-            ]).map(({ key, label, Icon }) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setFocusPane(key)}
-                aria-pressed={focusPane === key}
-                className={cn(
-                  "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ring-1",
-                  focusPane === key
-                    ? "bg-primary/12 text-primary ring-primary/25"
-                    : "text-muted-foreground ring-transparent hover:text-foreground hover:bg-muted/60"
-                )}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {label}
-              </button>
-            ))}
-          </div>
 
           <ResizablePanelGroup direction="horizontal" className="flex-1 overflow-hidden">
             {focusPane !== 'structure' && (
