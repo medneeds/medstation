@@ -42,6 +42,8 @@ import { useConsultation } from "@/hooks/useConsultation";
 import { TranscriptionPane } from "@/components/consultation/TranscriptionPane";
 import { StructuredPane } from "@/components/consultation/StructuredPane";
 import { FinalizeFlow, type FinalizePhase } from "@/components/consultation/FinalizeFlow";
+import { useCaseFolders } from "@/hooks/useCaseFolders";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
