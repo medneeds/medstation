@@ -25,6 +25,7 @@ import {
   FolderOpen,
   NotebookPen,
   MessagesSquare,
+  Play,
 } from "lucide-react";
 import { SUPPORT_CHAT_EVENT } from "@/components/SupportChat";
 import { LogoMark } from "@/components/LogoMark";
@@ -60,7 +61,7 @@ const agentModules = [
 const consultorioModule = { title: "Modo Consultório", url: "/consultorio", icon: Mic, code: "C" };
 
 const consultorioSubItems = [
-  { title: "Novo atendimento", url: "/consultorio", icon: Mic },
+  { title: "Novo atendimento", url: "/consultorio", icon: Play },
   { title: "Histórico", url: "/consultorio/historico", icon: FolderOpen },
 ];
 
