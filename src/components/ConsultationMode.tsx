@@ -330,7 +330,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                   aria-pressed={unifiedMode === key}
                   title={label}
                   className={cn(
-                    "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all",
+                    "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium whitespace-nowrap transition-all",
                     unifiedMode === key
                       ? "bg-card text-primary shadow-sm border border-border/50"
                       : "text-muted-foreground hover:text-foreground"
@@ -357,7 +357,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                     aria-pressed={focusPane === key}
                     title={label}
                     className={cn(
-                      "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all",
+                      "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium whitespace-nowrap transition-all",
                       focusPane === key
                         ? "bg-card text-primary shadow-sm border border-border/50"
                         : "text-muted-foreground hover:text-foreground"
