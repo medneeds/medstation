@@ -1,71 +1,70 @@
+# LP3 — landing clean, formulário completo e novo posicionamento de preço
 
-# Refino da quantificação de custos de IA
+## O que aprendi das referências
 
-## O que existe hoje
-- Tabela `ai_usage_logs` já registra `user_id`, `assistant`, `function_name`, `model`, tokens, `cost_usd`, `latency_ms`, `status`, `metadata`.
-- Só logam hoje as funções de texto: `agent-chat`, `examinus-chat`, `support-chat`, `structure-anamnesis`, `generate-medical-document`, `extract-case-from-document`, `extract-file-text`.
-- Ficam de fora as chamadas de áudio (custo real relevante): `transcribe-case`, `transcribe-prescription`, `consultation-transcribe`, `agent-transcribe` (OpenAI Whisper e ElevenLabs Scribe v2).
-- A página `/admin/uso-ia` mostra apenas 3 KPIs simples + duas listas, sem filtro por usuário, sem separação Lovable vs APIs externas, sem série temporal.
+| Site | Preço | Freemium | Formulário | Estética |
+|---|---|---|---|---|
+| Voa Health | premium (não exibe) | 30 dias grátis | nome + e-mail + telefone + CRM | pouquíssimo texto, 1 ideia por bloco, muita imagem |
+| OkMed | R$ 189/mês · R$ 149/mês anual | 14 dias, sem cartão | cadastro no app | 2 planos lado a lado, FAQ, prova social forte |
+| Amigo One | R$ 69,90 e R$ 199,90 | freemium com limites duros | formulário na LP | números grandes de autoridade |
+| iClinic | sob consulta | teste | formulário longo | institucional |
 
-## O que vou entregar
+Nenhum concorrente cobra menos de R$ 69,90. A MedStation a R$ 29,90 está posicionada como "app barato", o que atrapalha a percepção de valor clínico.
 
-### 1. Cobertura completa de logs (backend)
-- Adicionar `logAIUsage` nas 4 funções de transcrição, gravando:
-  - `provider` no `metadata` (`lovable_ai`, `openai`, `elevenlabs`).
-  - `audio_seconds` no `metadata` quando a resposta trouxer duração; senão estimar pelo tamanho do arquivo.
-  - `model` padronizado (`openai/whisper-1`, `elevenlabs/scribe_v2`).
-  - Custo derivado por minuto (não por token) para STT.
-- Atualizar `_shared/model-pricing.ts`:
-  - Adicionar `elevenlabs/scribe_v2` ($/min) e manter `openai/whisper-1` ($/min).
-  - Nova função `estimateSTTCostUSD(model, seconds)`.
-  - Marcar cada modelo com `provider` (`lovable_ai | openai | elevenlabs`) para segmentação consistente.
-- `ai-logger.ts`: aceitar `provider` e `audioSeconds` opcionais e persistir em `metadata`.
+## Diagnóstico da LP atual
 
-### 2. Endpoint agregador (edge function nova: `admin-ai-usage`)
-Um único endpoint, staff-only, que devolve tudo já agregado (evita puxar 1000 linhas no cliente e permite bucketização no servidor):
-- KPIs: chamadas, tokens, custo total, custo Lovable, custo APIs externas, latência média, erros.
-- Série temporal por dia (custo e tokens, empilhado por provider).
-- Top N por: usuário (com nome/CRM), assistente, modelo, função.
-- Split por provider (Lovable AI, OpenAI, ElevenLabs).
-- Aceita filtros: `from`, `to`, `user_id`, `provider`, `assistant`, `model`.
+- Muito branco puro e muito texto — a mentoria está certa: falta hierarquia e respiro.
+- Captação só por e-mail dentro do fluxo de signup; sem nome e telefone não dá para fazer follow-up comercial.
+- "Examinus grátis para sempre" ancora a marca em "grátis" e canibaliza a assinatura.
 
-### 3. UI /admin/uso-ia reconstruída
-Mantém o mesmo container, sem mexer no shell do AdminLayout. Layout:
+## LP3 — estrutura (rota `/lp3`, 6 blocos, tema claro com fundo em camadas)
 
-```text
-┌───────────────────────────────────────────────────────────┐
-│ Filtros: [Período ▼] [Usuário ▼] [Provider ▼] [Assist ▼] │
-├───────────────────────────────────────────────────────────┤
-│ KPI  KPI  KPI  KPI  KPI   (Chamadas, Tokens, Custo,       │
-│                            Custo Lovable, Custo Externo)  │
-├───────────────────────────────────────────────────────────┤
-│ Série temporal — barras empilhadas por provider (recharts)│
-├───────────────────────────────────────────────────────────┤
-│ Split Provider │ Top Assistentes │ Top Modelos            │
-├───────────────────────────────────────────────────────────┤
-│ Top Usuários (nome, chamadas, tokens, custo)              │
-├───────────────────────────────────────────────────────────┤
-│ Últimas chamadas (tabela paginada, exportável CSV)        │
-└───────────────────────────────────────────────────────────┘
-```
+1. **Hero** — headline única e curta, subtítulo de 1 linha, formulário curto à direita (nome, telefone, e-mail, CRM opcional), selo "7 dias grátis · sem cartão". Fundo verde-claro com gradiente suave (não branco puro).
+2. **Prova de autoridade** — faixa com 3 números (horas recuperadas, assistentes, documentos gerados) + logos/CRMs.
+3. **Como funciona** — 3 passos com o `ClinicalFlowDemo` já existente, texto reduzido ao mínimo.
+4. **Assistentes** — grade compacta com os 12, sem parágrafos, só nome + 1 linha.
+5. **Prova social** — depoimentos Dr. Leandro Albuquerque e Dra. Luciara Duarte em cartões grandes.
+6. **Preço + FAQ curto + CTA final** — mensal e anual lado a lado, ancoragem contra o custo de digitar.
 
-- Filtros persistem em query string.
-- Botão "Exportar CSV" do agregado atual.
-- Tokens semânticos (sem hardcode), respeita o toggle dark/light já adicionado.
+Cada bloco: 1 título, no máximo 2 linhas de apoio, 1 CTA. Sem seções de comparativo, sem manifesto.
 
-### 4. Sincronização com o resto do admin
-- `admin-metrics` (dashboard global) passa a puxar custo total 30d do mesmo agregador, garantindo que o card "Uso de IA" do Dashboard bata com a página detalhada.
-- Sem alteração de schema — usa `metadata` para `provider` e `audio_seconds`, então nenhuma migração é necessária.
+## Formulário de captação (o ponto mais importante)
+
+Novo componente `LeadForm` com **nome completo, telefone (máscara BR) e e-mail** obrigatórios, CRM/UF opcional.
+
+- Grava o lead numa tabela `leads` no backend (com origem/UTM) **antes** de qualquer redirecionamento, para nada se perder se o cadastro não for concluído.
+- Em seguida cria a conta e segue para `/confirmar-email`.
+- O telefone entra também no perfil do usuário para follow-up.
+- Aparece no hero e no CTA final, sempre inline (sem pop-up).
+
+## Nova estratégia de preço (proposta)
+
+| Plano | Hoje | Proposto |
+|---|---|---|
+| Assistentes | R$ 29,90/mês | **R$ 89,90/mês** (de R$ 149,90) |
+| Consultório | R$ 29,90/mês | **R$ 129,90/mês** |
+| Pro 2 (tudo) | R$ 49,90/mês | **R$ 179,90/mês** · anual 12x R$ 149,90 |
+
+Exibição na LP3 com ancoragem: "menos de R$ 6 por plantão" e comparação com 1 consulta particular. A LP3 mostra os novos preços; a troca real no Stripe entra depois que você aprovar os valores (preciso criar os novos preços e manter os assinantes atuais no valor antigo — grandfathering).
+
+## Novo modelo do Examinus (fim do "grátis para sempre")
+
+- **Teste de 7 dias com acesso total** aos 12 assistentes + Modo Consultório, sem cartão.
+- Terminado o teste: conta gratuita mantém **Examinus com 10 consultas/mês** (não ilimitado) e os demais assistentes bloqueados com prévia.
+- A demo pública da LP continua sem cadastro, mas com 3 mensagens.
+
+Isso troca "grátis para sempre" por escassez real e cria motivo para assinar.
 
 ## Detalhes técnicos
-- Nada muda no fluxo do usuário final; logs continuam best-effort (não quebram a resposta).
-- Custo de STT: `openai/whisper-1` ≈ $0.006/min; `elevenlabs/scribe_v2` ≈ $0.40/hora (~$0.0067/min) — ajustável em `model-pricing.ts`.
-- Provider inferido do `model` prefix quando não vier explícito, para retroagir sobre logs antigos.
-- Página nova usa `recharts` (já no projeto) para a série temporal.
 
-## O que NÃO vou fazer nesta rodada
-- Não vou criar novas tabelas nem tocar em RLS.
-- Não vou mexer no fluxo de checkout/Stripe nem em outros módulos admin.
-- Não vou alterar layout do AdminLayout — só o conteúdo da rota `/admin/uso-ia` e o card correspondente do Dashboard.
+- `src/pages/Lp3.tsx` + rota `/lp3` (reaproveita `ClinicalFlowDemo`, `QuickCheckout`, `ConciergeFab`).
+- `src/components/LeadForm.tsx` + tabela `leads` (RLS: insert anônimo, leitura só admin) e `GRANT` correspondente.
+- Tokens de superfície novos em `index.css` (fundo levemente esverdeado, cartões com borda suave) usados só pela LP3, sem afetar `/` e `/lp2`.
+- Preços centralizados em `src/lib/subscription-tiers.ts`; a LP3 lê de lá.
+- `/` e `/lp2` ficam intactas para comparação de conversão.
 
-Confirma que sigo por esse caminho? Se preferir tirar/adicionar algo (por exemplo, custo em BRL com câmbio, ou alerta de gasto por usuário), me diga antes que eu implemente.
+## Confirme antes de eu implementar
+
+1. Os valores propostos (R$ 89,90 / R$ 129,90 / R$ 179,90) fazem sentido ou você quer outra faixa?
+2. Trial de 7 dias com tudo liberado e depois Examinus limitado a 10/mês — ok?
+3. Telefone obrigatório mesmo que reduza um pouco a conversão do formulário — ok?
