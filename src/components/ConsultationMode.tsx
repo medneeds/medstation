@@ -320,9 +320,9 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
             {/* Modo de transcrição — segmentado, estado ativo óbvio */}
             <div className="inline-flex shrink-0 p-1 rounded-xl bg-muted/60 border border-border/60">
               {([
-                { key: false, label: 'Identificar falantes', Icon: Users },
-                { key: true, label: 'Transcrição contínua', Icon: MessageSquare },
-              ]).map(({ key, label, Icon }) => (
+                { key: false, label: 'Identificar falantes', short: 'Falantes', Icon: Users },
+                { key: true, label: 'Transcrição contínua', short: 'Contínua', Icon: MessageSquare },
+              ]).map(({ key, label, short, Icon }) => (
                 <button
                   key={String(key)}
                   type="button"
@@ -337,7 +337,8 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                   )}
                 >
                   <Icon className="h-3.5 w-3.5" />
-                  <span className="hidden xl:inline">{label}</span>
+                  <span className="hidden md:inline 2xl:hidden">{short}</span>
+                  <span className="hidden 2xl:inline">{label}</span>
                 </button>
               ))}
             </div>
@@ -364,7 +365,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                     )}
                   >
                     <Icon className="h-3.5 w-3.5" />
-                    <span className="hidden xl:inline">{label}</span>
+                    <span className="hidden 2xl:inline">{label}</span>
 
                   </button>
                 ))}
