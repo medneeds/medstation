@@ -554,6 +554,10 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     reviewedTranscript,
     liveStructuring,
     setLiveStructuring,
+    specialty,
+    setSpecialty,
+    detectedSpecialty,
+
     isRecording,
     isPaused,
     isConnecting,
