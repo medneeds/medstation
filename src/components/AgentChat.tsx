@@ -562,7 +562,7 @@ export function AgentChat({
           agentType,
           caseId: selectedCaseId,
           ...(agentType === "examinus" && { usePipeSeparator, includeTime, onlyAltered, clinicalImpression, compactMode }),
-          ...(agentType === "clinicus" && { directAHEMode, aheTemplate }),
+          ...(agentType === "clinicus" && { directAHEMode, aheTemplate, reportMode, reportType, reportPurpose, reportSpecialty }),
           ...(agentType === "prescriptus" && { bulaInteligenteMode }),
           ...(agentType === "gasometrus" && { directLIMode }),
           ...(agentType === "codexus" && { quickCIDMode }),
