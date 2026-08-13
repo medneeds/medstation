@@ -39,7 +39,8 @@ import {
   ChevronDown,
   Expand,
   Shrink,
-  BookOpen
+  BookOpen,
+  ClipboardList
 } from "lucide-react";
 import {
   Sheet,
@@ -150,6 +151,37 @@ const CLINICUS_CONTEXTS = [
 
 type ClinicusContext = (typeof CLINICUS_CONTEXTS)[number]["value"];
 
+const CLINICUS_REPORT_TYPES = [
+  { value: "relatorio_medico", label: "Relatório médico" },
+  { value: "passagem_caso", label: "Passagem de caso" },
+] as const;
+
+type ClinicusReportType = (typeof CLINICUS_REPORT_TYPES)[number]["value"];
+
+const CLINICUS_REPORT_PURPOSES = [
+  { value: "geral", label: "Finalidade geral" },
+  { value: "justificar_exame", label: "Justificar exame" },
+  { value: "justificar_internacao", label: "Justificar internação" },
+  { value: "justificar_medicacao", label: "Justificar medicação / alto custo" },
+  { value: "convenio_pericia", label: "Convênio / perícia" },
+  { value: "encaminhamento", label: "Encaminhamento" },
+] as const;
+
+const CLINICUS_HANDOFF_TARGETS = [
+  { value: "auto", label: "Sem especialidade definida" },
+  { value: "clinica_medica", label: "Clínica Médica" },
+  { value: "cardiologia", label: "Cardiologia" },
+  { value: "neurologia", label: "Neurologia" },
+  { value: "neurocirurgia", label: "Neurocirurgia" },
+  { value: "cirurgia", label: "Cirurgia Geral" },
+  { value: "infectologia", label: "Infectologia" },
+  { value: "nefrologia", label: "Nefrologia" },
+  { value: "hematologia", label: "Hematologia" },
+  { value: "ortopedia", label: "Ortopedia" },
+  { value: "uti", label: "Terapia Intensiva (UTI)" },
+  { value: "plantao", label: "Plantão seguinte (mesmo setor)" },
+] as const;
+
 
 
 export function AgentChat({ 
@@ -193,6 +225,10 @@ export function AgentChat({
   const [compactMode, setCompactMode] = useState(true);
   const [directAHEMode, setDirectAHEMode] = useState(false);
   const [aheTemplate, setAheTemplate] = useState<ClinicusContext>("enfermaria");
+  const [reportMode, setReportMode] = useState(false);
+  const [reportType, setReportType] = useState<ClinicusReportType>("relatorio_medico");
+  const [reportPurpose, setReportPurpose] = useState("geral");
+  const [reportSpecialty, setReportSpecialty] = useState("auto");
   const [bulaInteligenteMode, setBulaInteligenteMode] = useState(false);
   const [directLIMode, setDirectLIMode] = useState(false);
   const [quickCIDMode, setQuickCIDMode] = useState(false);
@@ -526,7 +562,7 @@ export function AgentChat({
           agentType,
           caseId: selectedCaseId,
           ...(agentType === "examinus" && { usePipeSeparator, includeTime, onlyAltered, clinicalImpression, compactMode }),
-          ...(agentType === "clinicus" && { directAHEMode, aheTemplate }),
+          ...(agentType === "clinicus" && { directAHEMode, aheTemplate, reportMode, reportType, reportPurpose, reportSpecialty }),
           ...(agentType === "prescriptus" && { bulaInteligenteMode }),
           ...(agentType === "gasometrus" && { directLIMode }),
           ...(agentType === "codexus" && { quickCIDMode }),
@@ -1488,7 +1524,7 @@ export function AgentChat({
           <div className="flex items-center gap-1.5 mb-2 flex-wrap">
             <Toggle
               pressed={directAHEMode}
-              onPressedChange={setDirectAHEMode}
+              onPressedChange={(v) => { setDirectAHEMode(v); if (v) setReportMode(false); }}
               size="sm"
               className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-primary/20 gap-1"
               title="Gerar anamnese estruturada direto"
@@ -1507,6 +1543,53 @@ export function AgentChat({
                   ))}
                 </SelectContent>
               </Select>
+            )}
+            <Toggle
+              pressed={reportMode}
+              onPressedChange={(v) => { setReportMode(v); if (v) setDirectAHEMode(false); }}
+              size="sm"
+              className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-primary/20 gap-1"
+              title="Relatório médico ou passagem de caso"
+            >
+              <ClipboardList className="h-3 w-3" />
+              <span>Relatório</span>
+            </Toggle>
+            {reportMode && (
+              <>
+                <Select value={reportType} onValueChange={(v) => setReportType(v as ClinicusReportType)}>
+                  <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CLINICUS_REPORT_TYPES.map((r) => (
+                      <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {reportType === "relatorio_medico" ? (
+                  <Select value={reportPurpose} onValueChange={setReportPurpose}>
+                    <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CLINICUS_REPORT_PURPOSES.map((p) => (
+                        <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Select value={reportSpecialty} onValueChange={setReportSpecialty}>
+                    <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CLINICUS_HANDOFF_TARGETS.map((s) => (
+                        <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </>
             )}
           </div>
         )}
@@ -1601,7 +1684,7 @@ export function AgentChat({
               <>
                 <Toggle
                   pressed={directAHEMode}
-                  onPressedChange={setDirectAHEMode}
+                  onPressedChange={(v) => { setDirectAHEMode(v); if (v) setReportMode(false); }}
                   size="sm"
                   className="shrink-0 h-8 data-[state=on]:bg-primary/20 gap-1 rounded-full"
                   title="Gerar anamnese hospitalar estruturada diretamente"
@@ -1621,6 +1704,56 @@ export function AgentChat({
                       ))}
                     </SelectContent>
                   </Select>
+                )}
+                <Toggle
+                  pressed={reportMode}
+                  onPressedChange={(v) => { setReportMode(v); if (v) setDirectAHEMode(false); }}
+                  size="sm"
+                  className="shrink-0 h-8 data-[state=on]:bg-primary/20 gap-1 rounded-full"
+                  title="Transformar informações soltas em relatório médico ou passagem de caso"
+                >
+                  <ClipboardList className="h-4 w-4" />
+                  <span className="text-xs">Relatório</span>
+                </Toggle>
+                {reportMode && (
+                  <>
+                    <Select value={reportType} onValueChange={(v) => setReportType(v as ClinicusReportType)}>
+                      <SelectTrigger className="shrink-0 h-8 w-auto gap-1.5 rounded-full text-xs px-3">
+                        <span className="text-muted-foreground">Tipo:</span>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CLINICUS_REPORT_TYPES.map((r) => (
+                          <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {reportType === "relatorio_medico" ? (
+                      <Select value={reportPurpose} onValueChange={setReportPurpose}>
+                        <SelectTrigger className="shrink-0 h-8 w-auto gap-1.5 rounded-full text-xs px-3">
+                          <span className="text-muted-foreground">Finalidade:</span>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CLINICUS_REPORT_PURPOSES.map((p) => (
+                            <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Select value={reportSpecialty} onValueChange={setReportSpecialty}>
+                        <SelectTrigger className="shrink-0 h-8 w-auto gap-1.5 rounded-full text-xs px-3">
+                          <span className="text-muted-foreground">Destino:</span>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CLINICUS_HANDOFF_TARGETS.map((s) => (
+                            <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </>
                 )}
               </>
             )}

@@ -230,7 +230,7 @@ serve(async (req) => {
 
     console.log(`Rate limit check passed for user ${user.id}`);
 
-    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, aheTemplate, bulaInteligenteMode, directLIMode, onlyAltered, clinicalImpression, quickCIDMode, compactMode, mediscussMode, mediscussSpecialty } = await req.json();
+    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, aheTemplate, bulaInteligenteMode, directLIMode, onlyAltered, clinicalImpression, quickCIDMode, compactMode, mediscussMode, mediscussSpecialty, reportMode, reportType, reportPurpose, reportSpecialty } = await req.json();
 
     // Validate input
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -2141,6 +2141,111 @@ RETORNO
 
 ${contextData}`;
 
+    // ===== Clínicus · MODO RELATÓRIO (Relatório médico / Passagem de caso) =====
+    const REPORT_PURPOSE_LABELS: Record<string, string> = {
+      geral: "finalidade geral (documentar a condição clínica atual)",
+      justificar_exame: "justificar a solicitação de exame complementar",
+      justificar_internacao: "justificar internação hospitalar",
+      justificar_medicacao: "justificar prescrição de medicação (inclusive alto custo)",
+      convenio_pericia: "apresentação a convênio, auditoria ou perícia",
+      encaminhamento: "encaminhamento a outro serviço ou profissional",
+    };
+    const HANDOFF_LABELS: Record<string, string> = {
+      auto: "sem especialidade definida (passagem genérica)",
+      clinica_medica: "Clínica Médica",
+      cardiologia: "Cardiologia",
+      neurologia: "Neurologia",
+      neurocirurgia: "Neurocirurgia",
+      cirurgia: "Cirurgia Geral",
+      infectologia: "Infectologia",
+      nefrologia: "Nefrologia",
+      hematologia: "Hematologia",
+      ortopedia: "Ortopedia",
+      uti: "Terapia Intensiva (UTI)",
+      plantao: "plantão seguinte do mesmo setor",
+    };
+
+    const reportSharedRules = `Você é o Clínicus, assistente clínico para profissionais de saúde.
+
+MODO RELATÓRIO ATIVADO — gere o documento IMEDIATAMENTE, sem perguntas, sem introduções e sem comentários fora do texto clínico.
+
+REGRA CENTRAL DE TRANSFORMAÇÃO
+O médico envia informações desorganizadas (fragmentos, tópicos soltos, áudio transcrito, valores de exames colados). Sua função é transformar isso em uma LINHA CLÍNICO-LABORATORIAL COERENTE:
+• Reconstrua a cronologia dos fatos (início dos sintomas, evolução, intervenções, resposta).
+• Escreva em parágrafos curtos e bem divididos, texto corrido, impessoal e técnico.
+• Correlacione clínica com exames: cada dado laboratorial ou de imagem citado deve estar amarrado ao raciocínio.
+• Registre exames de forma OBJETIVA, ABREVIADA e ORGANIZADA, em linha única por data:
+  DD/MM: Hb 10,2 Ht 31 Leuco 14.320 Pqt 180.000 Cr 1,8 Ur 78 Na 132 K 5,1 PCR 148
+  Imagem: DD/MM (TC tórax): consolidação em lobo inferior direito.
+• Use vírgula decimal, ponto de milhar, sem unidades, apenas valores relevantes ao caso (priorize alterados e os que sustentam o raciocínio).
+• NUNCA invente dados. Ausente: "não disponível" ou "aguardando resultado".
+• NUNCA use asteriscos, # ou markdown. Títulos apenas em CAIXA ALTA, seguidos de linha em branco.
+• Não use jargão vago ("normal", "sem alterações") sem especificar o que foi avaliado.
+• Extensão alvo: 1.500 a 3.500 caracteres.`;
+
+    const relatorioMedicoPrompt = `${reportSharedRules}
+
+TIPO DE DOCUMENTO: RELATÓRIO MÉDICO
+FINALIDADE DECLARADA: ${REPORT_PURPOSE_LABELS[reportPurpose] || REPORT_PURPOSE_LABELS.geral}
+
+ESTRUTURA OBRIGATÓRIA
+
+RELATÓRIO MÉDICO
+
+IDENTIFICAÇÃO
+Iniciais/idade/sexo quando informados; caso contrário, "paciente" de forma genérica. Nunca crie dados de identificação.
+
+HISTÓRICO CLÍNICO
+Parágrafos com a narrativa cronológica: antecedentes relevantes, quadro atual, evolução e tratamentos já realizados.
+
+EXAME FÍSICO
+Apenas achados objetivos informados e relevantes.
+
+EXAMES COMPLEMENTARES
+Linha única por data, no formato abreviado descrito acima. Exames de imagem em linha própria.
+
+DIAGNÓSTICO
+Diagnóstico ou hipótese principal, com CID quando informado. Diagnósticos secundários em linhas seguintes.
+
+CONCLUSÃO E JUSTIFICATIVA
+Parágrafo final que amarra clínica + exames e fundamenta explicitamente a ${REPORT_PURPOSE_LABELS[reportPurpose] || REPORT_PURPOSE_LABELS.geral}. ${reportPurpose === "justificar_exame" ? "Explique por que o exame solicitado é necessário: qual dúvida diagnóstica ele resolve, o que muda na conduta conforme o resultado e por que alternativas menos custosas são insuficientes." : ""}${reportPurpose === "justificar_internacao" ? "Explicite critérios de gravidade, risco de deterioração e por que o manejo ambulatorial é inseguro." : ""}${reportPurpose === "justificar_medicacao" ? "Explicite falha/intolerância a alternativas, indicação formal e benefício esperado." : ""}${reportPurpose === "convenio_pericia" ? "Foque em nexo, limitação funcional e necessidade assistencial, com linguagem médico-legal defensável." : ""}
+
+Encerre com a linha: "Coloco-me à disposição para esclarecimentos adicionais."
+Não gere data, assinatura, CRM ou carimbo.`;
+
+    const passagemCasoPrompt = `${reportSharedRules}
+
+TIPO DE DOCUMENTO: PASSAGEM DE CASO
+DESTINO: ${HANDOFF_LABELS[reportSpecialty] || HANDOFF_LABELS.auto}
+${reportSpecialty && reportSpecialty !== "auto" ? `Adapte a ênfase clínica ao destino: destaque os dados que essa equipe precisa para decidir (achados, exames e pendências pertinentes a essa área) e formule a pergunta/solicitação no vocabulário dessa especialidade.` : ""}
+
+ESTRUTURA OBRIGATÓRIA (objetiva, pronta para leitura rápida na troca de plantão ou interconsulta)
+
+PASSAGEM DE CASO
+
+RESUMO EM UMA LINHA
+Idade/sexo + diagnóstico principal + dia de internação/evolução + estado atual em uma única frase.
+
+HISTÓRIA RESUMIDA
+Dois a três parágrafos curtos: motivo da admissão, evolução até o momento e intervenções realizadas.
+
+STATUS ATUAL
+Sinais vitais, suportes em uso (oxigenoterapia, drogas vasoativas, antibióticos com dia de tratamento, dispositivos), dieta e nível de consciência — apenas o informado.
+
+EXAMES RELEVANTES
+Linha única por data, formato abreviado. Destaque tendência quando houver mais de uma data (ex.: Cr 1,2 → 1,8 → 2,4).
+
+PROBLEMAS ATIVOS
+Lista, um por linha, cada problema com a conduta vigente.
+
+PENDÊNCIAS E PLANO
+Lista objetiva do que precisa ser feito, com prioridade e prazo quando informado.
+
+PONTOS DE ATENÇÃO
+Red flags, riscos e critérios de reavaliação/escalonamento.
+
+${reportSpecialty && reportSpecialty !== "auto" ? `SOLICITAÇÃO À ${(HANDOFF_LABELS[reportSpecialty] || "").toUpperCase()}\nPergunta clínica clara e específica dirigida à equipe de destino.` : ""}`;
+
     let systemPrompt = agentPrompts[agentType] || agentPrompts.clinicus;
     if (agentType === "clinicus" && directAHEMode) {
       if (aheTemplate === "consultorio") {
@@ -2153,6 +2258,11 @@ ${contextData}`;
         systemPrompt = aheV3AdmissaoUTIPrompt;
       }
       // "enfermaria" (ou legado "v1") usa o prompt base do Clínicus em modo AHE
+    }
+
+    if (agentType === "clinicus" && reportMode && !directAHEMode) {
+      const reportBody = reportType === "passagem_caso" ? passagemCasoPrompt : relatorioMedicoPrompt;
+      systemPrompt = `${reportBody}\n\n${contextData}`;
     }
 
 
