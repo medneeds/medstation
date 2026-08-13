@@ -39,7 +39,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useConsultation } from "@/hooks/useConsultation";
-import { AudioVisualizer } from "@/components/consultation/AudioVisualizer";
 import { TranscriptionPane } from "@/components/consultation/TranscriptionPane";
 import { StructuredPane } from "@/components/consultation/StructuredPane";
 import { FinalizeFlow, type FinalizePhase } from "@/components/consultation/FinalizeFlow";
