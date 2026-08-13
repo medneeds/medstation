@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Stethoscope,
@@ -59,6 +59,12 @@ const agentModules = [
 
 const consultorioModule = { title: "Modo Consultório", url: "/consultorio", icon: Mic, code: "C" };
 
+const consultorioSubItems = [
+  { title: "Novo atendimento", url: "/consultorio", icon: Mic },
+  { title: "Histórico", url: "/consultorio/historico", icon: FolderOpen },
+];
+
+
 const recordsModules = [
   { title: "Notas", url: "/notes", icon: NotebookPen },
 ];
@@ -76,10 +82,24 @@ const navItemClass = ({ isActive }: { isActive: boolean }) =>
       : "text-sidebar-foreground/80",
   );
 
+const subItemClass = ({ isActive }: { isActive: boolean }) =>
+  cn(
+    "group relative ml-6 flex items-center gap-2.5 rounded-md pl-3 pr-3 h-9 text-[0.8rem] cursor-pointer outline-none",
+    "border-l border-border/70",
+    "transition-all duration-200 ease-precise",
+    "hover:bg-primary/10 hover:text-foreground hover:border-l-primary/70",
+    "[&_svg]:transition-transform [&_svg]:duration-200 hover:[&_svg]:scale-110 hover:[&_svg]:text-primary",
+    isActive
+      ? "bg-sidebar-accent text-foreground border-l-primary font-semibold [&_svg]:text-primary"
+      : "text-sidebar-foreground/70",
+  );
+
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   
 
   const handleLogout = async () => {
@@ -159,24 +179,44 @@ export function AppSidebar() {
           )}
           <SidebarGroupContent>
             <SidebarMenu className="gap-1.5">
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip={consultorioModule.title} className="p-0 h-auto bg-transparent hover:bg-transparent">
-                  <NavLink to={consultorioModule.url} className={navItemClass}>
-                    <consultorioModule.icon className="h-4 w-4 shrink-0" />
-                    {!collapsed && (
-                      <>
-                        <span className="flex-1">{consultorioModule.title}</span>
-                        <span className="font-mono text-2xs text-primary/80 group-hover:text-primary">
-                          {consultorioModule.code}
-                        </span>
-                      </>
-                    )}
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {!collapsed && (
+                <SidebarMenuItem>
+                  <div className="flex items-center gap-3 rounded-md px-3 h-9 text-sm font-semibold text-foreground border-l-2 border-primary/60 bg-primary/5">
+                    <consultorioModule.icon className="h-4 w-4 shrink-0 text-primary" />
+                    <span className="flex-1">{consultorioModule.title}</span>
+                    <span className="font-mono text-2xs text-primary/80">{consultorioModule.code}</span>
+                  </div>
+                </SidebarMenuItem>
+              )}
+
+
+              {/* Subitens hierarquizados */}
+              {consultorioSubItems.map((sub) => {
+                const isActive = pathname === sub.url;
+                return (
+                <SidebarMenuItem key={sub.url}>
+                  <SidebarMenuButton asChild tooltip={sub.title} isActive={isActive} className="p-0 h-auto bg-transparent hover:bg-transparent">
+                    <NavLink
+                      to={sub.url}
+                      end
+                      className={cn(subItemClass({ isActive }), collapsed && "ml-0 pl-3 border-l-0")}
+                    >
+
+                      {!collapsed && (
+                        <span className="absolute left-0 top-1/2 h-px w-2 -translate-y-1/2 bg-border" aria-hidden />
+                      )}
+                      <sub.icon className="h-3.5 w-3.5 shrink-0" />
+                      {!collapsed && <span className="flex-1">{sub.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                );
+              })}
+
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
 
         {/* Notas */}
         <SidebarGroup className="py-3 hairline-t">

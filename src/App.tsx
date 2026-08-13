@@ -27,6 +27,8 @@ import Onboarding from "./pages/Onboarding";
 import WelcomeTour from "./pages/WelcomeTour";
 import Clinicus from "./pages/Clinicus";
 import Consultorio from "./pages/Consultorio";
+import ConsultorioHistorico from "./pages/ConsultorioHistorico";
+
 import ConsultorioLanding from "./pages/ConsultorioLanding";
 import Examinus from "./pages/Examinus";
 import Scorius from "./pages/Scorius";
@@ -103,6 +105,17 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/consultorio/historico"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <ConsultorioHistorico />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+
             <Route path="/welcome" element={<Welcome />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/welcome-tour" element={<ProtectedRoute><WelcomeTour /></ProtectedRoute>} />
