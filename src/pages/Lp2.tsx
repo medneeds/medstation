@@ -93,6 +93,7 @@ const testimonials = [
 export default function Lp2() {
   const navigate = useNavigate();
   const [signupOpen, setSignupOpen] = useState(false);
+  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
   useReferralCapture();
 
   useEffect(() => {
@@ -298,11 +299,71 @@ export default function Lp2() {
               Assinatura por menos de R$ 1 por dia
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Assinatura mensal, cancele quando quiser. 7 dias de garantia incondicional.
+              Escolha o ciclo que faz sentido para você. Cancele quando quiser. 7 dias de garantia incondicional.
             </p>
           </div>
-          <div className="mt-10 max-w-xl mx-auto">
-            <QuickCheckout origin="lp2" />
+
+          {/* Seletor de ciclo — mensal e anual lado a lado */}
+          <div className="mt-8 grid sm:grid-cols-2 gap-4 max-w-xl mx-auto">
+            {/* Mensal */}
+            <button
+              type="button"
+              onClick={() => setBilling("monthly")}
+              className={`relative text-left rounded-2xl border p-5 transition-all ${
+                billing === "monthly"
+                  ? "border-2 border-primary bg-primary/5 shadow-medical"
+                  : "border border-border/60 bg-card hover:border-primary/40"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold">Mensal</span>
+                {billing === "monthly" && (
+                  <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                    <Check className="w-3 h-3" />
+                  </span>
+                )}
+              </div>
+              <div className="mt-3 flex items-baseline gap-1.5">
+                <span className="text-2xl font-bold text-primary">R$ 29,90</span>
+                <span className="text-sm text-muted-foreground">/mês</span>
+              </div>
+              <div className="mt-1 flex items-center gap-2 text-xs">
+                <span className="text-muted-foreground line-through">R$ 59,90</span>
+                <Badge variant="secondary" className="text-[0.65rem] px-1.5 py-0">por tempo limitado</Badge>
+              </div>
+              <p className="mt-3 text-xs text-muted-foreground">Flexível, cancele quando quiser.</p>
+            </button>
+
+            {/* Anual */}
+            <button
+              type="button"
+              onClick={() => setBilling("yearly")}
+              className={`relative text-left rounded-2xl border p-5 transition-all ${
+                billing === "yearly"
+                  ? "border-2 border-primary bg-primary/5 shadow-medical"
+                  : "border border-border/60 bg-card hover:border-primary/40"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold">Anual</span>
+                <Badge variant="secondary" className="text-[0.65rem] px-1.5 py-0 bg-primary/10 text-primary border border-primary/20">
+                  Economize R$ 59
+                </Badge>
+              </div>
+              <div className="mt-3 flex items-baseline gap-1.5">
+                <span className="text-2xl font-bold text-primary">R$ 299,90</span>
+                <span className="text-sm text-muted-foreground">/ano</span>
+              </div>
+              <div className="mt-1 text-xs text-muted-foreground">
+                ≈ R$ 24,99 por mês
+              </div>
+              <p className="mt-3 text-xs text-muted-foreground">Melhor preço, 12 meses por menos.</p>
+            </button>
+          </div>
+
+          {/* Checkout reflete o ciclo selecionado */}
+          <div className="mt-6 max-w-xl mx-auto">
+            <QuickCheckout origin="lp2" billingPeriod={billing} showPricing={false} />
           </div>
           <p className="mt-6 text-center text-xs text-muted-foreground">
             Prefere conhecer antes?{" "}
