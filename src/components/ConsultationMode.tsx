@@ -364,7 +364,8 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                     )}
                   >
                     <Icon className="h-3.5 w-3.5" />
-                    <span className="hidden lg:inline">{label}</span>
+                    <span className="hidden xl:inline">{label}</span>
+
                   </button>
                 ))}
               </div>
