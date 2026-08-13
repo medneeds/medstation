@@ -403,12 +403,14 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
       setIsStructuring(true);
       try {
         const { data, error: fnError } = await supabase.functions.invoke('structure-anamnesis', {
-          body: { transcription: transcriptionText },
+          body: { transcription: transcriptionText, specialty: specialtyRef.current },
         });
         if (fnError) throw fnError;
         if (data?.structure) {
+          const { detectedSpecialty: detected, ...sections } = data.structure as Record<string, string>;
+          if (specialtyRef.current === 'auto' && detected) setDetectedSpecialty(detected);
           setStructure((prev) => {
-            const next = { ...prev, ...data.structure } as AnamnesisStructure;
+            const next = { ...prev, ...sections } as AnamnesisStructure;
             const changed = new Set<keyof AnamnesisStructure>();
             (Object.keys(next) as (keyof AnamnesisStructure)[]).forEach((k) => {
               if ((next[k] || '').trim() && (next[k] || '').trim() !== (prev[k] || '').trim()) {
@@ -420,6 +422,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
           });
           setLastStructuredAt(new Date());
         }
+
       } catch (err) {
         console.error('Error structuring anamnesis:', err);
         if (!opts?.silent) toast.error('Erro ao estruturar anamnese');
