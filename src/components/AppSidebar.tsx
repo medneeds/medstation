@@ -82,6 +82,19 @@ const navItemClass = ({ isActive }: { isActive: boolean }) =>
       : "text-sidebar-foreground/80",
   );
 
+const subItemClass = ({ isActive }: { isActive: boolean }) =>
+  cn(
+    "group relative ml-6 flex items-center gap-2.5 rounded-md pl-3 pr-3 h-9 text-[0.8rem] cursor-pointer outline-none",
+    "border-l border-border/70",
+    "transition-all duration-200 ease-precise",
+    "hover:bg-primary/10 hover:text-foreground hover:border-l-primary/70",
+    "[&_svg]:transition-transform [&_svg]:duration-200 hover:[&_svg]:scale-110 hover:[&_svg]:text-primary",
+    isActive
+      ? "bg-sidebar-accent text-foreground border-l-primary font-semibold [&_svg]:text-primary"
+      : "text-sidebar-foreground/70",
+  );
+
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
