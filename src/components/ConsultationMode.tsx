@@ -513,9 +513,10 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
             animate={{ opacity: 1, height: 'auto' }}
             className="relative border-t border-border/40 bg-muted/20"
           >
-            <div className="flex items-center gap-2 px-2 md:px-3 py-1.5 overflow-x-auto no-scrollbar">
+            <div className="flex flex-col md:flex-row md:items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:overflow-x-auto no-scrollbar">
               {!unifiedMode && (
-                <div className="inline-flex items-center gap-1 p-0.5 rounded-full bg-card/70 ring-1 ring-border/60 shrink-0">
+                <div className="grid grid-cols-3 md:inline-flex md:items-center gap-1 p-0.5 rounded-full bg-card/70 ring-1 ring-border/60 shrink-0">
+
                   {([
                     { key: 'doctor' as const, label: 'Médico', short: '1', Icon: Stethoscope, active: 'bg-primary/15 text-primary ring-primary/30' },
                     { key: 'patient' as const, label: 'Paciente', short: '2', Icon: User, active: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 ring-blue-500/30' },
