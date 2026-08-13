@@ -42,6 +42,8 @@ import { useConsultation } from "@/hooks/useConsultation";
 import { TranscriptionPane } from "@/components/consultation/TranscriptionPane";
 import { StructuredPane } from "@/components/consultation/StructuredPane";
 import { FinalizeFlow, type FinalizePhase } from "@/components/consultation/FinalizeFlow";
+import { useCaseFolders } from "@/hooks/useCaseFolders";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
@@ -65,8 +67,15 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
   const [finalizeError, setFinalizeError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("transcription");
   const [caseName, setCaseName] = useState<string>("");
+  const [caseFolderId, setCaseFolderId] = useState<string | null>(null);
+  const [consultationDate, setConsultationDate] = useState<string>(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  });
+  const { folders, isCreating: isCreatingFolder, createFolder } = useCaseFolders();
   const [isSavingCase, setIsSavingCase] = useState(false);
   const [savedCaseId, setSavedCaseId] = useState<string | null>(null);
+
   const [focusPane, setFocusPane] = useState<FocusPane>("split");
   const [unifiedMode, setUnifiedMode] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
@@ -242,18 +251,22 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           chief_complaint: structure.chiefComplaint || null,
           notes: notes || null,
           status: 'active',
+          folder_id: caseFolderId,
+          consultation_date: consultationDate,
         })
         .select('id')
         .single();
       if (insertError) throw insertError;
       setSavedCaseId(data.id);
-      toast.success('Caso salvo 👏');
+      const folderName = folders.find((f) => f.id === caseFolderId)?.name;
+      toast.success(folderName ? `Caso salvo em "${folderName}" 👏` : 'Caso salvo 👏');
     } catch (e: any) {
       toast.error(e.message || 'Não foi possível salvar o caso.');
     } finally {
       setIsSavingCase(false);
     }
-  }, [caseName, buildStructuredText, structure.chiefComplaint]);
+  }, [caseName, buildStructuredText, structure.chiefComplaint, caseFolderId, consultationDate, folders]);
+
 
   return (
     <div className="flex flex-col h-full bg-background">
@@ -704,6 +717,14 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           totalSections={11}
           caseName={caseName}
           onCaseNameChange={setCaseName}
+          folders={folders}
+          folderId={caseFolderId}
+          onFolderChange={setCaseFolderId}
+          onCreateFolder={createFolder}
+          isCreatingFolder={isCreatingFolder}
+          consultationDate={consultationDate}
+          onConsultationDateChange={setConsultationDate}
+
           isSavingCase={isSavingCase}
           savedCaseId={savedCaseId}
           onSaveCase={handleSaveCase}

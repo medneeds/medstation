@@ -4,8 +4,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CheckCircle2, Copy, FileText, Loader2, Save, AlertTriangle, Circle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CheckCircle2, Copy, FileText, Loader2, Save, AlertTriangle, Circle, FolderPlus, Folder, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { CaseFolder } from "@/hooks/useCaseFolders";
 
 export type FinalizePhase = "review" | "structuring" | "done" | "error";
 
@@ -18,6 +20,13 @@ interface FinalizeFlowProps {
   totalSections: number;
   caseName: string;
   onCaseNameChange: (v: string) => void;
+  folders: CaseFolder[];
+  folderId: string | null;
+  onFolderChange: (id: string | null) => void;
+  onCreateFolder: (name: string) => Promise<CaseFolder | null>;
+  isCreatingFolder: boolean;
+  consultationDate: string;
+  onConsultationDateChange: (v: string) => void;
   isSavingCase: boolean;
   savedCaseId: string | null;
   onSaveCase: () => void;
@@ -27,6 +36,7 @@ interface FinalizeFlowProps {
   onContinueEditing: () => void;
   onExit: () => void;
 }
+
 
 const STEPS: { key: FinalizePhase; label: string; hint: string; target: number }[] = [
   { key: "review", label: "Revisando o áudio", hint: "Transcrição de alta precisão em português", target: 55 },
@@ -43,7 +53,15 @@ export function FinalizeFlow({
   totalSections,
   caseName,
   onCaseNameChange,
+  folders,
+  folderId,
+  onFolderChange,
+  onCreateFolder,
+  isCreatingFolder,
+  consultationDate,
+  onConsultationDateChange,
   isSavingCase,
+
   savedCaseId,
   onSaveCase,
   onCopyAnamnesis,
@@ -54,6 +72,18 @@ export function FinalizeFlow({
 }: FinalizeFlowProps) {
   const [progress, setProgress] = useState(4);
   const progressRef = useRef(4);
+  const [isNewFolder, setIsNewFolder] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
+
+  const handleCreateFolder = async () => {
+    const created = await onCreateFolder(newFolderName);
+    if (created) {
+      onFolderChange(created.id);
+      setIsNewFolder(false);
+      setNewFolderName("");
+    }
+  };
+
 
   useEffect(() => {
     if (phase === "error") return;
@@ -215,11 +245,89 @@ export function FinalizeFlow({
                 if (e.key === "Enter" && canSave) onSaveCase();
               }}
             />
+          </div>
+
+          {/* Pasta e data */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label className="text-[11px] text-muted-foreground">Pasta</Label>
+              {isNewFolder ? (
+                <div className="flex gap-1.5">
+                  <Input
+                    autoFocus
+                    placeholder="Nome da nova pasta"
+                    value={newFolderName}
+                    onChange={(e) => setNewFolderName(e.target.value)}
+                    disabled={isCreatingFolder}
+                    maxLength={60}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") void handleCreateFolder();
+                      if (e.key === "Escape") setIsNewFolder(false);
+                    }}
+                  />
+                  <Button size="icon" variant="default" className="shrink-0" onClick={() => void handleCreateFolder()} disabled={isCreatingFolder || !newFolderName.trim()}>
+                    {isCreatingFolder ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                  </Button>
+                  <Button size="icon" variant="ghost" className="shrink-0" onClick={() => setIsNewFolder(false)} disabled={isCreatingFolder}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Select
+                  value={folderId ?? "none"}
+                  onValueChange={(v) => {
+                    if (v === "__new__") {
+                      setNewFolderName("");
+                      setIsNewFolder(true);
+                      return;
+                    }
+                    onFolderChange(v === "none" ? null : v);
+                  }}
+                  disabled={!canSave || isSavingCase || !!savedCaseId}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sem pasta" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover z-[60]">
+                    <SelectItem value="none">Sem pasta</SelectItem>
+                    {folders.map((f) => (
+                      <SelectItem key={f.id} value={f.id}>
+                        <span className="flex items-center gap-2">
+                          <Folder className="h-3.5 w-3.5 text-primary" />
+                          {f.name}
+                        </span>
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="__new__">
+                      <span className="flex items-center gap-2 text-primary">
+                        <FolderPlus className="h-3.5 w-3.5" />
+                        Criar nova pasta
+                      </span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="case-date" className="text-[11px] text-muted-foreground">
+                Data da consulta
+              </Label>
+              <Input
+                id="case-date"
+                type="date"
+                value={consultationDate}
+                onChange={(e) => onConsultationDateChange(e.target.value)}
+                disabled={!canSave || isSavingCase || !!savedCaseId}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end">
             <Button
               size="sm"
               onClick={onSaveCase}
               disabled={!canSave || isSavingCase || !caseName.trim() || !!savedCaseId}
-              className="gap-2 sm:w-auto"
+              className="gap-2"
             >
               {isSavingCase ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               <span className="text-xs md:text-sm">
@@ -227,6 +335,7 @@ export function FinalizeFlow({
               </span>
             </Button>
           </div>
+
           <p className="text-[11px] text-muted-foreground">
             {canSave
               ? "Transcrição e anamnese serão guardadas com esse nome."
