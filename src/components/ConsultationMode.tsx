@@ -270,15 +270,11 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
         )}
 
         <div className="relative flex flex-wrap items-center gap-x-3 gap-y-2 px-2 md:px-4 py-2">
-          {/* Identidade */}
+          {/* Identidade — apenas voltar, título já no cabeçalho superior */}
           <div className="flex items-center gap-2 min-w-0 shrink-0">
-            <Button variant="ghost" size="icon" onClick={handleExit} className="h-8 w-8 rounded-xl shrink-0">
+            <Button variant="ghost" size="icon" onClick={handleExit} className="h-8 w-8 rounded-xl shrink-0" title="Voltar">
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <span className="hidden md:block h-6 w-px bg-border" />
-            <h1 className="font-semibold text-sm md:text-[15px] tracking-tight truncate">
-              Modo Consultório
-            </h1>
           </div>
 
           {/* Centro: estado do áudio + seletores segmentados */}
