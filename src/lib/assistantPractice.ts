@@ -335,7 +335,7 @@ export const assistantPractice: Record<string, PracticeStep[]> = {
     },
   ],
 
-  "Modo Consultório": [
+  "Modo Escuta": [
     {
       label: "Você conversa",
       title: "Grave a consulta e olhe para o paciente",

@@ -68,7 +68,7 @@ export function PremiumConsultorioGuard({ children }: PremiumConsultorioGuardPro
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
               <Mic className="w-8 h-8 text-primary" />
             </div>
-            <CardTitle className="text-2xl">Modo Consultório</CardTitle>
+            <CardTitle className="text-2xl">Modo Escuta</CardTitle>
             <CardDescription className="text-base mt-2">
               Transcrição em tempo real durante a consulta + AHE estruturada automaticamente.
               Produza mais. Digite menos. Direto da consulta.
@@ -124,7 +124,7 @@ export function PremiumConsultorioGuard({ children }: PremiumConsultorioGuardPro
                   {checkoutLoading ? (
                     <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processando...</>
                   ) : (
-                    "Adicionar Modo Consultório por R$ 19,90/mês"
+                    "Adicionar Modo Escuta por R$ 19,90/mês"
                   )}
                 </Button>
               </div>
@@ -155,7 +155,7 @@ export function PremiumConsultorioGuard({ children }: PremiumConsultorioGuardPro
                   </button>
                 </div>
                 <Button variant="outline" className="w-full" onClick={() => navigate("/consultorio-landing")}>
-                  Saber mais sobre o Modo Consultório
+                  Saber mais sobre o Modo Escuta
                 </Button>
               </div>
             )}

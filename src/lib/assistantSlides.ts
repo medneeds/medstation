@@ -44,7 +44,7 @@ export const assistantSlides: Record<string, AssistantSlide[]> = {
       bullets: [
         "Modo Discussão: raciocínio clínico passo a passo",
         "Modo Documentação: AHE pronta para colar",
-        "Modo Consultório: transcrição de áudio com anti-alucinação",
+        "Modo Escuta: transcrição de áudio com anti-alucinação",
       ],
     },
     {

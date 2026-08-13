@@ -39,7 +39,7 @@ const ROUTE_LABELS: Record<string, string> = {
   cases: "Casos clínicos",
   prescricoes: "Prescrições",
   notes: "Notas",
-  consultorio: "Modo Consultório",
+  consultorio: "Modo Escuta",
 };
 
 function getCrumb(pathname: string) {

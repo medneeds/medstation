@@ -136,7 +136,7 @@ serve(async (req) => {
         throw new Error("Upgrade do Consultório requer assinatura ativa dos Assistentes.");
       }
       if (plan === "agents_upgrade" && !hasConsultorio) {
-        throw new Error("Upgrade dos Assistentes requer assinatura ativa do Modo Consultório.");
+        throw new Error("Upgrade dos Assistentes requer assinatura ativa do Modo Escuta.");
       }
     }
 

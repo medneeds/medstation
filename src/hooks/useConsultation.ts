@@ -262,7 +262,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
       setIsRecording(true);
       setIsPaused(false);
       startTimer();
-      toast.success('Modo Consultório ativado — transcrevendo em tempo real');
+      toast.success('Modo Escuta ativado — transcrevendo em tempo real');
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Erro ao iniciar gravação';
       console.error('[useConsultation] start error:', err);

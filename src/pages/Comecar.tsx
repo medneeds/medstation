@@ -54,7 +54,7 @@ const paths = [
     icon: Compass,
     title: "Ver apresentação",
     sub: "Tour pela plataforma",
-    hint: "Assistentes, Modo Consultório, planos e garantia.",
+    hint: "Assistentes, Modo Escuta, planos e garantia.",
     to: "/tour",
   },
 ];
@@ -183,7 +183,7 @@ const assistants: Assistant[] = [
 ];
 
 const consultorio: Assistant = {
-  name: "Modo Consultório",
+  name: "Modo Escuta",
   short: "MC",
   icon: Mic,
   desc: "Consulta transcrita",
@@ -384,7 +384,7 @@ export default function Comecar() {
                       <Mic className="w-4 h-4 text-primary group-hover:text-primary-foreground transition-colors" />
                     </div>
                     <span className="text-[10px] font-semibold text-primary uppercase leading-tight">
-                      Modo Consultório
+                      Modo Escuta
                     </span>
                     <span className="text-[10px] text-muted-foreground leading-tight">Consulta transcrita</span>
                   </button>
@@ -393,7 +393,7 @@ export default function Comecar() {
 
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/50 bg-card/50 backdrop-blur-xl px-5 py-4">
                   <p className="text-sm text-muted-foreground">
-                    Já sabe o que quer? Assine e libere os 10 assistentes pagos + Modo Consultório.
+                    Já sabe o que quer? Assine e libere os 10 assistentes pagos + Modo Escuta.
                   </p>
                   <Button
                     className="bg-gradient-primary hover:opacity-90"

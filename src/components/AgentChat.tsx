@@ -276,7 +276,7 @@ export function AgentChat({
   const [focusMode, setFocusMode] = useState(false);
   const [readingMessage, setReadingMessage] = useState<Message | null>(null);
 
-  // Conteúdo enviado de outra tela (ex.: Modo Consultório)
+  // Conteúdo enviado de outra tela (ex.: Modo Escuta)
   useEffect(() => {
     const prefill = sessionStorage.getItem("agent-prefill");
     if (prefill) {

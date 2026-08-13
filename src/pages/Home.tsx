@@ -41,7 +41,7 @@ const faqs: FAQItem[] = [
     a: "Não. A MedStation AI roda direto no navegador, no computador, tablet ou celular. Basta entrar com seu e-mail e começar a usar.",
   },
   {
-    q: "Como funciona o Modo Consultório?",
+    q: "Como funciona o Modo Escuta?",
     a: "Você grava a conversa com o paciente direto pelo navegador e a plataforma transcreve em tempo real, separando fala do médico e do paciente, e organiza tudo em uma anamnese estruturada pronta para revisar e copiar para o seu prontuário.",
     demo: "consultorio",
   },
@@ -60,7 +60,7 @@ const faqs: FAQItem[] = [
   },
   {
     q: "Qual a diferença entre os planos?",
-    a: "O Pro 1 dá acesso ao ecossistema dos 11 assistentes para o trabalho clínico do dia a dia. O Pro 2 inclui o Modo Consultório com transcrição da consulta. Você ainda pode combinar com o Studius para estudo médico contínuo.",
+    a: "O Pro 1 dá acesso ao ecossistema dos 11 assistentes para o trabalho clínico do dia a dia. O Pro 2 inclui o Modo Escuta com transcrição da consulta. Você ainda pode combinar com o Studius para estudo médico contínuo.",
   },
 ];
 
@@ -508,7 +508,7 @@ export default function Home() {
                 <h3 className="font-display text-2xl tracking-tight">Para o especialista no consultório</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   Cada paciente tem 20 minutos. Você atende, conversa, examina — e a consulta se
-                  escreve sozinha. O Modo Consultório transcreve o atendimento ao vivo e devolve a
+                  escreve sozinha. O Modo Escuta transcreve o atendimento ao vivo e devolve a
                   anamnese estruturada no momento em que o paciente sai, no modelo que você já usa.
                 </p>
                 <ul className="space-y-2 text-sm">
@@ -777,7 +777,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Modo Consultório - novo produto */}
+      {/* Modo Escuta - novo produto */}
       <section id="consultorio" className="py-12 md:py-20 px-4 md:px-6 relative overflow-hidden scroll-mt-20">
         <div className="container mx-auto max-w-5xl relative">
           <Card className="p-6 md:p-10 lg:p-14 border-2 border-primary/30 bg-gradient-to-br from-primary/8 via-card/80 to-card/60 backdrop-blur-sm relative overflow-hidden">
@@ -794,7 +794,7 @@ export default function Home() {
                   <span className="italic text-primary">A MedStation escreve.</span>
                 </h2>
                 <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
-                  Modo Consultório, em tempo real: atenda como sempre. Nós transcrevemos a consulta ao vivo e devolvemos a anamnese estruturada no momento em que o paciente sai.
+                  Modo Escuta, em tempo real: atenda como sempre. Nós transcrevemos a consulta ao vivo e devolvemos a anamnese estruturada no momento em que o paciente sai.
                 </p>
 
                 <ul className="space-y-2 text-sm text-muted-foreground">
@@ -804,7 +804,7 @@ export default function Home() {
                 </ul>
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                   <Button size="lg" onClick={() => { trackCtaClick({ cta: 'consultorio_ver_planos', section: 'consultorio', destination: '#planos' }); scrollToSection('planos'); }}>
-                    Ver planos do Modo Consultório
+                    Ver planos do Modo Escuta
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                   <span className="text-xs text-muted-foreground self-center">A partir de R$ 29,90/mês</span>
@@ -812,7 +812,7 @@ export default function Home() {
               </div>
               <div className="hidden md:block">
                 <HeroVideo
-                  slides={[{ id: "consultorio", label: "Modo Consultório", src: "/hero/hero.mp4", poster: "/hero/hero-poster.jpg" }]}
+                  slides={[{ id: "consultorio", label: "Modo Escuta", src: "/hero/hero.mp4", poster: "/hero/hero-poster.jpg" }]}
                 />
               </div>
             </div>
@@ -907,7 +907,7 @@ export default function Home() {
               Comece grátis, <span className="italic text-primary">monte sua estação</span>
             </h2>
             <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
-              Os 11 Assistentes e o Modo Consultório são <span className="text-foreground font-medium">produtos separados</span>. Assine só o que usa, ou junte os dois no MedStation AI Pro 2.
+              Os 11 Assistentes e o Modo Escuta são <span className="text-foreground font-medium">produtos separados</span>. Assine só o que usa, ou junte os dois no MedStation AI Pro 2.
             </p>
 
             {/* Shared billing toggle */}
@@ -997,7 +997,7 @@ export default function Home() {
                 <div>
                   <span className="text-[0.6rem] uppercase tracking-[0.22em] font-mono text-primary">Estação completa</span>
                   <h3 className="font-display text-2xl tracking-tight mt-1 text-primary">MedStation AI Pro 2</h3>
-                  <p className="text-xs text-muted-foreground mt-1">11 Assistentes + Modo Consultório no mesmo plano.</p>
+                  <p className="text-xs text-muted-foreground mt-1">11 Assistentes + Modo Escuta no mesmo plano.</p>
                 </div>
                 <div>
                   <div className="flex items-baseline gap-1">
@@ -1010,7 +1010,7 @@ export default function Home() {
                 </div>
                 <ul className="space-y-1.5 text-xs text-muted-foreground">
                   <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> <span className="text-foreground"><strong>11 Assistentes</strong> ilimitados</span></li>
-                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> <span className="text-foreground"><strong>Modo Consultório</strong> em tempo real</span></li>
+                  <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> <span className="text-foreground"><strong>Modo Escuta</strong> em tempo real</span></li>
                   <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Anamnese estruturada automaticamente</li>
                   <li className="flex gap-2"><span className="text-primary mt-0.5">→</span> Suporte prioritário · Garantia 7 dias</li>
                 </ul>
@@ -1021,12 +1021,12 @@ export default function Home() {
               </Button>
             </Card>
 
-            {/* Modo Consultório */}
+            {/* Modo Escuta */}
             <Card className="p-5 md:p-6 border border-hairline bg-card/60 backdrop-blur-sm flex flex-col">
               <div className="flex-1 space-y-4">
                 <div>
                   <span className="text-[0.6rem] uppercase tracking-[0.22em] font-mono text-muted-foreground">Tempo real</span>
-                  <h3 className="font-display text-2xl tracking-tight mt-1">Modo Consultório</h3>
+                  <h3 className="font-display text-2xl tracking-tight mt-1">Modo Escuta</h3>
                   <p className="text-xs text-muted-foreground mt-1">Produto separado. Pode ser somado aos 11 Assistentes.</p>
                 </div>
                 <div>

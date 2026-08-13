@@ -106,7 +106,7 @@ export default function ConsultorioHistorico() {
     <div className="space-y-6">
       <Helmet>
         <title>Histórico de consultas | MedStation AI</title>
-        <meta name="description" content="Consulte, filtre por pasta e data e copie as anamneses salvas no Modo Consultório." />
+        <meta name="description" content="Consulte, filtre por pasta e data e copie as anamneses salvas no Modo Escuta." />
       </Helmet>
 
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

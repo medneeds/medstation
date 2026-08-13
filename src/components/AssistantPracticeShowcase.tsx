@@ -21,7 +21,7 @@ const order: { name: string; icon: LucideIcon; tag: string }[] = [
   { name: "CODexus", icon: FileCode, tag: "CID-10" },
   { name: "Atestus", icon: FileCheck, tag: "Atestado" },
   { name: "Protocolus", icon: BookOpen, tag: "Protocolos" },
-  { name: "Modo Consultório", icon: Mic, tag: "Consulta gravada" },
+  { name: "Modo Escuta", icon: Mic, tag: "Consulta gravada" },
 ];
 
 const kindStyles: Record<PracticeStep["kind"], { chip: string; frame: string; text: string }> = {

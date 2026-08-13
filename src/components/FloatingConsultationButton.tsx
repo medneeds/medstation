@@ -3,7 +3,7 @@ import { Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
- * FAB global "Gravar consulta": acesso de 1 clique ao Modo Consultório
+ * FAB global "Gravar consulta": acesso de 1 clique ao Modo Escuta
  * a partir de qualquer página do dashboard. Inspirado no botão flutuante
  * do WhatsApp — sempre visível, sempre à mão.
  */
