@@ -2260,6 +2260,11 @@ ${reportSpecialty && reportSpecialty !== "auto" ? `SOLICITAÇÃO À ${(HANDOFF_L
       // "enfermaria" (ou legado "v1") usa o prompt base do Clínicus em modo AHE
     }
 
+    if (agentType === "clinicus" && reportMode && !directAHEMode) {
+      const reportBody = reportType === "passagem_caso" ? passagemCasoPrompt : relatorioMedicoPrompt;
+      systemPrompt = `${reportBody}\n\n${contextData}`;
+    }
+
 
     // Mediscuss: injeta modo e especialidade selecionados (quando não "auto")
     if (agentType === "mediscuss") {
