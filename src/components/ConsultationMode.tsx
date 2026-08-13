@@ -657,10 +657,13 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
       )}
 
       {/* Rodapé de fluxo — próximos passos sempre visíveis */}
-      <footer className="shrink-0 border-t border-border/60 bg-card/80 backdrop-blur-sm px-3 md:px-4 py-2">
-        <div className="flex flex-wrap items-center justify-between gap-2">
+      <footer
+        className="shrink-0 border-t border-border/60 bg-card/80 backdrop-blur-sm px-3 md:px-4 py-2"
+        style={isMobile ? { paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))' } : undefined}
+      >
+        <div className="flex flex-col md:flex-row md:flex-wrap md:items-center md:justify-between gap-2">
           {/* Estado do fluxo */}
-          <div className="flex items-center gap-1.5 md:gap-2 text-[11px] md:text-xs">
+          <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs overflow-x-auto no-scrollbar">
             {([
               {
                 label: isRecording ? 'Gravando' : segments.length > 0 ? `Transcrição · ${segments.length}` : 'Gravação',
@@ -678,11 +681,11 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                 active: false,
               },
             ]).map((s, i) => (
-              <div key={i} className="flex items-center gap-1.5">
+              <div key={i} className="flex items-center gap-1.5 shrink-0">
                 {i > 0 && <span className="text-muted-foreground/40">›</span>}
                 <span
                   className={cn(
-                    'inline-flex items-center gap-1 px-2 py-0.5 rounded-full ring-1',
+                    'inline-flex items-center gap-1 px-2 py-0.5 rounded-full ring-1 whitespace-nowrap',
                     s.done
                       ? 'bg-primary/10 text-primary ring-primary/25'
                       : s.active
@@ -711,6 +714,54 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               <span className="text-[11px] text-muted-foreground">
                 Inicie a gravação para começar a transcrição.
               </span>
+            ) : isMobile ? (
+              <div className="w-full flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    aria-label="Atualizar anamnese"
+                    className="h-10 w-10 p-0 rounded-full shrink-0 bg-background/60"
+                    onClick={handleGenerateStructure}
+                    disabled={isStructuring}
+                  >
+                    {isStructuring ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    aria-label="Copiar anamnese"
+                    className="h-10 w-10 p-0 rounded-full shrink-0 bg-background/60"
+                    onClick={handleCopyToClipboard}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    aria-label="Enviar ao Clínicus"
+                    className="h-10 w-10 p-0 rounded-full shrink-0 bg-background/60"
+                    onClick={() => handleSendToAssistant('/clinicus')}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+                <Button
+                  size="sm"
+                  className="h-10 flex-1 gap-1.5 rounded-full text-xs font-medium"
+                  onClick={() => {
+                    setFinalizeError(null);
+                    if (finalizePhase === 'done') {
+                      setShowFinishDialog(true);
+                    } else {
+                      void runFinalizeFlow({ alreadyStopped: true });
+                    }
+                  }}
+                >
+                  <Save className="h-4 w-4" />
+                  {savedCaseId ? 'Caso salvo' : finalizePhase === 'done' ? 'Salvar caso' : 'Concluir e salvar'}
+                </Button>
+              </div>
             ) : (
               <>
                 <Button
@@ -760,6 +811,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
             )}
           </div>
         </div>
+
       </footer>
 
 
