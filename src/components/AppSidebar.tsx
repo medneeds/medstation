@@ -25,6 +25,7 @@ import {
   FolderOpen,
   NotebookPen,
   MessagesSquare,
+  Play,
 } from "lucide-react";
 import { SUPPORT_CHAT_EVENT } from "@/components/SupportChat";
 import { LogoMark } from "@/components/LogoMark";
