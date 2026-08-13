@@ -165,21 +165,16 @@ export function AppSidebar() {
           )}
           <SidebarGroupContent>
             <SidebarMenu className="gap-1.5">
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip={consultorioModule.title} className="p-0 h-auto bg-transparent hover:bg-transparent">
-                  <NavLink to={consultorioModule.url} end className={navItemClass}>
-                    <consultorioModule.icon className="h-4 w-4 shrink-0" />
-                    {!collapsed && (
-                      <>
-                        <span className="flex-1">{consultorioModule.title}</span>
-                        <span className="font-mono text-2xs text-primary/80 group-hover:text-primary">
-                          {consultorioModule.code}
-                        </span>
-                      </>
-                    )}
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {!collapsed && (
+                <SidebarMenuItem>
+                  <div className="flex items-center gap-3 rounded-md px-3 h-9 text-sm font-semibold text-foreground border-l-2 border-primary/60 bg-primary/5">
+                    <consultorioModule.icon className="h-4 w-4 shrink-0 text-primary" />
+                    <span className="flex-1">{consultorioModule.title}</span>
+                    <span className="font-mono text-2xs text-primary/80">{consultorioModule.code}</span>
+                  </div>
+                </SidebarMenuItem>
+              )}
+
 
               {/* Subitens hierarquizados */}
               {consultorioSubItems.map((sub) => (
