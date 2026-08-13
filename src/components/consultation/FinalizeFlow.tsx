@@ -72,6 +72,18 @@ export function FinalizeFlow({
 }: FinalizeFlowProps) {
   const [progress, setProgress] = useState(4);
   const progressRef = useRef(4);
+  const [isNewFolder, setIsNewFolder] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
+
+  const handleCreateFolder = async () => {
+    const created = await onCreateFolder(newFolderName);
+    if (created) {
+      onFolderChange(created.id);
+      setIsNewFolder(false);
+      setNewFolderName("");
+    }
+  };
+
 
   useEffect(() => {
     if (phase === "error") return;
