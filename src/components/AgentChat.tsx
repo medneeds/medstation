@@ -39,7 +39,8 @@ import {
   ChevronDown,
   Expand,
   Shrink,
-  BookOpen
+  BookOpen,
+  ClipboardList
 } from "lucide-react";
 import {
   Sheet,
