@@ -444,11 +444,11 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                   onClick={startRecording}
                   disabled={isConnecting}
                   size="sm"
-                  className="relative h-9 gap-2 px-5 rounded-xl font-medium shadow-[0_6px_20px_-8px_hsl(var(--primary)/0.6)] bg-gradient-to-b from-primary to-primary/90 active:scale-[0.98]"
+                  className="relative h-10 md:h-9 gap-2 px-3.5 md:px-5 rounded-xl font-medium shadow-[0_6px_20px_-8px_hsl(var(--primary)/0.6)] bg-gradient-to-b from-primary to-primary/90 active:scale-[0.98]"
                 >
                   {isConnecting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mic className="h-4 w-4" />}
                   <span className="text-xs font-medium">
-                    {isConnecting ? 'Conectando…' : segments.length ? 'Retomar gravação' : 'Iniciar gravação'}
+                    {isConnecting ? 'Conectando…' : segments.length ? (isMobile ? 'Retomar' : 'Retomar gravação') : (isMobile ? 'Gravar' : 'Iniciar gravação')}
                   </span>
                 </Button>
               </div>
@@ -458,15 +458,16 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                   onClick={isPaused ? resumeRecording : pauseRecording}
                   variant="outline"
                   size="sm"
-                  className="h-9 gap-1.5 rounded-xl px-3.5 bg-background/60"
+                  aria-label={isPaused ? 'Continuar gravação' : 'Pausar gravação'}
+                  className="h-10 w-10 md:h-9 md:w-auto p-0 md:px-3.5 gap-1.5 rounded-xl bg-background/60"
                 >
                   {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-                  <span className="text-xs hidden sm:inline">{isPaused ? 'Continuar' : 'Pausar'}</span>
+                  <span className="text-xs hidden md:inline">{isPaused ? 'Continuar' : 'Pausar'}</span>
                 </Button>
                 <Button
                   onClick={handleFinish}
                   size="sm"
-                  className="h-9 gap-2 px-5 rounded-xl font-medium shadow-[0_6px_20px_-8px_hsl(var(--primary)/0.55)] active:scale-[0.98]"
+                  className="h-10 md:h-9 gap-2 px-3.5 md:px-5 rounded-xl font-medium shadow-[0_6px_20px_-8px_hsl(var(--primary)/0.55)] active:scale-[0.98]"
                 >
                   <CheckCircle2 className="h-4 w-4" />
                   <span className="text-xs font-medium">Finalizar</span>
@@ -475,6 +476,35 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
             )}
           </div>
         </div>
+
+        {/* Mobile: seletor de modo de transcrição em linha própria */}
+        {isMobile && (
+          <div className="relative px-2 pb-2 -mt-0.5">
+            <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-muted/60 border border-border/60">
+              {([
+                { key: false, label: 'Falantes', Icon: Users },
+                { key: true, label: 'Contínua', Icon: MessageSquare },
+              ]).map(({ key, label, Icon }) => (
+                <button
+                  key={String(key)}
+                  type="button"
+                  onClick={() => setUnifiedMode(key)}
+                  aria-pressed={unifiedMode === key}
+                  className={cn(
+                    "inline-flex items-center justify-center gap-1.5 h-8 rounded-lg text-[12px] font-medium transition-all",
+                    unifiedMode === key
+                      ? "bg-card text-primary shadow-sm border border-border/50"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
 
         {/* Faixa viva — só durante a gravação */}
         {isRecording && !isPaused && (
