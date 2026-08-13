@@ -401,21 +401,27 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                   );
                 })}
               </div>
-              <p className="text-[10px] text-muted-foreground/70 hidden md:block">Toque ou use 1 / 2 / 3 para trocar quem está falando</p>
+              {barExpanded && (
+                <p className="text-[10px] text-muted-foreground/70 hidden md:block">Toque ou use 1 / 2 / 3 para trocar quem está falando</p>
+              )}
             </motion.div>
           )}
           {/* Live partial transcript indicator */}
           {isRecording && !isPaused && (
-            <div className="text-center min-h-[1.5rem] max-w-md px-3">
+            <div className={cn("text-center min-h-[1.25rem] max-w-md px-3", barExpanded && "min-h-[1.5rem]")}>
               {partialTranscription ? (
                 <motion.p
                   key={partialTranscription}
                   initial={{ opacity: 0, y: 4 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-sm text-foreground/80 italic leading-relaxed"
+                  className={cn(
+                    "text-foreground/80 italic leading-relaxed",
+                    barExpanded ? "text-sm" : "text-xs line-clamp-1"
+                  )}
                 >
                   {partialTranscription}
                 </motion.p>
+
               ) : (
                 <p className="text-xs text-muted-foreground/70 inline-flex items-center gap-1.5">
                   <span className="inline-flex gap-0.5">
