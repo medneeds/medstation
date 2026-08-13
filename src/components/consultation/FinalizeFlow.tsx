@@ -4,8 +4,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CheckCircle2, Copy, FileText, Loader2, Save, AlertTriangle, Circle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CheckCircle2, Copy, FileText, Loader2, Save, AlertTriangle, Circle, FolderPlus, Folder, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { CaseFolder } from "@/hooks/useCaseFolders";
 
 export type FinalizePhase = "review" | "structuring" | "done" | "error";
 
@@ -18,6 +20,13 @@ interface FinalizeFlowProps {
   totalSections: number;
   caseName: string;
   onCaseNameChange: (v: string) => void;
+  folders: CaseFolder[];
+  folderId: string | null;
+  onFolderChange: (id: string | null) => void;
+  onCreateFolder: (name: string) => Promise<CaseFolder | null>;
+  isCreatingFolder: boolean;
+  consultationDate: string;
+  onConsultationDateChange: (v: string) => void;
   isSavingCase: boolean;
   savedCaseId: string | null;
   onSaveCase: () => void;
@@ -27,6 +36,7 @@ interface FinalizeFlowProps {
   onContinueEditing: () => void;
   onExit: () => void;
 }
+
 
 const STEPS: { key: FinalizePhase; label: string; hint: string; target: number }[] = [
   { key: "review", label: "Revisando o áudio", hint: "Transcrição de alta precisão em português", target: 55 },
