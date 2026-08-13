@@ -94,6 +94,11 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     currentSpeaker,
     audioLevel,
     error,
+    changedFields,
+    lastStructuredAt,
+    smartSummary,
+    isSummarizing,
+    generateSummary,
     startRecording,
     stopRecording,
     pauseRecording,
@@ -106,6 +111,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     reset,
     setCurrentSpeaker,
   } = useConsultation({ caseId });
+
 
   useEffect(() => {
     if (error) toast.error(error);
