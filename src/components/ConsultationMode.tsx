@@ -285,13 +285,17 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
         <div className="relative flex flex-wrap items-center gap-x-3 gap-y-2 px-2 md:px-4 py-2">
           {/* Identidade — apenas voltar, título já no cabeçalho superior */}
           <div className="flex items-center gap-2 min-w-0 shrink-0">
-            <Button variant="ghost" size="icon" onClick={handleExit} className="h-8 w-8 rounded-xl shrink-0" title="Voltar">
+            <Button variant="ghost" size="icon" onClick={handleExit} className="h-9 w-9 md:h-8 md:w-8 rounded-xl shrink-0" title="Voltar">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </div>
 
           {/* Centro: estado do áudio + seletores segmentados */}
-          <div className="flex items-center gap-2 md:gap-3 flex-1 justify-center min-w-0 overflow-x-auto no-scrollbar">
+          <div className={cn(
+            "flex items-center gap-2 md:gap-3 flex-1 justify-center min-w-0 overflow-x-auto no-scrollbar",
+            isMobile && "hidden"
+          )}>
+
             {/* Estado do áudio — sempre visível, intencional mesmo ocioso */}
             <div className={cn(
               "hidden sm:flex shrink-0 items-center gap-2 h-8 px-2.5 rounded-xl border transition-colors",
@@ -387,8 +391,28 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
 
           {/* Tempo + status + controles */}
           <div className="ml-auto flex items-center gap-1.5 md:gap-2">
+            {/* Onda mínima no mobile (o chip completo fica escondido) */}
+            {isMobile && (
+              <span className="flex items-center gap-[2.5px] h-4 overflow-hidden shrink-0" aria-hidden>
+                {[0.5, 0.9, 0.65, 1, 0.6].map((factor, i) => {
+                  const active = isRecording && !isPaused;
+                  const h = active
+                    ? Math.max(3, Math.min(14, 3 + audioLevel * 26 * factor))
+                    : [5, 9, 6, 10, 5][i];
+                  return (
+                    <motion.span
+                      key={i}
+                      className={cn("w-[2px] rounded-full", active ? "bg-primary" : isPaused ? "bg-muted-foreground/40" : "bg-primary/30")}
+                      animate={{ height: h }}
+                      transition={{ type: "spring", stiffness: 320, damping: 22 }}
+                      style={{ height: h }}
+                    />
+                  );
+                })}
+              </span>
+            )}
             <div className={cn(
-              "flex items-center gap-2 text-xs px-2.5 h-8 rounded-xl border transition-colors",
+              "flex items-center gap-1.5 md:gap-2 text-xs px-2 md:px-2.5 h-8 rounded-xl border transition-colors",
               isRecording && !isPaused
                 ? "bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400"
                 : isPaused
@@ -406,6 +430,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               <span className="font-mono tabular-nums tracking-tight">{formattedTime}</span>
             </div>
 
+
             {!isRecording ? (
               <div className="relative group">
                 <span
@@ -419,11 +444,11 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                   onClick={startRecording}
                   disabled={isConnecting}
                   size="sm"
-                  className="relative h-9 gap-2 px-5 rounded-xl font-medium shadow-[0_6px_20px_-8px_hsl(var(--primary)/0.6)] bg-gradient-to-b from-primary to-primary/90 active:scale-[0.98]"
+                  className="relative h-10 md:h-9 gap-2 px-3.5 md:px-5 rounded-xl font-medium shadow-[0_6px_20px_-8px_hsl(var(--primary)/0.6)] bg-gradient-to-b from-primary to-primary/90 active:scale-[0.98]"
                 >
                   {isConnecting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mic className="h-4 w-4" />}
                   <span className="text-xs font-medium">
-                    {isConnecting ? 'Conectando…' : segments.length ? 'Retomar gravação' : 'Iniciar gravação'}
+                    {isConnecting ? 'Conectando…' : segments.length ? (isMobile ? 'Retomar' : 'Retomar gravação') : (isMobile ? 'Gravar' : 'Iniciar gravação')}
                   </span>
                 </Button>
               </div>
@@ -433,15 +458,16 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                   onClick={isPaused ? resumeRecording : pauseRecording}
                   variant="outline"
                   size="sm"
-                  className="h-9 gap-1.5 rounded-xl px-3.5 bg-background/60"
+                  aria-label={isPaused ? 'Continuar gravação' : 'Pausar gravação'}
+                  className="h-10 w-10 md:h-9 md:w-auto p-0 md:px-3.5 gap-1.5 rounded-xl bg-background/60"
                 >
                   {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-                  <span className="text-xs hidden sm:inline">{isPaused ? 'Continuar' : 'Pausar'}</span>
+                  <span className="text-xs hidden md:inline">{isPaused ? 'Continuar' : 'Pausar'}</span>
                 </Button>
                 <Button
                   onClick={handleFinish}
                   size="sm"
-                  className="h-9 gap-2 px-5 rounded-xl font-medium shadow-[0_6px_20px_-8px_hsl(var(--primary)/0.55)] active:scale-[0.98]"
+                  className="h-10 md:h-9 gap-2 px-3.5 md:px-5 rounded-xl font-medium shadow-[0_6px_20px_-8px_hsl(var(--primary)/0.55)] active:scale-[0.98]"
                 >
                   <CheckCircle2 className="h-4 w-4" />
                   <span className="text-xs font-medium">Finalizar</span>
@@ -451,6 +477,35 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           </div>
         </div>
 
+        {/* Mobile: seletor de modo de transcrição em linha própria */}
+        {isMobile && (
+          <div className="relative px-2 pb-2 -mt-0.5">
+            <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-muted/60 border border-border/60">
+              {([
+                { key: false, label: 'Falantes', Icon: Users },
+                { key: true, label: 'Contínua', Icon: MessageSquare },
+              ]).map(({ key, label, Icon }) => (
+                <button
+                  key={String(key)}
+                  type="button"
+                  onClick={() => setUnifiedMode(key)}
+                  aria-pressed={unifiedMode === key}
+                  className={cn(
+                    "inline-flex items-center justify-center gap-1.5 h-8 rounded-lg text-[12px] font-medium transition-all",
+                    unifiedMode === key
+                      ? "bg-card text-primary shadow-sm border border-border/50"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+
         {/* Faixa viva — só durante a gravação */}
         {isRecording && !isPaused && (
           <motion.div
@@ -458,9 +513,10 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
             animate={{ opacity: 1, height: 'auto' }}
             className="relative border-t border-border/40 bg-muted/20"
           >
-            <div className="flex items-center gap-2 px-2 md:px-3 py-1.5 overflow-x-auto no-scrollbar">
+            <div className="flex flex-col md:flex-row md:items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:overflow-x-auto no-scrollbar">
               {!unifiedMode && (
-                <div className="inline-flex items-center gap-1 p-0.5 rounded-full bg-card/70 ring-1 ring-border/60 shrink-0">
+                <div className="grid grid-cols-3 md:inline-flex md:items-center gap-1 p-0.5 rounded-full bg-card/70 ring-1 ring-border/60 shrink-0">
+
                   {([
                     { key: 'doctor' as const, label: 'Médico', short: '1', Icon: Stethoscope, active: 'bg-primary/15 text-primary ring-primary/30' },
                     { key: 'patient' as const, label: 'Paciente', short: '2', Icon: User, active: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 ring-blue-500/30' },
@@ -475,9 +531,10 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                         aria-pressed={isActive}
                         aria-label={`Marcar fala como ${label}`}
                         className={cn(
-                          "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium transition-all ring-1",
+                          "inline-flex items-center justify-center gap-1 px-2 h-8 md:h-auto md:py-1 rounded-full text-[11px] font-medium transition-all ring-1",
                           isActive ? `${active} shadow-sm` : "text-muted-foreground ring-transparent hover:text-foreground hover:bg-muted/60"
                         )}
+
                       >
                         <Icon className="h-3.5 w-3.5" />
                         <span>{label}</span>
@@ -525,16 +582,21 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
       {/* Main Content */}
       {isMobile ? (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-          <TabsList className="grid w-full grid-cols-2 mx-0 rounded-none border-b">
-            <TabsTrigger value="transcription" className="gap-2 data-[state=active]:bg-muted">
+          <TabsList className="grid w-full grid-cols-2 mx-0 h-11 p-0 rounded-none border-b bg-card/60">
+            <TabsTrigger value="transcription" className="h-11 gap-2 rounded-none text-[13px] data-[state=active]:bg-muted data-[state=active]:text-primary">
               <MessageSquare className="h-4 w-4" />
               Transcrição
+              {segments.length > 0 && (
+                <span className="ml-0.5 text-[10px] font-mono text-muted-foreground">{segments.length}</span>
+              )}
             </TabsTrigger>
-            <TabsTrigger value="structure" className="gap-2 data-[state=active]:bg-muted">
+            <TabsTrigger value="structure" className="h-11 gap-2 rounded-none text-[13px] data-[state=active]:bg-muted data-[state=active]:text-primary">
               <FileText className="h-4 w-4" />
               Anamnese
+              <span className="ml-0.5 text-[10px] font-mono text-muted-foreground">{countFilledSections(structure)}/11</span>
             </TabsTrigger>
           </TabsList>
+
           <TabsContent value="transcription" className="flex-1 m-0 overflow-hidden">
             <TranscriptionPane
               segments={segments}
@@ -600,10 +662,13 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
       )}
 
       {/* Rodapé de fluxo — próximos passos sempre visíveis */}
-      <footer className="shrink-0 border-t border-border/60 bg-card/80 backdrop-blur-sm px-3 md:px-4 py-2">
-        <div className="flex flex-wrap items-center justify-between gap-2">
+      <footer
+        className="shrink-0 border-t border-border/60 bg-card/80 backdrop-blur-sm px-3 md:px-4 py-2"
+        style={isMobile ? { paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))' } : undefined}
+      >
+        <div className="flex flex-col md:flex-row md:flex-wrap md:items-center md:justify-between gap-2">
           {/* Estado do fluxo */}
-          <div className="flex items-center gap-1.5 md:gap-2 text-[11px] md:text-xs">
+          <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs overflow-x-auto no-scrollbar">
             {([
               {
                 label: isRecording ? 'Gravando' : segments.length > 0 ? `Transcrição · ${segments.length}` : 'Gravação',
@@ -621,11 +686,11 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                 active: false,
               },
             ]).map((s, i) => (
-              <div key={i} className="flex items-center gap-1.5">
+              <div key={i} className="flex items-center gap-1.5 shrink-0">
                 {i > 0 && <span className="text-muted-foreground/40">›</span>}
                 <span
                   className={cn(
-                    'inline-flex items-center gap-1 px-2 py-0.5 rounded-full ring-1',
+                    'inline-flex items-center gap-1 px-2 py-0.5 rounded-full ring-1 whitespace-nowrap',
                     s.done
                       ? 'bg-primary/10 text-primary ring-primary/25'
                       : s.active
@@ -654,6 +719,54 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               <span className="text-[11px] text-muted-foreground">
                 Inicie a gravação para começar a transcrição.
               </span>
+            ) : isMobile ? (
+              <div className="w-full flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    aria-label="Atualizar anamnese"
+                    className="h-10 w-10 p-0 rounded-full shrink-0 bg-background/60"
+                    onClick={handleGenerateStructure}
+                    disabled={isStructuring}
+                  >
+                    {isStructuring ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    aria-label="Copiar anamnese"
+                    className="h-10 w-10 p-0 rounded-full shrink-0 bg-background/60"
+                    onClick={handleCopyToClipboard}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    aria-label="Enviar ao Clínicus"
+                    className="h-10 w-10 p-0 rounded-full shrink-0 bg-background/60"
+                    onClick={() => handleSendToAssistant('/clinicus')}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+                <Button
+                  size="sm"
+                  className="h-10 flex-1 gap-1.5 rounded-full text-xs font-medium"
+                  onClick={() => {
+                    setFinalizeError(null);
+                    if (finalizePhase === 'done') {
+                      setShowFinishDialog(true);
+                    } else {
+                      void runFinalizeFlow({ alreadyStopped: true });
+                    }
+                  }}
+                >
+                  <Save className="h-4 w-4" />
+                  {savedCaseId ? 'Caso salvo' : finalizePhase === 'done' ? 'Salvar caso' : 'Concluir e salvar'}
+                </Button>
+              </div>
             ) : (
               <>
                 <Button
@@ -703,6 +816,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
             )}
           </div>
         </div>
+
       </footer>
 
 

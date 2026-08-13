@@ -108,8 +108,9 @@ export function FinalizeFlow({
   const canSave = phase === "done" && segmentsCount > 0;
 
   return (
-    <div className="fixed inset-0 bg-background/85 backdrop-blur-sm z-50 flex items-center justify-center p-3 md:p-4">
-      <Card className="max-w-lg w-full p-4 md:p-6 space-y-4 shadow-[0_24px_60px_-24px_hsl(var(--primary)/0.45)]">
+    <div className="fixed inset-0 bg-background/85 backdrop-blur-sm z-50 flex items-center justify-center p-3 md:p-4 overflow-y-auto">
+      <Card className="max-w-lg w-full p-4 md:p-6 space-y-4 shadow-[0_24px_60px_-24px_hsl(var(--primary)/0.45)] max-h-[calc(100dvh-1.5rem)] overflow-y-auto">
+
         {/* Cabeçalho */}
         <div className="flex items-center gap-3">
           <div

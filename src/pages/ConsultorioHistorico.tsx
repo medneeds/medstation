@@ -111,19 +111,20 @@ export default function ConsultorioHistorico() {
 
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Histórico de consultas</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Histórico de consultas</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Suas consultas salvas, organizadas por pasta e data.
           </p>
         </div>
-        <Button onClick={() => navigate("/consultorio")} className="gap-2">
+        <Button onClick={() => navigate("/consultorio")} className="gap-2 h-10 w-full sm:w-auto">
           <Mic className="h-4 w-4" />
           Novo atendimento
         </Button>
       </header>
 
       {/* Filtros */}
-      <Card className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <Card className="p-3 sm:p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+
         <div className="space-y-1">
           <Label className="text-[11px] text-muted-foreground">Buscar</Label>
           <div className="relative">
@@ -191,7 +192,7 @@ export default function ConsultorioHistorico() {
                       {items.map((c) => (
                         <li
                           key={c.id}
-                          className="flex items-center justify-between gap-3 rounded-md border border-border/60 px-3 py-2 hover:bg-muted/40 transition-colors"
+                          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 rounded-md border border-border/60 px-3 py-2 hover:bg-muted/40 transition-colors"
                         >
                           <div className="min-w-0">
                             <p className="text-sm font-medium truncate">{c.title}</p>
@@ -200,14 +201,15 @@ export default function ConsultorioHistorico() {
                             )}
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
-                            <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => handleCopy(c)}>
+                            <Button variant="ghost" size="sm" className="gap-1.5 h-9 flex-1 sm:flex-none" onClick={() => handleCopy(c)}>
                               <Copy className="h-3.5 w-3.5" />
-                              <span className="hidden sm:inline text-xs">Copiar</span>
+                              <span className="text-xs">Copiar</span>
                             </Button>
+
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="gap-1.5"
+                              className="gap-1.5 h-9 flex-1 sm:flex-none"
                               onClick={() => {
                                 if (!c.notes) {
                                   toast.error("Esta consulta não tem anamnese salva.");
@@ -218,8 +220,9 @@ export default function ConsultorioHistorico() {
                               }}
                             >
                               <FileText className="h-3.5 w-3.5" />
-                              <span className="hidden sm:inline text-xs">Abrir no Clínicus</span>
+                              <span className="text-xs">Abrir no Clínicus</span>
                             </Button>
+
                           </div>
                         </li>
                       ))}
