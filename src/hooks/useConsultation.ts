@@ -93,6 +93,19 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     if (typeof window === 'undefined') return true;
     return localStorage.getItem('consultorio-live-structuring') !== '0';
   });
+  const [specialty, setSpecialty] = useState<string>(() => {
+    if (typeof window === 'undefined') return 'auto';
+    return localStorage.getItem('consultorio-specialty') || 'auto';
+  });
+  const [detectedSpecialty, setDetectedSpecialty] = useState<string>('');
+  const specialtyRef = useRef<string>(specialty);
+  useEffect(() => {
+    specialtyRef.current = specialty;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('consultorio-specialty', specialty);
+    }
+    if (specialty !== 'auto') setDetectedSpecialty('');
+  }, [specialty]);
   const currentSpeakerRef = useRef<SpeakerType>('doctor');
   const setCurrentSpeaker = useCallback((s: SpeakerType) => {
     currentSpeakerRef.current = s;
@@ -104,6 +117,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
       localStorage.setItem('consultorio-live-structuring', liveStructuring ? '1' : '0');
     }
   }, [liveStructuring]);
+
 
 
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -389,12 +403,14 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
       setIsStructuring(true);
       try {
         const { data, error: fnError } = await supabase.functions.invoke('structure-anamnesis', {
-          body: { transcription: transcriptionText },
+          body: { transcription: transcriptionText, specialty: specialtyRef.current },
         });
         if (fnError) throw fnError;
         if (data?.structure) {
+          const { detectedSpecialty: detected, ...sections } = data.structure as Record<string, string>;
+          if (specialtyRef.current === 'auto' && detected) setDetectedSpecialty(detected);
           setStructure((prev) => {
-            const next = { ...prev, ...data.structure } as AnamnesisStructure;
+            const next = { ...prev, ...sections } as AnamnesisStructure;
             const changed = new Set<keyof AnamnesisStructure>();
             (Object.keys(next) as (keyof AnamnesisStructure)[]).forEach((k) => {
               if ((next[k] || '').trim() && (next[k] || '').trim() !== (prev[k] || '').trim()) {
@@ -406,6 +422,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
           });
           setLastStructuredAt(new Date());
         }
+
       } catch (err) {
         console.error('Error structuring anamnesis:', err);
         if (!opts?.silent) toast.error('Erro ao estruturar anamnese');
@@ -537,6 +554,10 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     reviewedTranscript,
     liveStructuring,
     setLiveStructuring,
+    specialty,
+    setSpecialty,
+    detectedSpecialty,
+
     isRecording,
     isPaused,
     isConnecting,

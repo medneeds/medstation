@@ -31,7 +31,13 @@ serve(async (req) => {
       throw new Error('Usuário não autenticado');
     }
 
-    const { transcription, mode } = await req.json();
+    const { transcription, mode, specialty } = await req.json();
+
+    const specialtyRaw = typeof specialty === 'string' ? specialty.slice(0, 60).trim() : '';
+    const isAutoSpecialty = !specialtyRaw || specialtyRaw === 'auto';
+    const specialtyBlock = isAutoSpecialty
+      ? `\n\nESPECIALIDADE: modo automático. Identifique pela transcrição a especialidade médica mais provável do atendimento e ajuste a terminologia, a revisão de sistemas e o exame físico a essa especialidade. Não force achados: se o caso for inespecífico, trate como clínica médica geral.`
+      : `\n\nESPECIALIDADE: ${specialtyRaw}. Estruture o registro com a terminologia, os itens de revisão de sistemas e os pontos de exame físico relevantes para esta especialidade, sem inventar dados não mencionados.`;
 
     if (!transcription) {
       throw new Error('Transcrição não fornecida');
@@ -78,7 +84,7 @@ PRÓXIMOS PASSOS
         body: JSON.stringify({
           model: 'google/gemini-3-flash-preview',
           messages: [
-            { role: 'system', content: summaryPrompt },
+            { role: 'system', content: summaryPrompt + (typeof specialty === 'string' && specialty && specialty !== 'auto' ? `\n\nESPECIALIDADE DO ATENDIMENTO: ${specialty.slice(0, 60)}` : '') },
             { role: 'user', content: `Transcrição da consulta:\n\n${transcription}` },
           ],
         }),
@@ -146,7 +152,8 @@ SEÇÕES PARA ESTRUTURAR:
 - reviewOfSystems: Revisão de sistemas
 - physicalExam: Exame físico (se mencionado)
 - diagnosticHypotheses: Hipóteses diagnósticas (se mencionadas)
-- plan: Conduta proposta (se mencionada)`;
+- plan: Conduta proposta (se mencionada)
+- detectedSpecialty: Especialidade médica do atendimento (nome curto em português)${specialtyBlock}`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -212,6 +219,10 @@ SEÇÕES PARA ESTRUTURAR:
                   plan: { 
                     type: 'string', 
                     description: 'Conduta proposta' 
+                  },
+                  detectedSpecialty: {
+                    type: 'string',
+                    description: 'Especialidade médica identificada ou informada (nome curto em português)',
                   },
                 },
                 required: ['chiefComplaint'],
