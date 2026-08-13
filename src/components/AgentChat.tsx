@@ -141,6 +141,37 @@ const MEDISCUSS_SPECIALTIES = [
   { value: "ortopedia", label: "Ortopedia" },
 ];
 
+const LEGALIS_MODES = [
+  { value: "auto", label: "Automático" },
+  { value: "consulta_etica", label: "Consulta ética (CFM)" },
+  { value: "blindagem", label: "Blindagem de registro" },
+  { value: "defesa", label: "Defesa argumentativa" },
+  { value: "documento", label: "Documento de proteção" },
+];
+
+const LEGALIS_SCENARIOS = [
+  { value: "auto", label: "Automático" },
+  { value: "emergencia", label: "Emergência" },
+  { value: "uti", label: "UTI" },
+  { value: "enfermaria", label: "Enfermaria" },
+  { value: "consultorio", label: "Consultório" },
+  { value: "telemedicina", label: "Telemedicina" },
+  { value: "plantao", label: "Plantão / Regulação" },
+];
+
+const LEGALIS_TOPICS = [
+  { value: "auto", label: "Geral" },
+  { value: "responsabilidade", label: "Responsabilidade civil" },
+  { value: "etico_profissional", label: "Ético-profissional (CRM)" },
+  { value: "sigilo", label: "Sigilo e LGPD" },
+  { value: "consentimento", label: "Consentimento / Recusa" },
+  { value: "menor_incapaz", label: "Menor / Incapaz" },
+  { value: "fim_de_vida", label: "Fim de vida" },
+  { value: "prontuario", label: "Prontuário e atestados" },
+  { value: "relacao_institucional", label: "Relação institucional" },
+];
+
+
 const CLINICUS_CONTEXTS = [
   { value: "consultorio", label: "Consultório" },
   { value: "enfermaria", label: "Enfermaria / Clínica Médica" },
