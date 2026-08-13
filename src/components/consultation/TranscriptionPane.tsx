@@ -7,6 +7,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import type { TranscriptionSegment, SpeakerType } from "@/hooks/useConsultation";
 import { cn } from "@/lib/utils";
+import { copyText } from "@/lib/clipboard";
+
 
 interface TranscriptionPaneProps {
   segments: TranscriptionSegment[];
