@@ -120,6 +120,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
   const scribe = useScribe({
     modelId: 'scribe_v2_realtime',
     commitStrategy: CommitStrategy.VAD,
+    languageCode: 'por',
     onPartialTranscript: (data: { text: string }) => {
       setPartialTranscription(data?.text || '');
     },
