@@ -662,6 +662,112 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
         </div>
       )}
 
+      {/* Rodapé de fluxo — próximos passos sempre visíveis */}
+      <footer className="shrink-0 border-t border-border/60 bg-card/80 backdrop-blur-sm px-3 md:px-4 py-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {/* Estado do fluxo */}
+          <div className="flex items-center gap-1.5 md:gap-2 text-[11px] md:text-xs">
+            {([
+              {
+                label: isRecording ? 'Gravando' : segments.length > 0 ? `Transcrição · ${segments.length}` : 'Gravação',
+                done: !isRecording && segments.length > 0,
+                active: isRecording,
+              },
+              {
+                label: `Anamnese · ${countFilledSections(structure)}/11`,
+                done: countFilledSections(structure) > 0 && !isStructuring,
+                active: isStructuring,
+              },
+              {
+                label: savedCaseId ? 'Caso salvo' : 'Salvar caso',
+                done: !!savedCaseId,
+                active: false,
+              },
+            ]).map((s, i) => (
+              <div key={i} className="flex items-center gap-1.5">
+                {i > 0 && <span className="text-muted-foreground/40">›</span>}
+                <span
+                  className={cn(
+                    'inline-flex items-center gap-1 px-2 py-0.5 rounded-full ring-1',
+                    s.done
+                      ? 'bg-primary/10 text-primary ring-primary/25'
+                      : s.active
+                      ? 'bg-muted text-foreground ring-border'
+                      : 'text-muted-foreground ring-border/50'
+                  )}
+                >
+                  {s.done ? (
+                    <CheckCircle2 className="h-3 w-3" />
+                  ) : s.active ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : null}
+                  {s.label}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Próximos passos */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {isRecording ? (
+              <span className="text-[11px] text-muted-foreground">
+                Fale normalmente — toque em Finalizar quando a consulta terminar.
+              </span>
+            ) : segments.length === 0 ? (
+              <span className="text-[11px] text-muted-foreground">
+                Inicie a gravação para começar a transcrição.
+              </span>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 gap-1.5 rounded-full text-xs"
+                  onClick={handleGenerateStructure}
+                  disabled={isStructuring}
+                >
+                  <FileText className="h-3.5 w-3.5" />
+                  {isStructuring ? 'Estruturando…' : 'Atualizar anamnese'}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 gap-1.5 rounded-full text-xs"
+                  onClick={handleCopyToClipboard}
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                  Copiar anamnese
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 gap-1.5 rounded-full text-xs"
+                  onClick={() => handleSendToAssistant('/clinicus')}
+                >
+                  <Send className="h-3.5 w-3.5" />
+                  Enviar ao Clínicus
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-8 gap-1.5 rounded-full text-xs px-4"
+                  onClick={() => {
+                    setFinalizeError(null);
+                    if (finalizePhase === 'done') {
+                      setShowFinishDialog(true);
+                    } else {
+                      void runFinalizeFlow({ alreadyStopped: true });
+                    }
+                  }}
+                >
+                  <Save className="h-3.5 w-3.5" />
+                  {savedCaseId ? 'Caso salvo' : finalizePhase === 'done' ? 'Salvar caso' : 'Concluir e salvar'}
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </footer>
+
 
       {/* Fluxo de finalização guiado */}
       {showFinishDialog && (
