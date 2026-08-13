@@ -2337,7 +2337,49 @@ ${reportSpecialty && reportSpecialty !== "auto" ? `SOLICITAÇÃO À ${(HANDOFF_L
     }
 
 
+    // Legalis: injeta modo, cenário assistencial e tema jurídico (quando não "auto")
+    if (agentType === "legalis") {
+      const legalisModes: Record<string, string> = {
+        consulta_etica: "MODO SELECIONADO: CONSULTA ÉTICA (CFM). Responda no formato de consulta ética estruturada.",
+        blindagem: "MODO SELECIONADO: BLINDAGEM DE REGISTRO. Reescreva o registro enviado em versão juridicamente defensável e aponte as lacunas de risco.",
+        defesa: "MODO SELECIONADO: DEFESA ARGUMENTATIVA. Monte a argumentação técnica de defesa conforme a estrutura definida.",
+        documento: "MODO SELECIONADO: DOCUMENTOS DE PROTEÇÃO. Gere o documento solicitado pronto para uso, com campos entre colchetes e bloco de assinatura.",
+      };
+      const legalisScenarios: Record<string, string> = {
+        emergencia: "Emergência / pronto-socorro",
+        uti: "Unidade de terapia intensiva",
+        enfermaria: "Enfermaria / internação",
+        consultorio: "Consultório / ambulatório",
+        telemedicina: "Telemedicina",
+        plantao: "Plantão de sobreaviso ou regulação",
+      };
+      const legalisTopics: Record<string, string> = {
+        responsabilidade: "responsabilidade civil e obrigação de meio",
+        etico_profissional: "processo ético-profissional (CRM/CFM)",
+        sigilo: "sigilo médico e LGPD em saúde",
+        consentimento: "consentimento informado e recusa de tratamento",
+        menor_incapaz: "atendimento a menor de idade ou paciente incapaz",
+        fim_de_vida: "cuidados paliativos, ortotanásia e decisões de fim de vida",
+        prontuario: "prontuário, documentação médica e emissão de atestados",
+        relacao_institucional: "relação com instituição, escala, condições de trabalho e recusa de atendimento",
+      };
+      const lx: string[] = [];
+      if (legalisMode && legalisMode !== "auto" && legalisModes[legalisMode]) {
+        lx.push(legalisModes[legalisMode]);
+      }
+      if (legalisScenario && legalisScenario !== "auto" && legalisScenarios[legalisScenario]) {
+        lx.push(`CENÁRIO ASSISTENCIAL: ${legalisScenarios[legalisScenario]}. Considere as particularidades práticas e normativas desse cenário.`);
+      }
+      if (legalisTopic && legalisTopic !== "auto" && legalisTopics[legalisTopic]) {
+        lx.push(`TEMA JURÍDICO PRIORITÁRIO: ${legalisTopics[legalisTopic]}. Centre o fundamento normativo nesse eixo.`);
+      }
+      if (lx.length > 0) {
+        systemPrompt += `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nINSTRUÇÕES ADICIONAIS DO MÉDICO SOLICITANTE:\n${lx.join("\n")}`;
+      }
+    }
+
     // Mediscuss: injeta modo e especialidade selecionados (quando não "auto")
+
     if (agentType === "mediscuss") {
       const modeInstructions: Record<string, string> = {
         parecer_curto: "MODO SELECIONADO: gere obrigatoriamente no formato PARECER CURTO (interconsulta objetiva e direta).",
