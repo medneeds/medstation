@@ -552,7 +552,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                 <Copy className="h-3.5 w-3.5" />
                 Anamnese
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => setShowFinishDialog(true)} className="gap-1.5 rounded-full text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" size="sm" onClick={() => { setFinalizeError(null); setFinalizePhase('done'); setShowFinishDialog(true); }} className="gap-1.5 rounded-full text-muted-foreground hover:text-foreground">
                 <Save className="h-3.5 w-3.5" />
                 Salvar caso
               </Button>
