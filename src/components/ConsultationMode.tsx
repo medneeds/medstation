@@ -251,18 +251,22 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           chief_complaint: structure.chiefComplaint || null,
           notes: notes || null,
           status: 'active',
+          folder_id: caseFolderId,
+          consultation_date: consultationDate,
         })
         .select('id')
         .single();
       if (insertError) throw insertError;
       setSavedCaseId(data.id);
-      toast.success('Caso salvo 👏');
+      const folderName = folders.find((f) => f.id === caseFolderId)?.name;
+      toast.success(folderName ? `Caso salvo em "${folderName}" 👏` : 'Caso salvo 👏');
     } catch (e: any) {
       toast.error(e.message || 'Não foi possível salvar o caso.');
     } finally {
       setIsSavingCase(false);
     }
-  }, [caseName, buildStructuredText, structure.chiefComplaint]);
+  }, [caseName, buildStructuredText, structure.chiefComplaint, caseFolderId, consultationDate, folders]);
+
 
   return (
     <div className="flex flex-col h-full bg-background">
