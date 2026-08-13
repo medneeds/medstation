@@ -1046,7 +1046,7 @@ export default function Home() {
                 </ul>
               </div>
               <Button variant="outline" className="w-full h-11 mt-5" onClick={() => { trackCtaClick({ cta: 'plano_consultorio', section: 'pricing', plan: billingPeriod === 'yearly' ? 'consultorio_yearly' : 'consultorio_monthly', billing_period: billingPeriod, destination: '#consultorio' }); scrollToSection('consultorio'); }}>
-                Conhecer o Consultório
+                Conhecer o Modo Escuta
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Card>

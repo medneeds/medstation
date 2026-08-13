@@ -418,7 +418,7 @@ export default function Pricing() {
                 ) : isLoading(consultorioPlan) ? (
                   <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processando...</>
                 ) : (
-                  <>Assinar Consultório <ArrowRight className="ml-2 h-4 w-4" /></>
+                  <>Assinar Modo Escuta <ArrowRight className="ml-2 h-4 w-4" /></>
                 )}
               </Button>
             </div>

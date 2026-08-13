@@ -262,9 +262,9 @@ export default function ConsultorioLanding() {
               </h2>
               <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
                 {hasAgents && !hasConsultorio
-                  ? "Você já tem os Assistentes — adicione o Consultório com preço exclusivo de upgrade."
+                  ? "Você já tem os Assistentes — adicione o Modo Escuta com preço exclusivo de upgrade."
                   : hasConsultorio && !hasAgents
-                  ? "Você já tem o Consultório — complete sua estação com os 10 Assistentes."
+                  ? "Você já tem o Modo Escuta — complete sua estação com os 10 Assistentes."
                   : "Comece pelo essencial ou leve tudo no MedStation AI Pro 2."}
               </p>
             </div>
@@ -293,7 +293,7 @@ export default function ConsultorioLanding() {
               <Card className="p-6 border border-hairline bg-card/60 backdrop-blur-sm flex flex-col">
                 <div className="flex-1 space-y-4">
                   <div>
-                    <span className="text-[0.65rem] uppercase tracking-[0.22em] font-mono text-muted-foreground">Consultório</span>
+                    <span className="text-[0.65rem] uppercase tracking-[0.22em] font-mono text-muted-foreground">Escuta</span>
                     <h3 className="font-display text-2xl tracking-tight mt-1">Modo Escuta</h3>
                   </div>
                   <div className="flex items-baseline gap-1">
@@ -314,7 +314,7 @@ export default function ConsultorioLanding() {
                   onClick={() => startCheckout("consultorio_monthly")}
                   disabled={loading === "consultorio_monthly"}
                 >
-                  {loading === "consultorio_monthly" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Assinar Consultório"}
+                  {loading === "consultorio_monthly" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Assinar Modo Escuta"}
                 </Button>
               </Card>
 
@@ -417,7 +417,7 @@ export default function ConsultorioLanding() {
                   a: "Não. A transcrição em tempo real depende de conexão com nossos engines de áudio na nuvem. Recomendamos uma conexão estável durante a consulta.",
                 },
                 {
-                  q: "E se eu já tiver o Consultório e quiser os 10 Assistentes?",
+                  q: "E se eu já tiver o Modo Escuta e quiser os 10 Assistentes?",
                   a: "Você paga apenas R$ 19,90/mês adicional pelos Assistentes — mesma lógica de upgrade cruzado. Ou troque para o Pro 2 (R$ 49,90/mês) que já vem com tudo.",
                 },
                 {
