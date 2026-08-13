@@ -663,86 +663,28 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
       )}
 
 
-      {/* Finish Dialog */}
+      {/* Fluxo de finalização guiado */}
       {showFinishDialog && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 md:p-4">
-          <Card className="max-w-lg w-full p-4 md:p-6 space-y-3 md:space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-green-100 dark:bg-green-900/30">
-                <CheckCircle2 className="h-5 w-5 md:h-6 md:w-6 text-green-600 dark:text-green-400" />
-              </div>
-              <div>
-                <h2 className="font-semibold text-base md:text-lg">Consulta Finalizada</h2>
-                <p className="text-xs md:text-sm text-muted-foreground">
-                  Duração: {formattedTime} • {segments.length} {segments.length === 1 ? 'segmento' : 'segmentos'}
-                  {isFinalizing && ' • revisando o áudio…'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="default"
-                size="sm"
-                className="gap-2 flex-1 sm:flex-none"
-                onClick={handleGenerateStructure}
-                disabled={segments.length === 0 || isStructuring || isFinalizing}
-              >
-                <FileText className="h-4 w-4" />
-                <span className="text-xs md:text-sm">
-                  {isStructuring ? 'Estruturando...' : 'Gerar estruturação'}
-                </span>
-              </Button>
-              <Button variant="outline" size="sm" className="gap-2 flex-1 sm:flex-none" onClick={handleCopyToClipboard}>
-                <Copy className="h-4 w-4" />
-                <span className="text-xs md:text-sm">Copiar</span>
-              </Button>
-            </div>
-
-            {/* Salvar caso — única ação de persistência */}
-            <div className="space-y-2 pt-2 border-t">
-              <Label htmlFor="case-name" className="text-xs md:text-sm">
-                Salvar este caso no seu histórico
-              </Label>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Input
-                  id="case-name"
-                  placeholder="Dê um nome ao caso (ex.: Sr. João — dor torácica)"
-                  value={caseName}
-                  onChange={(e) => setCaseName(e.target.value)}
-                  disabled={isSavingCase || !!savedCaseId}
-                  maxLength={120}
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleSaveCase(); }}
-                />
-                <Button
-                  size="sm"
-                  onClick={handleSaveCase}
-                  disabled={isSavingCase || !caseName.trim() || !!savedCaseId || segments.length === 0}
-                  className="gap-2 sm:w-auto"
-                >
-                  {isSavingCase ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                  <span className="text-xs md:text-sm">
-                    {savedCaseId ? 'Salvo' : isSavingCase ? 'Salvando...' : 'Salvar caso'}
-                  </span>
-                </Button>
-              </div>
-              <p className="text-[11px] text-muted-foreground">
-                Tudo o que foi transcrito e estruturado será guardado com esse nome.
-              </p>
-            </div>
-
-
-            <div className="flex flex-col sm:flex-row justify-end gap-2 pt-2 border-t">
-              <Button variant="ghost" size="sm" onClick={() => setShowFinishDialog(false)} className="w-full sm:w-auto">
-                Continuar Editando
-              </Button>
-              <Button size="sm" onClick={handleExit} className="w-full sm:w-auto">
-                Fechar
-              </Button>
-            </div>
-          </Card>
-        </div>
+        <FinalizeFlow
+          phase={finalizePhase}
+          errorMessage={finalizeError}
+          formattedTime={formattedTime}
+          segmentsCount={segments.length}
+          filledSections={countFilledSections(structure)}
+          totalSections={11}
+          caseName={caseName}
+          onCaseNameChange={setCaseName}
+          isSavingCase={isSavingCase}
+          savedCaseId={savedCaseId}
+          onSaveCase={handleSaveCase}
+          onCopyAnamnesis={handleCopyToClipboard}
+          onCopyTranscript={handleCopyTranscript}
+          onRetry={() => void runFinalizeFlow({ alreadyStopped: true })}
+          onContinueEditing={() => setShowFinishDialog(false)}
+          onExit={handleExit}
+        />
       )}
+
 
     </div>
   );
