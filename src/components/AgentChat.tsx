@@ -1524,7 +1524,7 @@ export function AgentChat({
           <div className="flex items-center gap-1.5 mb-2 flex-wrap">
             <Toggle
               pressed={directAHEMode}
-              onPressedChange={setDirectAHEMode}
+              onPressedChange={(v) => { setDirectAHEMode(v); if (v) setReportMode(false); }}
               size="sm"
               className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-primary/20 gap-1"
               title="Gerar anamnese estruturada direto"
@@ -1543,6 +1543,53 @@ export function AgentChat({
                   ))}
                 </SelectContent>
               </Select>
+            )}
+            <Toggle
+              pressed={reportMode}
+              onPressedChange={(v) => { setReportMode(v); if (v) setDirectAHEMode(false); }}
+              size="sm"
+              className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-primary/20 gap-1"
+              title="Relatório médico ou passagem de caso"
+            >
+              <ClipboardList className="h-3 w-3" />
+              <span>Relatório</span>
+            </Toggle>
+            {reportMode && (
+              <>
+                <Select value={reportType} onValueChange={(v) => setReportType(v as ClinicusReportType)}>
+                  <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CLINICUS_REPORT_TYPES.map((r) => (
+                      <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {reportType === "relatorio_medico" ? (
+                  <Select value={reportPurpose} onValueChange={setReportPurpose}>
+                    <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CLINICUS_REPORT_PURPOSES.map((p) => (
+                        <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Select value={reportSpecialty} onValueChange={setReportSpecialty}>
+                    <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CLINICUS_HANDOFF_TARGETS.map((s) => (
+                        <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </>
             )}
           </div>
         )}
