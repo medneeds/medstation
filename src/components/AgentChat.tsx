@@ -1696,6 +1696,41 @@ export function AgentChat({
             </Select>
           </div>
         )}
+        {isMobile && agentType === "legalis" && (
+          <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+            <Select value={legalisMode} onValueChange={setLegalisMode}>
+              <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="z-[80]">
+                {LEGALIS_MODES.map((m) => (
+                  <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={legalisScenario} onValueChange={setLegalisScenario}>
+              <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="z-[80]">
+                {LEGALIS_SCENARIOS.map((s) => (
+                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={legalisTopic} onValueChange={setLegalisTopic}>
+              <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="z-[80]">
+                {LEGALIS_TOPICS.map((t) => (
+                  <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
 
 
 
