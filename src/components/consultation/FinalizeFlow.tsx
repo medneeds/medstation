@@ -233,11 +233,89 @@ export function FinalizeFlow({
                 if (e.key === "Enter" && canSave) onSaveCase();
               }}
             />
+          </div>
+
+          {/* Pasta e data */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label className="text-[11px] text-muted-foreground">Pasta</Label>
+              {isNewFolder ? (
+                <div className="flex gap-1.5">
+                  <Input
+                    autoFocus
+                    placeholder="Nome da nova pasta"
+                    value={newFolderName}
+                    onChange={(e) => setNewFolderName(e.target.value)}
+                    disabled={isCreatingFolder}
+                    maxLength={60}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") void handleCreateFolder();
+                      if (e.key === "Escape") setIsNewFolder(false);
+                    }}
+                  />
+                  <Button size="icon" variant="default" className="shrink-0" onClick={() => void handleCreateFolder()} disabled={isCreatingFolder || !newFolderName.trim()}>
+                    {isCreatingFolder ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                  </Button>
+                  <Button size="icon" variant="ghost" className="shrink-0" onClick={() => setIsNewFolder(false)} disabled={isCreatingFolder}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Select
+                  value={folderId ?? "none"}
+                  onValueChange={(v) => {
+                    if (v === "__new__") {
+                      setNewFolderName("");
+                      setIsNewFolder(true);
+                      return;
+                    }
+                    onFolderChange(v === "none" ? null : v);
+                  }}
+                  disabled={!canSave || isSavingCase || !!savedCaseId}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sem pasta" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover z-[60]">
+                    <SelectItem value="none">Sem pasta</SelectItem>
+                    {folders.map((f) => (
+                      <SelectItem key={f.id} value={f.id}>
+                        <span className="flex items-center gap-2">
+                          <Folder className="h-3.5 w-3.5 text-primary" />
+                          {f.name}
+                        </span>
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="__new__">
+                      <span className="flex items-center gap-2 text-primary">
+                        <FolderPlus className="h-3.5 w-3.5" />
+                        Criar nova pasta
+                      </span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="case-date" className="text-[11px] text-muted-foreground">
+                Data da consulta
+              </Label>
+              <Input
+                id="case-date"
+                type="date"
+                value={consultationDate}
+                onChange={(e) => onConsultationDateChange(e.target.value)}
+                disabled={!canSave || isSavingCase || !!savedCaseId}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end">
             <Button
               size="sm"
               onClick={onSaveCase}
               disabled={!canSave || isSavingCase || !caseName.trim() || !!savedCaseId}
-              className="gap-2 sm:w-auto"
+              className="gap-2"
             >
               {isSavingCase ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               <span className="text-xs md:text-sm">
@@ -245,6 +323,7 @@ export function FinalizeFlow({
               </span>
             </Button>
           </div>
+
           <p className="text-[11px] text-muted-foreground">
             {canSave
               ? "Transcrição e anamnese serão guardadas com esse nome."
