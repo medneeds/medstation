@@ -31,6 +31,7 @@ export default function CaseVoiceRecorder({ onTranscriptionComplete }: CaseVoice
   const scribe = useScribe({
     modelId: "scribe_v2_realtime",
     commitStrategy: CommitStrategy.VAD,
+    languageCode: "por",
     onPartialTranscript: (d: any) => setLiveText(committedRef.current + " " + (d?.text ?? "")),
     onCommittedTranscript: (d: any) => {
       committedRef.current = (committedRef.current + " " + (d?.text ?? "")).trim();
