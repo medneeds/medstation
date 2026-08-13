@@ -103,6 +103,17 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/consultorio/historico"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <ConsultorioHistorico />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+
             <Route path="/welcome" element={<Welcome />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/welcome-tour" element={<ProtectedRoute><WelcomeTour /></ProtectedRoute>} />
