@@ -111,19 +111,20 @@ export default function ConsultorioHistorico() {
 
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Histórico de consultas</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Histórico de consultas</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Suas consultas salvas, organizadas por pasta e data.
           </p>
         </div>
-        <Button onClick={() => navigate("/consultorio")} className="gap-2">
+        <Button onClick={() => navigate("/consultorio")} className="gap-2 h-10 w-full sm:w-auto">
           <Mic className="h-4 w-4" />
           Novo atendimento
         </Button>
       </header>
 
       {/* Filtros */}
-      <Card className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <Card className="p-3 sm:p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+
         <div className="space-y-1">
           <Label className="text-[11px] text-muted-foreground">Buscar</Label>
           <div className="relative">
