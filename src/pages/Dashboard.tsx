@@ -21,6 +21,9 @@ import {
   BookOpen,
   Compass,
   Sigma,
+  MessagesSquare,
+  Scale,
+
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSubscription } from "@/contexts/SubscriptionContext";
@@ -151,7 +154,24 @@ const agentModules = [
     color: "text-orange-500",
     isPremium: true,
   },
+  {
+    title: "Mediscuss",
+    description: "Pareceres, discussões e regulação prontos",
+    icon: MessagesSquare,
+    url: "/mediscuss",
+    color: "text-primary",
+    isPremium: true,
+  },
+  {
+    title: "Legalis",
+    description: "Proteção jurídica e dúvidas éticas (CFM)",
+    icon: Scale,
+    url: "/legalis",
+    color: "text-amber-600",
+    isPremium: true,
+  },
 ];
+
 
 export default function Dashboard() {
   const navigate = useNavigate();

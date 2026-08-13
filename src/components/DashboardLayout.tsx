@@ -31,6 +31,8 @@ const ROUTE_LABELS: Record<string, string> = {
   orientus: "Orientus",
   codexus: "CODexus",
   mediscuss: "Mediscuss",
+  legalis: "Legalis",
+
   settings: "Perfil",
   pricing: "Assinatura",
   patients: "Pacientes",

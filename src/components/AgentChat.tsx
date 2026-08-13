@@ -141,6 +141,37 @@ const MEDISCUSS_SPECIALTIES = [
   { value: "ortopedia", label: "Ortopedia" },
 ];
 
+const LEGALIS_MODES = [
+  { value: "auto", label: "Automático" },
+  { value: "consulta_etica", label: "Consulta ética (CFM)" },
+  { value: "blindagem", label: "Blindagem de registro" },
+  { value: "defesa", label: "Defesa argumentativa" },
+  { value: "documento", label: "Documento de proteção" },
+];
+
+const LEGALIS_SCENARIOS = [
+  { value: "auto", label: "Automático" },
+  { value: "emergencia", label: "Emergência" },
+  { value: "uti", label: "UTI" },
+  { value: "enfermaria", label: "Enfermaria" },
+  { value: "consultorio", label: "Consultório" },
+  { value: "telemedicina", label: "Telemedicina" },
+  { value: "plantao", label: "Plantão / Regulação" },
+];
+
+const LEGALIS_TOPICS = [
+  { value: "auto", label: "Geral" },
+  { value: "responsabilidade", label: "Responsabilidade civil" },
+  { value: "etico_profissional", label: "Ético-profissional (CRM)" },
+  { value: "sigilo", label: "Sigilo e LGPD" },
+  { value: "consentimento", label: "Consentimento / Recusa" },
+  { value: "menor_incapaz", label: "Menor / Incapaz" },
+  { value: "fim_de_vida", label: "Fim de vida" },
+  { value: "prontuario", label: "Prontuário e atestados" },
+  { value: "relacao_institucional", label: "Relação institucional" },
+];
+
+
 const CLINICUS_CONTEXTS = [
   { value: "consultorio", label: "Consultório" },
   { value: "enfermaria", label: "Enfermaria / Clínica Médica" },
@@ -234,6 +265,10 @@ export function AgentChat({
   const [quickCIDMode, setQuickCIDMode] = useState(false);
   const [mediscussMode, setMediscussMode] = useState("auto");
   const [mediscussSpecialty, setMediscussSpecialty] = useState("auto");
+  const [legalisMode, setLegalisMode] = useState("auto");
+  const [legalisScenario, setLegalisScenario] = useState("auto");
+  const [legalisTopic, setLegalisTopic] = useState("auto");
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -566,7 +601,9 @@ export function AgentChat({
           ...(agentType === "prescriptus" && { bulaInteligenteMode }),
           ...(agentType === "gasometrus" && { directLIMode }),
           ...(agentType === "codexus" && { quickCIDMode }),
-          ...(agentType === "mediscuss" && { mediscussMode, mediscussSpecialty })
+          ...(agentType === "mediscuss" && { mediscussMode, mediscussSpecialty }),
+          ...(agentType === "legalis" && { legalisMode, legalisScenario, legalisTopic })
+
         }),
       });
 
@@ -1659,6 +1696,41 @@ export function AgentChat({
             </Select>
           </div>
         )}
+        {isMobile && agentType === "legalis" && (
+          <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+            <Select value={legalisMode} onValueChange={setLegalisMode}>
+              <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="z-[80]">
+                {LEGALIS_MODES.map((m) => (
+                  <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={legalisScenario} onValueChange={setLegalisScenario}>
+              <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="z-[80]">
+                {LEGALIS_SCENARIOS.map((s) => (
+                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={legalisTopic} onValueChange={setLegalisTopic}>
+              <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="z-[80]">
+                {LEGALIS_TOPICS.map((t) => (
+                  <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
 
 
 
@@ -1819,6 +1891,44 @@ export function AgentChat({
                 </Select>
               </>
             )}
+            {agentType === "legalis" && (
+              <>
+                <Select value={legalisMode} onValueChange={setLegalisMode}>
+                  <SelectTrigger className="shrink-0 h-8 w-auto gap-1.5 rounded-full text-xs px-3">
+                    <span className="text-muted-foreground">Modo:</span>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="z-[80]">
+                    {LEGALIS_MODES.map((m) => (
+                      <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={legalisScenario} onValueChange={setLegalisScenario}>
+                  <SelectTrigger className="shrink-0 h-8 w-auto gap-1.5 rounded-full text-xs px-3">
+                    <span className="text-muted-foreground">Cenário:</span>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="z-[80]">
+                    {LEGALIS_SCENARIOS.map((s) => (
+                      <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={legalisTopic} onValueChange={setLegalisTopic}>
+                  <SelectTrigger className="shrink-0 h-8 w-auto gap-1.5 rounded-full text-xs px-3">
+                    <span className="text-muted-foreground">Tema:</span>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="z-[80]">
+                    {LEGALIS_TOPICS.map((t) => (
+                      <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </>
+            )}
+
             {agentType === "examinus" && (
               <>
                 <Toggle
