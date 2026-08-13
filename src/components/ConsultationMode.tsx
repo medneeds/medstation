@@ -531,9 +531,10 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                         aria-pressed={isActive}
                         aria-label={`Marcar fala como ${label}`}
                         className={cn(
-                          "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium transition-all ring-1",
+                          "inline-flex items-center justify-center gap-1 px-2 h-8 md:h-auto md:py-1 rounded-full text-[11px] font-medium transition-all ring-1",
                           isActive ? `${active} shadow-sm` : "text-muted-foreground ring-transparent hover:text-foreground hover:bg-muted/60"
                         )}
+
                       >
                         <Icon className="h-3.5 w-3.5" />
                         <span>{label}</span>
