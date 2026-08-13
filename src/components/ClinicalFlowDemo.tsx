@@ -319,7 +319,7 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
           <h4 className="font-display text-sm md:text-base tracking-tight mb-2">{stage.title}</h4>
           {revealed ? (
             <div className="space-y-3 animate-fade-in">
-              <div className="rounded-xl border border-border/50 bg-background/60 p-2.5 space-y-0.5">
+              <div className="rounded-xl border border-border/50 bg-background/60 p-2.5 space-y-0.5 max-h-[19rem] overflow-y-auto no-scrollbar">
                 {stage.output.map((line, j) => (
                   <p key={j} className="text-[0.7rem] md:text-xs font-mono leading-relaxed text-foreground/90">
                     {line || "\u00A0"}
