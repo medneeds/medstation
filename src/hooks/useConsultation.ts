@@ -491,10 +491,16 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     setSegments([]);
     setPartialTranscription('');
     setStructure(EMPTY_ANAMNESIS);
+    setChangedFields(new Set());
+    setSmartSummary('');
+    setReviewedTranscript('');
+    setLastStructuredAt(null);
+    lastLiveCountRef.current = 0;
     setStartTime(null);
     setElapsedTime(0);
     stopTimer();
   }, [stopTimer]);
+
 
   const formatElapsedTime = useCallback(() => {
     const h = Math.floor(elapsedTime / 3600);
