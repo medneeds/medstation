@@ -1891,6 +1891,44 @@ export function AgentChat({
                 </Select>
               </>
             )}
+            {agentType === "legalis" && (
+              <>
+                <Select value={legalisMode} onValueChange={setLegalisMode}>
+                  <SelectTrigger className="shrink-0 h-8 w-auto gap-1.5 rounded-full text-xs px-3">
+                    <span className="text-muted-foreground">Modo:</span>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="z-[80]">
+                    {LEGALIS_MODES.map((m) => (
+                      <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={legalisScenario} onValueChange={setLegalisScenario}>
+                  <SelectTrigger className="shrink-0 h-8 w-auto gap-1.5 rounded-full text-xs px-3">
+                    <span className="text-muted-foreground">Cenário:</span>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="z-[80]">
+                    {LEGALIS_SCENARIOS.map((s) => (
+                      <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={legalisTopic} onValueChange={setLegalisTopic}>
+                  <SelectTrigger className="shrink-0 h-8 w-auto gap-1.5 rounded-full text-xs px-3">
+                    <span className="text-muted-foreground">Tema:</span>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="z-[80]">
+                    {LEGALIS_TOPICS.map((t) => (
+                      <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </>
+            )}
+
             {agentType === "examinus" && (
               <>
                 <Toggle
