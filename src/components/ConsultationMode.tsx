@@ -285,13 +285,17 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
         <div className="relative flex flex-wrap items-center gap-x-3 gap-y-2 px-2 md:px-4 py-2">
           {/* Identidade — apenas voltar, título já no cabeçalho superior */}
           <div className="flex items-center gap-2 min-w-0 shrink-0">
-            <Button variant="ghost" size="icon" onClick={handleExit} className="h-8 w-8 rounded-xl shrink-0" title="Voltar">
+            <Button variant="ghost" size="icon" onClick={handleExit} className="h-9 w-9 md:h-8 md:w-8 rounded-xl shrink-0" title="Voltar">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </div>
 
           {/* Centro: estado do áudio + seletores segmentados */}
-          <div className="flex items-center gap-2 md:gap-3 flex-1 justify-center min-w-0 overflow-x-auto no-scrollbar">
+          <div className={cn(
+            "flex items-center gap-2 md:gap-3 flex-1 justify-center min-w-0 overflow-x-auto no-scrollbar",
+            isMobile && "hidden"
+          )}>
+
             {/* Estado do áudio — sempre visível, intencional mesmo ocioso */}
             <div className={cn(
               "hidden sm:flex shrink-0 items-center gap-2 h-8 px-2.5 rounded-xl border transition-colors",
