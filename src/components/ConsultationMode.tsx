@@ -582,16 +582,21 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
       {/* Main Content */}
       {isMobile ? (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-          <TabsList className="grid w-full grid-cols-2 mx-0 rounded-none border-b">
-            <TabsTrigger value="transcription" className="gap-2 data-[state=active]:bg-muted">
+          <TabsList className="grid w-full grid-cols-2 mx-0 h-11 p-0 rounded-none border-b bg-card/60">
+            <TabsTrigger value="transcription" className="h-11 gap-2 rounded-none text-[13px] data-[state=active]:bg-muted data-[state=active]:text-primary">
               <MessageSquare className="h-4 w-4" />
               Transcrição
+              {segments.length > 0 && (
+                <span className="ml-0.5 text-[10px] font-mono text-muted-foreground">{segments.length}</span>
+              )}
             </TabsTrigger>
-            <TabsTrigger value="structure" className="gap-2 data-[state=active]:bg-muted">
+            <TabsTrigger value="structure" className="h-11 gap-2 rounded-none text-[13px] data-[state=active]:bg-muted data-[state=active]:text-primary">
               <FileText className="h-4 w-4" />
               Anamnese
+              <span className="ml-0.5 text-[10px] font-mono text-muted-foreground">{countFilledSections(structure)}/11</span>
             </TabsTrigger>
           </TabsList>
+
           <TabsContent value="transcription" className="flex-1 m-0 overflow-hidden">
             <TranscriptionPane
               segments={segments}
