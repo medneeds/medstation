@@ -294,7 +294,7 @@ serve(async (req) => {
     }
 
 
-    const validAgentTypes = ["clinicus", "examinus", "scorius", "numerus", "prescriptus", "codexus", "gasometrus", "atestus", "protocolus", "orientus", "mediscuss"];
+    const validAgentTypes = ["clinicus", "examinus", "scorius", "numerus", "prescriptus", "codexus", "gasometrus", "atestus", "protocolus", "orientus", "mediscuss", "legalis"];
     if (agentType && !validAgentTypes.includes(agentType)) {
       return new Response(
         JSON.stringify({ error: "Tipo de agente inválido" }),
