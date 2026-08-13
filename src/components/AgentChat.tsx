@@ -225,6 +225,10 @@ export function AgentChat({
   const [compactMode, setCompactMode] = useState(true);
   const [directAHEMode, setDirectAHEMode] = useState(false);
   const [aheTemplate, setAheTemplate] = useState<ClinicusContext>("enfermaria");
+  const [reportMode, setReportMode] = useState(false);
+  const [reportType, setReportType] = useState<ClinicusReportType>("relatorio_medico");
+  const [reportPurpose, setReportPurpose] = useState("geral");
+  const [reportSpecialty, setReportSpecialty] = useState("auto");
   const [bulaInteligenteMode, setBulaInteligenteMode] = useState(false);
   const [directLIMode, setDirectLIMode] = useState(false);
   const [quickCIDMode, setQuickCIDMode] = useState(false);
