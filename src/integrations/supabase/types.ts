@@ -671,6 +671,51 @@ export type Database = {
         }
         Relationships: []
       }
+      leads: {
+        Row: {
+          converted_user_id: string | null
+          created_at: string
+          crm: string | null
+          crm_state: string | null
+          email: string
+          full_name: string
+          id: string
+          phone: string
+          referrer: string | null
+          source: string
+          updated_at: string
+          utm: Json
+        }
+        Insert: {
+          converted_user_id?: string | null
+          created_at?: string
+          crm?: string | null
+          crm_state?: string | null
+          email: string
+          full_name: string
+          id?: string
+          phone: string
+          referrer?: string | null
+          source?: string
+          updated_at?: string
+          utm?: Json
+        }
+        Update: {
+          converted_user_id?: string | null
+          created_at?: string
+          crm?: string | null
+          crm_state?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          phone?: string
+          referrer?: string | null
+          source?: string
+          updated_at?: string
+          utm?: Json
+        }
+        Relationships: []
+      }
       medical_documents: {
         Row: {
           case_id: string | null
