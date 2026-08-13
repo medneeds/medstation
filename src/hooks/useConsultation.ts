@@ -338,7 +338,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     stopTimer();
 
     // Disconnect Scribe
-    try { await scribe.disconnect(); } catch { /* ignore */ }
+    try { if (scribe.isConnected) await scribe.disconnect(); } catch { /* ignore */ }
 
     // Stop MediaRecorder and gather full audio
     const recorder = mediaRecorderRef.current;
@@ -515,7 +515,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
   useEffect(() => {
     return () => {
       stopTimer();
-      try { scribe.disconnect(); } catch { /* ignore */ }
+      try { if (scribe.isConnected) scribe.disconnect(); } catch { /* ignore */ }
       try { mediaRecorderRef.current?.stop(); } catch { /* ignore */ }
       audioStreamRef.current?.getTracks().forEach((t) => t.stop());
       if (audioContextRef.current) audioContextRef.current.close().catch(() => { /* ignore */ });
