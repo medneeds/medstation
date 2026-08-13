@@ -601,7 +601,9 @@ export function AgentChat({
           ...(agentType === "prescriptus" && { bulaInteligenteMode }),
           ...(agentType === "gasometrus" && { directLIMode }),
           ...(agentType === "codexus" && { quickCIDMode }),
-          ...(agentType === "mediscuss" && { mediscussMode, mediscussSpecialty })
+          ...(agentType === "mediscuss" && { mediscussMode, mediscussSpecialty }),
+          ...(agentType === "legalis" && { legalisMode, legalisScenario, legalisTopic })
+
         }),
       });
 
