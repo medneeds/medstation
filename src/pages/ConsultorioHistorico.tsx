@@ -209,7 +209,7 @@ export default function ConsultorioHistorico() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="gap-1.5"
+                              className="gap-1.5 h-9 flex-1 sm:flex-none"
                               onClick={() => {
                                 if (!c.notes) {
                                   toast.error("Esta consulta não tem anamnese salva.");
@@ -220,8 +220,9 @@ export default function ConsultorioHistorico() {
                               }}
                             >
                               <FileText className="h-3.5 w-3.5" />
-                              <span className="hidden sm:inline text-xs">Abrir no Clínicus</span>
+                              <span className="text-xs">Abrir no Clínicus</span>
                             </Button>
+
                           </div>
                         </li>
                       ))}
