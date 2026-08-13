@@ -63,6 +63,8 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const [showFinishDialog, setShowFinishDialog] = useState(false);
+  const [finalizePhase, setFinalizePhase] = useState<FinalizePhase>("review");
+  const [finalizeError, setFinalizeError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("transcription");
   const [caseName, setCaseName] = useState<string>("");
   const [isSavingCase, setIsSavingCase] = useState(false);
