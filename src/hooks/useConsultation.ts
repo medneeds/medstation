@@ -93,6 +93,19 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     if (typeof window === 'undefined') return true;
     return localStorage.getItem('consultorio-live-structuring') !== '0';
   });
+  const [specialty, setSpecialty] = useState<string>(() => {
+    if (typeof window === 'undefined') return 'auto';
+    return localStorage.getItem('consultorio-specialty') || 'auto';
+  });
+  const [detectedSpecialty, setDetectedSpecialty] = useState<string>('');
+  const specialtyRef = useRef<string>(specialty);
+  useEffect(() => {
+    specialtyRef.current = specialty;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('consultorio-specialty', specialty);
+    }
+    if (specialty !== 'auto') setDetectedSpecialty('');
+  }, [specialty]);
   const currentSpeakerRef = useRef<SpeakerType>('doctor');
   const setCurrentSpeaker = useCallback((s: SpeakerType) => {
     currentSpeakerRef.current = s;
@@ -104,6 +117,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
       localStorage.setItem('consultorio-live-structuring', liveStructuring ? '1' : '0');
     }
   }, [liveStructuring]);
+
 
 
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
