@@ -260,7 +260,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     <div className="flex flex-col h-full bg-background">
       {/* Barra de comando única — identidade, modo, foco, tempo e controles */}
       <header className="relative shrink-0 border-b border-border/60 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-card via-card to-card/80 backdrop-blur-sm pointer-events-none" />
+        <div className="absolute inset-0 bg-card/80 backdrop-blur-md pointer-events-none" />
         {isRecording && !isPaused && (
           <motion.div
             className="absolute inset-x-0 bottom-0 h-px pointer-events-none"
@@ -270,70 +270,107 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           />
         )}
 
-        <div className="relative flex flex-wrap items-center gap-x-2 gap-y-1.5 px-2 md:px-3 py-1.5">
+        <div className="relative flex flex-wrap items-center gap-x-3 gap-y-2 px-2 md:px-4 py-2">
           {/* Identidade */}
-          <div className="flex items-center gap-1.5 min-w-0">
-            <Button variant="ghost" size="icon" onClick={handleExit} className="h-8 w-8 rounded-full shrink-0">
+          <div className="flex items-center gap-2 min-w-0 shrink-0">
+            <Button variant="ghost" size="icon" onClick={handleExit} className="h-8 w-8 rounded-xl shrink-0">
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <h1 className="font-semibold text-sm tracking-tight truncate">
+            <span className="hidden md:block h-6 w-px bg-border" />
+            <h1 className="font-semibold text-sm md:text-[15px] tracking-tight truncate">
               Modo Consultório
             </h1>
           </div>
 
-          {/* Visualizador sempre visível */}
-          <AudioVisualizer
-            level={audioLevel}
-            isActive={isRecording && !isPaused}
-            currentSpeaker={isRecording && !isPaused && !unifiedMode ? currentSpeaker : undefined}
-            className="hidden sm:block w-24 md:w-32 shrink-0"
-          />
+          {/* Centro: estado do áudio + seletores segmentados */}
+          <div className="flex items-center gap-2 md:gap-4 flex-1 justify-center flex-wrap">
+            {/* Estado do áudio — sempre visível, intencional mesmo ocioso */}
+            <div className={cn(
+              "hidden sm:flex items-center gap-2 h-8 px-2.5 rounded-xl border transition-colors",
+              isRecording && !isPaused
+                ? "bg-primary/10 border-primary/25"
+                : "bg-muted/40 border-border/60"
+            )}>
+              {isRecording && !isPaused ? (
+                <AudioVisualizer
+                  level={audioLevel}
+                  isActive
+                  currentSpeaker={!unifiedMode ? currentSpeaker : undefined}
+                  className="w-20 md:w-24"
+                />
+              ) : (
+                <span className="flex items-end gap-[3px] h-4">
+                  {[6, 10, 5, 13, 8, 11, 6].map((h, i) => (
+                    <span
+                      key={i}
+                      className={cn("w-[2px] rounded-full", isPaused ? "bg-muted-foreground/40" : "bg-primary/40")}
+                      style={{ height: `${h}px` }}
+                    />
+                  ))}
+                </span>
+              )}
+              <span className={cn(
+                "text-[10px] font-medium uppercase tracking-wider",
+                isRecording && !isPaused ? "text-primary" : "text-muted-foreground"
+              )}>
+                {isRecording ? (isPaused ? 'Pausado' : 'Ao vivo') : 'Pronto'}
+              </span>
+            </div>
 
-          {/* Modo de transcrição — rótulo explícito do estado atual */}
-          <button
-            type="button"
-            onClick={() => setUnifiedMode((v) => !v)}
-            aria-pressed={unifiedMode}
-            title={unifiedMode ? 'Ativar identificação de falantes' : 'Transcrever tudo como um único bloco'}
-            className={cn(
-              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium ring-1 transition-colors",
-              unifiedMode
-                ? "bg-primary/12 ring-primary/30 text-primary"
-                : "bg-blue-500/10 ring-blue-500/30 text-blue-600 dark:text-blue-400"
-            )}
-          >
-            <span className={cn("h-1.5 w-1.5 rounded-full", unifiedMode ? "bg-primary" : "bg-blue-500")} />
-            <span className="text-muted-foreground/80 hidden md:inline">Modo:</span>
-            <span>{unifiedMode ? 'Transcrição contínua' : 'Identificar falantes'}</span>
-          </button>
-
-          {/* Foco de painéis (desktop) */}
-          {!isMobile && (
-            <div className="inline-flex items-center gap-0.5 p-0.5 rounded-full bg-muted/50 ring-1 ring-border/60">
+            {/* Modo de transcrição — segmentado, estado ativo óbvio */}
+            <div className="inline-flex p-1 rounded-xl bg-muted/60 border border-border/60">
               {([
-                { key: 'split' as const, label: 'Dividido', Icon: Columns2 },
-                { key: 'transcription' as const, label: 'Transcrição', Icon: MessageSquare },
-                { key: 'structure' as const, label: 'Anamnese', Icon: Maximize2 },
+                { key: false, label: 'Identificar falantes', Icon: Users },
+                { key: true, label: 'Transcrição contínua', Icon: MessageSquare },
               ]).map(({ key, label, Icon }) => (
                 <button
-                  key={key}
+                  key={String(key)}
                   type="button"
-                  onClick={() => setFocusPane(key)}
-                  aria-pressed={focusPane === key}
+                  onClick={() => setUnifiedMode(key)}
+                  aria-pressed={unifiedMode === key}
                   title={label}
                   className={cn(
-                    "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium transition-colors",
-                    focusPane === key
-                      ? "bg-background text-primary shadow-sm ring-1 ring-primary/25"
+                    "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all",
+                    unifiedMode === key
+                      ? "bg-card text-primary shadow-sm border border-border/50"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   <Icon className="h-3.5 w-3.5" />
-                  <span className="hidden lg:inline">{label}</span>
+                  <span className="hidden md:inline">{label}</span>
                 </button>
               ))}
             </div>
-          )}
+
+            {/* Foco de painéis (desktop) */}
+            {!isMobile && (
+              <div className="inline-flex p-1 rounded-xl bg-muted/60 border border-border/60">
+                {([
+                  { key: 'split' as const, label: 'Dividido', Icon: Columns2 },
+                  { key: 'transcription' as const, label: 'Transcrição', Icon: MessageSquare },
+                  { key: 'structure' as const, label: 'Anamnese', Icon: Maximize2 },
+                ]).map(({ key, label, Icon }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setFocusPane(key)}
+                    aria-pressed={focusPane === key}
+                    title={label}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all",
+                      focusPane === key
+                        ? "bg-card text-primary shadow-sm border border-border/50"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    <span className="hidden lg:inline">{label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
 
           {/* Tempo + status + controles */}
           <div className="ml-auto flex items-center gap-1.5 md:gap-2">
