@@ -25,8 +25,8 @@ import { GuestEmailDialog } from "@/components/GuestEmailDialog";
 type ConsultorioPlan = "consultorio_monthly" | "consultorio_upgrade" | "pro2_bundle" | "agents_upgrade";
 
 const PLAN_META: Record<ConsultorioPlan, { label: string; price: string }> = {
-  consultorio_monthly: { label: "Modo Consultório", price: "R$ 29,90/mês" },
-  consultorio_upgrade: { label: "Modo Consultório (upgrade)", price: "R$ 19,90/mês" },
+  consultorio_monthly: { label: "Modo Escuta", price: "R$ 29,90/mês" },
+  consultorio_upgrade: { label: "Modo Escuta (upgrade)", price: "R$ 19,90/mês" },
   pro2_bundle: { label: "MedStation AI Pro 2", price: "R$ 49,90/mês" },
   agents_upgrade: { label: "10 Assistentes (upgrade)", price: "R$ 19,90/mês" },
 };
@@ -108,7 +108,7 @@ export default function ConsultorioLanding() {
 
   return (
     <div className="min-h-screen relative">
-      <Seo path="/consultorio-landing" title="Modo Consultório — anamnese pronta pela sua voz" description="Grave a consulta e receba a transcrição e a anamnese estruturada pronta para copiar no prontuário." />
+      <Seo path="/consultorio-landing" title="Modo Escuta — anamnese pronta pela sua voz" description="Grave a consulta e receba a transcrição e a anamnese estruturada pronta para copiar no prontuário." />
       {/* Background gradient */}
       <div className="fixed inset-0 bg-gradient-to-br from-primary/12 via-background to-primary/8 pointer-events-none" />
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_120%_80%_at_50%_-10%,rgba(var(--primary-rgb),0.25),transparent)] pointer-events-none" />
@@ -121,7 +121,7 @@ export default function ConsultorioLanding() {
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
               <Logo size="sm" />
               <span className="hidden md:inline-block text-[0.65rem] uppercase tracking-[0.22em] font-mono text-muted-foreground border-l border-hairline pl-3">
-                Modo Consultório
+                Modo Escuta
               </span>
             </div>
             <nav className="flex gap-2 md:gap-4 items-center">
@@ -141,7 +141,7 @@ export default function ConsultorioLanding() {
           <div className="container mx-auto max-w-4xl text-center space-y-6 md:space-y-8">
             <div className="inline-flex items-center gap-2 text-[0.65rem] uppercase tracking-[0.22em] font-mono text-muted-foreground">
               <span className="h-px w-8 bg-primary" />
-              MedStation Modo Consultório
+              MedStation Modo Escuta
               <span className="h-px w-8 bg-primary" />
             </div>
             <h1 className="font-display text-[clamp(2rem,7vw,4rem)] tracking-tight leading-[1.05] text-foreground">
@@ -262,9 +262,9 @@ export default function ConsultorioLanding() {
               </h2>
               <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
                 {hasAgents && !hasConsultorio
-                  ? "Você já tem os Assistentes — adicione o Consultório com preço exclusivo de upgrade."
+                  ? "Você já tem os Assistentes — adicione o Modo Escuta com preço exclusivo de upgrade."
                   : hasConsultorio && !hasAgents
-                  ? "Você já tem o Consultório — complete sua estação com os 10 Assistentes."
+                  ? "Você já tem o Modo Escuta — complete sua estação com os 10 Assistentes."
                   : "Comece pelo essencial ou leve tudo no MedStation AI Pro 2."}
               </p>
             </div>
@@ -275,7 +275,7 @@ export default function ConsultorioLanding() {
                 <div className="flex items-center justify-between gap-4 flex-wrap">
                   <div>
                     <div className="text-xs font-mono uppercase tracking-wider text-primary mb-1">Preço de upgrade</div>
-                    <div className="font-display text-xl tracking-tight">Adicione o Modo Consultório por <span className="text-primary">R$ 19,90/mês</span></div>
+                    <div className="font-display text-xl tracking-tight">Adicione o Modo Escuta por <span className="text-primary">R$ 19,90/mês</span></div>
                     <p className="text-xs text-muted-foreground mt-1">Em vez de R$ 29,90 — exclusivo para assinantes dos Assistentes.</p>
                   </div>
                   <Button
@@ -293,8 +293,8 @@ export default function ConsultorioLanding() {
               <Card className="p-6 border border-hairline bg-card/60 backdrop-blur-sm flex flex-col">
                 <div className="flex-1 space-y-4">
                   <div>
-                    <span className="text-[0.65rem] uppercase tracking-[0.22em] font-mono text-muted-foreground">Consultório</span>
-                    <h3 className="font-display text-2xl tracking-tight mt-1">Modo Consultório</h3>
+                    <span className="text-[0.65rem] uppercase tracking-[0.22em] font-mono text-muted-foreground">Escuta</span>
+                    <h3 className="font-display text-2xl tracking-tight mt-1">Modo Escuta</h3>
                   </div>
                   <div className="flex items-baseline gap-1">
                     <span className="font-display text-4xl tracking-tight">R$ 29,90</span>
@@ -314,7 +314,7 @@ export default function ConsultorioLanding() {
                   onClick={() => startCheckout("consultorio_monthly")}
                   disabled={loading === "consultorio_monthly"}
                 >
-                  {loading === "consultorio_monthly" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Assinar Consultório"}
+                  {loading === "consultorio_monthly" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Assinar Modo Escuta"}
                 </Button>
               </Card>
 
@@ -338,7 +338,7 @@ export default function ConsultorioLanding() {
                   <p className="text-[11px] text-muted-foreground -mt-2">ou R$ 499,90/ano (≈ R$ 41,66/mês)</p>
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> <strong className="text-foreground">10 Assistentes</strong> (Clínicus, Examinus, etc.)</li>
-                    <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> <strong className="text-foreground">Modo Consultório</strong> em tempo real</li>
+                    <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> <strong className="text-foreground">Modo Escuta</strong> em tempo real</li>
                     <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> Uso sem restrições, sem pop-ups</li>
                     <li className="flex gap-2"><Check className="w-3.5 h-3.5 text-primary mt-0.5" /> Garantia 7 dias</li>
                   </ul>
@@ -409,7 +409,7 @@ export default function ConsultorioLanding() {
             <div className="space-y-4">
               {[
                 {
-                  q: "Por que o Modo Consultório é cobrado à parte dos Assistentes?",
+                  q: "Por que o Modo Escuta é cobrado à parte dos Assistentes?",
                   a: "Os custos de manutenção são significativamente mais altos: transcrição ao vivo durante toda a consulta, revisão completa do áudio ao final e processamento contínuo. Para manter a qualidade, separamos o produto. Quem já assina os Assistentes paga apenas R$ 19,90/mês de upgrade.",
                 },
                 {
@@ -417,7 +417,7 @@ export default function ConsultorioLanding() {
                   a: "Não. A transcrição em tempo real depende de conexão com nossos engines de áudio na nuvem. Recomendamos uma conexão estável durante a consulta.",
                 },
                 {
-                  q: "E se eu já tiver o Consultório e quiser os 10 Assistentes?",
+                  q: "E se eu já tiver o Modo Escuta e quiser os 10 Assistentes?",
                   a: "Você paga apenas R$ 19,90/mês adicional pelos Assistentes — mesma lógica de upgrade cruzado. Ou troque para o Pro 2 (R$ 49,90/mês) que já vem com tudo.",
                 },
                 {

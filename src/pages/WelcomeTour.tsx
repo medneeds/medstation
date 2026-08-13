@@ -192,7 +192,7 @@ function AssistantsGridIllustration() {
 
 const SLIDES: Slide[] = [
   {
-    badge: "01 — Modo Consultório",
+    badge: "01 — Modo Escuta",
     title: "Fale. A anamnese aparece.",
     subtitle: "Grave a consulta com o paciente. O assistente escuta, organiza e devolve o texto pronto pra colar no prontuário.",
     illustration: <VoiceToTextIllustration />,

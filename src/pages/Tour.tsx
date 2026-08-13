@@ -34,7 +34,7 @@ const steps = [
     title: "Você cola, dita ou anexa",
     body:
       "Cole o resultado de um exame, dite a consulta pelo microfone ou anexe uma foto/PDF. Nada de formulários longos: a plataforma entende texto bruto, áudio e imagem.",
-    bullets: ["Colar texto do laboratório", "Ditar em voz alta no Modo Consultório", "Anexar foto ou PDF do exame"],
+    bullets: ["Colar texto do laboratório", "Ditar em voz alta no Modo Escuta", "Anexar foto ou PDF do exame"],
     icon: Copy,
   },
   {
@@ -170,7 +170,7 @@ export default function Tour() {
 
   return (
     <div className="min-h-screen relative bg-background">
-      <Seo path="/tour" title="Tour pela MedStation AI — como funciona" description="Conheça em detalhes os 11 assistentes clínicos, o Modo Consultório e como economizar horas de digitação por plantão." />
+      <Seo path="/tour" title="Tour pela MedStation AI — como funciona" description="Conheça em detalhes os 11 assistentes clínicos, o Modo Escuta e como economizar horas de digitação por plantão." />
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_50%_at_20%_-10%,hsl(var(--primary)/0.12),transparent)]" />
 
       <div className="relative z-10">
@@ -204,7 +204,7 @@ export default function Tour() {
               Veja exatamente o que muda no seu dia.
             </h1>
             <p className="mt-5 text-lg text-muted-foreground leading-relaxed">
-              A MedStation AI não é mais um chat genérico. São 11 assistentes clínicos e um Modo Consultório que
+              A MedStation AI não é mais um chat genérico. São 11 assistentes clínicos e um Modo Escuta que
               escrevem por você enquanto você olha para o paciente. Este tour mostra, passo a passo, como isso
               acontece — em menos de 3 minutos de leitura.
             </p>
@@ -282,12 +282,12 @@ export default function Tour() {
             </div>
           </section>
 
-          {/* Modo consultório */}
+          {/* Modo Escuta */}
           <section className="py-12 border-t border-border/60">
             <div className="grid gap-8 lg:grid-cols-2 items-center">
               <div>
                 <div className="inline-flex items-center gap-2 text-primary text-xs font-semibold uppercase tracking-wider">
-                  <Mic className="h-4 w-4" /> Modo Consultório
+                  <Mic className="h-4 w-4" /> Modo Escuta
                 </div>
                 <h2 className="mt-3 text-2xl md:text-3xl font-semibold tracking-tight">
                   Olhe para o paciente. A consulta se escreve sozinha.
@@ -414,7 +414,7 @@ export default function Tour() {
             </h2>
             <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
               Crie a conta, use o Examinus sem pagar nada e sinta a diferença já no próximo plantão. Se quiser os
-              outros 10 assistentes e o Modo Consultório, a assinatura tem 7 dias de garantia incondicional.
+              outros 10 assistentes e o Modo Escuta, a assinatura tem 7 dias de garantia incondicional.
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
               <Button size="lg" onClick={() => go("/auth", "criar_conta_tour_final")}>

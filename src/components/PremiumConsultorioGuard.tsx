@@ -68,7 +68,7 @@ export function PremiumConsultorioGuard({ children }: PremiumConsultorioGuardPro
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
               <Mic className="w-8 h-8 text-primary" />
             </div>
-            <CardTitle className="text-2xl">Modo Consultório</CardTitle>
+            <CardTitle className="text-2xl">Modo Escuta</CardTitle>
             <CardDescription className="text-base mt-2">
               Transcrição em tempo real durante a consulta + AHE estruturada automaticamente.
               Produza mais. Digite menos. Direto da consulta.
@@ -124,7 +124,7 @@ export function PremiumConsultorioGuard({ children }: PremiumConsultorioGuardPro
                   {checkoutLoading ? (
                     <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processando...</>
                   ) : (
-                    "Adicionar Modo Consultório por R$ 19,90/mês"
+                    "Adicionar Modo Escuta por R$ 19,90/mês"
                   )}
                 </Button>
               </div>
@@ -137,7 +137,7 @@ export function PremiumConsultorioGuard({ children }: PremiumConsultorioGuardPro
                     disabled={checkoutLoading}
                     className="text-left p-4 rounded-md border border-hairline hover:border-primary/40 transition-colors disabled:opacity-50"
                   >
-                    <div className="text-xs text-muted-foreground uppercase tracking-wider font-mono">Apenas Consultório</div>
+                    <div className="text-xs text-muted-foreground uppercase tracking-wider font-mono">Apenas Modo Escuta</div>
                     <div className="text-2xl font-bold text-foreground mt-1">R$ 29,90<span className="text-sm font-normal text-muted-foreground">/mês</span></div>
                   </button>
                   <button
@@ -151,11 +151,11 @@ export function PremiumConsultorioGuard({ children }: PremiumConsultorioGuardPro
                     </span>
                     <div className="text-xs text-primary uppercase tracking-wider font-mono">Pro 2 (tudo incluso)</div>
                     <div className="text-2xl font-bold text-foreground mt-1">R$ 49,90<span className="text-sm font-normal text-muted-foreground">/mês</span></div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5">10 Assistentes + Consultório</div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">10 Assistentes + Modo Escuta</div>
                   </button>
                 </div>
                 <Button variant="outline" className="w-full" onClick={() => navigate("/consultorio-landing")}>
-                  Saber mais sobre o Modo Consultório
+                  Saber mais sobre o Modo Escuta
                 </Button>
               </div>
             )}

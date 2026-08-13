@@ -62,7 +62,7 @@ const agentModules = [
 
 ];
 
-const consultorioModule = { title: "Modo Consultório", url: "/consultorio", icon: Mic, code: "C" };
+const consultorioModule = { title: "Modo Escuta", url: "/consultorio", icon: Mic, code: "C" };
 
 const consultorioSubItems = [
   { title: "Novo atendimento", url: "/consultorio", icon: Play },
@@ -177,7 +177,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Modo Consultório - destaque */}
+        {/* Modo Escuta - destaque */}
         <SidebarGroup className="py-3 hairline-t">
           {!collapsed && (
             <SidebarGroupLabel className="label-mono px-4 mb-2 h-auto">Tempo Real</SidebarGroupLabel>

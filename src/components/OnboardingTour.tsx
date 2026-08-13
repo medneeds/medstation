@@ -16,7 +16,7 @@ type Slide = {
 
 const slides: Slide[] = [
   {
-    eyebrow: "1 · Modo Consultório",
+    eyebrow: "1 · Modo Escuta",
     title: "Atenda falando. A anamnese aparece pronta.",
     subtitle:
       "Olhe pro paciente. A MedStation escuta a consulta e devolve o registro estruturado em segundos.",

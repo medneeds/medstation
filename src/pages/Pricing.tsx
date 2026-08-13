@@ -142,14 +142,14 @@ export default function Pricing() {
     if (availableUpgrade === "consultorio_upgrade" && hasAgents && !hasConsultorio) {
       return {
         title: "Você já tem os 10 Assistentes",
-        desc: "Adicione o Modo Consultório com transcrição em tempo real e AHE estruturada por um preço exclusivo.",
-        cta: "Adicionar Modo Consultório por R$ 19,90/mês",
+        desc: "Adicione o Modo Escuta com transcrição em tempo real e AHE estruturada por um preço exclusivo.",
+        cta: "Adicionar Modo Escuta por R$ 19,90/mês",
         plan: "consultorio_upgrade" as PlanSlug,
       };
     }
     if (availableUpgrade === "agents_upgrade" && hasConsultorio && !hasAgents) {
       return {
-        title: "Você já tem o Modo Consultório",
+        title: "Você já tem o Modo Escuta",
         desc: "Complete sua estação com os 10 Assistentes MedStation por um preço exclusivo de assinante.",
         cta: "Adicionar 10 Assistentes por R$ 19,90/mês",
         plan: "agents_upgrade" as PlanSlug,
@@ -163,7 +163,7 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Seo path="/pricing" title="Planos e preços — MedStation AI" description="Assine os 11 assistentes clínicos de IA e o Modo Consultório. Garantia incondicional de 7 dias e cancelamento a qualquer momento." />
+      <Seo path="/pricing" title="Planos e preços — MedStation AI" description="Assine os 11 assistentes clínicos de IA e o Modo Escuta. Garantia incondicional de 7 dias e cancelamento a qualquer momento." />
       <div className="container mx-auto px-4 py-10 md:py-16 lg:py-20 max-w-6xl">
         {/* Header */}
         <div className="text-center mb-10 md:mb-14 space-y-4">
@@ -174,7 +174,7 @@ export default function Pricing() {
             Produza mais. <span className="italic text-primary">Digite menos.</span>
           </h1>
           <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
-            Os 10 Assistentes e o Modo Consultório são <span className="text-foreground font-medium">produtos separados</span>. Assine só o que usa, ou junte os dois no MedStation AI Pro 2.
+            Os 10 Assistentes e o Modo Escuta são <span className="text-foreground font-medium">produtos separados</span>. Assine só o que usa, ou junte os dois no MedStation AI Pro 2.
           </p>
 
           {/* Shared billing toggle */}
@@ -316,7 +316,7 @@ export default function Pricing() {
                   MedStation AI Pro 2
                 </h2>
                 <p className="text-xs md:text-sm text-muted-foreground mt-1">
-                  10 Assistentes + Modo Consultório no mesmo plano.
+                  10 Assistentes + Modo Escuta no mesmo plano.
                 </p>
               </div>
 
@@ -337,7 +337,7 @@ export default function Pricing() {
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="w-3.5 h-3.5 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-foreground"><strong>Modo Consultório</strong> com transcrição em tempo real</span>
+                  <span className="text-foreground"><strong>Modo Escuta</strong> com transcrição em tempo real</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="w-3.5 h-3.5 text-primary mt-0.5 flex-shrink-0" />
@@ -376,7 +376,7 @@ export default function Pricing() {
                     Tempo real
                   </span>
                 </div>
-                <h2 className="font-display text-2xl md:text-3xl tracking-tight">Modo Consultório</h2>
+                <h2 className="font-display text-2xl md:text-3xl tracking-tight">Modo Escuta</h2>
                 <p className="text-xs md:text-sm text-muted-foreground mt-1">
                   Produto separado dos Assistentes — pode ser assinado isoladamente ou somado a eles.
                 </p>
@@ -418,7 +418,7 @@ export default function Pricing() {
                 ) : isLoading(consultorioPlan) ? (
                   <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processando...</>
                 ) : (
-                  <>Assinar Consultório <ArrowRight className="ml-2 h-4 w-4" /></>
+                  <>Assinar Modo Escuta <ArrowRight className="ml-2 h-4 w-4" /></>
                 )}
               </Button>
             </div>
@@ -519,7 +519,7 @@ export default function Pricing() {
 function planLabelFor(plan: PlanSlug): string {
   if (plan.startsWith("agents")) return "MedStation AI Pro · 10 Assistentes";
   if (plan.startsWith("pro2")) return "MedStation AI Pro 2 · Tudo incluso";
-  if (plan.startsWith("consultorio")) return "Modo Consultório";
+  if (plan.startsWith("consultorio")) return "Modo Escuta";
   return "Assinatura";
 }
 

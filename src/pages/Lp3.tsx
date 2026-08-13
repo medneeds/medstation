@@ -55,7 +55,7 @@ const testimonials = [
 const faq = [
   {
     q: "Como funciona o teste de 7 dias?",
-    a: "Você cria a conta com nome, telefone e e-mail e usa tudo por 7 dias: os 12 assistentes e o Modo Consultório. Não pedimos cartão de crédito em momento nenhum do teste.",
+    a: "Você cria a conta com nome, telefone e e-mail e usa tudo por 7 dias: os 12 assistentes e o Modo Escuta. Não pedimos cartão de crédito em momento nenhum do teste.",
   },
   {
     q: "E depois dos 7 dias?",
@@ -63,7 +63,7 @@ const faq = [
   },
   {
     q: "Serve para qualquer especialidade?",
-    a: "Sim. Os assistentes se adaptam ao contexto clínico (emergência, UTI, enfermaria, consultório) e à especialidade, inclusive de forma automática no Modo Consultório.",
+    a: "Sim. Os assistentes se adaptam ao contexto clínico (emergência, UTI, enfermaria, consultório) e à especialidade, inclusive de forma automática no Modo Escuta.",
   },
   {
     q: "A IA decide por mim?",
@@ -100,7 +100,7 @@ export default function Lp3() {
       <Seo
         path="/lp3"
         title="MedStation AI — a IA que escreve a burocracia do seu plantão"
-        description="Anamnese, exame, conduta e alta prontos em segundos. 12 assistentes clínicos e Modo Consultório. Teste 7 dias grátis, sem cartão."
+        description="Anamnese, exame, conduta e alta prontos em segundos. 12 assistentes clínicos e Modo Escuta. Teste 7 dias grátis, sem cartão."
       />
 
       <header className="sticky top-0 z-30 bg-background/85 backdrop-blur border-b border-border/50">
@@ -205,7 +205,7 @@ export default function Lp3() {
               ))}
             </div>
             <p className="mt-6 text-center text-xs text-muted-foreground">
-              Mais o Modo Consultório: grava, transcreve e estrutura a consulta em tempo real.
+              Mais o Modo Escuta: grava, transcreve e estrutura a consulta em tempo real.
             </p>
           </div>
         </section>
@@ -250,7 +250,7 @@ export default function Lp3() {
               Um plantão de burocracia custa mais caro
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Um único plano com tudo dentro: os 12 assistentes clínicos e o Modo Consultório, que ouve o
+              Um único plano com tudo dentro: os 12 assistentes clínicos e o Modo Escuta, que ouve o
               atendimento e devolve a anamnese pronta. Preço de lançamento por tempo limitado.
             </p>
           </div>

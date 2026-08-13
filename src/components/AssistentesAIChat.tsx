@@ -10,7 +10,7 @@ type Msg = { role: "user" | "assistant"; content: string };
 
 const SUGGESTIONS = [
   "O que o Examinus faz na prática?",
-  "Como funciona o Modo Consultório?",
+  "Como funciona o Modo Escuta?",
   "Qual assistente ajuda no plantão?",
   "O que vem no plano pago?",
 ];
