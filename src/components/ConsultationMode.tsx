@@ -139,10 +139,24 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     return () => window.removeEventListener('keydown', handler);
   }, [isRecording, isPaused, unifiedMode, setCurrentSpeaker]);
 
-  const handleFinish = useCallback(async () => {
-    await stopRecording();
+  // Fluxo pós-gravação: revisar áudio -> estruturar anamnese -> salvar
+  const runFinalizeFlow = useCallback(async (opts?: { alreadyStopped?: boolean }) => {
+    setFinalizeError(null);
     setShowFinishDialog(true);
-  }, [stopRecording]);
+    try {
+      setFinalizePhase('review');
+      if (!opts?.alreadyStopped) await stopRecording();
+      setFinalizePhase('structuring');
+      await updateStructure();
+      setActiveTab('structure');
+      setFinalizePhase('done');
+    } catch (e: any) {
+      setFinalizeError(e?.message || null);
+      setFinalizePhase('error');
+    }
+  }, [stopRecording, updateStructure]);
+
+  const handleFinish = useCallback(() => { void runFinalizeFlow(); }, [runFinalizeFlow]);
 
   const handleGenerateStructure = useCallback(async () => {
     try {
