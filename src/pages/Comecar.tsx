@@ -344,7 +344,7 @@ export default function Comecar() {
                     </p>
                   </div>
                   <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
-                    11 assistentes + Consultório
+                    11 assistentes + Modo Escuta
                   </span>
                 </div>
 
