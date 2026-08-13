@@ -105,7 +105,12 @@ export default function Lp3() {
 
       <header className="sticky top-0 z-30 bg-background/85 backdrop-blur border-b border-border/50">
         <div className="container mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
-          <Logo size="sm" />
+          <div className="flex items-center gap-3 min-w-0">
+            <Logo size="sm" />
+            <span className="hidden sm:inline text-xs md:text-sm text-muted-foreground border-l border-border/60 pl-3 whitespace-nowrap">
+              Produza mais. Digite menos.
+            </span>
+          </div>
           <div className="flex items-center gap-2 md:gap-3">
             <Button
               size="sm"
@@ -300,6 +305,35 @@ export default function Lp3() {
                 </button>
               );
             })}
+          </div>
+
+          <div className="mt-6 max-w-xl mx-auto rounded-2xl border border-primary/20 bg-primary/5 p-5">
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div>
+                <div className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">Referência de mercado</div>
+                <div className="mt-1 text-base md:text-lg font-semibold line-through text-muted-foreground">
+                  {brl(price.list)}
+                </div>
+              </div>
+              <div>
+                <div className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">Você paga hoje</div>
+                <div className="mt-1 text-base md:text-lg font-bold text-primary">{brl(price.now)}</div>
+              </div>
+              <div>
+                <div className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">Desconto</div>
+                <div className="mt-1 text-base md:text-lg font-semibold text-primary">
+                  {Math.round((1 - price.now / price.list) * 100)}%
+                </div>
+              </div>
+            </div>
+            <p className="mt-4 pt-3 border-t border-primary/15 text-center text-sm">
+              Economia de{" "}
+              <strong className="text-primary">{brl(price.list - price.now)}</strong>{" "}
+              {billing === "monthly" ? "por mês" : "por ano"} —{" "}
+              {billing === "monthly"
+                ? `${brl((price.list - price.now) * 12)} em 12 meses.`
+                : `equivale a ${brl(price.now / 12)} por mês.`}
+            </p>
           </div>
 
           <p className="mt-4 text-center text-xs text-muted-foreground">
