@@ -105,7 +105,12 @@ export default function Lp3() {
 
       <header className="sticky top-0 z-30 bg-background/85 backdrop-blur border-b border-border/50">
         <div className="container mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
-          <Logo size="sm" />
+          <div className="flex items-center gap-3 min-w-0">
+            <Logo size="sm" />
+            <span className="hidden sm:inline text-xs md:text-sm text-muted-foreground border-l border-border/60 pl-3 whitespace-nowrap">
+              Produza mais. Digite menos.
+            </span>
+          </div>
           <div className="flex items-center gap-2 md:gap-3">
             <Button
               size="sm"
