@@ -27,6 +27,8 @@ import Onboarding from "./pages/Onboarding";
 import WelcomeTour from "./pages/WelcomeTour";
 import Clinicus from "./pages/Clinicus";
 import Consultorio from "./pages/Consultorio";
+import ConsultorioHistorico from "./pages/ConsultorioHistorico";
+
 import ConsultorioLanding from "./pages/ConsultorioLanding";
 import Examinus from "./pages/Examinus";
 import Scorius from "./pages/Scorius";
