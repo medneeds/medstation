@@ -375,12 +375,12 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           {/* Tempo + status + controles */}
           <div className="ml-auto flex items-center gap-1.5 md:gap-2">
             <div className={cn(
-              "flex items-center gap-1.5 text-xs px-2 py-1 rounded-full ring-1 transition-colors",
+              "flex items-center gap-2 text-xs px-2.5 h-8 rounded-xl border transition-colors",
               isRecording && !isPaused
-                ? "bg-red-500/10 ring-red-500/30 text-red-600 dark:text-red-400"
+                ? "bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400"
                 : isPaused
-                ? "bg-yellow-500/10 ring-yellow-500/30 text-yellow-600 dark:text-yellow-400"
-                : "bg-muted/50 ring-border/60"
+                ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-600 dark:text-yellow-400"
+                : "bg-muted/40 border-border/60 text-muted-foreground"
             )}>
               {isRecording ? (
                 <span className="relative flex h-2 w-2">
@@ -396,7 +396,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
             {!isRecording ? (
               <div className="relative group">
                 <span
-                  className="absolute -inset-1 rounded-full opacity-50 blur-md group-hover:opacity-80 transition-opacity pointer-events-none"
+                  className="absolute -inset-1 rounded-xl opacity-50 blur-md group-hover:opacity-80 transition-opacity pointer-events-none"
                   style={{
                     background:
                       "conic-gradient(from 0deg, hsl(var(--primary) / 0), hsl(var(--primary) / 0.55), hsl(var(--primary) / 0), hsl(var(--primary) / 0.4), hsl(var(--primary) / 0))",
@@ -406,7 +406,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                   onClick={startRecording}
                   disabled={isConnecting}
                   size="sm"
-                  className="relative h-8 gap-1.5 px-4 rounded-full shadow-[0_6px_20px_-8px_hsl(var(--primary)/0.6)] bg-gradient-to-b from-primary to-primary/90 active:scale-[0.98]"
+                  className="relative h-9 gap-2 px-5 rounded-xl font-medium shadow-[0_6px_20px_-8px_hsl(var(--primary)/0.6)] bg-gradient-to-b from-primary to-primary/90 active:scale-[0.98]"
                 >
                   {isConnecting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mic className="h-4 w-4" />}
                   <span className="text-xs font-medium">
@@ -420,7 +420,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                   onClick={isPaused ? resumeRecording : pauseRecording}
                   variant="outline"
                   size="sm"
-                  className="h-8 gap-1.5 rounded-full px-3 bg-background/60"
+                  className="h-9 gap-1.5 rounded-xl px-3.5 bg-background/60"
                 >
                   {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
                   <span className="text-xs hidden sm:inline">{isPaused ? 'Continuar' : 'Pausar'}</span>
@@ -428,7 +428,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                 <Button
                   onClick={handleFinish}
                   size="sm"
-                  className="h-8 gap-1.5 px-4 rounded-full shadow-[0_6px_20px_-8px_hsl(var(--primary)/0.55)] active:scale-[0.98]"
+                  className="h-9 gap-2 px-5 rounded-xl font-medium shadow-[0_6px_20px_-8px_hsl(var(--primary)/0.55)] active:scale-[0.98]"
                 >
                   <CheckCircle2 className="h-4 w-4" />
                   <span className="text-xs font-medium">Finalizar</span>
