@@ -340,8 +340,23 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           </>
         )}
 
-        <div className="relative flex flex-col items-center gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3">
-          {(isRecording || !segments.length) && (
+        {/* Alternador de altura da barra de áudio */}
+        <button
+          type="button"
+          onClick={() => setBarExpanded((v) => !v)}
+          aria-expanded={barExpanded}
+          aria-label={barExpanded ? 'Recolher área de gravação' : 'Expandir área de gravação'}
+          className="absolute right-2 top-1.5 z-10 inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] md:text-xs text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+        >
+          {barExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          <span className="hidden sm:inline">{barExpanded ? 'Recolher' : 'Expandir'}</span>
+        </button>
+
+        <div className={cn(
+          "relative flex flex-col items-center px-3 md:px-4",
+          barExpanded ? "gap-2 md:gap-3 py-2.5 md:py-3" : "gap-1.5 py-1.5"
+        )}>
+          {barExpanded && (isRecording || !segments.length) && (
             <AudioVisualizer
               level={audioLevel}
               isActive={isRecording && !isPaused}
@@ -349,6 +364,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               className="w-full max-w-[260px] md:max-w-xs"
             />
           )}
+
 
           {/* Speaker switcher — quem está falando agora (afeta os próximos segmentos) */}
           {isRecording && !isPaused && !unifiedMode && (
