@@ -238,7 +238,8 @@ export default function Lp3() {
               Um plantão de burocracia custa mais caro
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Tudo liberado: 12 assistentes e Modo Consultório. Preço de lançamento por tempo limitado.
+              Um único plano com tudo dentro: os 12 assistentes clínicos e o Modo Consultório, que ouve o
+              atendimento e devolve a anamnese pronta. Preço de lançamento por tempo limitado.
             </p>
           </div>
 
@@ -291,12 +292,12 @@ export default function Lp3() {
 
           <p className="mt-4 text-center text-xs text-muted-foreground">
             {billing === "monthly"
-              ? `Menos de ${brl(price.now / 30)} por dia — o preço de um café por um plantão inteiro sem digitar.`
-              : "Um ano inteiro por menos que uma consulta particular por mês."}
+              ? `Menos de ${brl(price.now / 30)} por dia — o valor de um café por um plantão inteiro sem digitar burocracia.`
+              : `Equivale a ${brl(price.now / 12)} por mês — dois meses de cortesia em relação ao mensal.`}
           </p>
 
           <div className="mt-6 max-w-xl mx-auto">
-            <QuickCheckout origin="lp3" billingPeriod={billing} showPricing={false} />
+            <QuickCheckout origin="lp3" product="pro_completo" billingPeriod={billing} showPricing={false} />
           </div>
 
           <div className="mt-14 max-w-2xl mx-auto">
