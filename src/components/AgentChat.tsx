@@ -79,6 +79,16 @@ import {
 } from "@/components/ui/dialog";
 import { Toggle } from "@/components/ui/toggle";
 
+const AGENTS_WITH_CONTROLS = new Set([
+  "examinus",
+  "clinicus",
+  "prescriptus",
+  "gasometrus",
+  "codexus",
+  "mediscuss",
+  "legalis",
+]);
+
 interface Message {
   id: string;
   role: "user" | "assistant";
@@ -1750,7 +1760,7 @@ export function AgentChat({
 
 
         {/* Barra de ajustes de saída (desktop) */}
-        {!isMobile && (
+        {!isMobile && AGENTS_WITH_CONTROLS.has(agentType) && (
           <div className="flex flex-nowrap gap-2 items-center mb-3 px-3 py-2.5 rounded-2xl bg-muted/35 border border-border/50 overflow-x-auto scrollbar-none">
             <span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground/70 mr-1 shrink-0">
               Ajustes de saída
