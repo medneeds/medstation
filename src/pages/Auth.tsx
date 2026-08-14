@@ -228,6 +228,8 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-background">
+      <BrandIntro onFinish={() => setIntroDone(true)} />
+
       {/* Editorial background — pure green glow, NO purple/lilac */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -top-40 -left-40 h-[40rem] w-[40rem] rounded-full bg-primary/15 blur-[120px]" />
