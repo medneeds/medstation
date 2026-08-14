@@ -35,6 +35,7 @@ import {
   ListChecks,
   Zap,
   Minimize2,
+  Lightbulb,
   Maximize2,
   ChevronDown,
   Expand,
@@ -254,6 +255,7 @@ export function AgentChat({
   const [onlyAltered, setOnlyAltered] = useState(false);
   const [clinicalImpression, setClinicalImpression] = useState(false);
   const [compactMode, setCompactMode] = useState(true);
+  const [examSuggestMode, setExamSuggestMode] = useState(false);
   const [directAHEMode, setDirectAHEMode] = useState(false);
   const [aheTemplate, setAheTemplate] = useState<ClinicusContext>("enfermaria");
   const [reportMode, setReportMode] = useState(false);
@@ -596,7 +598,7 @@ export function AgentChat({
           })),
           agentType,
           caseId: selectedCaseId,
-          ...(agentType === "examinus" && { usePipeSeparator, includeTime, onlyAltered, clinicalImpression, compactMode }),
+          ...(agentType === "examinus" && { usePipeSeparator, includeTime, onlyAltered, clinicalImpression, compactMode, examSuggestMode }),
           ...(agentType === "clinicus" && { directAHEMode, aheTemplate, reportMode, reportType, reportPurpose, reportSpecialty }),
           ...(agentType === "prescriptus" && { bulaInteligenteMode }),
           ...(agentType === "gasometrus" && { directLIMode }),
@@ -2016,7 +2018,9 @@ export function AgentChat({
                   sendMessage();
                 }
               }}
-              placeholder={isMobile ? "Mensagem... (Shift+Enter para nova linha)" : `${placeholder}  ·  Shift+Enter para nova linha`}
+              placeholder={agentType === "examinus" && examSuggestMode
+                ? (isMobile ? "Peça um painel, cole um caso ou pergunte sobre um exame" : "Peça um painel, cole um caso ou pergunte sobre um exame  ·  Shift+Enter para nova linha")
+                : (isMobile ? "Mensagem... (Shift+Enter para nova linha)" : `${placeholder}  ·  Shift+Enter para nova linha`)}
               maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
               rows={1}
               aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
