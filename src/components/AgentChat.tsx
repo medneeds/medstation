@@ -1039,11 +1039,12 @@ export function AgentChat({
       {/* Header — minimal identity */}
       <div className="flex flex-col gap-2 mb-3 md:mb-4 pb-3 md:pb-4 border-b border-border/40 md:flex-row md:items-center md:justify-between md:gap-3">
         <div className="flex items-center gap-2.5 md:gap-3 min-w-0">
-          <div className={`rounded-lg p-1.5 md:p-2 bg-primary/10 ${agentColor} shrink-0`}>
-            <span className="block [&>svg]:h-4 [&>svg]:w-4 md:[&>svg]:h-5 md:[&>svg]:w-5 [&>svg]:stroke-[1.75]">
+          <AssistantGlyph size="sm" className={agentColor}>
+            <span className="block [&>svg]:h-4 [&>svg]:w-4 md:[&>svg]:h-5 md:[&>svg]:w-5">
               {agentIcon}
             </span>
-          </div>
+          </AssistantGlyph>
+
           <div className="flex-1 min-w-0">
             <h2 className="text-sm md:text-lg font-medium tracking-tight truncate leading-tight">{agentName}</h2>
             {currentConversation && (
