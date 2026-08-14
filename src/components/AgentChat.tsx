@@ -1369,16 +1369,34 @@ export function AgentChat({
                 </div>
                 <p className="text-base md:text-xl font-medium text-foreground tracking-tight">{g.title}</p>
                 <p className="text-xs md:text-sm mt-2 leading-relaxed">{g.subtitle}</p>
+                {getAgentSuggestions(agentType).length > 0 && (
+                  <div className="mt-5 flex flex-wrap justify-center gap-2">
+                    {getAgentSuggestions(agentType).map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => {
+                          setMessage(s);
+                          textareaRef.current?.focus();
+                        }}
+                        className="text-[11px] md:text-xs px-3 py-1.5 rounded-full border border-border/60 bg-background/60 text-muted-foreground transition-colors duration-150 hover:text-foreground hover:border-primary/50 hover:bg-primary/5"
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {lastConversation && (
                   <Button
                     onClick={restoreLastConversation}
                     variant="outline"
                     size="sm"
-                    className="mt-5"
+                    className="mt-4"
                   >
                     Continuar última conversa
                   </Button>
                 )}
+
               </div>
             );
           })()
