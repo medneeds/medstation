@@ -27,7 +27,10 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   const refreshProfile = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      // getSession() lê do storage local (sem request); getUser() faria uma
+      // chamada de rede a cada evento de auth e contribuía para o 429.
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) {
         setProfile(null);
         setLoading(false);
@@ -64,7 +67,10 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     refreshProfile();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Ignora TOKEN_REFRESHED: o perfil não muda a cada renovação de token.
+      if (event === "TOKEN_REFRESHED") return;
+
       if (session) {
         refreshProfile();
       } else {
@@ -77,6 +83,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       subscription.unsubscribe();
     };
   }, []);
+
 
   return (
     <ProfileContext.Provider value={{ profile, loading, refreshProfile }}>

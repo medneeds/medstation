@@ -13,34 +13,19 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   const checkAuth = useCallback(async () => {
     try {
+      // Apenas lê a sessão local. O cliente Supabase já renova o token
+      // automaticamente (autoRefreshToken) — chamar refreshSession()/getUser()
+      // aqui gerava rajadas simultâneas de /token e /user e estourava o
+      // rate limit (429), derrubando a sessão do usuário.
       const { data: { session }, error } = await supabase.auth.getSession();
-      
+
       if (error) {
         console.error("Auth check error:", error);
         setAuthenticated(false);
-        setLoading(false);
         return;
       }
-      
-      // If session exists but might be expired, try to refresh it
-      if (session) {
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user) {
-          console.error("User validation failed:", userError);
-          // Try to refresh the session
-          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-          if (refreshError || !refreshData.session) {
-            console.error("Session refresh failed:", refreshError);
-            setAuthenticated(false);
-          } else {
-            setAuthenticated(true);
-          }
-        } else {
-          setAuthenticated(true);
-        }
-      } else {
-        setAuthenticated(false);
-      }
+
+      setAuthenticated(!!session);
     } catch (err) {
       console.error("Unexpected auth error:", err);
       setAuthenticated(false);
@@ -53,8 +38,12 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed:", event);
-      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
+      if (event === 'SIGNED_OUT') {
+        setAuthenticated(false);
+        setLoading(false);
+        return;
+      }
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
         setAuthenticated(!!session);
         setLoading(false);
       }
@@ -62,6 +51,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
     return () => subscription.unsubscribe();
   }, [checkAuth]);
+
 
   if (loading) {
     return (
