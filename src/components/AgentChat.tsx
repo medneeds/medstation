@@ -1504,6 +1504,17 @@ export function AgentChat({
         {isMobile && agentType === "examinus" && (
           <div className="flex items-center gap-1.5 mb-2 overflow-x-auto pb-1 -mx-1 px-1">
             <Toggle
+              pressed={examSuggestMode}
+              onPressedChange={setExamSuggestMode}
+              size="sm"
+              className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-violet-500/20 data-[state=on]:text-violet-600 dark:data-[state=on]:text-violet-400"
+              title="Consultor: sugestão de exames, contraindicações e explicações"
+            >
+              <Lightbulb className="w-3 h-3 mr-1" />
+              <span>Consultor</span>
+            </Toggle>
+            {!examSuggestMode && (<>
+            <Toggle
               pressed={usePipeSeparator}
               onPressedChange={setUsePipeSeparator}
               size="sm"
@@ -1555,6 +1566,7 @@ export function AgentChat({
               <Minimize2 className="w-3 h-3 mr-1" />
               <span>Compacto</span>
             </Toggle>
+            </>)}
           </div>
         )}
 
@@ -1934,6 +1946,17 @@ export function AgentChat({
             {agentType === "examinus" && (
               <>
                 <Toggle
+                  pressed={examSuggestMode}
+                  onPressedChange={setExamSuggestMode}
+                  size="sm"
+                  className="shrink-0 h-8 data-[state=on]:bg-violet-500/20 data-[state=on]:text-violet-600 dark:data-[state=on]:text-violet-400 rounded-full"
+                  title="Consultor: sugestão de exames, contraindicações e explicação de exames e procedimentos"
+                >
+                  <Lightbulb className="h-4 w-4" />
+                  <span className="text-xs ml-1">Consultor</span>
+                </Toggle>
+                {!examSuggestMode && (<>
+                <Toggle
                   pressed={usePipeSeparator}
                   onPressedChange={setUsePipeSeparator}
                   size="sm"
@@ -1984,6 +2007,7 @@ export function AgentChat({
                   <Minimize2 className="h-4 w-4" />
                   <span className="text-xs ml-1">Compacto</span>
                 </Toggle>
+                </>)}
               </>
             )}
           </div>
