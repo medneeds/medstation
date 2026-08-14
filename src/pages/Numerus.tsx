@@ -5,16 +5,16 @@ import CalculatorPanel from "@/components/numerus/CalculatorPanel";
 import { Calculator, Sigma, MessageSquare, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Tab = "calculadoras" | "chat";
+type Tab = "chat" | "calculadoras";
 
 export default function Numerus() {
   const searchParams = new URLSearchParams(window.location.search);
   const caseId = searchParams.get("caseId") || undefined;
-  const [tab, setTab] = useState<Tab>("calculadoras");
+  const [tab, setTab] = useState<Tab>("chat");
 
   const tabs: { key: Tab; label: string; icon: typeof Calculator }[] = [
-    { key: "calculadoras", label: "Calculadoras", icon: SlidersHorizontal },
     { key: "chat", label: "Chat", icon: MessageSquare },
+    { key: "calculadoras", label: "Calculadoras", icon: SlidersHorizontal },
   ];
 
   return (
