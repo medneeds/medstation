@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { AssistantGlyph } from "@/components/AssistantGlyph";
+
 import { assistantPractice, type PracticeStep } from "@/lib/assistantPractice";
 import {
   TestTube2, Stethoscope, Calculator, Sigma, Pill, FileCode, Wind,
