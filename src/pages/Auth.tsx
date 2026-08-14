@@ -241,7 +241,7 @@ export default function Auth() {
         {/* Editorial side — asymmetric */}
         <motion.aside
           initial={{ opacity: 0, x: -24 }}
-          animate={{ opacity: 1, x: 0 }}
+          animate={introDone ? { opacity: 1, x: 0 } : { opacity: 0, x: -24 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           className="relative hidden lg:flex flex-col p-10 xl:p-14 border-r border-hairline"
         >
