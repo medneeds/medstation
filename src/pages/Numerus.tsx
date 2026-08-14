@@ -2,7 +2,7 @@ import { useState } from "react";
 import { AgentChat } from "@/components/AgentChat";
 import { PremiumAgentGuard } from "@/components/PremiumAgentGuard";
 import CalculatorPanel from "@/components/numerus/CalculatorPanel";
-import { Calculator, MessageSquare, SlidersHorizontal } from "lucide-react";
+import { Calculator, Sigma, MessageSquare, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Tab = "calculadoras" | "chat";
@@ -45,7 +45,7 @@ export default function Numerus() {
           ) : (
             <AgentChat
               agentName="Numerus"
-              agentIcon={<Calculator className="h-8 w-8" />}
+              agentIcon={<Sigma className="h-8 w-8" />}
               agentColor="text-primary"
               agentType="numerus"
               caseId={caseId}

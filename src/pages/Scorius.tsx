@@ -1,6 +1,6 @@
 import { AgentChat } from "@/components/AgentChat";
 import { PremiumAgentGuard } from "@/components/PremiumAgentGuard";
-import { Activity } from "lucide-react";
+import { Calculator } from "lucide-react";
 
 export default function Scorius() {
   const searchParams = new URLSearchParams(window.location.search);
@@ -11,7 +11,7 @@ export default function Scorius() {
       <div className="h-[calc(100dvh-3.5rem)] -m-4 md:-m-6 lg:-m-8">
         <AgentChat
           agentName="Scorius"
-          agentIcon={<Activity className="h-8 w-8" />}
+          agentIcon={<Calculator className="h-8 w-8" />}
           agentColor="text-primary"
           agentType="scorius"
           caseId={caseId}
