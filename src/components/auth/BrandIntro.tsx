@@ -43,7 +43,7 @@ export function BrandIntro({ onFinish, force = false }: BrandIntroProps) {
       onFinish?.();
       return;
     }
-    const total = reduce ? 700 : 2600;
+    const total = reduce ? 600 : 2300;
     const t = window.setTimeout(() => {
       sessionStorage.setItem(SESSION_KEY, "1");
       setVisible(false);
@@ -59,6 +59,41 @@ export function BrandIntro({ onFinish, force = false }: BrandIntroProps) {
     onFinish?.();
   };
 
+  const ease = [0.16, 1, 0.3, 1] as const;
+
+  const brand = (mirrored = false) => (
+    <div className="flex flex-col items-center">
+      <div className="relative">
+        <LogoMark
+          className={
+            mirrored
+              ? "h-24 w-24 md:h-32 md:w-32"
+              : "h-24 w-24 md:h-32 md:w-32 drop-shadow-[0_28px_70px_hsl(var(--primary)/0.32)]"
+          }
+        />
+        {!mirrored && !reduce && (
+          <motion.div
+            className="pointer-events-none absolute inset-0 overflow-hidden rounded-[18%]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 1, 1, 0] }}
+            transition={{ duration: 1.35, delay: 0.55, times: [0, 0.12, 0.75, 1], ease: "linear" }}
+          >
+            <motion.div
+              className="absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-primary/55 to-transparent blur-md will-change-transform"
+              initial={{ x: "-170%" }}
+              animate={{ x: "260%" }}
+              transition={{ duration: 1.2, delay: 0.6, ease: [0.33, 0, 0.15, 1] }}
+            />
+          </motion.div>
+        )}
+      </div>
+
+      <span className="mt-6 font-display text-3xl md:text-5xl font-medium tracking-[0.06em] text-foreground">
+        MedStation
+      </span>
+    </div>
+  );
+
   return (
     <AnimatePresence>
       {visible && (
@@ -67,17 +102,17 @@ export function BrandIntro({ onFinish, force = false }: BrandIntroProps) {
           className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden bg-background cursor-pointer"
           onClick={skip}
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0, scale: 1.06, filter: "blur(6px)" }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          exit={{ opacity: 0, scale: 1.04, filter: "blur(8px)" }}
+          transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
           aria-label="Abertura MedStation"
         >
           {/* Ambiência */}
           <div className="pointer-events-none absolute inset-0">
             <motion.div
-              className="absolute left-1/2 top-1/2 h-[52rem] w-[52rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/20 blur-[140px]"
-              initial={{ opacity: 0, scale: 0.7 }}
-              animate={{ opacity: [0, 0.9, 0.5], scale: [0.7, 1.05, 1] }}
-              transition={{ duration: 2.4, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute left-1/2 top-1/2 h-[52rem] w-[52rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/20 blur-[140px] will-change-transform"
+              initial={{ opacity: 0, scale: 0.75 }}
+              animate={{ opacity: [0, 0.85, 0.45], scale: [0.75, 1.04, 1] }}
+              transition={{ duration: 2.2, ease }}
             />
             <div className="absolute inset-0 opacity-[0.05] [background-image:radial-gradient(hsl(var(--foreground))_1px,transparent_1px)] [background-size:26px_26px]" />
             <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background to-transparent" />
@@ -85,72 +120,45 @@ export function BrandIntro({ onFinish, force = false }: BrandIntroProps) {
           </div>
 
           {/* Bloco da marca + reflexo */}
-          <div className="relative z-10 flex flex-col items-center">
-            <motion.div
-              className="flex flex-col items-center"
-              initial={{ scale: reduce ? 1 : 1.55, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: reduce ? 0.4 : 1.9, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <div className="relative">
-                <LogoMark className="h-24 w-24 md:h-32 md:w-32 drop-shadow-[0_24px_60px_hsl(var(--primary)/0.35)]" />
-                {/* Varredura de luz */}
-                {!reduce && (
-                  <motion.div
-                    className="pointer-events-none absolute inset-0 overflow-hidden rounded-[18%]"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: [0, 1, 1, 0] }}
-                    transition={{ duration: 1.6, delay: 0.5, times: [0, 0.1, 0.8, 1] }}
-                  >
-                    <motion.div
-                      className="absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-primary/60 to-transparent blur-md"
-                      initial={{ x: "-160%" }}
-                      animate={{ x: "260%" }}
-                      transition={{ duration: 1.3, delay: 0.6, ease: [0.4, 0, 0.2, 1] }}
-                    />
-                  </motion.div>
-                )}
-              </div>
-
-              <motion.span
-                className="mt-6 font-display text-3xl md:text-5xl font-medium text-foreground"
-                initial={{ opacity: 0, letterSpacing: reduce ? "0.02em" : "0.42em" }}
-                animate={{ opacity: 1, letterSpacing: "0.06em" }}
-                transition={{ duration: reduce ? 0.4 : 1.7, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              >
-                MedStation
-              </motion.span>
+          <motion.div
+            className="relative z-10 flex flex-col items-center will-change-transform"
+            initial={{ scale: reduce ? 1 : 1.28, opacity: 0, filter: reduce ? "none" : "blur(10px)" }}
+            animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
+            transition={{ duration: reduce ? 0.35 : 1.5, ease }}
+          >
+            <div className="flex flex-col items-center">
+              {brand()}
 
               <motion.span
                 className="mt-3 text-[0.62rem] md:text-[0.7rem] uppercase tracking-[0.34em] text-muted-foreground"
-                initial={{ opacity: 0, y: 8 }}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 1.15 }}
+                transition={{ duration: 0.8, delay: reduce ? 0.1 : 1.05, ease }}
               >
                 Produza mais. Digite menos.
               </motion.span>
-            </motion.div>
+            </div>
 
             {/* Reflexo espelhado */}
             <motion.div
               aria-hidden
-              className="mt-3 select-none [transform:scaleY(-1)] opacity-30 [mask-image:linear-gradient(to_top,transparent_5%,black_92%)] [-webkit-mask-image:linear-gradient(to_top,transparent_5%,black_92%)]"
+              className="mt-3 select-none [transform:scaleY(-1)] [mask-image:linear-gradient(to_top,transparent_8%,black_94%)] [-webkit-mask-image:linear-gradient(to_top,transparent_8%,black_94%)]"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.28 }}
-              transition={{ duration: 1.4, delay: 0.8 }}
+              animate={{ opacity: 0.22 }}
+              transition={{ duration: 1.2, delay: 0.75, ease }}
             >
-              <div className="flex flex-col items-center blur-[1px]">
-                <LogoMark className="h-24 w-24 md:h-32 md:w-32" />
-                <span className="mt-6 font-display text-3xl md:text-5xl font-medium tracking-[0.06em] text-foreground">
-                  MedStation
-                </span>
-              </div>
+              <div className="blur-[1.5px]">{brand(true)}</div>
             </motion.div>
-          </div>
+          </motion.div>
 
-          <span className="absolute bottom-8 text-[0.6rem] uppercase tracking-[0.3em] text-muted-foreground/70">
+          <motion.span
+            className="absolute bottom-8 text-[0.6rem] uppercase tracking-[0.3em] text-muted-foreground/70"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 0.9, 0.5] }}
+            transition={{ duration: 1.6, delay: 1.2, ease: "easeInOut" }}
+          >
             toque para continuar
-          </span>
+          </motion.span>
         </motion.div>
       )}
     </AnimatePresence>
