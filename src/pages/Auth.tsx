@@ -594,7 +594,8 @@ export default function Auth() {
                 </TabsContent>
               </AnimatePresence>
             </Tabs>
-          </div>
+          </motion.div>
+
         </motion.main>
       </div>
     </div>
