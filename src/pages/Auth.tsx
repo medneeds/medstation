@@ -284,12 +284,17 @@ export default function Auth() {
         {/* Auth panel */}
         <motion.main
           initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
+          animate={introDone ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
           className="flex items-start lg:items-center justify-center px-5 pt-8 pb-10 sm:p-10 lg:p-16"
           style={{ paddingBottom: "max(2.5rem, env(safe-area-inset-bottom))" }}
         >
-          <div className="w-full max-w-md space-y-6 lg:space-y-8">
+          <motion.div
+            initial={{ opacity: 0, y: 26, scale: 0.965 }}
+            animate={introDone ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 26, scale: 0.965 }}
+            transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+            className="w-full max-w-md space-y-6 lg:space-y-8 rounded-3xl border border-hairline bg-card/60 backdrop-blur-xl p-6 sm:p-8 shadow-[0_40px_120px_-40px_hsl(var(--primary)/0.35)]"
+          >
             <div className="lg:hidden flex flex-col items-center gap-3 text-center">
               <Logo size="md" />
               <p className="text-[0.65rem] uppercase tracking-[0.22em] text-muted-foreground">
@@ -297,14 +302,24 @@ export default function Auth() {
               </p>
             </div>
 
+            {/* Cabeçalho com reflexo espelhado (estilo tela inicial de streaming) */}
             <div className="space-y-1.5 lg:space-y-2 text-center lg:text-left">
-              <h2 className="font-display text-2xl lg:text-3xl tracking-tight text-foreground">
-                Bem-vindo
-              </h2>
+              <div className="relative">
+                <h2 className="font-display text-2xl lg:text-3xl tracking-tight text-foreground">
+                  Bem-vindo
+                </h2>
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute left-0 right-0 top-full block font-display text-2xl lg:text-3xl tracking-tight text-foreground opacity-20 blur-[0.5px] [transform:scaleY(-1)] [mask-image:linear-gradient(to_top,transparent_15%,black_95%)] [-webkit-mask-image:linear-gradient(to_top,transparent_15%,black_95%)] text-center lg:text-left"
+                >
+                  Bem-vindo
+                </span>
+              </div>
               <p className="text-sm text-muted-foreground">
                 Entre com sua conta ou crie uma em segundos.
               </p>
             </div>
+
 
             <Tabs defaultValue="signin" className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 rounded-full h-11">
