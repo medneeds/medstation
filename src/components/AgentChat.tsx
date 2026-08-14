@@ -1749,24 +1749,13 @@ export function AgentChat({
 
 
 
-        {/* Toolbar row: attach + desktop toggles */}
+        {/* Barra de ajustes de saída (desktop) */}
         {!isMobile && (
-          <div className="flex gap-2 items-center flex-wrap mb-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="shrink-0 h-8 gap-1.5 rounded-full"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploadingFile}
-              title="Anexar foto, PDF ou documento"
-            >
-              {uploadingFile ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Paperclip className="h-3.5 w-3.5" />
-              )}
-              <span className="text-xs">Anexar</span>
-            </Button>
+          <div className="flex flex-nowrap gap-2 items-center mb-3 px-3 py-2.5 rounded-2xl bg-muted/35 border border-border/50 overflow-x-auto scrollbar-none">
+            <span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground/70 mr-1 shrink-0">
+              Ajustes de saída
+            </span>
+
             {agentType === "clinicus" && (
               <>
                 <Toggle
