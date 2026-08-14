@@ -110,6 +110,12 @@ export default {
         sm: "calc(var(--radius) - 2px)",
       },
       keyframes: {
+        "brand-sweep": {
+          "0%": { transform: "translateX(-120%) skewX(-14deg)", opacity: "0" },
+          "12%": { opacity: "1" },
+          "42%, 100%": { transform: "translateX(220%) skewX(-14deg)", opacity: "0" },
+        },
+
         wiggle: {
           "0%, 88%, 100%": { transform: "rotate(0deg)" },
           "91%": { transform: "rotate(-9deg)" },
