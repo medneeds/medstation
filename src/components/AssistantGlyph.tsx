@@ -108,8 +108,8 @@ export function AssistantGlyph({
             }}
           />
         )}
-        {/* Icon lifted above the plate */}
-        <span className="relative z-10 block [&>svg]:stroke-[1.5] [&>svg]:drop-shadow-[0_1.5px_2px_hsl(var(--primary)/0.5)]">
+        {/* Icon lifted above the plate, with a gentle slow orbit */}
+        <span className="relative z-10 block animate-orb-orbit [&>svg]:stroke-[1.5] [&>svg]:drop-shadow-[0_1.5px_2px_hsl(var(--primary)/0.5)]">
           {children}
         </span>
       </span>
