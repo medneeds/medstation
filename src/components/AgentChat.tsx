@@ -1406,7 +1406,7 @@ export function AgentChat({
             );
           })()
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 px-1 md:px-2">
             {currentConversation.messages.map((msg) => {
               const isThinking = msg.role === "assistant" && msg.id === "streaming-temp" && (msg.content === "Pensando..." || msg.content === "");
               const isStreaming = msg.role === "assistant" && msg.id === "streaming-temp" && !isThinking;
@@ -1416,7 +1416,13 @@ export function AgentChat({
                 className={`flex animate-fade-in ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`${focusMode ? "max-w-[95%] md:max-w-4xl" : "max-w-[85%] md:max-w-[80%]"} rounded-2xl px-3 md:px-4 relative group ${
+                  className={`${
+                    focusMode
+                      ? "max-w-[97%] md:max-w-5xl"
+                      : msg.role === "assistant"
+                        ? "max-w-[96%] md:max-w-[92%]"
+                        : "max-w-[90%] md:max-w-[72%]"
+                  } rounded-2xl px-3 md:px-4 relative group ${
                     msg.role === "user"
                       ? "bg-primary text-primary-foreground py-2 md:py-3"
                       : isThinking
