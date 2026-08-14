@@ -160,7 +160,10 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title} className="p-0 h-auto bg-transparent hover:bg-transparent">
                     <NavLink to={item.url} className={navItemClass}>
-                      <item.icon className="h-4 w-4 shrink-0" />
+                      <AssistantGlyph size="xs" animate={false} interactive>
+                        <item.icon className="h-4 w-4 shrink-0" />
+                      </AssistantGlyph>
+
                       {!collapsed && (
                         <>
                           <span className="flex-1">{item.title}</span>
