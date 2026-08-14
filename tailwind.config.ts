@@ -197,7 +197,7 @@ export default {
         "thinking-halo": "thinking-halo 1.8s ease-in-out infinite",
         "thinking-dot": "thinking-dot 1.2s ease-in-out infinite",
         "stream-cursor": "stream-cursor 0.9s ease-in-out infinite",
-        "orb-float": "orb-float 6s ease-in-out infinite",
+        "orb-float": "orb-float 9s cubic-bezier(0.45, 0, 0.55, 1) infinite",
         "orb-breathe": "orb-breathe 9s cubic-bezier(0.45, 0, 0.55, 1) infinite",
         "orb-spin-slow": "orb-spin-slow 28s linear infinite",
         "orb-ring": "orb-ring 4.5s ease-out infinite",
