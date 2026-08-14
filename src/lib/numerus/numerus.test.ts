@@ -38,10 +38,11 @@ describe("infusões", () => {
     expect(Math.round(infusionRate(1.22, adr, adr.dilutions[0], 60))).toBe(44);
   });
 
-  it("vasopressina 0,03 U/min na solução 0,2 U/mL = 9 mL/h", () => {
+  it("vasopressina 0,025 U/min na solução 0,4 U/mL ≈ 3,75 mL/h", () => {
     const vaso = drug("vasopressina");
-    expect(infusionRate(0.03, vaso, vaso.dilutions[0], 70)).toBeCloseTo(9, 5);
+    expect(infusionRate(0.025, vaso, vaso.dilutions[0], 70)).toBeCloseTo(3.75, 5);
   });
+
 
   it("propofol 20 mcg/kg/min em 80 kg (10 mg/mL) = 9,6 mL/h", () => {
     const prop = drug("propofol");
