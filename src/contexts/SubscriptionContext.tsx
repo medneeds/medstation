@@ -65,7 +65,10 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     checkSubscription();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // TOKEN_REFRESHED ocorre a cada renovação de token; revalidar a assinatura
+      // nesse evento gerava chamadas em rajada e rate limit (429).
+      if (event === "TOKEN_REFRESHED") return;
       if (session) {
         checkSubscription();
       } else {
@@ -73,12 +76,14 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       }
     });
-    const interval = setInterval(checkSubscription, 60000);
+    // Revalidação periódica mais espaçada (5 min) para não saturar a API de auth.
+    const interval = setInterval(checkSubscription, 300000);
     return () => {
       subscription.unsubscribe();
       clearInterval(interval);
     };
   }, []);
+
 
   return (
     <SubscriptionContext.Provider value={{
