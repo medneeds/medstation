@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { armBrandIntro } from "@/components/auth/BrandIntro";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -74,7 +75,10 @@ export default function Auth() {
       if (session) navigate(destination, { replace: true });
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) navigate(destination, { replace: true });
+      if (session) {
+        if (_event === "SIGNED_IN") armBrandIntro();
+        navigate(destination, { replace: true });
+      }
     });
     return () => subscription.unsubscribe();
   }, [navigate, destination, confirmHandled]);
@@ -150,6 +154,7 @@ export default function Auth() {
 
       if (data.session) {
         // Confirmação automática ativa: já entra direto.
+        armBrandIntro();
         navigate(destination, { replace: true });
         return;
       }
@@ -197,6 +202,7 @@ export default function Auth() {
         setLoading(false);
         return;
       }
+      armBrandIntro();
       navigate(destination, { replace: true });
     } catch (error: any) {
       toast({ variant: "destructive", title: "Dados inválidos", description: error.errors?.[0]?.message || error.message });
