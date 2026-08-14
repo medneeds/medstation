@@ -1,5 +1,7 @@
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { AssistantGlyph } from "@/components/AssistantGlyph";
+
 import {
   Stethoscope,
   FlaskConical,
