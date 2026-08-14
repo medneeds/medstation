@@ -76,6 +76,8 @@ const recordsModules = [
   { title: "Notas", url: "/notes", icon: NotebookPen },
 ];
 
+const COLLAPSED_ITEM = "justify-center gap-0 px-0 border-l-0 hover:border-l-0 hover:translate-x-0 w-full";
+
 const navItemClass = ({ isActive }: { isActive: boolean }) =>
   cn(
     "group relative flex items-center gap-3 rounded-md px-3 h-10 text-sm font-medium cursor-pointer outline-none",
@@ -136,7 +138,7 @@ export function AppSidebar() {
             <SidebarMenu className="gap-1.5">
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip={homeModule.title} className="p-0 h-auto bg-transparent hover:bg-transparent">
-                  <NavLink to={homeModule.url} className={navItemClass}>
+                  <NavLink to={homeModule.url} className={(p) => cn(navItemClass(p), collapsed && COLLAPSED_ITEM)}>
                     <homeModule.icon className="h-4 w-4 shrink-0" />
                     {!collapsed && <span className="flex-1">{homeModule.title}</span>}
                   </NavLink>
@@ -159,7 +161,7 @@ export function AppSidebar() {
               {agentModules.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title} className="p-0 h-auto bg-transparent hover:bg-transparent">
-                    <NavLink to={item.url} className={navItemClass}>
+                    <NavLink to={item.url} className={(p) => cn(navItemClass(p), collapsed && COLLAPSED_ITEM)}>
                       <AssistantGlyph size="xs" animate={false} interactive>
                         <item.icon className="h-4 w-4 shrink-0" />
                       </AssistantGlyph>
@@ -210,7 +212,7 @@ export function AppSidebar() {
                     <NavLink
                       to={sub.url}
                       end
-                      className={cn(subItemClass({ isActive }), collapsed && "ml-0 pl-3 border-l-0")}
+                      className={cn(subItemClass({ isActive }), collapsed && cn("ml-0 pr-0", COLLAPSED_ITEM))}
                     >
 
                       {!collapsed && (
@@ -241,7 +243,7 @@ export function AppSidebar() {
               {recordsModules.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title} className="p-0 h-auto bg-transparent hover:bg-transparent">
-                    <NavLink to={item.url} className={navItemClass}>
+                    <NavLink to={item.url} className={(p) => cn(navItemClass(p), collapsed && COLLAPSED_ITEM)}>
                       <item.icon className="h-4 w-4 shrink-0" />
                       {!collapsed && <span className="flex-1">{item.title}</span>}
                     </NavLink>
@@ -261,7 +263,7 @@ export function AppSidebar() {
             <SidebarMenu className="gap-1.5">
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Indicar e ganhar" className="p-0 h-auto bg-transparent hover:bg-transparent">
-                  <NavLink to="/indicar" className={navItemClass}>
+                  <NavLink to="/indicar" className={(p) => cn(navItemClass(p), collapsed && COLLAPSED_ITEM)}>
                     <Gift className="h-4 w-4 shrink-0 text-primary" />
                     {!collapsed && (
                       <>
@@ -281,6 +283,7 @@ export function AppSidebar() {
                     "border-l-2 border-transparent text-sidebar-foreground/80",
                     "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                     "transition-colors duration-150 ease-precise",
+                    collapsed && COLLAPSED_ITEM,
                   )}
                 >
                   <LifeBuoy className="h-4 w-4" />
@@ -296,6 +299,7 @@ export function AppSidebar() {
                     "border-l-2 border-transparent text-destructive/90",
                     "hover:bg-destructive/10 hover:text-destructive hover:border-l-destructive",
                     "transition-colors duration-150 ease-precise",
+                    collapsed && COLLAPSED_ITEM,
                   )}
                 >
                   <LogOut className="h-4 w-4" />
