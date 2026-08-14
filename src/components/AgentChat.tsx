@@ -1,3 +1,5 @@
+import { getAgentSuggestions } from "@/lib/agentIntro";
+import { OutputControl } from "@/components/chat/OutputControl";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { flushSync } from "react-dom";
@@ -77,6 +79,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Toggle } from "@/components/ui/toggle";
+
+const AGENTS_WITH_CONTROLS = new Set([
+  "examinus",
+  "clinicus",
+  "prescriptus",
+  "gasometrus",
+  "codexus",
+  "mediscuss",
+  "legalis",
+]);
 
 interface Message {
   id: string;
@@ -1358,16 +1370,34 @@ export function AgentChat({
                 </div>
                 <p className="text-base md:text-xl font-medium text-foreground tracking-tight">{g.title}</p>
                 <p className="text-xs md:text-sm mt-2 leading-relaxed">{g.subtitle}</p>
+                {getAgentSuggestions(agentType).length > 0 && (
+                  <div className="mt-5 flex flex-wrap justify-center gap-2">
+                    {getAgentSuggestions(agentType).map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => {
+                          setMessage(s);
+                          textareaRef.current?.focus();
+                        }}
+                        className="text-[11px] md:text-xs px-3 py-1.5 rounded-full border border-border/60 bg-background/60 text-muted-foreground transition-colors duration-150 hover:text-foreground hover:border-primary/50 hover:bg-primary/5"
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {lastConversation && (
                   <Button
                     onClick={restoreLastConversation}
                     variant="outline"
                     size="sm"
-                    className="mt-5"
+                    className="mt-4"
                   >
                     Continuar última conversa
                   </Button>
                 )}
+
               </div>
             );
           })()
@@ -1748,24 +1778,13 @@ export function AgentChat({
 
 
 
-        {/* Toolbar row: attach + desktop toggles */}
-        {!isMobile && (
-          <div className="flex gap-2 items-center flex-wrap mb-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="shrink-0 h-8 gap-1.5 rounded-full"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploadingFile}
-              title="Anexar foto, PDF ou documento"
-            >
-              {uploadingFile ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Paperclip className="h-3.5 w-3.5" />
-              )}
-              <span className="text-xs">Anexar</span>
-            </Button>
+        {/* Barra de ajustes de saída (desktop) */}
+        {!isMobile && AGENTS_WITH_CONTROLS.has(agentType) && (
+          <div className="flex flex-nowrap gap-2 items-center mb-3 px-3 py-2.5 rounded-2xl bg-muted/35 border border-border/50 overflow-x-auto scrollbar-none">
+            <span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground/70 mr-1 shrink-0">
+              Ajustes de saída
+            </span>
+
             {agentType === "clinicus" && (
               <>
                 <Toggle
@@ -1945,77 +1964,67 @@ export function AgentChat({
 
             {agentType === "examinus" && (
               <>
-                <Toggle
+                <div className="w-px h-6 bg-border/70 mx-0.5 shrink-0" />
+                <OutputControl
+                  icon={Lightbulb}
+                  tone="violet"
+                  label="Consultor"
+                  info="Sugere exames complementares, aponta contraindicações e explica exames e procedimentos a partir do caso."
                   pressed={examSuggestMode}
                   onPressedChange={setExamSuggestMode}
-                  size="sm"
-                  className="shrink-0 h-8 data-[state=on]:bg-violet-500/20 data-[state=on]:text-violet-600 dark:data-[state=on]:text-violet-400 rounded-full"
-                  title="Consultor: sugestão de exames, contraindicações e explicação de exames e procedimentos"
-                >
-                  <Lightbulb className="h-4 w-4" />
-                  <span className="text-xs ml-1">Consultor</span>
-                </Toggle>
+                />
                 {!examSuggestMode && (<>
-                <Toggle
+                <OutputControl
+                  icon={SeparatorVertical}
+                  tone="primary"
+                  label="Separar com |"
+                  info="Organiza os resultados em linha contínua separada por barra vertical — pronto para colar na evolução."
                   pressed={usePipeSeparator}
                   onPressedChange={setUsePipeSeparator}
-                  size="sm"
-                  className="shrink-0 h-8 data-[state=on]:bg-primary/20 rounded-full"
-                  title="Separar exames com |"
-                >
-                  <SeparatorVertical className="h-4 w-4" />
-                </Toggle>
-                <div className="flex items-center gap-2 px-2 h-8 rounded-full bg-muted/40">
-                  <Switch
-                    id="include-time"
-                    checked={includeTime}
-                    onCheckedChange={setIncludeTime}
-                    className="data-[state=checked]:bg-primary"
-                  />
-                  <Label htmlFor="include-time" className="text-xs cursor-pointer flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    Horário
-                  </Label>
-                </div>
-                <Toggle
+                />
+                <OutputControl
+                  icon={Clock}
+                  tone="primary"
+                  label="Incluir horário"
+                  info="Mostra o horário de coleta ao lado de cada exame, útil para acompanhar a evolução no plantão."
+                  pressed={includeTime}
+                  onPressedChange={setIncludeTime}
+                />
+                <div className="w-px h-6 bg-border/70 mx-0.5 shrink-0" />
+                <OutputControl
+                  icon={AlertTriangle}
+                  tone="amber"
+                  label="Só alterados"
+                  info="Exibe apenas os valores fora da referência, ocultando os resultados normais."
                   pressed={onlyAltered}
                   onPressedChange={setOnlyAltered}
-                  size="sm"
-                  className="shrink-0 h-8 data-[state=on]:bg-amber-500/20 data-[state=on]:text-amber-600 dark:data-[state=on]:text-amber-400 rounded-full"
-                  title="Mostrar apenas resultados alterados/críticos"
-                >
-                  <AlertTriangle className="h-4 w-4" />
-                  <span className="text-xs ml-1">Alterados</span>
-                </Toggle>
-                <Toggle
+                />
+                <OutputControl
+                  icon={Stethoscope}
+                  tone="blue"
+                  label="Impressão clínica"
+                  info="Acrescenta uma leitura interpretativa das alterações encontradas ao final do resumo."
                   pressed={clinicalImpression}
                   onPressedChange={setClinicalImpression}
-                  size="sm"
-                  className="shrink-0 h-8 data-[state=on]:bg-blue-500/20 data-[state=on]:text-blue-600 dark:data-[state=on]:text-blue-400 rounded-full"
-                  title="Impressão clínica"
-                >
-                  <Stethoscope className="h-4 w-4" />
-                  <span className="text-xs ml-1">Impressão</span>
-                </Toggle>
-                <Toggle
+                />
+                <OutputControl
+                  icon={Minimize2}
+                  tone="green"
+                  label="Compacto"
+                  info="Resumo enxuto: omite índices hematimétricos (VCM, HCM, CHCM, RDW) e detalhes secundários."
                   pressed={compactMode}
                   onPressedChange={setCompactMode}
-                  size="sm"
-                  className="shrink-0 h-8 data-[state=on]:bg-emerald-500/20 data-[state=on]:text-emerald-600 dark:data-[state=on]:text-emerald-400 rounded-full"
-                  title="Modo compacto"
-                >
-                  <Minimize2 className="h-4 w-4" />
-                  <span className="text-xs ml-1">Compacto</span>
-                </Toggle>
+                />
                 </>)}
               </>
             )}
+
           </div>
         )}
 
-        {/* Input row: textarea (auto-grow + manual expand) + voice + send */}
-        <div className="flex gap-1.5 md:gap-2 items-end">
-          {isMobile && (
+        {/* Composer */}
+        {isMobile ? (
+          <div className="flex gap-1.5 items-end">
             <Button
               variant="ghost"
               size="icon"
@@ -2030,8 +2039,57 @@ export function AgentChat({
                 <Paperclip className="h-4 w-4 text-primary" />
               )}
             </Button>
-          )}
-          <div className="relative flex-1">
+            <div className="relative flex-1">
+              <Textarea
+                ref={textareaRef}
+                value={message}
+                onChange={(e) => setMessage(subscribed ? e.target.value : e.target.value.slice(0, FREE_CHAR_LIMIT))}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                  }
+                }}
+                placeholder="Mensagem... (Shift+Enter para nova linha)"
+                maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
+                rows={1}
+                aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
+                className={`w-full resize-none pr-10 py-2.5 text-base leading-relaxed min-h-[44px] rounded-2xl transition-all ${
+                  (message.length > 0 && !message.trim()) || overLimit
+                    ? "border-destructive focus-visible:ring-destructive"
+                    : ""
+                }`}
+                style={{ maxHeight: inputExpanded ? 400 : 200 }}
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                onClick={() => setInputExpanded((v) => !v)}
+                className="absolute right-2 top-2 h-6 w-6 rounded-md inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                title={inputExpanded ? "Reduzir campo" : "Expandir campo"}
+                aria-label={inputExpanded ? "Reduzir campo de mensagem" : "Expandir campo de mensagem"}
+              >
+                {inputExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+              </button>
+            </div>
+            <AgentVoiceInput
+              onTranscription={handleVoiceTranscription}
+              disabled={isLoading}
+              context={agentType}
+            />
+            <Button
+              onClick={sendMessage}
+              disabled={!message.trim() || isLoading || overLimit}
+              size="icon"
+              className="shrink-0 h-10 w-10 rounded-full"
+              title={!message.trim() ? "Digite uma mensagem para enviar" : "Enviar mensagem"}
+            >
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            </Button>
+          </div>
+        ) : (
+          /* Desktop: textarea dominante com ações flutuantes */
+          <div className="relative group">
             <Textarea
               ref={textareaRef}
               value={message}
@@ -2043,49 +2101,67 @@ export function AgentChat({
                 }
               }}
               placeholder={agentType === "examinus" && examSuggestMode
-                ? (isMobile ? "Peça um painel, cole um caso ou pergunte sobre um exame" : "Peça um painel, cole um caso ou pergunte sobre um exame  ·  Shift+Enter para nova linha")
-                : (isMobile ? "Mensagem... (Shift+Enter para nova linha)" : `${placeholder}  ·  Shift+Enter para nova linha`)}
+                ? "Peça um painel, cole um caso ou pergunte sobre um exame"
+                : placeholder}
               maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
-              rows={1}
               aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
-              className={`w-full resize-none pr-10 py-2.5 text-base leading-relaxed min-h-[44px] rounded-2xl transition-all ${
+              className={`w-full resize-none rounded-2xl text-base leading-relaxed p-5 pb-16 bg-muted/25 border-2 transition-colors duration-200 ${
+                inputExpanded ? "min-h-[240px] max-h-[45vh]" : "min-h-[132px] max-h-64"
+              } ${
                 (message.length > 0 && !message.trim()) || overLimit
-                  ? "border-destructive focus-visible:ring-destructive"
-
-                  : ""
+                  ? "border-destructive focus:border-destructive"
+                  : "border-border/40 focus:border-primary/60 focus:bg-background"
               }`}
-              style={{ maxHeight: inputExpanded ? 400 : 200 }}
               disabled={isLoading}
             />
             <button
               type="button"
               onClick={() => setInputExpanded((v) => !v)}
-              className="absolute right-2 top-2 h-6 w-6 rounded-md inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              className="absolute right-3.5 top-3.5 h-7 w-7 rounded-lg inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
               title={inputExpanded ? "Reduzir campo" : "Expandir campo"}
               aria-label={inputExpanded ? "Reduzir campo de mensagem" : "Expandir campo de mensagem"}
             >
-              {inputExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+              {inputExpanded ? <ChevronDown className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
             </button>
+            <div className="absolute bottom-3.5 right-3.5 flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingFile || isLoading}
+                className="h-11 w-11 shrink-0 rounded-xl bg-background/90 hover:bg-primary/10 hover:border-primary/50 transition-colors duration-200"
+                title="Anexar foto, PDF ou documento"
+              >
+                {uploadingFile ? (
+                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                ) : (
+                  <Paperclip className="h-5 w-5 text-primary" />
+                )}
+              </Button>
+              <AgentVoiceInput
+                onTranscription={handleVoiceTranscription}
+                disabled={isLoading}
+                context={agentType}
+              />
+              <Button
+                onClick={sendMessage}
+                disabled={!message.trim() || isLoading || overLimit}
+                className="h-11 px-7 rounded-xl font-semibold transition-[opacity,box-shadow] duration-200 hover:opacity-90 active:scale-95"
+                title={!message.trim() ? "Digite uma mensagem para enviar" : "Enviar mensagem"}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <>
+                    <Send className="h-3.5 w-3.5 mr-1.5" />
+                    Enviar
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
-          <AgentVoiceInput
-            onTranscription={handleVoiceTranscription}
-            disabled={isLoading}
-            context={agentType}
-          />
-          <Button
-            onClick={sendMessage}
-            disabled={!message.trim() || isLoading || overLimit}
-            size="icon"
-            className="shrink-0 h-10 w-10 rounded-full"
-            title={!message.trim() ? "Digite uma mensagem para enviar" : "Enviar mensagem"}
-          >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
+        )}
+
         <div className="flex items-center justify-between gap-2 mt-2">
           <div className="min-w-0 flex-1">
             {message.length > 0 && !message.trim() ? (
