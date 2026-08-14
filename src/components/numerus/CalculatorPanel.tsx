@@ -31,7 +31,7 @@ const GROUPS: { key: GroupKey; label: string }[] = [
   { key: "antibioticos", label: "Antibióticos" },
 ];
 
-const WEIGHT_PRESETS = [50, 60, 70, 80, 90, 100];
+const WEIGHT_PRESETS = [40, 50, 60, 70, 80, 90, 100, 110, 120, 140];
 
 export function CalculatorPanel() {
   const [weight, setWeight] = useState(70);
