@@ -2013,9 +2013,9 @@ export function AgentChat({
           </div>
         )}
 
-        {/* Input row: textarea (auto-grow + manual expand) + voice + send */}
-        <div className="flex gap-1.5 md:gap-2 items-end">
-          {isMobile && (
+        {/* Composer */}
+        {isMobile ? (
+          <div className="flex gap-1.5 items-end">
             <Button
               variant="ghost"
               size="icon"
@@ -2030,8 +2030,57 @@ export function AgentChat({
                 <Paperclip className="h-4 w-4 text-primary" />
               )}
             </Button>
-          )}
-          <div className="relative flex-1">
+            <div className="relative flex-1">
+              <Textarea
+                ref={textareaRef}
+                value={message}
+                onChange={(e) => setMessage(subscribed ? e.target.value : e.target.value.slice(0, FREE_CHAR_LIMIT))}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                  }
+                }}
+                placeholder="Mensagem... (Shift+Enter para nova linha)"
+                maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
+                rows={1}
+                aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
+                className={`w-full resize-none pr-10 py-2.5 text-base leading-relaxed min-h-[44px] rounded-2xl transition-all ${
+                  (message.length > 0 && !message.trim()) || overLimit
+                    ? "border-destructive focus-visible:ring-destructive"
+                    : ""
+                }`}
+                style={{ maxHeight: inputExpanded ? 400 : 200 }}
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                onClick={() => setInputExpanded((v) => !v)}
+                className="absolute right-2 top-2 h-6 w-6 rounded-md inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                title={inputExpanded ? "Reduzir campo" : "Expandir campo"}
+                aria-label={inputExpanded ? "Reduzir campo de mensagem" : "Expandir campo de mensagem"}
+              >
+                {inputExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+              </button>
+            </div>
+            <AgentVoiceInput
+              onTranscription={handleVoiceTranscription}
+              disabled={isLoading}
+              context={agentType}
+            />
+            <Button
+              onClick={sendMessage}
+              disabled={!message.trim() || isLoading || overLimit}
+              size="icon"
+              className="shrink-0 h-10 w-10 rounded-full"
+              title={!message.trim() ? "Digite uma mensagem para enviar" : "Enviar mensagem"}
+            >
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            </Button>
+          </div>
+        ) : (
+          /* Desktop: textarea dominante com ações flutuantes */
+          <div className="relative group">
             <Textarea
               ref={textareaRef}
               value={message}
@@ -2043,49 +2092,67 @@ export function AgentChat({
                 }
               }}
               placeholder={agentType === "examinus" && examSuggestMode
-                ? (isMobile ? "Peça um painel, cole um caso ou pergunte sobre um exame" : "Peça um painel, cole um caso ou pergunte sobre um exame  ·  Shift+Enter para nova linha")
-                : (isMobile ? "Mensagem... (Shift+Enter para nova linha)" : `${placeholder}  ·  Shift+Enter para nova linha`)}
+                ? "Peça um painel, cole um caso ou pergunte sobre um exame"
+                : placeholder}
               maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
-              rows={1}
               aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
-              className={`w-full resize-none pr-10 py-2.5 text-base leading-relaxed min-h-[44px] rounded-2xl transition-all ${
+              className={`w-full resize-none rounded-2xl text-base leading-relaxed p-5 pb-16 bg-muted/25 border-2 transition-colors duration-200 ${
+                inputExpanded ? "min-h-[240px] max-h-[45vh]" : "min-h-[132px] max-h-64"
+              } ${
                 (message.length > 0 && !message.trim()) || overLimit
-                  ? "border-destructive focus-visible:ring-destructive"
-
-                  : ""
+                  ? "border-destructive focus:border-destructive"
+                  : "border-border/40 focus:border-primary/60 focus:bg-background"
               }`}
-              style={{ maxHeight: inputExpanded ? 400 : 200 }}
               disabled={isLoading}
             />
             <button
               type="button"
               onClick={() => setInputExpanded((v) => !v)}
-              className="absolute right-2 top-2 h-6 w-6 rounded-md inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              className="absolute right-3.5 top-3.5 h-7 w-7 rounded-lg inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
               title={inputExpanded ? "Reduzir campo" : "Expandir campo"}
               aria-label={inputExpanded ? "Reduzir campo de mensagem" : "Expandir campo de mensagem"}
             >
-              {inputExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+              {inputExpanded ? <ChevronDown className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
             </button>
+            <div className="absolute bottom-3.5 right-3.5 flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingFile || isLoading}
+                className="h-11 w-11 shrink-0 rounded-xl bg-background/90 hover:bg-primary/10 hover:border-primary/50 transition-colors duration-200"
+                title="Anexar foto, PDF ou documento"
+              >
+                {uploadingFile ? (
+                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                ) : (
+                  <Paperclip className="h-5 w-5 text-primary" />
+                )}
+              </Button>
+              <AgentVoiceInput
+                onTranscription={handleVoiceTranscription}
+                disabled={isLoading}
+                context={agentType}
+              />
+              <Button
+                onClick={sendMessage}
+                disabled={!message.trim() || isLoading || overLimit}
+                className="h-11 px-7 rounded-xl font-semibold transition-[opacity,box-shadow] duration-200 hover:opacity-90 active:scale-95"
+                title={!message.trim() ? "Digite uma mensagem para enviar" : "Enviar mensagem"}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <>
+                    <Send className="h-3.5 w-3.5 mr-1.5" />
+                    Enviar
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
-          <AgentVoiceInput
-            onTranscription={handleVoiceTranscription}
-            disabled={isLoading}
-            context={agentType}
-          />
-          <Button
-            onClick={sendMessage}
-            disabled={!message.trim() || isLoading || overLimit}
-            size="icon"
-            className="shrink-0 h-10 w-10 rounded-full"
-            title={!message.trim() ? "Digite uma mensagem para enviar" : "Enviar mensagem"}
-          >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
+        )}
+
         <div className="flex items-center justify-between gap-2 mt-2">
           <div className="min-w-0 flex-1">
             {message.length > 0 && !message.trim() ? (
