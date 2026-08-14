@@ -32,6 +32,9 @@ export function BrandIntro({ onFinish, force = false }: BrandIntroProps) {
   const [visible, setVisible] = useState(() => {
     if (force) return true;
     if (typeof window === "undefined") return false;
+    // Só toca quando o login acabou de acontecer.
+    if (sessionStorage.getItem(PENDING_KEY) !== "1") return false;
+    sessionStorage.removeItem(PENDING_KEY);
     return sessionStorage.getItem(SESSION_KEY) !== "1";
   });
 
