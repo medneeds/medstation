@@ -180,6 +180,11 @@ export default {
           "0%, 100%": { opacity: "0.35" },
           "50%": { opacity: "0.6" },
         },
+        "glyph-sheen": {
+          "0%": { backgroundPosition: "150% 0" },
+          "60%, 100%": { backgroundPosition: "-150% 0" },
+        },
+
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
