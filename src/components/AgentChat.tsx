@@ -1366,10 +1366,11 @@ export function AgentChat({
                   />
                   {/* Soft outer glow */}
                   <span className="pointer-events-none absolute -inset-3 rounded-full bg-primary/8 blur-2xl animate-orb-shimmer" />
-                  {/* Core orb with the icon, gently breathing */}
-                  <div className={`relative rounded-full p-4 md:p-6 bg-gradient-to-br from-primary/15 to-primary/5 ring-1 ring-primary/20 ${agentColor} animate-orb-breathe [&>svg]:stroke-[1.75] [&>svg]:relative [&>svg]:z-10`}>
+                  {/* Core orb with the icon, glass depth + gentle breathing */}
+                  <AssistantGlyph size="lg" className={agentColor}>
                     {agentIcon}
-                  </div>
+                  </AssistantGlyph>
+
                 </div>
                 <p className="text-base md:text-xl font-medium text-foreground tracking-tight">{g.title}</p>
                 <p className="text-xs md:text-sm mt-2 leading-relaxed">{g.subtitle}</p>
