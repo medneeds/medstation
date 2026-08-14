@@ -218,7 +218,7 @@ export default function Comecar() {
 
   return (
     <div className="min-h-screen relative">
-      <Seo path="/" title="MedStation AI — comece pelo teste grátis" description="Escolha como conhecer a MedStation: teste sem cadastro, crie sua conta com Examinus grátis ou faça o tour da plataforma." />
+      <Seo path="/" title="MedStation — comece pelo teste grátis" description="Escolha como conhecer a MedStation: teste sem cadastro, crie sua conta com Examinus grátis ou faça o tour da plataforma." />
       <div className="fixed inset-0 bg-gradient-to-br from-primary/10 via-background to-background pointer-events-none" />
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_90%_60%_at_15%_-5%,hsl(var(--primary)/0.20),transparent)] pointer-events-none" />
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_70%_50%_at_95%_35%,hsl(var(--primary)/0.10),transparent)] pointer-events-none" />
@@ -255,7 +255,7 @@ export default function Comecar() {
                   <span className="text-primary">Mais tempo com o paciente.</span>
                 </h1>
                 <p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed">
-                  A MedStation AI escreve com você: exames resumidos, anamnese estruturada, protocolos e
+                  A MedStation escreve com você: exames resumidos, anamnese estruturada, protocolos e
                   a consulta transcrita. Escolha por onde começar — cada caminho leva poucos minutos.
                 </p>
               </section>
@@ -414,7 +414,7 @@ export default function Comecar() {
         </main>
 
         <footer className="container mx-auto px-4 md:px-8 py-8 border-t border-border/50 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
-          <span>© {new Date().getFullYear()} MedStation AI</span>
+          <span>© {new Date().getFullYear()} MedStation</span>
           <button className="hover:text-foreground transition-colors" onClick={() => go("/tour", "entrada_footer")}>
             Ver tour completo da plataforma
           </button>

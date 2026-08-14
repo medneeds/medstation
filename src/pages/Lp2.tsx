@@ -123,7 +123,7 @@ export default function Lp2() {
     <div className="light min-h-screen bg-background text-foreground">
       <Seo
         path="/lp2"
-        title="MedStation AI — recupere até 40h por mês de burocracia"
+        title="MedStation — recupere até 40h por mês de burocracia"
         description="Assistentes de IA feitos para a prática clínica: exame resumido, anamnese estruturada, conduta e alta em segundos. Teste com garantia de 7 dias."
       />
 
@@ -376,7 +376,7 @@ export default function Lp2() {
 
       <footer className="border-t border-border/60">
         <div className="container mx-auto px-4 md:px-8 py-8 text-xs text-muted-foreground flex flex-wrap justify-between gap-3">
-          <span>© {new Date().getFullYear()} MedStation AI</span>
+          <span>© {new Date().getFullYear()} MedStation</span>
           <span>A decisão clínica final é sempre do médico.</span>
         </div>
       </footer>

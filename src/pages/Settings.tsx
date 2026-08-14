@@ -423,7 +423,7 @@ export default function Settings() {
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                 <div className="flex-1">
-                  <p className="font-medium text-foreground">Plano MedStation AI Pro</p>
+                  <p className="font-medium text-foreground">Plano MedStation Pro</p>
                   {subscriptionEnd && (
                     <p className="text-sm text-muted-foreground">
                       Próxima cobrança: {format(new Date(subscriptionEnd), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}

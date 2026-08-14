@@ -63,7 +63,7 @@ const generateFingerprint = (): string => {
     if (ctx) {
       ctx.textBaseline = 'top';
       ctx.font = '14px Arial';
-      ctx.fillText('MedStation AI', 2, 2);
+      ctx.fillText('MedStation', 2, 2);
       components.push(canvas.toDataURL().slice(-50));
     }
   } catch (e) {
@@ -614,7 +614,7 @@ export default function PublicExaminusChat() {
         <div className="text-center space-y-3 md:space-y-4 mb-4 md:mb-6 animate-in fade-in duration-700 slide-in-from-bottom-4">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
             <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <span className="text-[0.7rem] md:text-xs uppercase tracking-[0.18em] font-mono text-primary">Conheça o Examinus | MedStation AI</span>
+            <span className="text-[0.7rem] md:text-xs uppercase tracking-[0.18em] font-mono text-primary">Conheça o Examinus | MedStation</span>
           </div>
 
           <p className="text-3xl md:text-5xl text-foreground max-w-5xl mx-auto leading-[1.1] px-2 font-display">

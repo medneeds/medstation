@@ -133,7 +133,7 @@ export function exportCaseToPDF(
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
   doc.text(
-    `Gerado em: ${timestamp} | MedStation AI`,
+    `Gerado em: ${timestamp} | MedStation`,
     marginLeft,
     doc.internal.pageSize.height - 10
   );
@@ -209,7 +209,7 @@ export function exportAgentConversationToPDF(
   const timestamp = new Date().toLocaleString("pt-BR");
   doc.setFontSize(8);
   doc.text(
-    `Gerado em: ${timestamp} | MedStation AI`,
+    `Gerado em: ${timestamp} | MedStation`,
     marginLeft,
     doc.internal.pageSize.height - 10
   );
@@ -345,7 +345,7 @@ export function exportPrescriptionToPDF(data: PrescriptionData) {
   doc.text(`Assinatura Digital - ${data.doctor_name}`, marginLeft, footerY + 5);
   doc.text(`CRM: ${data.doctor_crm} - ${data.doctor_crm_state}`, marginLeft, footerY + 10);
   doc.text(
-    `Gerado em: ${new Date().toLocaleString("pt-BR")} | MedStation AI`,
+    `Gerado em: ${new Date().toLocaleString("pt-BR")} | MedStation`,
     pageWidth / 2,
     footerY + 15,
     { align: "center" }
@@ -483,7 +483,7 @@ export function exportExamRequestToPDF(data: ExamRequestData) {
   doc.text(`Assinatura Digital - ${data.doctor_name}`, marginLeft, footerY + 5);
   doc.text(`CRM: ${data.doctor_crm} - ${data.doctor_crm_state}`, marginLeft, footerY + 10);
   doc.text(
-    `Gerado em: ${new Date().toLocaleString("pt-BR")} | MedStation AI`,
+    `Gerado em: ${new Date().toLocaleString("pt-BR")} | MedStation`,
     pageWidth / 2,
     footerY + 15,
     { align: "center" }

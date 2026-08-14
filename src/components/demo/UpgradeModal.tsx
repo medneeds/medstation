@@ -36,7 +36,7 @@ export function UpgradeModal({ open, onOpenChange, reason = "engagement", contex
         <DialogHeader>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 w-fit">
             <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <span className="text-xs font-medium text-primary">MedStation AI Pro</span>
+            <span className="text-xs font-medium text-primary">MedStation Pro</span>
           </div>
           <DialogTitle className="text-2xl mt-3">{headline}</DialogTitle>
           <DialogDescription className="text-base">{subline}</DialogDescription>

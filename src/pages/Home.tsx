@@ -38,7 +38,7 @@ const faqs: FAQItem[] = [
   },
   {
     q: "Preciso instalar algo ou baixar aplicativo?",
-    a: "Não. A MedStation AI roda direto no navegador, no computador, tablet ou celular. Basta entrar com seu e-mail e começar a usar.",
+    a: "Não. A MedStation roda direto no navegador, no computador, tablet ou celular. Basta entrar com seu e-mail e começar a usar.",
   },
   {
     q: "Como funciona o Modo Escuta?",
@@ -114,26 +114,26 @@ export default function Home() {
       <div className="relative z-10">
       <Seo
         path="/"
-        title="MedStation AI — 11 assistentes de IA para médicos"
+        title="MedStation — 11 assistentes de IA para médicos"
         description="Anamnese, exames, prescrição e documentação clínica em segundos. Teste o Examinus grátis, sem cadastro."
         jsonLd={[
           {
             "@context": "https://schema.org",
             "@type": "Organization",
-            name: "MedStation AI",
+            name: "MedStation",
             url: "https://medstation-ai.com.br/",
             description: "Plataforma de assistentes de inteligência artificial para médicos.",
           },
           {
             "@context": "https://schema.org",
             "@type": "WebSite",
-            name: "MedStation AI",
+            name: "MedStation",
             url: "https://medstation-ai.com.br/",
           },
           {
             "@context": "https://schema.org",
             "@type": "SoftwareApplication",
-            name: "MedStation AI",
+            name: "MedStation",
             applicationCategory: "HealthApplication",
             operatingSystem: "Web",
             description: "Onze assistentes clínicos de IA para anamnese, exames, prescrição, scores e documentação médica.",
@@ -298,7 +298,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Seção 1: Examinus por MedStation AI */}
+      {/* Seção 1: Examinus por MedStation */}
       <section id="demo" className="pt-8 md:pt-12 pb-6 md:pb-8 px-4 md:px-6 relative overflow-hidden scroll-mt-20">
 
           <div className="container mx-auto max-w-7xl relative">
@@ -566,13 +566,13 @@ export default function Home() {
               </div>
             </Card>
 
-            {/* MedStation AI */}
+            {/* MedStation */}
             <Card className="p-5 md:p-7 border-2 border-primary/30 bg-gradient-to-br from-primary/8 via-card/80 to-card/60 backdrop-blur-sm relative overflow-hidden">
               <div className="absolute -right-16 -top-16 w-40 h-40 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
               <div className="relative space-y-4">
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary/15 border border-primary/40 rounded-full">
                   <Sparkles className="w-3 h-3 text-primary" />
-                  <span className="text-[0.6rem] uppercase tracking-[0.2em] font-mono text-primary">MedStation AI · 100% clínica</span>
+                  <span className="text-[0.6rem] uppercase tracking-[0.2em] font-mono text-primary">MedStation · 100% clínica</span>
                 </div>
                 <h3 className="font-display text-xl md:text-2xl tracking-tight text-foreground">O que você ganha de uma IA feita para a medicina</h3>
                 <ul className="space-y-2.5 text-sm">
@@ -692,7 +692,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Seção 2: MedStation AI - Plataforma Completa */}
+      {/* Seção 2: MedStation - Plataforma Completa */}
       <section id="plataforma" className="py-12 md:py-16 lg:py-20 px-4 md:px-6 relative overflow-hidden scroll-mt-20">
 
         <div className="absolute inset-0 bg-muted/20 backdrop-blur-3xl"></div>
@@ -907,7 +907,7 @@ export default function Home() {
               Comece grátis, <span className="italic text-primary">monte sua estação</span>
             </h2>
             <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
-              Os 11 Assistentes e o Modo Escuta são <span className="text-foreground font-medium">produtos separados</span>. Assine só o que usa, ou junte os dois no MedStation AI Pro 2.
+              Os 11 Assistentes e o Modo Escuta são <span className="text-foreground font-medium">produtos separados</span>. Assine só o que usa, ou junte os dois no MedStation Pro 2.
             </p>
 
             {/* Shared billing toggle */}
@@ -956,12 +956,12 @@ export default function Home() {
               <p className="text-[10px] text-center text-muted-foreground mt-2">Sem cartão</p>
             </Card>
 
-            {/* MedStation AI Pro — 11 Assistentes */}
+            {/* MedStation Pro — 11 Assistentes */}
             <Card className="p-5 md:p-6 border border-hairline bg-card/60 backdrop-blur-sm flex flex-col">
               <div className="flex-1 space-y-4">
                 <div>
                   <span className="text-[0.6rem] uppercase tracking-[0.22em] font-mono text-muted-foreground">11 Assistentes</span>
-                  <h3 className="font-display text-2xl tracking-tight mt-1">MedStation AI Pro</h3>
+                  <h3 className="font-display text-2xl tracking-tight mt-1">MedStation Pro</h3>
                   <p className="text-xs text-muted-foreground mt-1">Os 11 assistentes liberados, sem restrições de uso.</p>
                 </div>
                 <div>
@@ -986,7 +986,7 @@ export default function Home() {
               </Button>
             </Card>
 
-            {/* MedStation AI Pro 2 — destaque */}
+            {/* MedStation Pro 2 — destaque */}
             <Card className="p-5 md:p-6 border-2 border-primary bg-card/85 backdrop-blur-sm flex flex-col relative overflow-hidden lg:scale-[1.03]">
               <div className="absolute top-0 right-0">
                 <Badge className="bg-primary text-primary-foreground border-0 px-2.5 md:px-3 py-1 text-[0.55rem] md:text-[0.6rem] uppercase tracking-[0.16em] font-mono rounded-none rounded-bl-md">
@@ -996,7 +996,7 @@ export default function Home() {
               <div className="flex-1 space-y-4">
                 <div>
                   <span className="text-[0.6rem] uppercase tracking-[0.22em] font-mono text-primary">Estação completa</span>
-                  <h3 className="font-display text-2xl tracking-tight mt-1 text-primary">MedStation AI Pro 2</h3>
+                  <h3 className="font-display text-2xl tracking-tight mt-1 text-primary">MedStation Pro 2</h3>
                   <p className="text-xs text-muted-foreground mt-1">11 Assistentes + Modo Escuta no mesmo plano.</p>
                 </div>
                 <div>
@@ -1112,7 +1112,7 @@ export default function Home() {
       </section>
       <footer className="border-t border-border/50 py-6 md:py-8 px-4 md:px-6 relative">
         <div className="container mx-auto flex flex-col md:flex-row flex-wrap justify-between gap-3 md:gap-4 items-center text-[10px] md:text-xs text-muted-foreground">
-          <p>© 2025 MedStation AI</p>
+          <p>© 2025 MedStation</p>
           <p className="flex items-center gap-3 md:gap-4">
             <span>LGPD</span>
             <span>•</span>

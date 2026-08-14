@@ -170,7 +170,7 @@ export default function Tour() {
 
   return (
     <div className="min-h-screen relative bg-background">
-      <Seo path="/tour" title="Tour pela MedStation AI — como funciona" description="Conheça em detalhes os 11 assistentes clínicos, o Modo Escuta e como economizar horas de digitação por plantão." />
+      <Seo path="/tour" title="Tour pela MedStation — como funciona" description="Conheça em detalhes os 11 assistentes clínicos, o Modo Escuta e como economizar horas de digitação por plantão." />
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_50%_at_20%_-10%,hsl(var(--primary)/0.12),transparent)]" />
 
       <div className="relative z-10">
@@ -204,7 +204,7 @@ export default function Tour() {
               Veja exatamente o que muda no seu dia.
             </h1>
             <p className="mt-5 text-lg text-muted-foreground leading-relaxed">
-              A MedStation AI não é mais um chat genérico. São 11 assistentes clínicos e um Modo Escuta que
+              A MedStation não é mais um chat genérico. São 11 assistentes clínicos e um Modo Escuta que
               escrevem por você enquanto você olha para o paciente. Este tour mostra, passo a passo, como isso
               acontece — em menos de 3 minutos de leitura.
             </p>
@@ -428,7 +428,7 @@ export default function Tour() {
         </main>
 
         <footer className="border-t border-border/60 py-8 text-center text-xs text-muted-foreground">
-          MedStation AI — Produza mais. Digite menos.
+          MedStation — Produza mais. Digite menos.
         </footer>
       </div>
     </div>

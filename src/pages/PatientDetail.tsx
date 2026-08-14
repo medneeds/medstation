@@ -317,7 +317,7 @@ export default function PatientDetail() {
     const footerY = doc.internal.pageSize.height - 10;
     doc.setFontSize(8);
     doc.text(
-      `Gerado em: ${new Date().toLocaleString("pt-BR")} | MedStation AI`,
+      `Gerado em: ${new Date().toLocaleString("pt-BR")} | MedStation`,
       doc.internal.pageSize.width / 2,
       footerY,
       { align: "center" }

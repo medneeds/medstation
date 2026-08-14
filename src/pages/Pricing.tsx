@@ -163,7 +163,7 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Seo path="/pricing" title="Planos e preços — MedStation AI" description="Assine os 11 assistentes clínicos de IA e o Modo Escuta. Garantia incondicional de 7 dias e cancelamento a qualquer momento." />
+      <Seo path="/pricing" title="Planos e preços — MedStation" description="Assine os 11 assistentes clínicos de IA e o Modo Escuta. Garantia incondicional de 7 dias e cancelamento a qualquer momento." />
       <div className="container mx-auto px-4 py-10 md:py-16 lg:py-20 max-w-6xl">
         {/* Header */}
         <div className="text-center mb-10 md:mb-14 space-y-4">
@@ -174,7 +174,7 @@ export default function Pricing() {
             Produza mais. <span className="italic text-primary">Digite menos.</span>
           </h1>
           <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
-            Os 10 Assistentes e o Modo Escuta são <span className="text-foreground font-medium">produtos separados</span>. Assine só o que usa, ou junte os dois no MedStation AI Pro 2.
+            Os 10 Assistentes e o Modo Escuta são <span className="text-foreground font-medium">produtos separados</span>. Assine só o que usa, ou junte os dois no MedStation Pro 2.
           </p>
 
           {/* Shared billing toggle */}
@@ -252,7 +252,7 @@ export default function Pricing() {
                     10 Assistentes
                   </span>
                 </div>
-                <h2 className="font-display text-2xl md:text-3xl tracking-tight">MedStation AI Pro</h2>
+                <h2 className="font-display text-2xl md:text-3xl tracking-tight">MedStation Pro</h2>
                 <p className="text-xs md:text-sm text-muted-foreground mt-1">
                   Os 10 assistentes IA liberados — uso sem restrições, sem pop-ups.
                 </p>
@@ -313,7 +313,7 @@ export default function Pricing() {
                   </span>
                 </div>
                 <h2 className="font-display text-2xl md:text-3xl tracking-tight text-primary">
-                  MedStation AI Pro 2
+                  MedStation Pro 2
                 </h2>
                 <p className="text-xs md:text-sm text-muted-foreground mt-1">
                   10 Assistentes + Modo Escuta no mesmo plano.
@@ -517,8 +517,8 @@ export default function Pricing() {
 }
 
 function planLabelFor(plan: PlanSlug): string {
-  if (plan.startsWith("agents")) return "MedStation AI Pro · 10 Assistentes";
-  if (plan.startsWith("pro2")) return "MedStation AI Pro 2 · Tudo incluso";
+  if (plan.startsWith("agents")) return "MedStation Pro · 10 Assistentes";
+  if (plan.startsWith("pro2")) return "MedStation Pro 2 · Tudo incluso";
   if (plan.startsWith("consultorio")) return "Modo Escuta";
   return "Assinatura";
 }

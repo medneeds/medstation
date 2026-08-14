@@ -125,7 +125,7 @@ export default function Onboarding() {
   const handleComplete = () => {
     toast({
       title: "Configuração completa",
-      description: "Você está pronto para usar o MedStation AI.",
+      description: "Você está pronto para usar o MedStation.",
     });
     navigate("/dashboard");
   };
@@ -207,7 +207,7 @@ export default function Onboarding() {
                   <div className="space-y-3">
                     <h1 className="text-3xl font-semibold tracking-tight">
                       Bem-vindo ao{" "}
-                      <span className="text-primary">MedStation AI</span>
+                      <span className="text-primary">MedStation</span>
                     </h1>
                     <p className="text-muted-foreground">
                       Vamos configurar sua conta em poucos passos.

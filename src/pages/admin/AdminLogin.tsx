@@ -138,7 +138,7 @@ export default function AdminLogin() {
         </div>
 
         <footer className="text-xs text-muted-foreground flex items-center justify-between">
-          <span>© {new Date().getFullYear()} MedStation AI</span>
+          <span>© {new Date().getFullYear()} MedStation</span>
           <span className="flex items-center gap-1.5">
             <Lock className="h-3 w-3" /> Sessão criptografada
           </span>
