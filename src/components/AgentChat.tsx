@@ -36,6 +36,7 @@ import {
   SeparatorVertical,
   Clock,
   Pill,
+  ScrollText,
   ListChecks,
   Zap,
   Minimize2,
@@ -1689,13 +1690,23 @@ export function AgentChat({
           <div className="flex items-center gap-1.5 mb-2">
             <Toggle
               pressed={bulaInteligenteMode}
-              onPressedChange={setBulaInteligenteMode}
+              onPressedChange={(v) => { setBulaInteligenteMode(v); if (v) setReceitaMode(false); }}
               size="sm"
               className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-primary/20 gap-1"
               title="Modo B.I."
             >
               <Pill className="h-3 w-3" />
               <span>B.I.</span>
+            </Toggle>
+            <Toggle
+              pressed={receitaMode}
+              onPressedChange={(v) => { setReceitaMode(v); if (v) setBulaInteligenteMode(false); }}
+              size="sm"
+              className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-primary/20 gap-1"
+              title="Modo Receita"
+            >
+              <ScrollText className="h-3 w-3" />
+              <span>Receita</span>
             </Toggle>
           </div>
         )}
@@ -1874,9 +1885,10 @@ export function AgentChat({
               </>
             )}
             {agentType === "prescriptus" && (
+              <>
               <Toggle
                 pressed={bulaInteligenteMode}
-                onPressedChange={setBulaInteligenteMode}
+                onPressedChange={(v) => { setBulaInteligenteMode(v); if (v) setReceitaMode(false); }}
                 size="sm"
                 className="shrink-0 h-8 data-[state=on]:bg-primary/20 gap-1 rounded-full"
                 title="Modo B.I.: Bula Inteligente"
@@ -1884,6 +1896,17 @@ export function AgentChat({
                 <Pill className="h-4 w-4" />
                 <span className="text-xs">B.I.</span>
               </Toggle>
+              <Toggle
+                pressed={receitaMode}
+                onPressedChange={(v) => { setReceitaMode(v); if (v) setBulaInteligenteMode(false); }}
+                size="sm"
+                className="shrink-0 h-8 data-[state=on]:bg-primary/20 gap-1 rounded-full"
+                title="Modo Receita: saída pronta para o receituário"
+              >
+                <ScrollText className="h-4 w-4" />
+                <span className="text-xs">Receita</span>
+              </Toggle>
+              </>
             )}
             {agentType === "gasometrus" && (
               <Toggle
