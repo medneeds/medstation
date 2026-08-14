@@ -166,7 +166,7 @@ export default {
         },
         "orb-breathe": {
           "0%, 100%": { transform: "scale(1)", filter: "brightness(1)" },
-          "50%": { transform: "scale(1.025)", filter: "brightness(1.06)" },
+          "50%": { transform: "scale(1.015)", filter: "brightness(1.03)" },
         },
         "orb-spin-slow": {
           "0%": { transform: "rotate(0deg)" },
