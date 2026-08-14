@@ -203,6 +203,7 @@
     .animate-orb-shimmer,
     .animate-orb-ring,
     .animate-orb-spin-slow,
+    .animate-orb-orbit,
     .animate-glyph-sheen {
       animation: none !important;
     }
