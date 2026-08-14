@@ -1945,71 +1945,61 @@ export function AgentChat({
 
             {agentType === "examinus" && (
               <>
-                <Toggle
+                <div className="w-px h-6 bg-border/70 mx-0.5 shrink-0" />
+                <OutputControl
+                  icon={Lightbulb}
+                  tone="violet"
+                  label="Consultor"
+                  info="Sugere exames complementares, aponta contraindicações e explica exames e procedimentos a partir do caso."
                   pressed={examSuggestMode}
                   onPressedChange={setExamSuggestMode}
-                  size="sm"
-                  className="shrink-0 h-8 data-[state=on]:bg-violet-500/20 data-[state=on]:text-violet-600 dark:data-[state=on]:text-violet-400 rounded-full"
-                  title="Consultor: sugestão de exames, contraindicações e explicação de exames e procedimentos"
-                >
-                  <Lightbulb className="h-4 w-4" />
-                  <span className="text-xs ml-1">Consultor</span>
-                </Toggle>
+                />
                 {!examSuggestMode && (<>
-                <Toggle
+                <OutputControl
+                  icon={SeparatorVertical}
+                  tone="primary"
+                  label="Separar com |"
+                  info="Organiza os resultados em linha contínua separada por barra vertical — pronto para colar na evolução."
                   pressed={usePipeSeparator}
                   onPressedChange={setUsePipeSeparator}
-                  size="sm"
-                  className="shrink-0 h-8 data-[state=on]:bg-primary/20 rounded-full"
-                  title="Separar exames com |"
-                >
-                  <SeparatorVertical className="h-4 w-4" />
-                </Toggle>
-                <div className="flex items-center gap-2 px-2 h-8 rounded-full bg-muted/40">
-                  <Switch
-                    id="include-time"
-                    checked={includeTime}
-                    onCheckedChange={setIncludeTime}
-                    className="data-[state=checked]:bg-primary"
-                  />
-                  <Label htmlFor="include-time" className="text-xs cursor-pointer flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    Horário
-                  </Label>
-                </div>
-                <Toggle
+                />
+                <OutputControl
+                  icon={Clock}
+                  tone="primary"
+                  label="Incluir horário"
+                  info="Mostra o horário de coleta ao lado de cada exame, útil para acompanhar a evolução no plantão."
+                  pressed={includeTime}
+                  onPressedChange={setIncludeTime}
+                />
+                <div className="w-px h-6 bg-border/70 mx-0.5 shrink-0" />
+                <OutputControl
+                  icon={AlertTriangle}
+                  tone="amber"
+                  label="Só alterados"
+                  info="Exibe apenas os valores fora da referência, ocultando os resultados normais."
                   pressed={onlyAltered}
                   onPressedChange={setOnlyAltered}
-                  size="sm"
-                  className="shrink-0 h-8 data-[state=on]:bg-amber-500/20 data-[state=on]:text-amber-600 dark:data-[state=on]:text-amber-400 rounded-full"
-                  title="Mostrar apenas resultados alterados/críticos"
-                >
-                  <AlertTriangle className="h-4 w-4" />
-                  <span className="text-xs ml-1">Alterados</span>
-                </Toggle>
-                <Toggle
+                />
+                <OutputControl
+                  icon={Stethoscope}
+                  tone="blue"
+                  label="Impressão clínica"
+                  info="Acrescenta uma leitura interpretativa das alterações encontradas ao final do resumo."
                   pressed={clinicalImpression}
                   onPressedChange={setClinicalImpression}
-                  size="sm"
-                  className="shrink-0 h-8 data-[state=on]:bg-blue-500/20 data-[state=on]:text-blue-600 dark:data-[state=on]:text-blue-400 rounded-full"
-                  title="Impressão clínica"
-                >
-                  <Stethoscope className="h-4 w-4" />
-                  <span className="text-xs ml-1">Impressão</span>
-                </Toggle>
-                <Toggle
+                />
+                <OutputControl
+                  icon={Minimize2}
+                  tone="green"
+                  label="Compacto"
+                  info="Resumo enxuto: omite índices hematimétricos (VCM, HCM, CHCM, RDW) e detalhes secundários."
                   pressed={compactMode}
                   onPressedChange={setCompactMode}
-                  size="sm"
-                  className="shrink-0 h-8 data-[state=on]:bg-emerald-500/20 data-[state=on]:text-emerald-600 dark:data-[state=on]:text-emerald-400 rounded-full"
-                  title="Modo compacto"
-                >
-                  <Minimize2 className="h-4 w-4" />
-                  <span className="text-xs ml-1">Compacto</span>
-                </Toggle>
+                />
                 </>)}
               </>
             )}
+
           </div>
         )}
 
