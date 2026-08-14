@@ -79,7 +79,6 @@ export function AssistantGlyph({
           "transition-[transform,box-shadow] duration-300 ease-precise",
           interactive &&
             "group-hover/glyph:[transform:rotateX(10deg)_rotateY(-10deg)_translateY(-1px)] group-hover/glyph:shadow-[inset_0_1.5px_0_hsl(var(--primary)/0.55),inset_0_-12px_20px_-10px_hsl(var(--primary)/0.6),0_14px_26px_-14px_hsl(var(--primary)/0.75)]",
-          animate && "animate-orb-breathe",
         )}
       >
         {/* Fixed specular highlight (top-left light source) */}
