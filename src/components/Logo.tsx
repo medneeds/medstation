@@ -27,9 +27,7 @@ export function Logo({ size = "md", showWordmark = true, className }: LogoProps)
           )}
         >
           MedStation
-          <span className="font-mono uppercase tracking-[0.18em] text-primary ml-1.5 text-[0.6em] align-middle">
-            AI
-          </span>
+
         </span>
       )}
     </div>
