@@ -195,6 +195,19 @@
     outline: 1px solid hsl(var(--ring));
     outline-offset: 2px;
   }
+
+  /* Reduced motion — keep depth, drop the movement */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-orb-float,
+    .animate-orb-breathe,
+    .animate-orb-shimmer,
+    .animate-orb-ring,
+    .animate-orb-spin-slow,
+    .animate-glyph-sheen {
+      animation: none !important;
+    }
+  }
+
 }
 
 @layer utilities {
