@@ -13,6 +13,8 @@ import { signUpSchema, signInSchema } from "@/lib/validations";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { Logo } from "@/components/Logo";
 import { Eye, EyeOff } from "lucide-react";
+import { BrandIntro } from "@/components/auth/BrandIntro";
+
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -20,6 +22,8 @@ export default function Auth() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [introDone, setIntroDone] = useState(false);
+
   const [resetLoading, setResetLoading] = useState(false);
   const [showSignInPassword, setShowSignInPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
@@ -224,6 +228,8 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-background">
+      <BrandIntro onFinish={() => setIntroDone(true)} />
+
       {/* Editorial background — pure green glow, NO purple/lilac */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -top-40 -left-40 h-[40rem] w-[40rem] rounded-full bg-primary/15 blur-[120px]" />
@@ -235,7 +241,7 @@ export default function Auth() {
         {/* Editorial side — asymmetric */}
         <motion.aside
           initial={{ opacity: 0, x: -24 }}
-          animate={{ opacity: 1, x: 0 }}
+          animate={introDone ? { opacity: 1, x: 0 } : { opacity: 0, x: -24 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           className="relative hidden lg:flex flex-col p-10 xl:p-14 border-r border-hairline"
         >
@@ -284,12 +290,17 @@ export default function Auth() {
         {/* Auth panel */}
         <motion.main
           initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
+          animate={introDone ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
           className="flex items-start lg:items-center justify-center px-5 pt-8 pb-10 sm:p-10 lg:p-16"
           style={{ paddingBottom: "max(2.5rem, env(safe-area-inset-bottom))" }}
         >
-          <div className="w-full max-w-md space-y-6 lg:space-y-8">
+          <motion.div
+            initial={{ opacity: 0, y: 26, scale: 0.965 }}
+            animate={introDone ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 26, scale: 0.965 }}
+            transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+            className="w-full max-w-md space-y-6 lg:space-y-8 rounded-3xl border border-hairline bg-card/60 backdrop-blur-xl p-6 sm:p-8 shadow-[0_40px_120px_-40px_hsl(var(--primary)/0.35)]"
+          >
             <div className="lg:hidden flex flex-col items-center gap-3 text-center">
               <Logo size="md" />
               <p className="text-[0.65rem] uppercase tracking-[0.22em] text-muted-foreground">
@@ -297,14 +308,25 @@ export default function Auth() {
               </p>
             </div>
 
+            {/* Cabeçalho com reflexo espelhado (estilo tela inicial de streaming) */}
             <div className="space-y-1.5 lg:space-y-2 text-center lg:text-left">
-              <h2 className="font-display text-2xl lg:text-3xl tracking-tight text-foreground">
-                Bem-vindo
-              </h2>
+              <div className="relative pb-3">
+                <h2 className="font-display text-2xl lg:text-3xl tracking-tight text-foreground">
+                  Bem-vindo
+                </h2>
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute left-0 right-0 top-full -mt-1 block h-3 overflow-hidden font-display text-2xl lg:text-3xl leading-none tracking-tight text-foreground opacity-[0.14] blur-[0.6px] [transform:scaleY(-1)] [mask-image:linear-gradient(to_top,transparent_10%,black_100%)] [-webkit-mask-image:linear-gradient(to_top,transparent_10%,black_100%)] text-center lg:text-left"
+                >
+                  Bem-vindo
+                </span>
+              </div>
+
               <p className="text-sm text-muted-foreground">
                 Entre com sua conta ou crie uma em segundos.
               </p>
             </div>
+
 
             <Tabs defaultValue="signin" className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 rounded-full h-11">
@@ -579,7 +601,8 @@ export default function Auth() {
                 </TabsContent>
               </AnimatePresence>
             </Tabs>
-          </div>
+          </motion.div>
+
         </motion.main>
       </div>
     </div>
