@@ -35,6 +35,7 @@ import {
   ListChecks,
   Zap,
   Minimize2,
+  Lightbulb,
   Maximize2,
   ChevronDown,
   Expand,
@@ -254,6 +255,7 @@ export function AgentChat({
   const [onlyAltered, setOnlyAltered] = useState(false);
   const [clinicalImpression, setClinicalImpression] = useState(false);
   const [compactMode, setCompactMode] = useState(true);
+  const [examSuggestMode, setExamSuggestMode] = useState(false);
   const [directAHEMode, setDirectAHEMode] = useState(false);
   const [aheTemplate, setAheTemplate] = useState<ClinicusContext>("enfermaria");
   const [reportMode, setReportMode] = useState(false);
@@ -596,7 +598,7 @@ export function AgentChat({
           })),
           agentType,
           caseId: selectedCaseId,
-          ...(agentType === "examinus" && { usePipeSeparator, includeTime, onlyAltered, clinicalImpression, compactMode }),
+          ...(agentType === "examinus" && { usePipeSeparator, includeTime, onlyAltered, clinicalImpression, compactMode, examSuggestMode }),
           ...(agentType === "clinicus" && { directAHEMode, aheTemplate, reportMode, reportType, reportPurpose, reportSpecialty }),
           ...(agentType === "prescriptus" && { bulaInteligenteMode }),
           ...(agentType === "gasometrus" && { directLIMode }),
@@ -1502,6 +1504,17 @@ export function AgentChat({
         {isMobile && agentType === "examinus" && (
           <div className="flex items-center gap-1.5 mb-2 overflow-x-auto pb-1 -mx-1 px-1">
             <Toggle
+              pressed={examSuggestMode}
+              onPressedChange={setExamSuggestMode}
+              size="sm"
+              className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-violet-500/20 data-[state=on]:text-violet-600 dark:data-[state=on]:text-violet-400"
+              title="Consultor: sugestão de exames, contraindicações e explicações"
+            >
+              <Lightbulb className="w-3 h-3 mr-1" />
+              <span>Consultor</span>
+            </Toggle>
+            {!examSuggestMode && (<>
+            <Toggle
               pressed={usePipeSeparator}
               onPressedChange={setUsePipeSeparator}
               size="sm"
@@ -1553,6 +1566,7 @@ export function AgentChat({
               <Minimize2 className="w-3 h-3 mr-1" />
               <span>Compacto</span>
             </Toggle>
+            </>)}
           </div>
         )}
 
@@ -1932,6 +1946,17 @@ export function AgentChat({
             {agentType === "examinus" && (
               <>
                 <Toggle
+                  pressed={examSuggestMode}
+                  onPressedChange={setExamSuggestMode}
+                  size="sm"
+                  className="shrink-0 h-8 data-[state=on]:bg-violet-500/20 data-[state=on]:text-violet-600 dark:data-[state=on]:text-violet-400 rounded-full"
+                  title="Consultor: sugestão de exames, contraindicações e explicação de exames e procedimentos"
+                >
+                  <Lightbulb className="h-4 w-4" />
+                  <span className="text-xs ml-1">Consultor</span>
+                </Toggle>
+                {!examSuggestMode && (<>
+                <Toggle
                   pressed={usePipeSeparator}
                   onPressedChange={setUsePipeSeparator}
                   size="sm"
@@ -1982,6 +2007,7 @@ export function AgentChat({
                   <Minimize2 className="h-4 w-4" />
                   <span className="text-xs ml-1">Compacto</span>
                 </Toggle>
+                </>)}
               </>
             )}
           </div>
@@ -2016,7 +2042,9 @@ export function AgentChat({
                   sendMessage();
                 }
               }}
-              placeholder={isMobile ? "Mensagem... (Shift+Enter para nova linha)" : `${placeholder}  ·  Shift+Enter para nova linha`}
+              placeholder={agentType === "examinus" && examSuggestMode
+                ? (isMobile ? "Peça um painel, cole um caso ou pergunte sobre um exame" : "Peça um painel, cole um caso ou pergunte sobre um exame  ·  Shift+Enter para nova linha")
+                : (isMobile ? "Mensagem... (Shift+Enter para nova linha)" : `${placeholder}  ·  Shift+Enter para nova linha`)}
               maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
               rows={1}
               aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
