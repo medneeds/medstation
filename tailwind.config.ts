@@ -168,6 +168,10 @@ export default {
           "0%, 100%": { transform: "scale(1)", filter: "brightness(1)" },
           "50%": { transform: "scale(1.015)", filter: "brightness(1.03)" },
         },
+        "orb-orbit": {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" },
+        },
         "orb-spin-slow": {
           "0%": { transform: "rotate(0deg)" },
           "100%": { transform: "rotate(360deg)" },
@@ -197,11 +201,12 @@ export default {
         "thinking-halo": "thinking-halo 1.8s ease-in-out infinite",
         "thinking-dot": "thinking-dot 1.2s ease-in-out infinite",
         "stream-cursor": "stream-cursor 0.9s ease-in-out infinite",
-        "orb-float": "orb-float 9s cubic-bezier(0.45, 0, 0.55, 1) infinite",
-        "orb-breathe": "orb-breathe 9s cubic-bezier(0.45, 0, 0.55, 1) infinite",
+        "orb-float": "orb-float 14s cubic-bezier(0.45, 0, 0.55, 1) infinite",
+        "orb-breathe": "orb-breathe 14s cubic-bezier(0.45, 0, 0.55, 1) infinite",
+        "orb-orbit": "orb-orbit 60s linear infinite",
         "orb-spin-slow": "orb-spin-slow 28s linear infinite",
         "orb-ring": "orb-ring 4.5s ease-out infinite",
-        "orb-shimmer": "orb-shimmer 11s cubic-bezier(0.45, 0, 0.55, 1) infinite",
+        "orb-shimmer": "orb-shimmer 16s cubic-bezier(0.45, 0, 0.55, 1) infinite",
         "glyph-sheen": "glyph-sheen 6s cubic-bezier(0.32, 0.72, 0, 1) infinite",
 
       },
