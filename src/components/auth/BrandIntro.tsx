@@ -3,6 +3,17 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { LogoMark } from "@/components/LogoMark";
 
 const SESSION_KEY = "medstation_brand_intro_played";
+const PENDING_KEY = "medstation_brand_intro_pending";
+
+/** Marca que a abertura deve tocar na próxima entrada no dashboard (pós-login). */
+export function armBrandIntro() {
+  try {
+    sessionStorage.setItem(PENDING_KEY, "1");
+    sessionStorage.removeItem(SESSION_KEY);
+  } catch {
+    /* noop */
+  }
+}
 
 interface BrandIntroProps {
   /** Chamado quando a abertura termina (ou é pulada). */
@@ -21,6 +32,9 @@ export function BrandIntro({ onFinish, force = false }: BrandIntroProps) {
   const [visible, setVisible] = useState(() => {
     if (force) return true;
     if (typeof window === "undefined") return false;
+    // Só toca quando o login acabou de acontecer.
+    if (sessionStorage.getItem(PENDING_KEY) !== "1") return false;
+    sessionStorage.removeItem(PENDING_KEY);
     return sessionStorage.getItem(SESSION_KEY) !== "1";
   });
 
