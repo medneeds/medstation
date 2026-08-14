@@ -44,15 +44,16 @@ describe("infusões", () => {
   });
 
 
-  it("propofol 20 mcg/kg/min em 80 kg (10 mg/mL) = 9,6 mL/h", () => {
+  it("propofol 2 mg/kg/h em 80 kg (10 mg/mL) = 16 mL/h", () => {
     const prop = drug("propofol");
-    expect(infusionRate(20, prop, prop.dilutions[0], 80)).toBeCloseTo(9.6, 3);
+    expect(infusionRate(2, prop, prop.dilutions[0], 80)).toBeCloseTo(16, 3);
   });
 
-  it("fentanil 2 mcg/kg/h em 70 kg (10 mcg/mL) = 14 mL/h", () => {
+  it("fentanil 2 mcg/kg/h em 70 kg (25 mcg/mL) = 5,6 mL/h", () => {
     const fent = drug("fentanil");
-    expect(infusionRate(2, fent, fent.dilutions[0], 70)).toBeCloseTo(14, 5);
+    expect(infusionRate(2, fent, fent.dilutions[0], 70)).toBeCloseTo(5.6, 5);
   });
+
 
   it("não mistura unidades incompatíveis", () => {
     const nora = drug("noradrenalina");
