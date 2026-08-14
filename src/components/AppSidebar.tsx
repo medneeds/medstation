@@ -76,7 +76,8 @@ const recordsModules = [
   { title: "Notas", url: "/notes", icon: NotebookPen },
 ];
 
-const COLLAPSED_ITEM = "justify-center gap-0 px-0 border-l-0 hover:border-l-0 hover:translate-x-0 w-full";
+const COLLAPSED_ITEM = "justify-center gap-0 px-0 mx-auto border-l-0 hover:border-l-0 hover:translate-x-0 w-full";
+const COLLAPSED_BTN = "group-data-[collapsible=icon]:!w-full group-data-[collapsible=icon]:!size-auto group-data-[collapsible=icon]:!p-0 group-data-[collapsible=icon]:justify-center";
 
 const navItemClass = ({ isActive }: { isActive: boolean }) =>
   cn(
@@ -117,7 +118,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-hairline bg-sidebar">
+    <Sidebar collapsible="icon" className="z-30 border-r border-hairline bg-sidebar shadow-[8px_0_24px_-12px_hsl(var(--foreground)/0.18)]">
       <SidebarContent className="gap-0 bg-sidebar">
         {/* Brand mark */}
         <div className={cn("flex items-center gap-3 hairline-b px-4 h-20", collapsed && "px-2 justify-center h-16")}>
@@ -133,11 +134,11 @@ export function AppSidebar() {
         </div>
 
         {/* Início */}
-        <SidebarGroup className="py-3">
+        <SidebarGroup className="py-3 group-data-[collapsible=icon]:px-1">
           <SidebarGroupContent>
             <SidebarMenu className="gap-1.5">
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip={homeModule.title} className="p-0 h-auto bg-transparent hover:bg-transparent">
+                <SidebarMenuButton asChild tooltip={homeModule.title} className={cn("p-0 h-auto bg-transparent hover:bg-transparent", COLLAPSED_BTN)}>
                   <NavLink to={homeModule.url} className={(p) => cn(navItemClass(p), collapsed && COLLAPSED_ITEM)}>
                     <homeModule.icon className="h-4 w-4 shrink-0" />
                     {!collapsed && <span className="flex-1">{homeModule.title}</span>}
@@ -149,7 +150,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Assistentes */}
-        <SidebarGroup className="py-3 hairline-t">
+        <SidebarGroup className="py-3 group-data-[collapsible=icon]:px-1 hairline-t">
           {!collapsed && (
             <SidebarGroupLabel className="label-mono px-4 mb-2 h-auto flex items-center justify-between">
               <span>Assistentes</span>
@@ -160,7 +161,7 @@ export function AppSidebar() {
             <SidebarMenu className="gap-1.5">
               {agentModules.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title} className="p-0 h-auto bg-transparent hover:bg-transparent">
+                  <SidebarMenuButton asChild tooltip={item.title} className={cn("p-0 h-auto bg-transparent hover:bg-transparent", COLLAPSED_BTN)}>
                     <NavLink to={item.url} className={(p) => cn(navItemClass(p), collapsed && COLLAPSED_ITEM)}>
                       <AssistantGlyph size="xs" animate={false} interactive>
                         <item.icon className="h-4 w-4 shrink-0" />
@@ -183,7 +184,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Modo Escuta - destaque */}
-        <SidebarGroup className="py-3 hairline-t">
+        <SidebarGroup className="py-3 group-data-[collapsible=icon]:px-1 hairline-t">
           {!collapsed && (
             <SidebarGroupLabel className="label-mono px-4 mb-2 h-auto">Tempo Real</SidebarGroupLabel>
           )}
@@ -208,7 +209,7 @@ export function AppSidebar() {
                 const isActive = pathname === sub.url;
                 return (
                 <SidebarMenuItem key={sub.url}>
-                  <SidebarMenuButton asChild tooltip={sub.title} isActive={isActive} className="p-0 h-auto bg-transparent hover:bg-transparent">
+                  <SidebarMenuButton asChild tooltip={sub.title} isActive={isActive} className={cn("p-0 h-auto bg-transparent hover:bg-transparent", COLLAPSED_BTN)}>
                     <NavLink
                       to={sub.url}
                       end
@@ -232,7 +233,7 @@ export function AppSidebar() {
 
 
         {/* Notas */}
-        <SidebarGroup className="py-3 hairline-t">
+        <SidebarGroup className="py-3 group-data-[collapsible=icon]:px-1 hairline-t">
           {!collapsed && (
             <SidebarGroupLabel className="label-mono px-4 mb-2 h-auto">
               <span>Notas</span>
@@ -242,7 +243,7 @@ export function AppSidebar() {
             <SidebarMenu className="gap-1.5">
               {recordsModules.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title} className="p-0 h-auto bg-transparent hover:bg-transparent">
+                  <SidebarMenuButton asChild tooltip={item.title} className={cn("p-0 h-auto bg-transparent hover:bg-transparent", COLLAPSED_BTN)}>
                     <NavLink to={item.url} className={(p) => cn(navItemClass(p), collapsed && COLLAPSED_ITEM)}>
                       <item.icon className="h-4 w-4 shrink-0" />
                       {!collapsed && <span className="flex-1">{item.title}</span>}
@@ -255,14 +256,14 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Settings + actions */}
-        <SidebarGroup className="mt-auto py-3 hairline-t">
+        <SidebarGroup className="mt-auto py-3 group-data-[collapsible=icon]:px-1 hairline-t">
           {!collapsed && (
             <SidebarGroupLabel className="label-mono px-4 mb-2 h-auto">Conta</SidebarGroupLabel>
           )}
           <SidebarGroupContent>
             <SidebarMenu className="gap-1.5">
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="Indicar e ganhar" className="p-0 h-auto bg-transparent hover:bg-transparent">
+                <SidebarMenuButton asChild tooltip="Indicar e ganhar" className={cn("p-0 h-auto bg-transparent hover:bg-transparent", COLLAPSED_BTN)}>
                   <NavLink to="/indicar" className={(p) => cn(navItemClass(p), collapsed && COLLAPSED_ITEM)}>
                     <Gift className="h-4 w-4 shrink-0 text-primary" />
                     {!collapsed && (
@@ -283,7 +284,7 @@ export function AppSidebar() {
                     "border-l-2 border-transparent text-sidebar-foreground/80",
                     "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                     "transition-colors duration-150 ease-precise",
-                    collapsed && COLLAPSED_ITEM,
+                    collapsed && cn(COLLAPSED_ITEM, COLLAPSED_BTN),
                   )}
                 >
                   <LifeBuoy className="h-4 w-4" />
@@ -299,7 +300,7 @@ export function AppSidebar() {
                     "border-l-2 border-transparent text-destructive/90",
                     "hover:bg-destructive/10 hover:text-destructive hover:border-l-destructive",
                     "transition-colors duration-150 ease-precise",
-                    collapsed && COLLAPSED_ITEM,
+                    collapsed && cn(COLLAPSED_ITEM, COLLAPSED_BTN),
                   )}
                 >
                   <LogOut className="h-4 w-4" />
