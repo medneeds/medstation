@@ -70,7 +70,14 @@ export function AssistantPracticeShowcase({ onPrimary }: Props) {
                     : "border-border/60 bg-card/60 text-muted-foreground hover:text-foreground hover:border-primary/40 hover:-translate-y-0.5",
                 )}
               >
-                <Icon className="w-3.5 h-3.5" />
+                {selected ? (
+                  <Icon className="w-3.5 h-3.5" />
+                ) : (
+                  <AssistantGlyph size="xs" animate={false}>
+                    <Icon className="w-3.5 h-3.5" />
+                  </AssistantGlyph>
+                )}
+
                 <span className="font-medium">{name}</span>
                 <span className={cn("hidden sm:inline text-[0.65rem] opacity-70")}>· {tag}</span>
               </button>
