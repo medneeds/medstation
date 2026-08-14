@@ -310,17 +310,18 @@ export default function Auth() {
 
             {/* Cabeçalho com reflexo espelhado (estilo tela inicial de streaming) */}
             <div className="space-y-1.5 lg:space-y-2 text-center lg:text-left">
-              <div className="relative">
+              <div className="relative pb-3">
                 <h2 className="font-display text-2xl lg:text-3xl tracking-tight text-foreground">
                   Bem-vindo
                 </h2>
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute left-0 right-0 top-full block font-display text-2xl lg:text-3xl tracking-tight text-foreground opacity-20 blur-[0.5px] [transform:scaleY(-1)] [mask-image:linear-gradient(to_top,transparent_15%,black_95%)] [-webkit-mask-image:linear-gradient(to_top,transparent_15%,black_95%)] text-center lg:text-left"
+                  className="pointer-events-none absolute left-0 right-0 top-full -mt-1 block h-3 overflow-hidden font-display text-2xl lg:text-3xl leading-none tracking-tight text-foreground opacity-[0.14] blur-[0.6px] [transform:scaleY(-1)] [mask-image:linear-gradient(to_top,transparent_10%,black_100%)] [-webkit-mask-image:linear-gradient(to_top,transparent_10%,black_100%)] text-center lg:text-left"
                 >
                   Bem-vindo
                 </span>
               </div>
+
               <p className="text-sm text-muted-foreground">
                 Entre com sua conta ou crie uma em segundos.
               </p>
