@@ -27,7 +27,7 @@ type ConsultorioPlan = "consultorio_monthly" | "consultorio_upgrade" | "pro2_bun
 const PLAN_META: Record<ConsultorioPlan, { label: string; price: string }> = {
   consultorio_monthly: { label: "Modo Escuta", price: "R$ 29,90/mês" },
   consultorio_upgrade: { label: "Modo Escuta (upgrade)", price: "R$ 19,90/mês" },
-  pro2_bundle: { label: "MedStation AI Pro 2", price: "R$ 49,90/mês" },
+  pro2_bundle: { label: "MedStation Pro 2", price: "R$ 49,90/mês" },
   agents_upgrade: { label: "10 Assistentes (upgrade)", price: "R$ 19,90/mês" },
 };
 
@@ -265,7 +265,7 @@ export default function ConsultorioLanding() {
                   ? "Você já tem os Assistentes — adicione o Modo Escuta com preço exclusivo de upgrade."
                   : hasConsultorio && !hasAgents
                   ? "Você já tem o Modo Escuta — complete sua estação com os 10 Assistentes."
-                  : "Comece pelo essencial ou leve tudo no MedStation AI Pro 2."}
+                  : "Comece pelo essencial ou leve tudo no MedStation Pro 2."}
               </p>
             </div>
 
@@ -328,7 +328,7 @@ export default function ConsultorioLanding() {
                 <div className="flex-1 space-y-4">
                   <div>
                     <span className="text-[0.65rem] uppercase tracking-[0.22em] font-mono text-primary">Pro 2 — Tudo incluso</span>
-                    <h3 className="font-display text-2xl tracking-tight mt-1 text-primary">MedStation AI Pro 2</h3>
+                    <h3 className="font-display text-2xl tracking-tight mt-1 text-primary">MedStation Pro 2</h3>
                   </div>
                   <div className="flex items-baseline gap-1">
                     <span className="font-display text-4xl tracking-tight">R$ 49,90</span>
@@ -439,7 +439,7 @@ export default function ConsultorioLanding() {
           <div className="container mx-auto max-w-5xl flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
             <div className="flex items-center gap-3">
               <Logo size="sm" />
-              <span className="font-mono uppercase tracking-[0.18em]">MedStation AI</span>
+              <span className="font-mono uppercase tracking-[0.18em]">MedStation</span>
             </div>
             <p>© {new Date().getFullYear()} MedStation. Produza mais. Digite menos.</p>
           </div>

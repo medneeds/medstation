@@ -123,7 +123,7 @@ export default function ConfirmarEmail() {
         </div>
 
         <p className="text-[11px] text-muted-foreground">
-          © {new Date().getFullYear()} MedStation AI · LGPD
+          © {new Date().getFullYear()} MedStation · LGPD
         </p>
       </motion.div>
     </div>

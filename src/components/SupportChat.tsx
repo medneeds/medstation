@@ -423,7 +423,7 @@ export function SupportChat() {
           <div className="space-y-2">
             <h3 className="font-semibold">Suporte exclusivo para assinantes</h3>
             <p className="text-sm text-muted-foreground">
-              O atendimento com a nossa equipe faz parte dos planos MedStation AI. Assine para abrir chamados e falar
+              O atendimento com a nossa equipe faz parte dos planos MedStation. Assine para abrir chamados e falar
               direto com quem constrói a plataforma.
             </p>
           </div>

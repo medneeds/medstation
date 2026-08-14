@@ -17,12 +17,12 @@ const corsHeaders = {
 }
 
 const EMAIL_SUBJECTS: Record<string, string> = {
-  signup: 'Confirme seu e-mail — MedStation AI',
-  invite: 'Você foi convidado para a MedStation AI',
-  magiclink: 'Seu link de acesso — MedStation AI',
-  recovery: 'Redefinição de senha — MedStation AI',
-  email_change: 'Confirme seu novo e-mail — MedStation AI',
-  reauthentication: 'Seu código de verificação — MedStation AI',
+  signup: 'Confirme seu e-mail — MedStation',
+  invite: 'Você foi convidado para a MedStation',
+  magiclink: 'Seu link de acesso — MedStation',
+  recovery: 'Redefinição de senha — MedStation',
+  email_change: 'Confirme seu novo e-mail — MedStation',
+  reauthentication: 'Seu código de verificação — MedStation',
 }
 
 

@@ -32,7 +32,7 @@ const WelcomeLeadEmail = ({
 }: WelcomeLeadProps) => (
   <Html lang="pt-BR" dir="ltr">
     <Head />
-    <Preview>Bem-vindo à MedStation AI — produza mais, digite menos</Preview>
+    <Preview>Bem-vindo à MedStation — produza mais, digite menos</Preview>
     <Body style={main}>
       <Container style={container}>
         <Text style={brand}>MEDSTATION AI</Text>
@@ -40,7 +40,7 @@ const WelcomeLeadEmail = ({
           {name ? `Boas-vindas, ${name}` : 'Boas-vindas'}
         </Heading>
         <Text style={text}>
-          Sua conta está criada. A MedStation AI reúne assistentes clínicos que
+          Sua conta está criada. A MedStation reúne assistentes clínicos que
           escrevem com você: anamnese estruturada por voz, interpretação de
           exames, prescrições e orientações — em segundos.
         </Text>
@@ -66,7 +66,7 @@ const WelcomeLeadEmail = ({
         </Section>
 
         <Text style={footer}>
-          Você recebeu este e-mail porque criou uma conta na MedStation AI.
+          Você recebeu este e-mail porque criou uma conta na MedStation.
         </Text>
       </Container>
     </Body>
@@ -75,7 +75,7 @@ const WelcomeLeadEmail = ({
 
 export const template = {
   component: WelcomeLeadEmail,
-  subject: 'Boas-vindas à MedStation AI',
+  subject: 'Boas-vindas à MedStation',
   displayName: 'Boas-vindas (lead)',
   previewData: {
     name: 'Dr. Artur',

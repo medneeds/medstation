@@ -51,7 +51,7 @@ const ReferralRewardEmail = ({
 }: ReferralRewardProps) => (
   <Html lang="pt-BR" dir="ltr">
     <Head />
-    <Preview>{`Sua indicação virou ${days} dias de acesso na MedStation AI`}</Preview>
+    <Preview>{`Sua indicação virou ${days} dias de acesso na MedStation`}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Text style={brand}>MEDSTATION AI</Text>

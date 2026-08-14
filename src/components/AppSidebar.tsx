@@ -125,10 +125,8 @@ export function AppSidebar() {
               <span className="font-display text-xl font-semibold tracking-tightest text-foreground">
                 MedStation
               </span>
-              <span className="font-mono uppercase tracking-[0.22em] text-primary mt-1.5 text-[0.65rem]">
-                AI
-              </span>
             </div>
+
           )}
         </div>
 

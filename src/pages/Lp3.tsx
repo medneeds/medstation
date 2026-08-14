@@ -99,7 +99,7 @@ export default function Lp3() {
     <div className="light min-h-screen bg-background text-foreground">
       <Seo
         path="/lp3"
-        title="MedStation AI — a IA que escreve a burocracia do seu plantão"
+        title="MedStation — a IA que escreve a burocracia do seu plantão"
         description="Anamnese, exame, conduta e alta prontos em segundos. 12 assistentes clínicos e Modo Escuta. Teste 7 dias grátis, sem cartão."
       />
 
@@ -379,7 +379,7 @@ export default function Lp3() {
 
       <footer className="border-t border-border/50">
         <div className="container mx-auto px-4 md:px-8 py-8 text-xs text-muted-foreground flex flex-wrap justify-between gap-3">
-          <span>© {new Date().getFullYear()} MedStation AI</span>
+          <span>© {new Date().getFullYear()} MedStation</span>
           <span>A decisão clínica final é sempre do médico.</span>
         </div>
       </footer>

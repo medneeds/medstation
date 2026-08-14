@@ -117,7 +117,7 @@ export default function Welcome() {
 
       toast({
         title: "Login realizado!",
-        description: "Bem-vindo ao MedStation AI!",
+        description: "Bem-vindo ao MedStation!",
       });
       
       navigate("/onboarding");

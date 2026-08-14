@@ -270,10 +270,10 @@ export default function Dashboard() {
         <div className="absolute inset-0 bg-[linear-gradient(110deg,transparent_0%,hsl(var(--primary-foreground)/0.07)_45%,transparent_65%)] pointer-events-none" />
         <div className="relative">
           <span className="font-mono text-2xs uppercase tracking-[0.22em] text-primary-foreground/70">
-            MedStation AI
+            MedStation
           </span>
           <h1 className="font-display text-2xl md:text-4xl font-semibold tracking-tight mt-2 mb-2">
-            Boas-vindas ao MedStation AI
+            Boas-vindas ao MedStation
           </h1>
           <p className="text-sm md:text-base text-primary-foreground/85 max-w-2xl leading-relaxed">
             Assistente clínico inteligente para otimizar seu fluxo de trabalho médico — produza mais, digite menos.
