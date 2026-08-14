@@ -166,7 +166,7 @@ export default {
         },
         "orb-breathe": {
           "0%, 100%": { transform: "scale(1)", filter: "brightness(1)" },
-          "50%": { transform: "scale(1.015)", filter: "brightness(1.03)" },
+          "50%": { transform: "scale(1.08)", filter: "brightness(1.06)" },
         },
         "orb-orbit": {
           "0%": { transform: "rotate(0deg)" },
@@ -202,7 +202,7 @@ export default {
         "thinking-dot": "thinking-dot 1.2s ease-in-out infinite",
         "stream-cursor": "stream-cursor 0.9s ease-in-out infinite",
         "orb-float": "orb-float 30s cubic-bezier(0.45, 0, 0.55, 1) infinite",
-        "orb-breathe": "orb-breathe 30s cubic-bezier(0.45, 0, 0.55, 1) infinite",
+        "orb-breathe": "orb-breathe 60s cubic-bezier(0.45, 0, 0.55, 1) infinite",
         "orb-orbit": "orb-orbit 22s linear infinite",
         "orb-spin-slow": "orb-spin-slow 28s linear infinite",
         "orb-ring": "orb-ring 4.5s ease-out infinite",
