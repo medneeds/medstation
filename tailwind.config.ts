@@ -202,6 +202,8 @@ export default {
         "orb-spin-slow": "orb-spin-slow 28s linear infinite",
         "orb-ring": "orb-ring 4.5s ease-out infinite",
         "orb-shimmer": "orb-shimmer 8s ease-in-out infinite",
+        "glyph-sheen": "glyph-sheen 6s cubic-bezier(0.32, 0.72, 0, 1) infinite",
+
       },
     },
   },
