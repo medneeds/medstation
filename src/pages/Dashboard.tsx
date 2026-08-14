@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { BrandIntro } from "@/components/auth/BrandIntro";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -260,6 +260,8 @@ export default function Dashboard() {
   ];
 
   return (
+    <>
+      <BrandIntro />
     <div className="space-y-6">
       {/* Welcome section */}
       <div className="rounded-xl border border-primary/20 p-5 md:p-9 text-primary-foreground shadow-elevated relative overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/75 dark:from-primary dark:via-primary/90 dark:to-primary/60">
