@@ -268,17 +268,30 @@ export default function Dashboard() {
         <div className="absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-primary-foreground/10 blur-3xl pointer-events-none" />
         {/* Diagonal sheen */}
         <div className="absolute inset-0 bg-[linear-gradient(110deg,transparent_0%,hsl(var(--primary-foreground)/0.07)_45%,transparent_65%)] pointer-events-none" />
-        <div className="relative">
+        {/* Varredura de luz cinematográfica */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none motion-reduce:hidden">
+          <div className="absolute inset-y-0 -left-1/3 w-1/3 bg-[linear-gradient(90deg,transparent,hsl(var(--primary-foreground)/0.22),transparent)] blur-md animate-brand-sweep" />
+        </div>
+        <div className="relative animate-fade-in">
           <span className="font-mono text-2xs uppercase tracking-[0.22em] text-primary-foreground/70">
             MedStation
           </span>
-          <h1 className="font-display text-2xl md:text-4xl font-semibold tracking-tight mt-2 mb-2">
-            Boas-vindas ao MedStation
-          </h1>
+          <div className="relative mt-2 mb-3 pb-4">
+            <h1 className="font-display text-2xl md:text-4xl font-semibold tracking-tight">
+              Boas-vindas ao MedStation
+            </h1>
+            <span
+              aria-hidden
+              className="pointer-events-none absolute left-0 right-0 top-full -mt-1 block h-4 overflow-hidden font-display text-2xl md:text-4xl font-semibold leading-none tracking-tight text-primary-foreground opacity-[0.16] blur-[0.6px] [transform:scaleY(-1)] [mask-image:linear-gradient(to_top,transparent_5%,black_100%)] [-webkit-mask-image:linear-gradient(to_top,transparent_5%,black_100%)]"
+            >
+              Boas-vindas ao MedStation
+            </span>
+          </div>
           <p className="text-sm md:text-base text-primary-foreground/85 max-w-2xl leading-relaxed">
             Assistente clínico inteligente para otimizar seu fluxo de trabalho médico — produza mais, digite menos.
           </p>
         </div>
+
         {/* <Button variant="secondary" size="sm" className="md:size-lg" asChild>
           <Link to="/patients">
             <Users className="mr-2 h-4 w-4" />
