@@ -208,6 +208,9 @@ export default {
         "orb-ring": "orb-ring 4.5s ease-out infinite",
         "orb-shimmer": "orb-shimmer 30s cubic-bezier(0.45, 0, 0.55, 1) infinite",
         "glyph-sheen": "glyph-sheen 6s cubic-bezier(0.32, 0.72, 0, 1) infinite",
+        "brand-sweep": "brand-sweep 7s cubic-bezier(0.32, 0.72, 0, 1) infinite",
+
+
 
       },
     },
