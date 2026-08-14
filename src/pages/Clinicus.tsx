@@ -1,6 +1,6 @@
 import { AgentChat } from "@/components/AgentChat";
 import { PremiumAgentGuard } from "@/components/PremiumAgentGuard";
-import { FileText } from "lucide-react";
+import { Stethoscope } from "lucide-react";
 
 export default function Clinicus() {
   const searchParams = new URLSearchParams(window.location.search);
@@ -11,7 +11,7 @@ export default function Clinicus() {
       <div className="h-[calc(100dvh-3.5rem)] -m-4 md:-m-6 lg:-m-8">
         <AgentChat
           agentName="Clínicus"
-          agentIcon={<FileText className="h-8 w-8" />}
+          agentIcon={<Stethoscope className="h-8 w-8" />}
           agentColor="text-primary"
           agentType="clinicus"
           caseId={caseId}
