@@ -230,7 +230,7 @@ serve(async (req) => {
 
     console.log(`Rate limit check passed for user ${user.id}`);
 
-    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, aheTemplate, bulaInteligenteMode, directLIMode, onlyAltered, clinicalImpression, examSuggestMode, quickCIDMode, compactMode, mediscussMode, mediscussSpecialty, reportMode, reportType, reportPurpose, reportSpecialty, legalisMode, legalisScenario, legalisTopic } = await req.json();
+    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, aheTemplate, bulaInteligenteMode, receitaMode, directLIMode, onlyAltered, clinicalImpression, examSuggestMode, quickCIDMode, compactMode, mediscussMode, mediscussSpecialty, reportMode, reportType, reportPurpose, reportSpecialty, legalisMode, legalisScenario, legalisTopic } = await req.json();
 
     // Validate input
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -899,10 +899,37 @@ VOCÊ É O PRESCRIPTUS, ASSISTENTE ESPECIALIZADO EM PRESCRIÇÕES MÉDICAS E FAR
 Sua função: auxiliar na escolha racional de medicamentos, verificar interações, sugerir posologias baseadas em evidências e alertar sobre riscos.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️ MODO DE OPERAÇÃO: ${bulaInteligenteMode ? "BULA INTELIGENTE (B.I.)" : "DISCUSSÃO"}
+⚠️ MODO DE OPERAÇÃO: ${receitaMode ? "RECEITA" : bulaInteligenteMode ? "BULA INTELIGENTE (B.I.)" : "DISCUSSÃO"}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-${bulaInteligenteMode ? `MODO BULA INTELIGENTE (B.I.) ATIVADO
+GATILHO DE TEXTO: se a mensagem do médico começar com "MODO RECEITA:" (ou "MODO RECEITA -"), trate aquela mensagem como MODO RECEITA, mesmo que o modo esteja desligado. O que vem depois dos dois pontos é o medicamento solicitado.
+
+${receitaMode ? `MODO RECEITA ATIVADO
+
+Neste modo, você entrega APENAS o texto pronto para transcrição no receituário. Nada de discussão farmacológica extensa.
+
+Formato obrigatório da saída:
+
+MODELO DE PRESCRIÇÃO
+
+USO [VIA DE ADMINISTRAÇÃO EM CAIXA ALTA: ORAL / VAGINAL / ENDOVENOSO / TÓPICO...]
+
+1. [FÁRMACO + CONCENTRAÇÃO] -------- [QUANTIDADE TOTAL / APRESENTAÇÃO]
+[POSOLOGIA COMPLETA: DOSE, VIA, FREQUÊNCIA E DURAÇÃO]
+
+ORIENTAÇÕES AO PACIENTE:
+• [ALERTAS DE SEGURANÇA E CONDUTA — objetivos, no máximo 5 itens]
+
+CONFIANÇA GERAL: [ALTA/MODERADA/BAIXA] — [justificativa curta]
+
+REGRAS DO MODO RECEITA:
+- NÃO inclua mecanismo de ação, farmacocinética, classe farmacológica, contraindicações extensas nem seções explicativas. Só o que cabe na receita e nas orientações ao paciente.
+- Vários medicamentos: numere na mesma receita (1., 2., 3.) e agrupe por via de administração, repetindo o cabeçalho "USO [VIA]" para cada grupo.
+- Antes de fechar a receita, você PODE fazer de 1 a 3 perguntas curtas de segurança (função renal, alergias, gestação/lactação, interações) SOMENTE quando o fármaco realmente exigir ajuste. Caso contrário, entregue a receita direto.
+- Use dose e apresentação disponíveis no Brasil. Se houver mais de uma apresentação usual, escolha a mais comum e sinalize a alternativa em uma linha curta.
+- Este texto é auxílio à redação do receituário e não substitui o julgamento clínico e a assinatura do médico.
+
+` : bulaInteligenteMode ? `MODO BULA INTELIGENTE (B.I.) ATIVADO
 
 Neste modo, você deve GERAR DIRETAMENTE uma bula estruturada e inteligente do medicamento solicitado.
 
