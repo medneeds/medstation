@@ -1,5 +1,7 @@
 import { getAgentSuggestions } from "@/lib/agentIntro";
 import { OutputControl } from "@/components/chat/OutputControl";
+import { AssistantGlyph } from "@/components/AssistantGlyph";
+
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { flushSync } from "react-dom";
