@@ -22,6 +22,8 @@ export default function Auth() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [introDone, setIntroDone] = useState(false);
+
   const [resetLoading, setResetLoading] = useState(false);
   const [showSignInPassword, setShowSignInPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
