@@ -1,5 +1,7 @@
 import { getAgentSuggestions } from "@/lib/agentIntro";
 import { OutputControl } from "@/components/chat/OutputControl";
+import { AssistantGlyph } from "@/components/AssistantGlyph";
+
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { flushSync } from "react-dom";
@@ -1039,11 +1041,12 @@ export function AgentChat({
       {/* Header — minimal identity */}
       <div className="flex flex-col gap-2 mb-3 md:mb-4 pb-3 md:pb-4 border-b border-border/40 md:flex-row md:items-center md:justify-between md:gap-3">
         <div className="flex items-center gap-2.5 md:gap-3 min-w-0">
-          <div className={`rounded-lg p-1.5 md:p-2 bg-primary/10 ${agentColor} shrink-0`}>
-            <span className="block [&>svg]:h-4 [&>svg]:w-4 md:[&>svg]:h-5 md:[&>svg]:w-5 [&>svg]:stroke-[1.75]">
+          <AssistantGlyph size="sm" className={agentColor}>
+            <span className="block [&>svg]:h-4 [&>svg]:w-4 md:[&>svg]:h-5 md:[&>svg]:w-5">
               {agentIcon}
             </span>
-          </div>
+          </AssistantGlyph>
+
           <div className="flex-1 min-w-0">
             <h2 className="text-sm md:text-lg font-medium tracking-tight truncate leading-tight">{agentName}</h2>
             {currentConversation && (
@@ -1363,10 +1366,11 @@ export function AgentChat({
                   />
                   {/* Soft outer glow */}
                   <span className="pointer-events-none absolute -inset-3 rounded-full bg-primary/8 blur-2xl animate-orb-shimmer" />
-                  {/* Core orb with the icon, gently breathing */}
-                  <div className={`relative rounded-full p-4 md:p-6 bg-gradient-to-br from-primary/15 to-primary/5 ring-1 ring-primary/20 ${agentColor} animate-orb-breathe [&>svg]:stroke-[1.75] [&>svg]:relative [&>svg]:z-10`}>
+                  {/* Core orb with the icon, glass depth + gentle breathing */}
+                  <AssistantGlyph size="lg" className={agentColor}>
                     {agentIcon}
-                  </div>
+                  </AssistantGlyph>
+
                 </div>
                 <p className="text-base md:text-xl font-medium text-foreground tracking-tight">{g.title}</p>
                 <p className="text-xs md:text-sm mt-2 leading-relaxed">{g.subtitle}</p>

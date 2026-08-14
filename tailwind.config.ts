@@ -180,6 +180,11 @@ export default {
           "0%, 100%": { opacity: "0.35" },
           "50%": { opacity: "0.6" },
         },
+        "glyph-sheen": {
+          "0%": { backgroundPosition: "150% 0" },
+          "60%, 100%": { backgroundPosition: "-150% 0" },
+        },
+
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -197,6 +202,8 @@ export default {
         "orb-spin-slow": "orb-spin-slow 28s linear infinite",
         "orb-ring": "orb-ring 4.5s ease-out infinite",
         "orb-shimmer": "orb-shimmer 8s ease-in-out infinite",
+        "glyph-sheen": "glyph-sheen 6s cubic-bezier(0.32, 0.72, 0, 1) infinite",
+
       },
     },
   },
