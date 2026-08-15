@@ -30,6 +30,39 @@ const CONSULTORIO_PRODUCT_IDS = [
 
 const TRIAL_DAYS = 7;
 
+async function getTrialInfo(supabaseClient: any, userId: string) {
+  try {
+    const { data } = await supabaseClient
+      .from("profiles")
+      .select("created_at")
+      .eq("id", userId)
+      .maybeSingle();
+    if (!data?.created_at) return null;
+    const start = new Date(data.created_at).getTime();
+    const end = start + TRIAL_DAYS * 24 * 60 * 60 * 1000;
+    if (Date.now() >= end) return null;
+    return { trial_end: new Date(end).toISOString() };
+  } catch (_e) {
+    return null;
+  }
+}
+
+function trialResponse(trialEnd: string, corsHeaders: Record<string, string>) {
+  return new Response(JSON.stringify({
+    subscribed: true,
+    trial: true,
+    product_ids: ["trial"],
+    product_id: "trial",
+    subscription_end: trialEnd,
+    has_agents: true,
+    has_consultorio: true,
+    available_upgrade: null,
+  }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    status: 200,
+  });
+}
+
 function computeAvailableUpgrade(hasAgents: boolean, hasConsultorio: boolean): string | null {
   if (hasAgents && !hasConsultorio) return "consultorio_upgrade";
   if (hasConsultorio && !hasAgents) return "agents_upgrade";
@@ -111,6 +144,11 @@ serve(async (req) => {
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
 
     if (customers.data.length === 0) {
+      const trial = await getTrialInfo(supabaseClient, user.id);
+      if (trial) {
+        logStep("Trial ativo (sem cliente Stripe)", trial);
+        return trialResponse(trial.trial_end, corsHeaders);
+      }
       return new Response(JSON.stringify({
         subscribed: false,
         product_ids: [],
@@ -149,6 +187,14 @@ serve(async (req) => {
         } catch {
           /* skip */
         }
+      }
+    }
+
+    if (!hasActiveSub) {
+      const trial = await getTrialInfo(supabaseClient, user.id);
+      if (trial) {
+        logStep("Trial ativo", trial);
+        return trialResponse(trial.trial_end, corsHeaders);
       }
     }
 
