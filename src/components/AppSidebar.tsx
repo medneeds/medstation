@@ -28,6 +28,9 @@ import {
   NotebookPen,
   MessagesSquare,
   Scale,
+  Sun,
+  BedDouble,
+  Archive,
 
   Play,
 } from "lucide-react";
