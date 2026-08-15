@@ -119,6 +119,26 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/rotina"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <Rotina />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/rotina/arquivo"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <RotinaArquivo />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
 
             <Route path="/welcome" element={<Welcome />} />
             <Route path="/onboarding" element={<Onboarding />} />
