@@ -102,7 +102,7 @@ export default function Lp3() {
   return (
     <div className="light min-h-screen bg-background text-foreground">
       <Seo
-        path="/lp3"
+        path="/"
         title="MedStation — a IA que escreve a burocracia do seu plantão"
         description="Anamnese, exame, conduta e alta prontos em segundos. 12 assistentes clínicos e Modo Escuta. Teste 7 dias grátis, sem cartão."
       />
