@@ -148,7 +148,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <OnboardingTour />
       <NpsWidget />
       <AssistantPromoEngine />
-      <ConciergeInternal />
+      <ConciergeInternal open={conciergeOpen} onOpenChange={setConciergeOpen} />
     </>
   );
 }
