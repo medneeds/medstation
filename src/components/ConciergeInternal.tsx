@@ -219,9 +219,15 @@ const FIRST_STEPS = [
 
 const DONE_KEY = "concierge-first-steps";
 
-export function ConciergeInternal() {
+export function ConciergeInternal({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
+  const setOpen = onOpenChange;
   const [tab, setTab] = useState<"guia" | "perguntar">("guia");
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState<(typeof GROUPS)[number]>("Todos");
@@ -272,17 +278,17 @@ export function ConciergeInternal() {
       {/* Painel */}
       <div
         className={cn(
-          "fixed z-[60] transition-all duration-300 ease-out",
-          "inset-x-3 bottom-3 sm:inset-x-auto sm:right-5 sm:bottom-24 sm:w-[420px]",
+          "fixed z-[60] transition-all duration-300 ease-out origin-top-right",
+          "top-14 sm:top-16 right-2 sm:right-5 w-[calc(100vw-1rem)] sm:w-[420px]",
           open
-            ? "opacity-100 translate-y-0 pointer-events-auto"
-            : "opacity-0 translate-y-4 pointer-events-none",
+            ? "opacity-100 translate-y-0 scale-100 pointer-events-auto"
+            : "opacity-0 -translate-y-2 scale-[0.98] pointer-events-none",
         )}
         role="dialog"
         aria-label="Concierge MedStation"
         aria-hidden={!open}
       >
-        <div className="relative flex h-[72vh] max-h-[600px] sm:h-[560px] flex-col rounded-3xl border border-border/60 bg-card/80 backdrop-blur-xl overflow-hidden shadow-[0_24px_70px_-40px_hsl(var(--primary)/0.5)]">
+        <div className="relative flex h-[calc(100vh-5rem)] max-h-[640px] sm:h-[600px] flex-col rounded-3xl border border-border/60 bg-card/90 backdrop-blur-xl overflow-hidden shadow-[0_24px_70px_-40px_hsl(var(--primary)/0.5)]">
           <div className="flex items-center gap-3 px-4 py-3 border-b border-border/50 bg-background/50">
             <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-primary" />
@@ -485,27 +491,6 @@ export function ConciergeInternal() {
           )}
         </div>
       </div>
-
-      {/* Botão flutuante */}
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-label={open ? "Fechar concierge" : "Abrir concierge MedStation"}
-        aria-expanded={open}
-        className={cn(
-          "fixed z-[61] right-4 sm:right-5 bottom-[5.25rem] sm:bottom-[5.5rem]",
-          "inline-flex items-center gap-2 rounded-full pl-3.5 pr-4 py-2.5",
-          "bg-card/90 backdrop-blur border border-primary/30 text-foreground shadow-elevated",
-          "transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg",
-          open && "opacity-0 pointer-events-none sm:opacity-100 sm:pointer-events-auto",
-        )}
-      >
-        <span className="relative flex h-5 w-5 items-center justify-center">
-          <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
-          <Sparkles className="relative h-4 w-4 text-primary" strokeWidth={1.9} />
-        </span>
-        <span className="text-xs font-medium hidden sm:inline">Como usar</span>
-      </button>
     </>
   );
 }

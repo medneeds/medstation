@@ -1,5 +1,6 @@
 import { ReactNode, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { HelpCircle } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Search } from "lucide-react";
@@ -53,6 +54,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { pathname, search } = useLocation();
   const crumb = getCrumb(pathname);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [conciergeOpen, setConciergeOpen] = useState(false);
   const isEmbed =
     typeof window !== "undefined" &&
     new URLSearchParams(search || window.location.search).get("embed") === "1";
@@ -118,6 +120,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               </div>
 
               <div className="flex items-center gap-2 md:gap-3 hairline-l pl-2 md:pl-4 ml-2 md:ml-4">
+                <button
+                  type="button"
+                  onClick={() => setConciergeOpen(true)}
+                  aria-label="Como usar a plataforma"
+                  title="Como usar"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-sm border border-hairline text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors"
+                >
+                  <HelpCircle className="h-3.5 w-3.5" />
+                </button>
                 <HeaderThemeToggle />
                 <NotificationBell />
                 <HeaderUserMenu />
@@ -137,7 +148,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <OnboardingTour />
       <NpsWidget />
       <AssistantPromoEngine />
-      <ConciergeInternal />
+      <ConciergeInternal open={conciergeOpen} onOpenChange={setConciergeOpen} />
     </>
   );
 }
