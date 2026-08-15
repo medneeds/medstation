@@ -458,16 +458,16 @@ export default function Settings() {
                 <div className="flex-1">
                   <p className="font-medium text-foreground">Plano Gratuito</p>
                   <p className="text-sm text-muted-foreground">
-                    Apenas Examinus, com restrições: limite de uso, tempo de espera entre mensagens que aumenta com o uso, pop-ups de upgrade e os outros 9 assistentes bloqueados.
+                    Sem assinatura ativa. Todo novo cadastro tem 7 dias com a plataforma inteira liberada; depois disso os assistentes ficam bloqueados até a assinatura.
                   </p>
                 </div>
                 <Button onClick={() => navigate("/pricing")}>
                   <Sparkles className="w-4 h-4 mr-2" />
-                  Assinar Pro
+                  Assinar
                 </Button>
               </div>
               <div className="text-xs text-muted-foreground">
-                Desbloqueie os 10 assistentes liberados — sem restrições de uso e sem pop-ups — por R$ 29,90/mês ou R$ 299,90/ano (economize R$ 58,90, ~16%).
+                Plano único com tudo incluso — 12 assistentes, Modo Escuta e Modo Rotineiro — por R$ 49,90/mês ou R$ 499,90/ano. Em breve o valor passa a R$ 99,90/mês.
               </div>
             </div>
           )}

@@ -101,12 +101,12 @@ export function UpgradeModal({ open, onOpenChange, reason = "engagement", contex
             size="lg"
             className="flex-1"
           >
-            {context === "app" ? "Continuar com Examinus grátis" : "Ver planos"}
+            {context === "app" ? "Agora não" : "Ver planos"}
           </Button>
         </div>
 
         <p className="text-[11px] text-center text-muted-foreground">
-          Pro R$ 29,90/mês ou R$ 299,90/ano (economize R$ 58,90) · grátis sem cartão, com restrições
+          Plano único R$ 49,90/mês ou R$ 499,90/ano · 7 dias grátis no cadastro, sem cartão
         </p>
       </DialogContent>
     </Dialog>
