@@ -28,7 +28,6 @@ import {
   NotebookPen,
   MessagesSquare,
   Scale,
-  Sun,
   BedDouble,
   Archive,
 
