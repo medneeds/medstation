@@ -17,9 +17,7 @@ import Notes from "./pages/Notes";
 import NoteDetail from "./pages/NoteDetail";
 import Auth from "./pages/Auth";
 import ConfirmarEmail from "./pages/ConfirmarEmail";
-import Home from "./pages/Home";
 import Comecar from "./pages/Comecar";
-import Lp2 from "./pages/Lp2";
 import Lp3 from "./pages/Lp3";
 import Tour from "./pages/Tour";
 import Pricing from "./pages/Pricing";
@@ -89,12 +87,12 @@ const App = () => (
           <BrowserRouter>
           <AnalyticsTracker />
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Lp3 />} />
             <Route path="/landing" element={<Navigate to="/" replace />} />
             <Route path="/tour" element={<Navigate to="/" replace />} />
             <Route path="/comecar" element={<Comecar />} />
-            <Route path="/lp2" element={<Lp2 />} />
-            <Route path="/lp3" element={<Lp3 />} />
+            <Route path="/lp2" element={<Navigate to="/" replace />} />
+            <Route path="/lp3" element={<Navigate to="/" replace />} />
             <Route path="/home" element={<Navigate to="/" replace />} />
 
             <Route path="/auth" element={<Auth />} />

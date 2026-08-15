@@ -11,6 +11,7 @@ interface SubscriptionContextType {
   hasAgents: boolean;
   hasConsultorio: boolean;
   availableUpgrade: AvailableUpgrade;
+  isTrial: boolean;
   loading: boolean;
   checkSubscription: () => Promise<void>;
 }
@@ -25,6 +26,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [hasAgents, setHasAgents] = useState(false);
   const [hasConsultorio, setHasConsultorio] = useState(false);
   const [availableUpgrade, setAvailableUpgrade] = useState<AvailableUpgrade>(null);
+  const [isTrial, setIsTrial] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const reset = () => {
@@ -35,6 +37,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     setHasAgents(false);
     setHasConsultorio(false);
     setAvailableUpgrade(null);
+    setIsTrial(false);
   };
 
   const checkSubscription = async () => {
@@ -56,6 +59,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       setHasAgents(data?.has_agents === true);
       setHasConsultorio(data?.has_consultorio === true);
       setAvailableUpgrade((data?.available_upgrade as AvailableUpgrade) || null);
+      setIsTrial(data?.trial === true);
     } catch (error) {
       console.error("[SubscriptionContext] Error checking subscription:", error);
     } finally {
@@ -94,6 +98,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       hasAgents,
       hasConsultorio,
       availableUpgrade,
+      isTrial,
       loading,
       checkSubscription,
     }}>
