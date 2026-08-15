@@ -208,6 +208,16 @@ function RotinaInner() {
         onMove={ward.movePatient}
         onDischarge={ward.dischargePatient}
         onChanged={ward.reload}
+        onEdit={(adm) => setEditAdmission(adm)}
+      />
+
+      <EditPatientDialog
+        admission={editAdmission}
+        bedLabel={ward.beds.find((b) => b.id === editAdmission?.bed_id)?.label}
+        unitName={ward.units.find((u) => u.id === editAdmission?.unit_id)?.name}
+        open={!!editAdmission}
+        onOpenChange={(v) => !v && setEditAdmission(null)}
+        onSave={ward.updateAdmission}
       />
     </div>
   );
