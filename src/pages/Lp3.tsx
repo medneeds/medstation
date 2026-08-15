@@ -343,7 +343,8 @@ export default function Lp3() {
           <div className="mt-6 max-w-xl mx-auto rounded-xl border border-primary/25 bg-background px-4 py-3 text-center text-xs md:text-sm">
             <strong className="text-primary">Aviso de reajuste:</strong> em breve o plano passa a
             custar {brl(99.9)} por mês ou {brl(999.9)} por ano. Quem assinar agora mantém o valor de
-            hoje enquanto a assinatura estiver ativa.
+            hoje por pelo menos 12 meses.
+
           </div>
 
           <p className="mt-4 text-center text-xs text-muted-foreground">
