@@ -148,7 +148,8 @@ export function AssistentesAIChat({
 
       {messages.length <= 1 && (
         <div className="flex flex-wrap gap-1.5 px-5 pb-3">
-          {SUGGESTIONS.map((s) => (
+          {suggestions.map((s) => (
+
             <button
               key={s}
               type="button"
