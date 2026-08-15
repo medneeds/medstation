@@ -19,8 +19,8 @@ const PRICES: Record<string, string> = {
   consultorio_yearly: "price_1TVgq1ACiwQRloW4w3EKIaBC",
   pro2_bundle: "price_1TVga8ACiwQRloW4fPGUzAF9",
   pro2_bundle_yearly: "price_1TVgqWACiwQRloW4BwMkM74x",
-  pro_completo: "price_1U42o0ACiwQRloW4Q3GhrlUj",
-  pro_completo_yearly: "price_1U42oIACiwQRloW4R9tDmHOE",
+  pro_completo: "price_1U4Zo7ACiwQRloW4cJIn0jYn",
+  pro_completo_yearly: "price_1U4ZoTACiwQRloW4f30FmEPb",
 };
 
 serve(async (req) => {

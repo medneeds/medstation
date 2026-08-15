@@ -18,7 +18,7 @@ export function PremiumConsultorioGuard({ children }: PremiumConsultorioGuardPro
   const { toast } = useToast();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
-  const handleSubscribe = async (plan: "consultorio_monthly" | "consultorio_upgrade" | "pro2_bundle") => {
+  const handleSubscribe = async (plan: "pro_completo" | "pro_completo_yearly") => {
     setCheckoutLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -100,65 +100,37 @@ export function PremiumConsultorioGuard({ children }: PremiumConsultorioGuardPro
               </ul>
             </div>
 
-            {isUpgradePath ? (
-              <div className="text-center space-y-3">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/30 rounded-full">
+            <div className="space-y-3">
+              <div className="text-center">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/30 rounded-full mb-3">
                   <span className="text-[0.65rem] uppercase tracking-[0.18em] font-mono text-primary">
-                    Você já tem os Assistentes
+                    Plano único
                   </span>
                 </div>
                 <div className="flex items-baseline justify-center gap-2">
-                  <span className="text-sm text-muted-foreground line-through">R$ 29,90</span>
-                  <span className="text-4xl font-black text-primary">R$ 19,90</span>
+                  <span className="text-4xl font-black text-primary">R$ 49,90</span>
                   <span className="text-muted-foreground">/mês</span>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Preço exclusivo de upgrade para quem já é assinante MedStation
+                <p className="text-xs text-muted-foreground mt-1">
+                  Tudo incluso: 12 assistentes, Modo Escuta e Modo Rotineiro. Ou R$ 499,90/ano.
                 </p>
-                <Button
-                  size="lg"
-                  className="w-full"
-                  onClick={() => handleSubscribe("consultorio_upgrade")}
-                  disabled={checkoutLoading}
-                >
-                  {checkoutLoading ? (
-                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processando...</>
-                  ) : (
-                    "Adicionar Modo Escuta por R$ 19,90/mês"
-                  )}
-                </Button>
               </div>
-            ) : (
-              <div className="space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => handleSubscribe("consultorio_monthly")}
-                    disabled={checkoutLoading}
-                    className="text-left p-4 rounded-md border border-hairline hover:border-primary/40 transition-colors disabled:opacity-50"
-                  >
-                    <div className="text-xs text-muted-foreground uppercase tracking-wider font-mono">Apenas Modo Escuta</div>
-                    <div className="text-2xl font-bold text-foreground mt-1">R$ 29,90<span className="text-sm font-normal text-muted-foreground">/mês</span></div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSubscribe("pro2_bundle")}
-                    disabled={checkoutLoading}
-                    className="text-left p-4 rounded-md border-2 border-primary bg-primary/5 hover:bg-primary/10 transition-colors disabled:opacity-50 relative"
-                  >
-                    <span className="absolute -top-2 right-3 text-[0.6rem] uppercase tracking-[0.18em] font-mono bg-primary text-primary-foreground px-2 py-0.5 rounded-sm">
-                      Melhor valor
-                    </span>
-                    <div className="text-xs text-primary uppercase tracking-wider font-mono">Pro 2 (tudo incluso)</div>
-                    <div className="text-2xl font-bold text-foreground mt-1">R$ 49,90<span className="text-sm font-normal text-muted-foreground">/mês</span></div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5">10 Assistentes + Modo Escuta</div>
-                  </button>
-                </div>
-                <Button variant="outline" className="w-full" onClick={() => navigate("/consultorio-landing")}>
-                  Saber mais sobre o Modo Escuta
-                </Button>
-              </div>
-            )}
+              <Button
+                size="lg"
+                className="w-full"
+                onClick={() => handleSubscribe("pro_completo")}
+                disabled={checkoutLoading}
+              >
+                {checkoutLoading ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processando...</>
+                ) : (
+                  "Assinar por R$ 49,90/mês"
+                )}
+              </Button>
+              <Button variant="outline" className="w-full" onClick={() => navigate("/pricing")}>
+                Ver o que está incluso
+              </Button>
+            </div>
 
             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
               <ShieldCheck className="w-3.5 h-3.5 text-primary" />

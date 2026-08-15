@@ -22,8 +22,8 @@ const PRICES: Record<string, string> = {
   consultorio_upgrade: "price_1TVgZ8ACiwQRloW4WfmIx87N",
   pro2_bundle: "price_1TVga8ACiwQRloW4fPGUzAF9",
   pro2_bundle_yearly: "price_1TVgqWACiwQRloW4BwMkM74x",
-  pro_completo: "price_1U42o0ACiwQRloW4Q3GhrlUj",
-  pro_completo_yearly: "price_1U42oIACiwQRloW4R9tDmHOE",
+  pro_completo: "price_1U4Zo7ACiwQRloW4cJIn0jYn",
+  pro_completo_yearly: "price_1U4ZoTACiwQRloW4f30FmEPb",
 };
 
 const AGENTS_PRODUCT_IDS = [
@@ -31,12 +31,14 @@ const AGENTS_PRODUCT_IDS = [
   "prod_UUfvAeta3d1Rn5",
   "prod_UUfw2uz4UPwkco",
   "prod_V4BACwTTBf5tBk",
+  "prod_V4jGKeBPH2hGYg",
 ];
 const CONSULTORIO_PRODUCT_IDS = [
   "prod_UUfuDkH9yfcfb3",
   "prod_UUfu9AzBtaGsCW",
   "prod_UUfw2uz4UPwkco",
   "prod_V4BACwTTBf5tBk",
+  "prod_V4jGKeBPH2hGYg",
 ];
 
 serve(async (req) => {

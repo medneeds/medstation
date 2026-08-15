@@ -55,11 +55,15 @@ const testimonials = [
 const faq = [
   {
     q: "Como funciona o teste de 7 dias?",
-    a: "Você cria a conta com nome, telefone e e-mail e usa tudo por 7 dias: os 12 assistentes e o Modo Escuta. Não pedimos cartão de crédito em momento nenhum do teste.",
+    a: "Você cria a conta com nome, telefone e e-mail e usa a plataforma inteira por 7 dias: os 12 assistentes, o Modo Escuta e o Modo Rotineiro. Não pedimos cartão de crédito em momento nenhum do teste.",
   },
   {
     q: "E depois dos 7 dias?",
-    a: "Se você não assinar, sua conta continua ativa com o Examinus liberado em até 10 consultas por mês. Os demais assistentes ficam bloqueados até a assinatura.",
+    a: "Ao fim dos 7 dias, basta assinar o plano único para continuar com tudo liberado. Sem assinatura, os assistentes ficam bloqueados, mas sua conta e seus registros continuam salvos.",
+  },
+  {
+    q: "Existe diferença entre planos?",
+    a: "Não. Existe um único plano com a plataforma inteira: assistentes, Modo Escuta e Modo Rotineiro, por R$ 49,90 por mês ou R$ 499,90 por ano.",
   },
   {
     q: "Serve para qualquer especialidade?",
@@ -98,7 +102,7 @@ export default function Lp3() {
   return (
     <div className="light min-h-screen bg-background text-foreground">
       <Seo
-        path="/lp3"
+        path="/"
         title="MedStation — a IA que escreve a burocracia do seu plantão"
         description="Anamnese, exame, conduta e alta prontos em segundos. 12 assistentes clínicos e Modo Escuta. Teste 7 dias grátis, sem cartão."
       />
@@ -255,8 +259,8 @@ export default function Lp3() {
               Um plantão de burocracia custa mais caro
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Um único plano com tudo dentro: os 12 assistentes clínicos e o Modo Escuta, que ouve o
-              atendimento e devolve a anamnese pronta. Preço de lançamento por tempo limitado.
+              Um único plano com a plataforma inteira: os 12 assistentes clínicos, o Modo Escuta e o
+              Modo Rotineiro. Sem módulos separados, sem upgrade escondido.
             </p>
           </div>
 
@@ -295,7 +299,7 @@ export default function Lp3() {
                     <span className="text-sm text-muted-foreground">{cycle === "monthly" ? "/mês" : "/ano"}</span>
                   </div>
                   <div className="mt-1 text-xs text-muted-foreground">
-                    <span className="line-through">{brl(p.list)}</span> valor de referência do mercado
+                    Em breve <span className="line-through">{brl(p.list)}</span> — hoje no valor de lançamento
                   </div>
                   <p className="mt-3 text-xs text-muted-foreground">
                     {cycle === "monthly"
@@ -310,7 +314,7 @@ export default function Lp3() {
           <div className="mt-6 max-w-xl mx-auto rounded-2xl border border-primary/20 bg-primary/5 p-5">
             <div className="grid grid-cols-3 gap-3 text-center">
               <div>
-                <div className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">Referência de mercado</div>
+                <div className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">Valor em breve</div>
                 <div className="mt-1 text-base md:text-lg font-semibold line-through text-muted-foreground">
                   {brl(price.list)}
                 </div>
@@ -334,6 +338,12 @@ export default function Lp3() {
                 ? `${brl((price.list - price.now) * 12)} em 12 meses.`
                 : `equivale a ${brl(price.now / 12)} por mês.`}
             </p>
+          </div>
+
+          <div className="mt-6 max-w-xl mx-auto rounded-xl border border-primary/25 bg-background px-4 py-3 text-center text-xs md:text-sm">
+            <strong className="text-primary">Aviso de reajuste:</strong> em breve o plano passa a
+            custar {brl(99.9)} por mês ou {brl(999.9)} por ano. Quem assinar agora mantém o valor de
+            hoje enquanto a assinatura estiver ativa.
           </div>
 
           <p className="mt-4 text-center text-xs text-muted-foreground">

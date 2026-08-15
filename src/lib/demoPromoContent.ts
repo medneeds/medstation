@@ -119,8 +119,8 @@ export const OFFER_PROMOS: PromoItem[] = [
   {
     id: "o-price",
     category: "offer",
-    title: "Pro a partir de R$ 29,90/mês",
-    description: "Acesso a todos os 11 assistentes médicos. Cancele quando quiser.",
+    title: "Plano único de R$ 49,90/mês",
+    description: "A plataforma inteira: 12 assistentes, Modo Escuta e Modo Rotineiro. Cancele quando quiser.",
     cta: "Assinar agora",
   },
   {
