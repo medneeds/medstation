@@ -491,27 +491,6 @@ export function ConciergeInternal({
           )}
         </div>
       </div>
-
-      {/* Botão flutuante */}
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-label={open ? "Fechar concierge" : "Abrir concierge MedStation"}
-        aria-expanded={open}
-        className={cn(
-          "fixed z-[61] right-4 sm:right-5 bottom-[5.25rem] sm:bottom-[5.5rem]",
-          "inline-flex items-center gap-2 rounded-full pl-3.5 pr-4 py-2.5",
-          "bg-card/90 backdrop-blur border border-primary/30 text-foreground shadow-elevated",
-          "transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg",
-          open && "opacity-0 pointer-events-none sm:opacity-100 sm:pointer-events-auto",
-        )}
-      >
-        <span className="relative flex h-5 w-5 items-center justify-center">
-          <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
-          <Sparkles className="relative h-4 w-4 text-primary" strokeWidth={1.9} />
-        </span>
-        <span className="text-xs font-medium hidden sm:inline">Como usar</span>
-      </button>
     </>
   );
 }
