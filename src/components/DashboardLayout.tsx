@@ -1,5 +1,6 @@
 import { ReactNode, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { HelpCircle } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Search } from "lucide-react";
