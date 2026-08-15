@@ -88,6 +88,14 @@ export function AssistentesAIChat({
     }
   };
 
+  useEffect(() => {
+    if (!ask || !ask.nonce || ask.nonce === lastNonce.current) return;
+    lastNonce.current = ask.nonce;
+    send(ask.text);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ask?.nonce]);
+
+
   return (
     <div
       className={`flex flex-col h-full min-h-0 rounded-3xl border border-border/60 bg-card/70 backdrop-blur-xl overflow-hidden shadow-[0_24px_70px_-40px_hsl(var(--primary)/0.5)] ${className}`}
