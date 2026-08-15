@@ -18,7 +18,7 @@ export function PremiumConsultorioGuard({ children }: PremiumConsultorioGuardPro
   const { toast } = useToast();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
-  const handleSubscribe = async (plan: "consultorio_monthly" | "consultorio_upgrade" | "pro2_bundle") => {
+  const handleSubscribe = async (plan: "pro_completo" | "pro_completo_yearly") => {
     setCheckoutLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
