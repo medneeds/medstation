@@ -27,7 +27,7 @@ export function PremiumAgentGuard({ children, agentName }: PremiumAgentGuardProp
       if (!session) {
         toast({
           title: "Login necessário",
-          description: "Faça login para assinar o plano Pro.",
+          description: "Faça login para assinar a MedStation.",
         });
         navigate("/auth");
         return;
@@ -35,7 +35,7 @@ export function PremiumAgentGuard({ children, agentName }: PremiumAgentGuardProp
 
       trackCheckoutStarted({
         origin: "agent_guard",
-        plan: "agents_monthly",
+        plan: "pro_completo",
         product: "agents",
         billing_period: "monthly",
         auth_state: "authenticated",
@@ -81,7 +81,7 @@ export function PremiumAgentGuard({ children, agentName }: PremiumAgentGuardProp
             </div>
             <CardTitle className="text-2xl">Assistente Premium</CardTitle>
             <CardDescription className="text-base mt-2">
-              {agentName} faz parte do MedStation Pro. No plano grátis só o Examinus está liberado — e mesmo assim com limite de uso, espera entre mensagens e pop-ups. No Pro, os 10 assistentes ficam liberados, sem restrições.
+              {agentName} faz parte da assinatura MedStation. Todo novo cadastro usa a plataforma inteira por 7 dias, sem cartão. Depois disso, é a assinatura que mantém os 12 assistentes, o Modo Escuta e o Modo Rotineiro liberados.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -120,11 +120,11 @@ export function PremiumAgentGuard({ children, agentName }: PremiumAgentGuardProp
                   <span className="text-[0.65rem] uppercase tracking-[0.18em] font-mono text-primary">Oferta especial</span>
                 </div>
                 <div className="flex items-baseline justify-center gap-2 mb-1">
-                  <span className="text-4xl font-black bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">R$ 29,90</span>
+                  <span className="text-4xl font-black bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">R$ 49,90</span>
                   <span className="text-muted-foreground">/mês</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Ou R$ 299,90/ano (em vez de R$ 358,80) — economize R$ 58,90 (16%)
+                  Ou R$ 499,90/ano — dois meses de cortesia. Em breve R$ 99,90/mês.
                 </p>
               </div>
               <Button 
