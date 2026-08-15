@@ -29,6 +29,8 @@ import WelcomeTour from "./pages/WelcomeTour";
 import Clinicus from "./pages/Clinicus";
 import Consultorio from "./pages/Consultorio";
 import ConsultorioHistorico from "./pages/ConsultorioHistorico";
+import Rotina from "./pages/Rotina";
+import RotinaArquivo from "./pages/RotinaArquivo";
 
 import ConsultorioLanding from "./pages/ConsultorioLanding";
 import Examinus from "./pages/Examinus";
@@ -115,6 +117,26 @@ const App = () => (
                 <ProtectedRoute>
                   <DashboardLayout>
                     <ConsultorioHistorico />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/rotina"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <Rotina />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/rotina/arquivo"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <RotinaArquivo />
                   </DashboardLayout>
                 </ProtectedRoute>
               }
