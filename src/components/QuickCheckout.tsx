@@ -34,10 +34,10 @@ export function QuickCheckout({
   const { toast } = useToast();
 
   const price = isCompleto
-    ? billingPeriod === "yearly" ? 999.9 : 99.9
+    ? billingPeriod === "yearly" ? 499.9 : 49.9
     : billingPeriod === "yearly" ? 299.9 : 29.9;
 
-  const listPrice = isCompleto ? 179.9 : 59.9;
+  const listPrice = isCompleto ? 99.9 : 59.9;
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -202,7 +202,7 @@ export function InlineCheckout({
     : billingPeriod === "yearly" ? "agents_yearly" : "agents_monthly";
 
   const price = isCompleto
-    ? billingPeriod === "yearly" ? 999.9 : 99.9
+    ? billingPeriod === "yearly" ? 499.9 : 49.9
     : billingPeriod === "yearly" ? 299.9 : 29.9;
 
 
