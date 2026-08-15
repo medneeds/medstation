@@ -54,6 +54,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { pathname, search } = useLocation();
   const crumb = getCrumb(pathname);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [conciergeOpen, setConciergeOpen] = useState(false);
   const isEmbed =
     typeof window !== "undefined" &&
     new URLSearchParams(search || window.location.search).get("embed") === "1";
