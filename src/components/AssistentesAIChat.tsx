@@ -105,10 +105,9 @@ export function AssistentesAIChat({
           <MessageCircleQuestion className="w-4 h-4 text-primary" />
         </div>
         <div className="leading-tight">
-          <p className="text-[15px] font-semibold">Concierge MedStation</p>
-          <p className="text-[11px] text-muted-foreground">
-            Pergunte sobre qualquer assistente — resposta na hora, sem cadastro
-          </p>
+          <p className="text-[15px] font-semibold">{title}</p>
+          <p className="text-[11px] text-muted-foreground">{subtitle}</p>
+
         </div>
         <span className="ml-auto flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-primary">
           <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
