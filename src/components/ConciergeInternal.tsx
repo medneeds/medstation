@@ -278,17 +278,17 @@ export function ConciergeInternal({
       {/* Painel */}
       <div
         className={cn(
-          "fixed z-[60] transition-all duration-300 ease-out",
-          "inset-x-3 bottom-3 sm:inset-x-auto sm:right-5 sm:bottom-24 sm:w-[420px]",
+          "fixed z-[60] transition-all duration-300 ease-out origin-top-right",
+          "top-14 sm:top-16 right-2 sm:right-5 w-[calc(100vw-1rem)] sm:w-[420px]",
           open
-            ? "opacity-100 translate-y-0 pointer-events-auto"
-            : "opacity-0 translate-y-4 pointer-events-none",
+            ? "opacity-100 translate-y-0 scale-100 pointer-events-auto"
+            : "opacity-0 -translate-y-2 scale-[0.98] pointer-events-none",
         )}
         role="dialog"
         aria-label="Concierge MedStation"
         aria-hidden={!open}
       >
-        <div className="relative flex h-[72vh] max-h-[600px] sm:h-[560px] flex-col rounded-3xl border border-border/60 bg-card/80 backdrop-blur-xl overflow-hidden shadow-[0_24px_70px_-40px_hsl(var(--primary)/0.5)]">
+        <div className="relative flex h-[calc(100vh-5rem)] max-h-[640px] sm:h-[600px] flex-col rounded-3xl border border-border/60 bg-card/90 backdrop-blur-xl overflow-hidden shadow-[0_24px_70px_-40px_hsl(var(--primary)/0.5)]">
           <div className="flex items-center gap-3 px-4 py-3 border-b border-border/50 bg-background/50">
             <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-primary" />
