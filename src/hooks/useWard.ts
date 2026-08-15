@@ -177,6 +177,12 @@ export function useWard() {
     await load();
   }, [userId, load]);
 
+  const updateAdmission = useCallback(async (id: string, patch: Partial<WardAdmission>) => {
+    const { error } = await supabase.from("ward_admissions").update(patch).eq("id", id);
+    if (error) throw error;
+    await load();
+  }, [load]);
+
   const movePatient = useCallback(async (admission: WardAdmission, toBed: WardBed, reason?: string) => {
     if (!userId) return;
     const fromBed = beds.find((b) => b.id === admission.bed_id);
@@ -226,6 +232,7 @@ export function useWard() {
     renameBed,
     deleteBed,
     admitPatient,
+    updateAdmission,
     movePatient,
     dischargePatient,
   };

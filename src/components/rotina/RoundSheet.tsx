@@ -14,7 +14,7 @@ import {
   ageFromDob, daysOfStay, todayISO,
   type WardAdmission, type WardBed, type WardRound, type WardUnit,
 } from "@/hooks/useWard";
-import { Check, Copy, Loader2, LogOut, Move, Save, Sparkles, Sun, History } from "lucide-react";
+import { Check, Copy, Loader2, LogOut, Move, Save, Sparkles, Sun, History, Pencil } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -28,11 +28,12 @@ interface Props {
   onMove: (admission: WardAdmission, toBed: WardBed, reason?: string) => Promise<void>;
   onDischarge: (admissionId: string, summary?: string) => Promise<void>;
   onChanged: () => void;
+  onEdit?: (admission: WardAdmission) => void;
 }
 
 export function RoundSheet({
   open, onOpenChange, admission, bed, unit, beds, units, occupiedBedIds,
-  onMove, onDischarge, onChanged,
+  onMove, onDischarge, onChanged, onEdit,
 }: Props) {
   const { toast } = useToast();
   const [content, setContent] = useState("");
@@ -184,11 +185,22 @@ export function RoundSheet({
                 {patientMeta?.age ? ` · ${patientMeta.age}` : ""}
               </SheetDescription>
             </div>
+            {onEdit && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="ml-auto shrink-0"
+                onClick={() => onEdit(admission)}
+              >
+                <Pencil className="h-3.5 w-3.5 mr-1" /> Editar dados
+              </Button>
+            )}
           </div>
           {admission.main_diagnosis && (
             <p className="text-sm text-muted-foreground text-left">{admission.main_diagnosis}</p>
           )}
         </SheetHeader>
+
 
         <div className="mt-5 space-y-5">
           <div className="rounded-lg border border-hairline bg-primary/5 p-4 space-y-3">

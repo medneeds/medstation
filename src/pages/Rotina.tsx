@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { AssistantGlyph } from "@/components/AssistantGlyph";
 import { UnitsManagerDialog } from "@/components/rotina/UnitsManagerDialog";
 import { AdmitPatientDialog } from "@/components/rotina/AdmitPatientDialog";
+import { EditPatientDialog } from "@/components/rotina/EditPatientDialog";
 import { RoundSheet } from "@/components/rotina/RoundSheet";
-import { daysOfStay, useWard, type WardBed } from "@/hooks/useWard";
+import { daysOfStay, useWard, type WardAdmission, type WardBed } from "@/hooks/useWard";
 import { BedDouble, Settings2, Sun, Plus, CheckCircle2, CircleDashed, Clock, Archive, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -17,6 +18,8 @@ function RotinaInner() {
   const [unitsOpen, setUnitsOpen] = useState(false);
   const [admitBed, setAdmitBed] = useState<WardBed | null>(null);
   const [openAdmissionId, setOpenAdmissionId] = useState<string | null>(null);
+  const [editAdmission, setEditAdmission] = useState<WardAdmission | null>(null);
+
 
   const occupiedBedIds = useMemo(
     () => new Set(ward.admissions.map((a) => a.bed_id).filter(Boolean) as string[]),
@@ -205,6 +208,16 @@ function RotinaInner() {
         onMove={ward.movePatient}
         onDischarge={ward.dischargePatient}
         onChanged={ward.reload}
+        onEdit={(adm) => setEditAdmission(adm)}
+      />
+
+      <EditPatientDialog
+        admission={editAdmission}
+        bedLabel={ward.beds.find((b) => b.id === editAdmission?.bed_id)?.label}
+        unitName={ward.units.find((u) => u.id === editAdmission?.unit_id)?.name}
+        open={!!editAdmission}
+        onOpenChange={(v) => !v && setEditAdmission(null)}
+        onSave={ward.updateAdmission}
       />
     </div>
   );
