@@ -56,7 +56,7 @@ export function AssistentesAIChat({
   const send = async (text: string) => {
     const question = text.trim();
     if (!question || loading) return;
-    const history = messages.filter((m) => m !== WELCOME);
+    const history = messages.filter((m) => m !== welcomeMsg);
     setMessages((prev) => [...prev, { role: "user", content: question }]);
     setInput("");
     setLoading(true);
