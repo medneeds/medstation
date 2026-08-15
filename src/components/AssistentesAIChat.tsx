@@ -25,15 +25,33 @@ const WELCOME: Msg = {
  * Chat público de dúvidas sobre os assistentes — usado na tela de entrada
  * para orientar o lead frio antes de qualquer cadastro.
  */
-export function AssistentesAIChat({ className = "" }: { className?: string }) {
-  const [messages, setMessages] = useState<Msg[]>([WELCOME]);
+export function AssistentesAIChat({
+  className = "",
+  title = "Concierge MedStation",
+  subtitle = "Pergunte sobre qualquer assistente — resposta na hora, sem cadastro",
+  suggestions = SUGGESTIONS,
+  welcome,
+  ask,
+}: {
+  className?: string;
+  title?: string;
+  subtitle?: string;
+  suggestions?: string[];
+  welcome?: string;
+  /** Envia automaticamente uma pergunta quando o nonce muda. */
+  ask?: { text: string; nonce: number };
+}) {
+  const welcomeMsg = useRef<Msg>(welcome ? { role: "assistant", content: welcome } : WELCOME).current;
+  const [messages, setMessages] = useState<Msg[]>([welcomeMsg]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+  const lastNonce = useRef(0);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, loading]);
+
 
   const send = async (text: string) => {
     const question = text.trim();
