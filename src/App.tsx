@@ -29,6 +29,8 @@ import WelcomeTour from "./pages/WelcomeTour";
 import Clinicus from "./pages/Clinicus";
 import Consultorio from "./pages/Consultorio";
 import ConsultorioHistorico from "./pages/ConsultorioHistorico";
+import Rotina from "./pages/Rotina";
+import RotinaArquivo from "./pages/RotinaArquivo";
 
 import ConsultorioLanding from "./pages/ConsultorioLanding";
 import Examinus from "./pages/Examinus";
