@@ -25,20 +25,38 @@ const WELCOME: Msg = {
  * Chat público de dúvidas sobre os assistentes — usado na tela de entrada
  * para orientar o lead frio antes de qualquer cadastro.
  */
-export function AssistentesAIChat({ className = "" }: { className?: string }) {
-  const [messages, setMessages] = useState<Msg[]>([WELCOME]);
+export function AssistentesAIChat({
+  className = "",
+  title = "Concierge MedStation",
+  subtitle = "Pergunte sobre qualquer assistente — resposta na hora, sem cadastro",
+  suggestions = SUGGESTIONS,
+  welcome,
+  ask,
+}: {
+  className?: string;
+  title?: string;
+  subtitle?: string;
+  suggestions?: string[];
+  welcome?: string;
+  /** Envia automaticamente uma pergunta quando o nonce muda. */
+  ask?: { text: string; nonce: number };
+}) {
+  const welcomeMsg = useRef<Msg>(welcome ? { role: "assistant", content: welcome } : WELCOME).current;
+  const [messages, setMessages] = useState<Msg[]>([welcomeMsg]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+  const lastNonce = useRef(0);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, loading]);
 
+
   const send = async (text: string) => {
     const question = text.trim();
     if (!question || loading) return;
-    const history = messages.filter((m) => m !== WELCOME);
+    const history = messages.filter((m) => m !== welcomeMsg);
     setMessages((prev) => [...prev, { role: "user", content: question }]);
     setInput("");
     setLoading(true);
@@ -70,6 +88,14 @@ export function AssistentesAIChat({ className = "" }: { className?: string }) {
     }
   };
 
+  useEffect(() => {
+    if (!ask || !ask.nonce || ask.nonce === lastNonce.current) return;
+    lastNonce.current = ask.nonce;
+    send(ask.text);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ask?.nonce]);
+
+
   return (
     <div
       className={`flex flex-col h-full min-h-0 rounded-3xl border border-border/60 bg-card/70 backdrop-blur-xl overflow-hidden shadow-[0_24px_70px_-40px_hsl(var(--primary)/0.5)] ${className}`}
@@ -79,10 +105,9 @@ export function AssistentesAIChat({ className = "" }: { className?: string }) {
           <MessageCircleQuestion className="w-4 h-4 text-primary" />
         </div>
         <div className="leading-tight">
-          <p className="text-[15px] font-semibold">Concierge MedStation</p>
-          <p className="text-[11px] text-muted-foreground">
-            Pergunte sobre qualquer assistente — resposta na hora, sem cadastro
-          </p>
+          <p className="text-[15px] font-semibold">{title}</p>
+          <p className="text-[11px] text-muted-foreground">{subtitle}</p>
+
         </div>
         <span className="ml-auto flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-primary">
           <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
@@ -123,7 +148,8 @@ export function AssistentesAIChat({ className = "" }: { className?: string }) {
 
       {messages.length <= 1 && (
         <div className="flex flex-wrap gap-1.5 px-5 pb-3">
-          {SUGGESTIONS.map((s) => (
+          {suggestions.map((s) => (
+
             <button
               key={s}
               type="button"

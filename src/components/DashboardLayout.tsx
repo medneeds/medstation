@@ -13,6 +13,7 @@ import { OnboardingTour } from "@/components/OnboardingTour";
 import { AnnouncementsBanner } from "@/components/AnnouncementsBanner";
 import { NpsWidget } from "@/components/NpsWidget";
 import { AssistantPromoEngine } from "@/components/AssistantPromoEngine";
+import { ConciergeInternal } from "@/components/ConciergeInternal";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -136,6 +137,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <OnboardingTour />
       <NpsWidget />
       <AssistantPromoEngine />
+      <ConciergeInternal />
     </>
   );
 }
