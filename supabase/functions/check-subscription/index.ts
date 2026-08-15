@@ -17,12 +17,18 @@ const AGENTS_PRODUCT_IDS = [
   "prod_TgR7u5urUle7om", // Agents standalone
   "prod_UUfvAeta3d1Rn5", // Agents upgrade
   "prod_UUfw2uz4UPwkco", // Pro 2 bundle
+  "prod_V4BACwTTBf5tBk", // Pro Completo (legado)
+  "prod_V4jGKeBPH2hGYg", // MedStation Completo (plano único)
 ];
 const CONSULTORIO_PRODUCT_IDS = [
   "prod_UUfuDkH9yfcfb3", // Consultório standalone
   "prod_UUfu9AzBtaGsCW", // Consultório upgrade
   "prod_UUfw2uz4UPwkco", // Pro 2 bundle
+  "prod_V4BACwTTBf5tBk", // Pro Completo (legado)
+  "prod_V4jGKeBPH2hGYg", // MedStation Completo (plano único)
 ];
+
+const TRIAL_DAYS = 7;
 
 function computeAvailableUpgrade(hasAgents: boolean, hasConsultorio: boolean): string | null {
   if (hasAgents && !hasConsultorio) return "consultorio_upgrade";
