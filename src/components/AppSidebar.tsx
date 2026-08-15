@@ -71,6 +71,12 @@ const consultorioSubItems = [
   { title: "Histórico", url: "/consultorio/historico", icon: FolderOpen },
 ];
 
+const rotinaModule = { title: "Modo Rotineiro", url: "/rotina", icon: Sun, code: "R" };
+
+const rotinaSubItems = [
+  { title: "Mapa de leitos", url: "/rotina", icon: BedDouble },
+  { title: "Arquivo de altas", url: "/rotina/arquivo", icon: Archive },
+];
 
 const recordsModules = [
   { title: "Notas", url: "/notes", icon: NotebookPen },
