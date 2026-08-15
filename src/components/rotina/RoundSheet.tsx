@@ -28,6 +28,7 @@ interface Props {
   onMove: (admission: WardAdmission, toBed: WardBed, reason?: string) => Promise<void>;
   onDischarge: (admissionId: string, summary?: string) => Promise<void>;
   onChanged: () => void;
+  onEdit?: (admission: WardAdmission) => void;
 }
 
 export function RoundSheet({

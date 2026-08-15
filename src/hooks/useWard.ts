@@ -232,6 +232,7 @@ export function useWard() {
     renameBed,
     deleteBed,
     admitPatient,
+    updateAdmission,
     movePatient,
     dischargePatient,
   };
