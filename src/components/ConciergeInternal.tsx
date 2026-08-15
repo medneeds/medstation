@@ -219,9 +219,15 @@ const FIRST_STEPS = [
 
 const DONE_KEY = "concierge-first-steps";
 
-export function ConciergeInternal() {
+export function ConciergeInternal({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
+  const setOpen = onOpenChange;
   const [tab, setTab] = useState<"guia" | "perguntar">("guia");
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState<(typeof GROUPS)[number]>("Todos");
