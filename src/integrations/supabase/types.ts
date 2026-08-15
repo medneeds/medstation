@@ -1550,6 +1550,234 @@ export type Database = {
         }
         Relationships: []
       }
+      ward_admissions: {
+        Row: {
+          admitted_on: string
+          bed_id: string | null
+          comorbidities: string | null
+          created_at: string
+          date_of_birth: string | null
+          discharge_summary: string | null
+          discharged_on: string | null
+          id: string
+          main_diagnosis: string | null
+          notes: string | null
+          patient_name: string
+          record_number: string | null
+          status: string
+          unit_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admitted_on?: string
+          bed_id?: string | null
+          comorbidities?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          discharge_summary?: string | null
+          discharged_on?: string | null
+          id?: string
+          main_diagnosis?: string | null
+          notes?: string | null
+          patient_name: string
+          record_number?: string | null
+          status?: string
+          unit_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admitted_on?: string
+          bed_id?: string | null
+          comorbidities?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          discharge_summary?: string | null
+          discharged_on?: string | null
+          id?: string
+          main_diagnosis?: string | null
+          notes?: string | null
+          patient_name?: string
+          record_number?: string | null
+          status?: string
+          unit_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ward_admissions_bed_id_fkey"
+            columns: ["bed_id"]
+            isOneToOne: false
+            referencedRelation: "ward_beds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ward_admissions_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "ward_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ward_beds: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          sort_order: number
+          unit_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label: string
+          sort_order?: number
+          unit_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          sort_order?: number
+          unit_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ward_beds_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "ward_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ward_movements: {
+        Row: {
+          admission_id: string
+          created_at: string
+          from_bed_id: string | null
+          from_label: string | null
+          id: string
+          reason: string | null
+          to_bed_id: string | null
+          to_label: string | null
+          user_id: string
+        }
+        Insert: {
+          admission_id: string
+          created_at?: string
+          from_bed_id?: string | null
+          from_label?: string | null
+          id?: string
+          reason?: string | null
+          to_bed_id?: string | null
+          to_label?: string | null
+          user_id: string
+        }
+        Update: {
+          admission_id?: string
+          created_at?: string
+          from_bed_id?: string | null
+          from_label?: string | null
+          id?: string
+          reason?: string | null
+          to_bed_id?: string | null
+          to_label?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ward_movements_admission_id_fkey"
+            columns: ["admission_id"]
+            isOneToOne: false
+            referencedRelation: "ward_admissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ward_rounds: {
+        Row: {
+          admission_id: string
+          content: string
+          created_at: string
+          id: string
+          origin: string
+          round_date: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admission_id: string
+          content?: string
+          created_at?: string
+          id?: string
+          origin?: string
+          round_date?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admission_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          origin?: string
+          round_date?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ward_rounds_admission_id_fkey"
+            columns: ["admission_id"]
+            isOneToOne: false
+            referencedRelation: "ward_admissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ward_units: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          name: string
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind?: string
+          name: string
+          sort_order?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
