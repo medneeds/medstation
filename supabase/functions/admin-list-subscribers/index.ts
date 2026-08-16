@@ -226,9 +226,23 @@ serve(async (req) => {
       const isAdminUser = roles.includes("admin");
       const profile = u ? profilesMap.get(u.id) : null;
 
+      // Teste de 7 dias sem cartão (mesma regra da check-subscription: idade da conta)
+      const paying = PAYING_STATUSES.has(stripe.status);
+      let trialEndsAt: string | null = null;
+      let inTrial = false;
+      if (u?.created_at && !paying && !courtesyActive && !isAdminUser) {
+        const end = new Date(u.created_at).getTime() + TRIAL_DAYS * 86400000;
+        if (end > Date.now()) {
+          inTrial = true;
+          trialEndsAt = new Date(end).toISOString();
+        }
+      }
+
       let effectiveStatus: string;
       if (isAdminUser) effectiveStatus = "admin";
+      else if (paying) effectiveStatus = stripe.status;
       else if (courtesyActive) effectiveStatus = "courtesy";
+      else if (inTrial) effectiveStatus = "trial";
       else effectiveStatus = stripe.status;
 
       return {
@@ -238,16 +252,22 @@ serve(async (req) => {
         last_sign_in_at: u?.last_sign_in_at || null,
         full_name: profile?.full_name || customer?.name || null,
         specialty: profile?.specialty || null,
+        crm: profile?.crm || null,
+        crm_state: profile?.crm_state || null,
+        phone: profile?.phone || null,
         is_admin: isAdminUser,
         stripe_customer_id: customer?.id || null,
         stripe_status: stripe.status,
         stripe_product_ids: stripe.productIds,
+        plan_label: planLabel(stripe.productIds, stripe.interval),
         subscription_end: stripe.endDate,
         subscription_created: stripe.currentSubCreated,
         monthly_amount_cents: stripe.monthlyAmountCents,
         currency: stripe.currency,
         interval: stripe.interval,
         auth_missing: !u,
+        in_trial: inTrial,
+        trial_ends_at: trialEndsAt,
         courtesy: courtesy
           ? {
               id: courtesy.id,
@@ -259,8 +279,11 @@ serve(async (req) => {
             }
           : null,
         effective_status: effectiveStatus,
+        // "ativo de verdade": pagante, cortesia vigente ou em teste de 7 dias
+        access_active: paying || !!courtesyActive || inTrial || isAdminUser,
       };
     };
+
 
     const records: any[] = allUsers.map((u: any) => {
       const email = (u.email || "").toLowerCase();
