@@ -20,6 +20,27 @@ let stripeCache: {
 } | null = null;
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
+const TRIAL_DAYS = 7;
+const PAYING_STATUSES = new Set(["active", "trialing", "past_due"]);
+
+// Rótulo comercial do plano a partir dos produtos Stripe
+const PRODUCT_LABELS: Record<string, string> = {
+  prod_V4jGKeBPH2hGYg: "MedStation Completo (49,90)",
+  prod_V4BACwTTBf5tBk: "Pro Completo (legado 99,90)",
+  prod_UUfw2uz4UPwkco: "Pro 2 Bundle (legado)",
+  prod_TgR7u5urUle7om: "Assistentes (legado 29,90)",
+  prod_UUfvAeta3d1Rn5: "Upgrade Assistentes (legado)",
+  prod_UUfuDkH9yfcfb3: "Modo Escuta (legado)",
+  prod_UUfu9AzBtaGsCW: "Upgrade Modo Escuta (legado)",
+};
+
+function planLabel(productIds: string[], interval: string | null): string | null {
+  if (!productIds.length) return null;
+  const names = productIds.map((id) => PRODUCT_LABELS[id] || id);
+  const cycle = interval === "year" ? " · anual" : interval === "month" ? " · mensal" : "";
+  return names.join(" + ") + cycle;
+}
+
 
 async function fetchAllStripeData(stripe: Stripe, force = false) {
   const now = Date.now();
