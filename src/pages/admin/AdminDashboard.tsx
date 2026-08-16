@@ -21,6 +21,8 @@ interface KPIs {
   totalUsers: number;
   activeSubs: number;
   payingTotal: number;
+  accessActive: number;
+  freeTrial: number;
   mrrCents: number;
   arrCents: number;
   currency: string;
@@ -34,6 +36,7 @@ interface KPIs {
   referralConversion: number;
   securityEvents24h: number;
 }
+
 
 async function invokeAdmin<T>(name: string, query = ""): Promise<T> {
   const { data: { session } } = await supabase.auth.getSession();
