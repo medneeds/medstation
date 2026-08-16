@@ -372,6 +372,10 @@ serve(async (req) => {
       const stripeStatusFilters = new Set(["active", "trialing", "past_due", "canceled"]);
       if (statusFilter === "paying") {
         filtered = filtered.filter((r) => payingStatuses.has(r.stripe_status));
+      } else if (statusFilter === "access_active") {
+        filtered = filtered.filter((r) => r.access_active);
+      } else if (statusFilter === "trial") {
+        filtered = filtered.filter((r) => r.in_trial);
       } else if (stripeStatusFilters.has(statusFilter)) {
         // Match real Stripe status so admins/courtesies with paid subs are included
         filtered = filtered.filter((r) => r.stripe_status === statusFilter);
@@ -379,6 +383,7 @@ serve(async (req) => {
         filtered = filtered.filter((r) => r.effective_status === statusFilter);
       }
     }
+
     if (from || to) {
       filtered = filtered.filter((r) => {
         const ref = r.subscription_created || r.created_at;
