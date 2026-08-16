@@ -14,7 +14,7 @@ import {
   Gift,
   ShieldAlert,
 } from "lucide-react";
-import type { AdminMetrics, SubscribersResponse } from "./types";
+import type { AdminMetrics, SubscribersResponse, SubscriberRecord } from "./types";
 import DashboardTrends from "./DashboardTrends";
 
 interface KPIs {
