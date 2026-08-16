@@ -52,7 +52,9 @@ async function invokeAdmin<T>(name: string, query = ""): Promise<T> {
 }
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const [kpis, setKpis] = useState<KPIs | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lastSync, setLastSync] = useState<Date | null>(null);
