@@ -59,18 +59,24 @@ export default function AdminDashboard() {
     if (forceStripeReload) setRefreshing(true);
     else setLoading(true);
     try {
-      const [subs, metrics] = await Promise.all([
+      const [subs, metrics, activeList] = await Promise.all([
         invokeAdmin<SubscribersResponse>(
           "admin-list-subscribers",
           `?page=1&perPage=1&status=all${forceStripeReload ? "&refresh=true" : ""}`,
         ),
         invokeAdmin<AdminMetrics>("admin-metrics"),
+        invokeAdmin<SubscribersResponse>(
+          "admin-list-subscribers",
+          "?page=1&perPage=50&status=access_active",
+        ),
       ]);
 
       setKpis({
         totalUsers: subs.stats.total_users,
         activeSubs: subs.stats.active,
         payingTotal: subs.stats.paying_total,
+        accessActive: subs.stats.access_active ?? 0,
+        freeTrial: subs.stats.free_trial ?? 0,
         mrrCents: subs.stats.mrr_cents,
         arrCents: subs.stats.arr_cents,
         currency: subs.stats.currency,
@@ -84,6 +90,8 @@ export default function AdminDashboard() {
         referralConversion: metrics.referrals.conversion_rate,
         securityEvents24h: metrics.audit.security_events_24h,
       });
+      setActiveUsers(activeList.records);
+      setActiveTotal(activeList.total);
       setLastSync(new Date());
     } catch (e) {
       console.error("[admin-dashboard]", e);
@@ -92,6 +100,7 @@ export default function AdminDashboard() {
       setRefreshing(false);
     }
   }, []);
+
 
   useEffect(() => {
     load(false);
