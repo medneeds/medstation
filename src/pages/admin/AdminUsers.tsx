@@ -191,31 +191,41 @@ export default function AdminUsers() {
               <tr>
                 <th className="text-left px-4 py-2">Email</th>
                 <th className="text-left px-4 py-2">Nome</th>
+                <th className="text-left px-4 py-2">Contato / CRM</th>
                 <th className="text-left px-4 py-2">Status</th>
+                <th className="text-left px-4 py-2">Plano</th>
                 <th className="text-left px-4 py-2">Criado</th>
                 <th className="text-left px-4 py-2">Último login</th>
               </tr>
             </thead>
             <tbody>
               {loading && records.length === 0 && (
-                <tr><td colSpan={5} className="py-10 text-center text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin inline mr-2" /> Carregando...</td></tr>
+                <tr><td colSpan={7} className="py-10 text-center text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin inline mr-2" /> Carregando...</td></tr>
               )}
               {!loading && records.length === 0 && (
-                <tr><td colSpan={5} className="py-10 text-center text-muted-foreground">Nenhum resultado</td></tr>
+                <tr><td colSpan={7} className="py-10 text-center text-muted-foreground">Nenhum resultado</td></tr>
               )}
               {records.map((r) => (
                 <tr key={r.user_id} className="border-t border-border/40 hover:bg-muted/30 cursor-pointer" onClick={() => setSelected(r)}>
                   <td className="px-4 py-2 font-mono text-xs">{r.email}</td>
                   <td className="px-4 py-2">{r.full_name || "—"}</td>
+                  <td className="px-4 py-2 text-xs text-muted-foreground">
+                    <div>{r.phone || "—"}</div>
+                    <div>{r.crm ? `CRM ${r.crm}${r.crm_state ? `/${r.crm_state}` : ""}` : "—"}</div>
+                  </td>
                   <td className="px-4 py-2">
                     <Badge variant="outline" className={STATUS_COLORS[r.effective_status] || ""}>
-                      {r.effective_status}
+                      {STATUS_LABELS[r.effective_status] || r.effective_status}
                     </Badge>
+                  </td>
+                  <td className="px-4 py-2 text-xs text-muted-foreground max-w-[200px] truncate">
+                    {r.plan_label || (r.in_trial ? "Teste de 7 dias" : "—")}
                   </td>
                   <td className="px-4 py-2 text-muted-foreground text-xs">{new Date(r.created_at).toLocaleDateString("pt-BR")}</td>
                   <td className="px-4 py-2 text-muted-foreground text-xs">{r.last_sign_in_at ? new Date(r.last_sign_in_at).toLocaleDateString("pt-BR") : "—"}</td>
                 </tr>
               ))}
+
             </tbody>
           </table>
         </div>
