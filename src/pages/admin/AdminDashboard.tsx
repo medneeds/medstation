@@ -54,6 +54,9 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lastSync, setLastSync] = useState<Date | null>(null);
+  const [activeUsers, setActiveUsers] = useState<SubscriberRecord[]>([]);
+  const [activeTotal, setActiveTotal] = useState(0);
+
 
   const load = useCallback(async (forceStripeReload = false) => {
     if (forceStripeReload) setRefreshing(true);
