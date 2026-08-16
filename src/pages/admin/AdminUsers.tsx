@@ -17,11 +17,18 @@ interface UserRow {
   email: string;
   full_name: string | null;
   specialty: string | null;
+  crm?: string | null;
+  crm_state?: string | null;
+  phone?: string | null;
   created_at: string;
   last_sign_in_at: string | null;
   is_admin: boolean;
   effective_status: string;
   stripe_status: string;
+  plan_label?: string | null;
+  in_trial?: boolean;
+  trial_ends_at?: string | null;
+  access_active?: boolean;
   subscription_end: string | null;
   courtesy: any;
 }
@@ -29,12 +36,25 @@ interface UserRow {
 const STATUS_COLORS: Record<string, string> = {
   active: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
   trialing: "bg-sky-500/10 text-sky-600 border-sky-500/20",
+  trial: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
   past_due: "bg-amber-500/10 text-amber-600 border-amber-500/20",
   canceled: "bg-red-500/10 text-red-600 border-red-500/20",
   none: "bg-muted text-muted-foreground border-border",
   courtesy: "bg-purple-500/10 text-purple-600 border-purple-500/20",
   admin: "bg-primary/10 text-primary border-primary/20",
 } as const;
+
+const STATUS_LABELS: Record<string, string> = {
+  active: "Assinante",
+  trialing: "Trial Stripe",
+  trial: "Teste 7 dias",
+  past_due: "Pagamento pendente",
+  canceled: "Cancelado",
+  none: "Sem assinatura",
+  courtesy: "Cortesia",
+  admin: "Admin",
+};
+
 
 interface Stats {
   total_users: number;
