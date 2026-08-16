@@ -20,6 +20,27 @@ let stripeCache: {
 } | null = null;
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
+const TRIAL_DAYS = 7;
+const PAYING_STATUSES = new Set(["active", "trialing", "past_due"]);
+
+// Rótulo comercial do plano a partir dos produtos Stripe
+const PRODUCT_LABELS: Record<string, string> = {
+  prod_V4jGKeBPH2hGYg: "MedStation Completo (49,90)",
+  prod_V4BACwTTBf5tBk: "Pro Completo (legado 99,90)",
+  prod_UUfw2uz4UPwkco: "Pro 2 Bundle (legado)",
+  prod_TgR7u5urUle7om: "Assistentes (legado 29,90)",
+  prod_UUfvAeta3d1Rn5: "Upgrade Assistentes (legado)",
+  prod_UUfuDkH9yfcfb3: "Modo Escuta (legado)",
+  prod_UUfu9AzBtaGsCW: "Upgrade Modo Escuta (legado)",
+};
+
+function planLabel(productIds: string[], interval: string | null): string | null {
+  if (!productIds.length) return null;
+  const names = productIds.map((id) => PRODUCT_LABELS[id] || id);
+  const cycle = interval === "year" ? " · anual" : interval === "month" ? " · mensal" : "";
+  return names.join(" + ") + cycle;
+}
+
 
 async function fetchAllStripeData(stripe: Stripe, force = false) {
   const now = Date.now();
@@ -197,7 +218,7 @@ serve(async (req) => {
     const [courtesyRes, rolesRes, profilesRes] = await Promise.all([
       supabaseAdmin.from("courtesy_access").select("*"),
       supabaseAdmin.from("user_roles").select("user_id, role"),
-      supabaseAdmin.from("profiles").select("id, full_name, specialty"),
+      supabaseAdmin.from("profiles").select("id, full_name, specialty, crm, crm_state, phone"),
     ]);
     const courtesyMap = new Map((courtesyRes.data || []).map((c: any) => [c.user_id, c]));
     const rolesMap = new Map<string, string[]>();
@@ -226,9 +247,23 @@ serve(async (req) => {
       const isAdminUser = roles.includes("admin");
       const profile = u ? profilesMap.get(u.id) : null;
 
+      // Teste de 7 dias sem cartão (mesma regra da check-subscription: idade da conta)
+      const paying = PAYING_STATUSES.has(stripe.status);
+      let trialEndsAt: string | null = null;
+      let inTrial = false;
+      if (u?.created_at && !paying && !courtesyActive && !isAdminUser) {
+        const end = new Date(u.created_at).getTime() + TRIAL_DAYS * 86400000;
+        if (end > Date.now()) {
+          inTrial = true;
+          trialEndsAt = new Date(end).toISOString();
+        }
+      }
+
       let effectiveStatus: string;
       if (isAdminUser) effectiveStatus = "admin";
+      else if (paying) effectiveStatus = stripe.status;
       else if (courtesyActive) effectiveStatus = "courtesy";
+      else if (inTrial) effectiveStatus = "trial";
       else effectiveStatus = stripe.status;
 
       return {
@@ -238,16 +273,22 @@ serve(async (req) => {
         last_sign_in_at: u?.last_sign_in_at || null,
         full_name: profile?.full_name || customer?.name || null,
         specialty: profile?.specialty || null,
+        crm: profile?.crm || null,
+        crm_state: profile?.crm_state || null,
+        phone: profile?.phone || null,
         is_admin: isAdminUser,
         stripe_customer_id: customer?.id || null,
         stripe_status: stripe.status,
         stripe_product_ids: stripe.productIds,
+        plan_label: planLabel(stripe.productIds, stripe.interval),
         subscription_end: stripe.endDate,
         subscription_created: stripe.currentSubCreated,
         monthly_amount_cents: stripe.monthlyAmountCents,
         currency: stripe.currency,
         interval: stripe.interval,
         auth_missing: !u,
+        in_trial: inTrial,
+        trial_ends_at: trialEndsAt,
         courtesy: courtesy
           ? {
               id: courtesy.id,
@@ -259,8 +300,11 @@ serve(async (req) => {
             }
           : null,
         effective_status: effectiveStatus,
+        // "ativo de verdade": pagante, cortesia vigente ou em teste de 7 dias
+        access_active: paying || !!courtesyActive || inTrial || isAdminUser,
       };
     };
+
 
     const records: any[] = allUsers.map((u: any) => {
       const email = (u.email || "").toLowerCase();
@@ -307,11 +351,14 @@ serve(async (req) => {
       courtesy: globalCourtesy.length,
       admin: globalAdmin.length,
       auth_missing: records.filter((r) => r.auth_missing).length,
+      free_trial: records.filter((r) => r.in_trial).length,
+      access_active: records.filter((r) => r.access_active).length,
       mrr_cents: Math.round(globalMrrCents),
       arr_cents: Math.round(globalMrrCents * 12),
       avg_ticket_cents: payingAll.length ? Math.round(globalMrrCents / payingAll.length) : 0,
       currency: globalCurrency,
       paying_total: payingAll.length,
+
     };
 
     // ---- Apply filters only to the returned records list (pagination/search) ----
@@ -325,6 +372,10 @@ serve(async (req) => {
       const stripeStatusFilters = new Set(["active", "trialing", "past_due", "canceled"]);
       if (statusFilter === "paying") {
         filtered = filtered.filter((r) => payingStatuses.has(r.stripe_status));
+      } else if (statusFilter === "access_active") {
+        filtered = filtered.filter((r) => r.access_active);
+      } else if (statusFilter === "trial") {
+        filtered = filtered.filter((r) => r.in_trial);
       } else if (stripeStatusFilters.has(statusFilter)) {
         // Match real Stripe status so admins/courtesies with paid subs are included
         filtered = filtered.filter((r) => r.stripe_status === statusFilter);
@@ -332,6 +383,7 @@ serve(async (req) => {
         filtered = filtered.filter((r) => r.effective_status === statusFilter);
       }
     }
+
     if (from || to) {
       filtered = filtered.filter((r) => {
         const ref = r.subscription_created || r.created_at;
@@ -371,6 +423,9 @@ serve(async (req) => {
       courtesy: filtered.filter((r) => r.effective_status === "courtesy").length,
       admin: filtered.filter((r) => r.is_admin).length,
       auth_missing: filtered.filter((r) => r.auth_missing).length,
+      free_trial: filtered.filter((r) => r.in_trial).length,
+      access_active: filtered.filter((r) => r.access_active).length,
+
       mrr_cents: Math.round(filteredMrr),
       arr_cents: Math.round(filteredMrr * 12),
       avg_ticket_cents: filteredPaying.length ? Math.round(filteredMrr / filteredPaying.length) : 0,

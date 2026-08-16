@@ -16,16 +16,23 @@ export interface SubscriberRecord {
   last_sign_in_at: string | null;
   full_name: string | null;
   specialty: string | null;
+  crm?: string | null;
+  crm_state?: string | null;
+  phone?: string | null;
   is_admin: boolean;
   stripe_customer_id: string | null;
   stripe_status: string;
   stripe_product_ids: string[];
+  plan_label?: string | null;
   subscription_end: string | null;
   subscription_created: string | null;
   monthly_amount_cents: number;
   currency: string | null;
   interval: string | null;
   auth_missing: boolean;
+  in_trial?: boolean;
+  trial_ends_at?: string | null;
+  access_active?: boolean;
   courtesy: CourtesyInfo | null;
   effective_status: string;
 }
@@ -41,12 +48,15 @@ export interface SubscriberStats {
   courtesy: number;
   admin: number;
   auth_missing: number;
+  free_trial?: number;
+  access_active?: number;
   mrr_cents: number;
   arr_cents: number;
   avg_ticket_cents: number;
   currency: string;
   paying_total: number;
 }
+
 
 export type FilteredSubscriberStats = SubscriberStats;
 

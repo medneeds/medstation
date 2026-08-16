@@ -17,11 +17,18 @@ interface UserRow {
   email: string;
   full_name: string | null;
   specialty: string | null;
+  crm?: string | null;
+  crm_state?: string | null;
+  phone?: string | null;
   created_at: string;
   last_sign_in_at: string | null;
   is_admin: boolean;
   effective_status: string;
   stripe_status: string;
+  plan_label?: string | null;
+  in_trial?: boolean;
+  trial_ends_at?: string | null;
+  access_active?: boolean;
   subscription_end: string | null;
   courtesy: any;
 }
@@ -29,12 +36,25 @@ interface UserRow {
 const STATUS_COLORS: Record<string, string> = {
   active: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
   trialing: "bg-sky-500/10 text-sky-600 border-sky-500/20",
+  trial: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
   past_due: "bg-amber-500/10 text-amber-600 border-amber-500/20",
   canceled: "bg-red-500/10 text-red-600 border-red-500/20",
   none: "bg-muted text-muted-foreground border-border",
   courtesy: "bg-purple-500/10 text-purple-600 border-purple-500/20",
   admin: "bg-primary/10 text-primary border-primary/20",
 } as const;
+
+const STATUS_LABELS: Record<string, string> = {
+  active: "Assinante",
+  trialing: "Trial Stripe",
+  trial: "Teste 7 dias",
+  past_due: "Pagamento pendente",
+  canceled: "Cancelado",
+  none: "Sem assinatura",
+  courtesy: "Cortesia",
+  admin: "Admin",
+};
+
 
 interface Stats {
   total_users: number;
@@ -148,9 +168,12 @@ export default function AdminUsers() {
           <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos os status</SelectItem>
+            <SelectItem value="access_active">Com acesso ativo</SelectItem>
             <SelectItem value="paying">Pagantes (todos)</SelectItem>
             <SelectItem value="active">Ativos</SelectItem>
-            <SelectItem value="trialing">Trial</SelectItem>
+            <SelectItem value="trial">Teste 7 dias</SelectItem>
+            <SelectItem value="trialing">Trial Stripe</SelectItem>
+
             <SelectItem value="courtesy">Cortesia</SelectItem>
             <SelectItem value="past_due">Em atraso</SelectItem>
             <SelectItem value="canceled">Cancelados</SelectItem>
@@ -168,31 +191,41 @@ export default function AdminUsers() {
               <tr>
                 <th className="text-left px-4 py-2">Email</th>
                 <th className="text-left px-4 py-2">Nome</th>
+                <th className="text-left px-4 py-2">Contato / CRM</th>
                 <th className="text-left px-4 py-2">Status</th>
+                <th className="text-left px-4 py-2">Plano</th>
                 <th className="text-left px-4 py-2">Criado</th>
                 <th className="text-left px-4 py-2">Último login</th>
               </tr>
             </thead>
             <tbody>
               {loading && records.length === 0 && (
-                <tr><td colSpan={5} className="py-10 text-center text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin inline mr-2" /> Carregando...</td></tr>
+                <tr><td colSpan={7} className="py-10 text-center text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin inline mr-2" /> Carregando...</td></tr>
               )}
               {!loading && records.length === 0 && (
-                <tr><td colSpan={5} className="py-10 text-center text-muted-foreground">Nenhum resultado</td></tr>
+                <tr><td colSpan={7} className="py-10 text-center text-muted-foreground">Nenhum resultado</td></tr>
               )}
               {records.map((r) => (
                 <tr key={r.user_id} className="border-t border-border/40 hover:bg-muted/30 cursor-pointer" onClick={() => setSelected(r)}>
                   <td className="px-4 py-2 font-mono text-xs">{r.email}</td>
                   <td className="px-4 py-2">{r.full_name || "—"}</td>
+                  <td className="px-4 py-2 text-xs text-muted-foreground">
+                    <div>{r.phone || "—"}</div>
+                    <div>{r.crm ? `CRM ${r.crm}${r.crm_state ? `/${r.crm_state}` : ""}` : "—"}</div>
+                  </td>
                   <td className="px-4 py-2">
                     <Badge variant="outline" className={STATUS_COLORS[r.effective_status] || ""}>
-                      {r.effective_status}
+                      {STATUS_LABELS[r.effective_status] || r.effective_status}
                     </Badge>
+                  </td>
+                  <td className="px-4 py-2 text-xs text-muted-foreground max-w-[200px] truncate">
+                    {r.plan_label || (r.in_trial ? "Teste de 7 dias" : "—")}
                   </td>
                   <td className="px-4 py-2 text-muted-foreground text-xs">{new Date(r.created_at).toLocaleDateString("pt-BR")}</td>
                   <td className="px-4 py-2 text-muted-foreground text-xs">{r.last_sign_in_at ? new Date(r.last_sign_in_at).toLocaleDateString("pt-BR") : "—"}</td>
                 </tr>
               ))}
+
             </tbody>
           </table>
         </div>
