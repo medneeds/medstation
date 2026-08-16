@@ -423,6 +423,9 @@ serve(async (req) => {
       courtesy: filtered.filter((r) => r.effective_status === "courtesy").length,
       admin: filtered.filter((r) => r.is_admin).length,
       auth_missing: filtered.filter((r) => r.auth_missing).length,
+      free_trial: filtered.filter((r) => r.in_trial).length,
+      access_active: filtered.filter((r) => r.access_active).length,
+
       mrr_cents: Math.round(filteredMrr),
       arr_cents: Math.round(filteredMrr * 12),
       avg_ticket_cents: filteredPaying.length ? Math.round(filteredMrr / filteredPaying.length) : 0,
