@@ -218,7 +218,7 @@ serve(async (req) => {
     const [courtesyRes, rolesRes, profilesRes] = await Promise.all([
       supabaseAdmin.from("courtesy_access").select("*"),
       supabaseAdmin.from("user_roles").select("user_id, role"),
-      supabaseAdmin.from("profiles").select("id, full_name, specialty"),
+      supabaseAdmin.from("profiles").select("id, full_name, specialty, crm, crm_state, phone"),
     ]);
     const courtesyMap = new Map((courtesyRes.data || []).map((c: any) => [c.user_id, c]));
     const rolesMap = new Map<string, string[]>();
