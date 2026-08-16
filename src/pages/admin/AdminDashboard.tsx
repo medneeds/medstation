@@ -209,7 +209,75 @@ export default function AdminDashboard() {
         ))}
       </div>
 
+      <Card className="p-0 overflow-hidden">
+        <div className="flex flex-wrap items-center justify-between gap-2 p-4 border-b">
+          <div>
+            <h2 className="font-display text-lg font-semibold">Usuários com acesso ativo</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Pagantes, cortesias vigentes e testes de 7 dias — {activeTotal} no total
+              {activeUsers.length < activeTotal && ` · exibindo os ${activeUsers.length} mais recentes`}
+            </p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => navigate("/admin/usuarios")}>
+            Ver todos
+          </Button>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
+              <tr>
+                <th className="text-left font-medium px-4 py-2">Usuário</th>
+                <th className="text-left font-medium px-4 py-2">Situação</th>
+                <th className="text-left font-medium px-4 py-2">Plano</th>
+                <th className="text-right font-medium px-4 py-2">Mensal</th>
+                <th className="text-left font-medium px-4 py-2">Renova / expira</th>
+                <th className="text-left font-medium px-4 py-2">Último acesso</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading && (
+                <tr>
+                  <td colSpan={6} className="px-4 py-6 text-center text-muted-foreground animate-pulse">
+                    Sincronizando…
+                  </td>
+                </tr>
+              )}
+              {!loading && activeUsers.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-4 py-6 text-center text-muted-foreground">
+                    Nenhum usuário com acesso ativo.
+                  </td>
+                </tr>
+              )}
+              {!loading &&
+                activeUsers.map((r) => (
+                  <tr key={r.user_id || r.email} className="border-t hover:bg-muted/30">
+                    <td className="px-4 py-2">
+                      <p className="font-medium truncate max-w-[220px]">{r.full_name || "—"}</p>
+                      <p className="text-xs text-muted-foreground truncate max-w-[220px]">{r.email}</p>
+                    </td>
+                    <td className="px-4 py-2">{statusBadge(r)}</td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground max-w-[220px] truncate">
+                      {r.plan_label || (r.in_trial ? "Teste de 7 dias" : r.courtesy?.active ? "Cortesia" : "—")}
+                    </td>
+                    <td className="px-4 py-2 text-right tabular-nums">
+                      {r.monthly_amount_cents
+                        ? fmtMoney(r.monthly_amount_cents, r.currency || "brl")
+                        : "—"}
+                    </td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">
+                      {fmtDate(r.subscription_end || r.trial_ends_at || r.courtesy?.expires_at || null)}
+                    </td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">{fmtDate(r.last_sign_in_at)}</td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
       <DashboardTrends />
+
     </div>
   );
 }
