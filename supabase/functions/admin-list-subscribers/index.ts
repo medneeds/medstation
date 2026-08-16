@@ -351,11 +351,14 @@ serve(async (req) => {
       courtesy: globalCourtesy.length,
       admin: globalAdmin.length,
       auth_missing: records.filter((r) => r.auth_missing).length,
+      free_trial: records.filter((r) => r.in_trial).length,
+      access_active: records.filter((r) => r.access_active).length,
       mrr_cents: Math.round(globalMrrCents),
       arr_cents: Math.round(globalMrrCents * 12),
       avg_ticket_cents: payingAll.length ? Math.round(globalMrrCents / payingAll.length) : 0,
       currency: globalCurrency,
       paying_total: payingAll.length,
+
     };
 
     // ---- Apply filters only to the returned records list (pagination/search) ----
