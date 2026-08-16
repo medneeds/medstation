@@ -115,6 +115,27 @@ export default function AdminDashboard() {
       currency: currency.toUpperCase(),
     }).format(cents / 100);
 
+  const fmtDate = (iso: string | null | undefined) =>
+    iso ? new Date(iso).toLocaleDateString("pt-BR") : "—";
+
+  const statusBadge = (r: SubscriberRecord) => {
+    const map: Record<string, { label: string; cls: string }> = {
+      active: { label: "Assinante", cls: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30" },
+      trialing: { label: "Trial Stripe", cls: "bg-sky-500/10 text-sky-600 border-sky-500/30" },
+      past_due: { label: "Pagamento pendente", cls: "bg-amber-500/10 text-amber-600 border-amber-500/30" },
+      trial: { label: "Teste 7 dias", cls: "bg-indigo-500/10 text-indigo-600 border-indigo-500/30" },
+      courtesy: { label: "Cortesia", cls: "bg-purple-500/10 text-purple-600 border-purple-500/30" },
+      admin: { label: "Admin", cls: "bg-muted text-muted-foreground border-border" },
+    };
+    const s = map[r.effective_status] || { label: r.effective_status, cls: "bg-muted text-muted-foreground border-border" };
+    return (
+      <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs ${s.cls}`}>
+        {s.label}
+      </span>
+    );
+  };
+
+
   const cards = [
     { label: "Usuários totais", value: kpis?.totalUsers ?? "—", icon: Users, color: "text-blue-500" },
     { label: "Assinantes ativos", value: kpis?.activeSubs ?? "—", icon: TrendingUp, color: "text-emerald-500" },
