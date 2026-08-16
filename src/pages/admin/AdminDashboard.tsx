@@ -131,7 +131,10 @@ export default function AdminDashboard() {
       color: "text-teal-500",
     },
     { label: "Total pagantes", value: kpis?.payingTotal ?? "—", icon: TrendingUp, color: "text-teal-500" },
+    { label: "Acesso ativo (total)", value: kpis?.accessActive ?? "—", icon: Users, color: "text-emerald-500" },
+    { label: "Em teste (7 dias)", value: kpis?.freeTrial ?? "—", icon: Gift, color: "text-indigo-500" },
     { label: "Cortesias ativas", value: kpis?.courtesyActive ?? "—", icon: Users, color: "text-purple-500" },
+
     { label: "Tickets em aberto", value: kpis?.openTickets ?? "—", icon: MessageSquare, color: "text-amber-500" },
     { label: "Tokens 24h", value: kpis ? kpis.tokens24h.toLocaleString("pt-BR") : "—", icon: Activity, color: "text-sky-500" },
     { label: "Custo IA (30d)", value: kpis ? `$${kpis.cost30d.toFixed(2)}` : "—", icon: DollarSign, color: "text-green-500" },
