@@ -61,6 +61,7 @@ export default function Obrigado() {
 
   const sessionId = searchParams.get("session_id");
   const planParam = searchParams.get("plan");
+  const successParam = searchParams.get("success") === "true";
 
   useEffect(() => {
     if (ran.current) return;
@@ -70,7 +71,15 @@ export default function Obrigado() {
   }, []);
 
   const bootstrap = async () => {
-    // Fluxo 1 — checkout de visitante: session_id do Stripe cria/vincula a conta.
+    // Sessão de login é apenas complementar: a confirmação vem do Stripe.
+    const { data: { session: authSession } } = await supabase.auth.getSession();
+    const isLogged = !!authSession;
+    if (isLogged) {
+      setAuthenticated(true);
+      setEmail(authSession!.user.email ?? "");
+    }
+
+    // Fluxo 1 — temos session_id do Stripe: a confirmação não depende de login.
     if (sessionId) {
       try {
         const { data, error } = await supabase.functions.invoke("complete-checkout", {
@@ -84,21 +93,28 @@ export default function Obrigado() {
           value: typeof data.amountTotal === "number" ? data.amountTotal / 100 : undefined,
           currency: data.currency,
           plan: data.plan ?? planParam,
-          extra: { user_exists: !!data.userExists, flow: "guest" },
+          extra: { user_exists: !!data.userExists, flow: isLogged ? "authenticated" : "guest" },
         });
 
-        setEmail(data.email ?? "");
+        setEmail(data.email ?? authSession?.user.email ?? "");
         setUserExists(!!data.userExists);
 
-        if (data.passwordWasSkipped && !data.userExists) {
+        if (isLogged) {
+          // Revalida a assinatura em segundo plano, sem bloquear a confirmação.
+          void supabase.functions.invoke("check-subscription");
+        }
+
+        if (data.passwordWasSkipped && !data.userExists && !isLogged) {
           setStatus("set-password");
           return;
         }
         setStatus("confirmed");
         setMessage(
-          data.userExists
-            ? "Sua assinatura está ativa. Entre para continuar de onde parou."
-            : "Sua conta foi criada e sua assinatura está ativa.",
+          isLogged
+            ? "Sua assinatura está ativa e o acesso completo já foi liberado."
+            : data.userExists
+              ? "Sua assinatura está ativa. Entre para continuar de onde parou."
+              : "Sua conta foi criada e sua assinatura está ativa.",
         );
         return;
       } catch (err: any) {
@@ -109,16 +125,29 @@ export default function Obrigado() {
       }
     }
 
-    // Fluxo 2 — assinante já logado retornando do Stripe.
+    // Fluxo 2 — retorno do Stripe sem session_id (ex.: links antigos).
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      if (!isLogged) {
+        if (successParam) {
+          trackPurchaseConversion({
+            transactionId: `guest_${planParam ?? "plan"}_${new Date().toISOString().slice(0, 16)}`,
+            plan: planParam,
+            currency: "BRL",
+            extra: { flow: "guest_no_session" },
+          });
+          setStatus("confirmed");
+          setMessage(
+            "Pagamento confirmado. Faça login com o email usado no checkout para liberar o acesso.",
+          );
+          return;
+        }
         setStatus("error");
         setMessage("Não encontramos uma sessão de pagamento. Faça login para verificar sua assinatura.");
         return;
       }
+
       setAuthenticated(true);
-      setEmail(session.user.email ?? "");
+      setEmail(authSession!.user.email ?? "");
 
       // Revalida a assinatura imediatamente (o Stripe já confirmou o pagamento).
       let subscribed = false;
@@ -129,7 +158,7 @@ export default function Obrigado() {
       }
 
       trackPurchaseConversion({
-        transactionId: `${session.user.id}_${planParam ?? "plan"}_${new Date().toISOString().slice(0, 10)}`,
+        transactionId: `${authSession!.user.id}_${planParam ?? "plan"}_${new Date().toISOString().slice(0, 10)}`,
         plan: planParam,
         currency: "BRL",
         extra: { flow: "authenticated", confirmed: subscribed },
