@@ -141,8 +141,8 @@ export default function Obrigado() {
           );
           return;
         }
-        setStatus("error");
-        setMessage("Não encontramos uma sessão de pagamento. Faça login para verificar sua assinatura.");
+        setStatus("idle");
+        setMessage("Esta página confirma assinaturas concluídas no checkout. Se você acabou de pagar, use o link de retorno do pagamento; se já é assinante, entre na sua conta.");
         return;
       }
 
