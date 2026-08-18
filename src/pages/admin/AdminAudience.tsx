@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Download, RefreshCw, Loader2, Users2, Filter } from "lucide-react";
 import type { SubscriberRecord } from "./types";
+import { LegacyTrialCampaignCard } from "@/components/admin/LegacyTrialCampaignCard";
 
 const STATUS_OPTIONS = [
   { key: "active", label: "Ativos", hint: "Assinatura paga em dia" },
