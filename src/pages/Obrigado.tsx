@@ -147,7 +147,7 @@ export default function Obrigado() {
       }
 
       setAuthenticated(true);
-      setEmail(session.user.email ?? "");
+      setEmail(authSession!.user.email ?? "");
 
       // Revalida a assinatura imediatamente (o Stripe já confirmou o pagamento).
       let subscribed = false;
@@ -158,7 +158,7 @@ export default function Obrigado() {
       }
 
       trackPurchaseConversion({
-        transactionId: `${session.user.id}_${planParam ?? "plan"}_${new Date().toISOString().slice(0, 10)}`,
+        transactionId: `${authSession!.user.id}_${planParam ?? "plan"}_${new Date().toISOString().slice(0, 10)}`,
         plan: planParam,
         currency: "BRL",
         extra: { flow: "authenticated", confirmed: subscribed },
