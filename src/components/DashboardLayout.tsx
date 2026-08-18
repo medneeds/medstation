@@ -13,6 +13,7 @@ import { FloatingConsultationButton } from "@/components/FloatingConsultationBut
 import { OnboardingTour } from "@/components/OnboardingTour";
 import { AnnouncementsBanner } from "@/components/AnnouncementsBanner";
 import { TrialCountdownBanner } from "@/components/TrialCountdownBanner";
+import { LegacyTrialInviteDialog } from "@/components/LegacyTrialInviteDialog";
 import { NpsWidget } from "@/components/NpsWidget";
 import { AssistantPromoEngine } from "@/components/AssistantPromoEngine";
 import { ConciergeInternal } from "@/components/ConciergeInternal";
