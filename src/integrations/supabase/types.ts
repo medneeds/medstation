@@ -716,6 +716,36 @@ export type Database = {
         }
         Relationships: []
       }
+      legacy_trial_invites: {
+        Row: {
+          claimed_at: string | null
+          created_at: string
+          dismissed_at: string | null
+          email: string | null
+          email_sent_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          created_at?: string
+          dismissed_at?: string | null
+          email?: string | null
+          email_sent_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string | null
+          created_at?: string
+          dismissed_at?: string | null
+          email?: string | null
+          email_sent_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       medical_documents: {
         Row: {
           case_id: string | null
