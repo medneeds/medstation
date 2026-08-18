@@ -160,6 +160,8 @@ serve(async (req) => {
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
 
     if (customers.data.length === 0) {
+      const courtesy = await courtesyFallback();
+      if (courtesy) return courtesy;
       const trial = await getTrialInfo(supabaseClient, user.id);
       if (trial) {
         logStep("Trial ativo (sem cliente Stripe)", trial);
@@ -207,6 +209,8 @@ serve(async (req) => {
     }
 
     if (!hasActiveSub) {
+      const courtesy = await courtesyFallback();
+      if (courtesy) return courtesy;
       const trial = await getTrialInfo(supabaseClient, user.id);
       if (trial) {
         logStep("Trial ativo", trial);
