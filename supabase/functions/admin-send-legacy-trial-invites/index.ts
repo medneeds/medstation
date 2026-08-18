@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import Stripe from "https://esm.sh/stripe@18.5.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -53,13 +54,54 @@ Deno.serve(async (req) => {
     const claimed = invites?.filter((i) => i.claimed_at).length ?? 0;
     const sent = invites?.filter((i) => i.email_sent_at).length ?? 0;
 
-    const pending = (invites ?? []).filter(
-      (i) => !i.claimed_at && (resend || !i.email_sent_at),
+    // Excluir quem já tem acesso completo liberado (cortesia/trial vigente)
+    const nowIso = new Date().toISOString();
+    const { data: courtesy } = await admin
+      .from("courtesy_access")
+      .select("user_id, expires_at");
+    const withAccess = new Set(
+      (courtesy ?? [])
+        .filter((c) => !c.expires_at || c.expires_at > nowIso)
+        .map((c) => c.user_id),
     );
+
+    // Excluir assinantes ativos no Stripe
+    const activeEmails = new Set<string>();
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (stripeKey) {
+      try {
+        const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+        for await (const sub of stripe.subscriptions.list({ status: "all", limit: 100 })) {
+          if (!["active", "trialing", "past_due"].includes(sub.status)) continue;
+          const customer = await stripe.customers.retrieve(sub.customer as string);
+          const email = (customer as { email?: string })?.email;
+          if (email) activeEmails.add(email.toLowerCase());
+        }
+      } catch (e) {
+        console.error("[admin-send-legacy-trial-invites] stripe lookup falhou", e);
+      }
+    }
+
+    const eligible = (invites ?? []).filter(
+      (i) =>
+        !i.claimed_at &&
+        !i.dismissed_at &&
+        !withAccess.has(i.user_id) &&
+        !(i.email && activeEmails.has(i.email.toLowerCase())),
+    );
+
+    const pending = eligible.filter((i) => resend || !i.email_sent_at);
 
     if (mode === "stats") {
       return new Response(
-        JSON.stringify({ total, claimed, sent, pending: pending.length }),
+        JSON.stringify({
+          total,
+          claimed,
+          sent,
+          pending: pending.length,
+          eligible: eligible.length,
+          skipped_subscribers: activeEmails.size,
+        }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
