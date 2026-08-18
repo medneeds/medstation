@@ -378,11 +378,8 @@ export default function Lp3() {
             <p className="mt-2 text-sm text-muted-foreground">
               7 dias com tudo liberado, sem cartão. Leva menos de um minuto.
             </p>
-            <div className="mt-6 text-left">
-              <LeadForm source="lp3_final" ctaLabel="Começar agora" />
-            </div>
-            <Button variant="ghost" className="mt-4 text-sm" onClick={() => goForm("cta_final_topo")}>
-              Voltar ao topo <ArrowRight className="w-4 h-4 ml-1.5 -rotate-90" />
+            <Button className="mt-6" size="lg" onClick={() => goForm("cta_final_topo")}>
+              Testar 7 dias grátis <ArrowRight className="w-4 h-4 ml-1.5" />
             </Button>
           </div>
         </section>
