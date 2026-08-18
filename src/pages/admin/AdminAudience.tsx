@@ -157,7 +157,10 @@ export default function AdminAudience() {
         </div>
       </div>
 
+      <LegacyTrialCampaignCard />
+
       <Card className="p-4 space-y-4">
+
         <div className="flex items-center gap-2 text-sm font-medium">
           <Filter className="h-4 w-4 text-primary" /> Segmentação
         </div>
