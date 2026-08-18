@@ -17,4 +17,5 @@ export interface TemplateEntry {
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'welcome-lead': welcomeLead,
   'referral-reward-granted': referralRewardGranted,
+  'legacy-trial-invite': legacyTrialInvite,
 }
