@@ -44,7 +44,9 @@ export function TrialCountdownBanner() {
           <p className="text-sm font-semibold leading-tight">
             {trialSource === "legacy"
               ? `Liberamos a plataforma inteira para você — ${timeLabel} restante${daysLeft === 1 ? "" : "s"}`
-              : `Seu acesso completo termina em ${timeLabel}`}
+              : daysLeft === 1
+                ? "Seu acesso completo termina hoje"
+                : `Seu acesso completo termina em ${timeLabel}`}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
             12 assistentes, Modo Escuta e Modo Rotineiro liberados. Assine por {brl(price.now)} por mês e

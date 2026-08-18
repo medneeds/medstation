@@ -74,7 +74,6 @@ import Unsubscribe from "./pages/Unsubscribe";
 import Indicar from "./pages/Indicar";
 import ReferralRedirect from "./pages/ReferralRedirect";
 import NotFound from "./pages/NotFound";
-import TmpBannerPreview from "./pages/TmpBannerPreview";
 
 const queryClient = new QueryClient();
 
@@ -377,7 +376,6 @@ const App = () => (
             <Route path="/r/:code" element={<ReferralRedirect />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="/tmp-banner" element={<TmpBannerPreview />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
