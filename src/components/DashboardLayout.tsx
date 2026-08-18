@@ -152,6 +152,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <NpsWidget />
       <AssistantPromoEngine />
       <ConciergeInternal open={conciergeOpen} onOpenChange={setConciergeOpen} />
+      <LegacyTrialInviteDialog />
     </>
+
   );
 }
