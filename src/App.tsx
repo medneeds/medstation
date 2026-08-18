@@ -21,7 +21,7 @@ import Comecar from "./pages/Comecar";
 import Lp3 from "./pages/Lp3";
 import Tour from "./pages/Tour";
 import Pricing from "./pages/Pricing";
-import Welcome from "./pages/Welcome";
+import Obrigado from "./pages/Obrigado";
 import Onboarding from "./pages/Onboarding";
 import WelcomeTour from "./pages/WelcomeTour";
 import Clinicus from "./pages/Clinicus";
@@ -140,7 +140,8 @@ const App = () => (
               }
             />
 
-            <Route path="/welcome" element={<Welcome />} />
+            <Route path="/obrigado" element={<Obrigado />} />
+            <Route path="/welcome" element={<Obrigado />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/welcome-tour" element={<ProtectedRoute><WelcomeTour /></ProtectedRoute>} />
             <Route

@@ -68,7 +68,7 @@ serve(async (req) => {
       customer_email: customerId ? undefined : email,
       line_items: [{ price: PRICES[plan], quantity: 1 }],
       mode: "subscription",
-      success_url: `${origin}/welcome?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${origin}/obrigado?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?canceled=true`,
       // Senha agora é OPCIONAL: Apple Pay / Google Pay / Link não preenchem
       // custom_fields. Se o usuário pagar via wallet, criamos a conta sem
