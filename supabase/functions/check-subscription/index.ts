@@ -117,21 +117,35 @@ serve(async (req) => {
       });
     }
 
-    // Courtesy
-    const { data: hasCourtesy } = await supabaseClient.rpc('has_active_courtesy', {
-      _user_id: user.id,
-    });
-    if (hasCourtesy) {
+    // Cortesia / teste estendido: só vale quando não há assinatura ativa,
+    // por isso é avaliada depois da consulta ao Stripe.
+    const courtesyFallback = async () => {
+      const { data: hasCourtesy } = await supabaseClient.rpc('has_active_courtesy', {
+        _user_id: user.id,
+      });
+      if (!hasCourtesy) return null;
+
       const { data: courtesyData } = await supabaseClient
         .from('courtesy_access')
-        .select('expires_at')
+        .select('expires_at, source')
         .eq('user_id', user.id)
+        .order('expires_at', { ascending: false, nullsFirst: false })
+        .limit(1)
         .maybeSingle();
+
+      if (courtesyData?.expires_at) {
+        logStep("Teste estendido por cortesia", courtesyData);
+        return trialResponse(
+          courtesyData.expires_at,
+          corsHeaders,
+          courtesyData.source === "legacy_trial" ? "legacy" : "signup",
+        );
+      }
 
       return new Response(JSON.stringify({
         subscribed: true,
         product_ids: ['courtesy'],
-        subscription_end: courtesyData?.expires_at || null,
+        subscription_end: null,
         has_agents: true,
         has_consultorio: true,
         available_upgrade: null,
@@ -139,7 +153,8 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
-    }
+    };
+
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
