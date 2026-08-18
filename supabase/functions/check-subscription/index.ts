@@ -47,10 +47,11 @@ async function getTrialInfo(supabaseClient: any, userId: string) {
   }
 }
 
-function trialResponse(trialEnd: string, corsHeaders: Record<string, string>) {
+function trialResponse(trialEnd: string, corsHeaders: Record<string, string>, source: "signup" | "legacy" = "signup") {
   return new Response(JSON.stringify({
     subscribed: true,
     trial: true,
+    trial_source: source,
     product_ids: ["trial"],
     product_id: "trial",
     subscription_end: trialEnd,
