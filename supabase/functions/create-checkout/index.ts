@@ -153,7 +153,7 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: PRICES[plan], quantity: 1 }],
       mode: "subscription",
-      success_url: `${req.headers.get("origin")}/obrigado?success=true&plan=${plan}`,
+      success_url: `${req.headers.get("origin")}/obrigado?success=true&plan=${plan}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get("origin")}/pricing?canceled=true`,
       // Maximiza disponibilidade de Apple Pay / Google Pay / Link
       payment_method_collection: "always",
