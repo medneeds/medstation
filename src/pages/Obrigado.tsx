@@ -21,7 +21,7 @@ import { LogoMark } from "@/components/LogoMark";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 
-type Status = "processing" | "confirmed" | "login" | "set-password" | "error";
+type Status = "processing" | "confirmed" | "login" | "set-password" | "error" | "idle";
 
 const NEXT_STEPS = [
   {
