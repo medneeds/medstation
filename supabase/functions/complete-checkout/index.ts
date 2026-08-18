@@ -44,7 +44,9 @@ serve(async (req) => {
       paymentStatus: session.payment_status,
     });
     
-    if (session.status !== 'complete' || session.payment_status !== 'paid') {
+    const paymentOk =
+      session.payment_status === 'paid' || session.payment_status === 'no_payment_required';
+    if (session.status !== 'complete' || !paymentOk) {
       throw new Error("Pagamento não foi concluído");
     }
     
