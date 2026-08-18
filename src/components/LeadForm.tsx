@@ -108,7 +108,12 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
         email: validated.email,
         password: validated.password,
         options: {
-          data: { full_name: validated.fullName, phone: phone.trim(), crm: crm.trim() || null },
+          data: {
+            full_name: validated.fullName,
+            phone: phone.trim(),
+            crm: crm.trim() || null,
+            crm_state: crmState.trim().toUpperCase() || null,
+          },
           emailRedirectTo: `${window.location.origin}/auth?confirmed=1`,
         },
       });
