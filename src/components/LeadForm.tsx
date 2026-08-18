@@ -159,7 +159,14 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
 
       if (data.session) {
         try {
-          await supabase.from("profiles").update({ phone: phone.trim(), crm: crm.trim() || null }).eq("id", data.user!.id);
+          await supabase
+            .from("profiles")
+            .update({
+              phone: phone.trim(),
+              crm: crm.trim() || null,
+              crm_state: crmState.trim().toUpperCase() || null,
+            })
+            .eq("id", data.user!.id);
         } catch (err) {
           console.error("Profile update failed", err);
         }
