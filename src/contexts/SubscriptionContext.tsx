@@ -12,6 +12,7 @@ interface SubscriptionContextType {
   hasConsultorio: boolean;
   availableUpgrade: AvailableUpgrade;
   isTrial: boolean;
+  trialSource: "signup" | "legacy" | null;
   loading: boolean;
   checkSubscription: () => Promise<void>;
 }
@@ -27,6 +28,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [hasConsultorio, setHasConsultorio] = useState(false);
   const [availableUpgrade, setAvailableUpgrade] = useState<AvailableUpgrade>(null);
   const [isTrial, setIsTrial] = useState(false);
+  const [trialSource, setTrialSource] = useState<"signup" | "legacy" | null>(null);
   const [loading, setLoading] = useState(true);
 
   const reset = () => {
@@ -38,6 +40,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     setHasConsultorio(false);
     setAvailableUpgrade(null);
     setIsTrial(false);
+    setTrialSource(null);
   };
 
   const checkSubscription = async () => {
@@ -60,6 +63,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       setHasConsultorio(data?.has_consultorio === true);
       setAvailableUpgrade((data?.available_upgrade as AvailableUpgrade) || null);
       setIsTrial(data?.trial === true);
+      setTrialSource((data?.trial_source as "signup" | "legacy") || null);
     } catch (error) {
       console.error("[SubscriptionContext] Error checking subscription:", error);
     } finally {
@@ -99,6 +103,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       hasConsultorio,
       availableUpgrade,
       isTrial,
+      trialSource,
       loading,
       checkSubscription,
     }}>
