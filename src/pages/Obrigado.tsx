@@ -21,7 +21,7 @@ import { LogoMark } from "@/components/LogoMark";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 
-type Status = "processing" | "confirmed" | "login" | "set-password" | "error";
+type Status = "processing" | "confirmed" | "login" | "set-password" | "error" | "idle";
 
 const NEXT_STEPS = [
   {
@@ -141,8 +141,8 @@ export default function Obrigado() {
           );
           return;
         }
-        setStatus("error");
-        setMessage("Não encontramos uma sessão de pagamento. Faça login para verificar sua assinatura.");
+        setStatus("idle");
+        setMessage("Esta página confirma assinaturas concluídas no checkout. Se você acabou de pagar, use o link de retorno do pagamento; se já é assinante, entre na sua conta.");
         return;
       }
 
@@ -403,6 +403,20 @@ export default function Obrigado() {
               <div className="flex flex-col gap-2">
                 <Button onClick={() => navigate("/auth")}>Fazer login</Button>
                 <Button variant="outline" onClick={() => navigate("/")}>Voltar ao início</Button>
+              </div>
+            </div>
+          )}
+
+          {status === "idle" && (
+            <div className="text-center space-y-5 max-w-sm mx-auto">
+              <div className="w-14 h-14 mx-auto rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-primary" strokeWidth={1.7} />
+              </div>
+              <h1 className="text-2xl font-semibold tracking-tight">Nada para confirmar por aqui</h1>
+              <p className="text-muted-foreground text-sm">{message}</p>
+              <div className="flex flex-col gap-2">
+                <Button onClick={() => navigate("/auth")}>Entrar na minha conta</Button>
+                <Button variant="outline" onClick={() => navigate("/")}>Ver planos</Button>
               </div>
             </div>
           )}
