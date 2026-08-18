@@ -11,7 +11,7 @@ import { brl, DISPLAY_PRICING } from "@/lib/subscription-tiers";
  * Não aparece para assinantes pagantes.
  */
 export function FreeExaminusSpotlight() {
-  const { subscribed, isTrial, subscriptionEnd, loading } = useSubscription();
+  const { subscribed, isTrial, trialSource, subscriptionEnd, loading } = useSubscription();
   if (loading) return null;
   if (subscribed && !isTrial) return null;
 
@@ -32,7 +32,11 @@ export function FreeExaminusSpotlight() {
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-display text-lg font-semibold tracking-tight">
-                {isTrial ? "Seu teste está ativo" : "Assine para continuar"}
+                {isTrial
+                  ? trialSource === "legacy"
+                    ? "Plataforma inteira liberada para você"
+                    : "Seu teste está ativo"
+                  : "Assine para continuar"}
               </h3>
               {isTrial && daysLeft !== null && (
                 <Badge variant="secondary" className="text-[10px]">
@@ -42,7 +46,9 @@ export function FreeExaminusSpotlight() {
             </div>
             <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
               {isTrial
-                ? "Você está com a plataforma inteira liberada: os 12 assistentes, o Modo Escuta e o Modo Rotineiro. Sem cartão de crédito até aqui."
+                ? trialSource === "legacy"
+                  ? "Como você já fazia parte da plataforma, liberamos tudo por 7 dias: os 12 assistentes, o Modo Escuta e o Modo Rotineiro. Sem cartão de crédito."
+                  : "Você está com a plataforma inteira liberada: os 12 assistentes, o Modo Escuta e o Modo Rotineiro. Sem cartão de crédito até aqui."
                 : `Seu período de teste terminou. Libere tudo de novo por ${brl(price.now)} por mês — em breve o plano passa a ${brl(99.9)}.`}
             </p>
           </div>
