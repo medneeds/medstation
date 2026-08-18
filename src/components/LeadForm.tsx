@@ -52,6 +52,7 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [crm, setCrm] = useState("");
+  const [crmState, setCrmState] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -61,6 +62,7 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
       email: email.trim().toLowerCase(),
       phone: phone.trim(),
       crm: crm.trim() || null,
+      crm_state: crmState.trim().toUpperCase() || null,
       source,
       utm: collectUtm(),
       referrer: typeof document !== "undefined" ? document.referrer || null : null,
