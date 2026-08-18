@@ -241,17 +241,32 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
               className="h-11"
             />
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="lead-crm" className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              CRM <span className="normal-case tracking-normal">(opcional)</span>
-            </Label>
-            <Input
-              id="lead-crm"
-              value={crm}
-              onChange={(e) => setCrm(e.target.value)}
-              placeholder="123456/SP"
-              className="h-11"
-            />
+          <div className="grid grid-cols-[1fr_88px] gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="lead-crm" className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                CRM <span className="normal-case tracking-normal">(opcional)</span>
+              </Label>
+              <Input
+                id="lead-crm"
+                value={crm}
+                onChange={(e) => setCrm(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                placeholder="123456"
+                inputMode="numeric"
+                className="h-11"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="lead-crm-uf" className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                UF
+              </Label>
+              <Input
+                id="lead-crm-uf"
+                value={crmState}
+                onChange={(e) => setCrmState(e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 2))}
+                placeholder="SP"
+                className="h-11"
+              />
+            </div>
           </div>
 
           <Button type="submit" className="w-full h-12 text-sm md:text-base" disabled={loading}>
