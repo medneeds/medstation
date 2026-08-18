@@ -27,7 +27,7 @@ const BENEFITS = [
 ];
 
 export function LegacyTrialInviteDialog() {
-  const { checkSubscription } = useSubscription();
+  const { checkSubscription, subscribed, isTrial, loading } = useSubscription();
   const { search } = useLocation();
   const [open, setOpen] = useState(false);
   const [claiming, setClaiming] = useState(false);
@@ -36,17 +36,20 @@ export function LegacyTrialInviteDialog() {
   useEffect(() => {
     let cancelled = false;
 
+    // Nunca oferecer para quem já assina ou já está com acesso completo liberado
+    if (loading || subscribed || isTrial) return;
+
     const load = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
       const { data } = await supabase
         .from("legacy_trial_invites")
-        .select("claimed_at")
+        .select("claimed_at, dismissed_at")
         .eq("user_id", user.id)
         .maybeSingle();
 
-      if (cancelled || !data || data.claimed_at) return;
+      if (cancelled || !data || data.claimed_at || data.dismissed_at) return;
 
       const forced = new URLSearchParams(search).get("convite") === "7dias";
       const snoozed = sessionStorage.getItem(DISMISS_KEY) === "1";
@@ -57,7 +60,7 @@ export function LegacyTrialInviteDialog() {
     return () => {
       cancelled = true;
     };
-  }, [search]);
+  }, [search, loading, subscribed, isTrial]);
 
   const handleClaim = async () => {
     setClaiming(true);
