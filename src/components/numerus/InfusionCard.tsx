@@ -47,11 +47,25 @@ interface Props {
 export function InfusionCard({ drug, weight }: Props) {
   const [dose, setDose] = useState(drug.start);
   const [dilutionIndex, setDilutionIndex] = useState(0);
+  const [customOn, setCustomOn] = useState(false);
+  const [customText, setCustomText] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const dilution = drug.dilutions[dilutionIndex] ?? drug.dilutions[0];
+  const base = drug.dilutions[dilutionIndex] ?? drug.dilutions[0];
+  const customConc = Number(customText.replace(",", "."));
+  const customValid = isFinite(customConc) && customConc > 0;
+  const dilution =
+    customOn && customValid
+      ? {
+          ...base,
+          label: "Personalizada",
+          recipe: `Concentração informada [1 mL = ${fmt(customConc, 2)} ${base.concUnit.replace("/mL", "")}]`,
+          concentration: customConc,
+        }
+      : base;
   const rate = useMemo(() => infusionRate(dose, drug, dilution, weight), [dose, drug, dilution, weight]);
   const animatedRate = useAnimatedNumber(rate);
+
 
   const pctOf = (v: number) => ((v - drug.min) / (drug.max - drug.min)) * 100;
   const isHigh = dose > drug.usualMax;
