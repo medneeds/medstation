@@ -27,20 +27,25 @@ describe("infusões", () => {
 
   it("noradrenalina concentrada rende 1/5 da vazão da simples", () => {
     const nora = drug("noradrenalina");
-    const simples = infusionRate(0.37, nora, nora.dilutions[0], 60);
-    const conc = infusionRate(0.37, nora, nora.dilutions[1], 60);
+    const c = (v: number) => nora.dilutions.find((d) => d.concentration === v)!;
+    const simples = infusionRate(0.37, nora, c(40), 60);
+    const conc = infusionRate(0.37, nora, c(200), 60);
     expect(simples / conc).toBeCloseTo(5, 5);
     expect(Math.round(simples)).toBe(33);
   });
 
   it("adrenalina 1,22 mcg/kg/min em 60 kg ≈ 44 mL/h", () => {
     const adr = drug("adrenalina");
-    expect(Math.round(infusionRate(1.22, adr, adr.dilutions[0], 60))).toBe(44);
+    expect(
+      Math.round(infusionRate(1.22, adr, adr.dilutions.find((d) => d.concentration === 100)!, 60)),
+    ).toBe(44);
   });
 
   it("vasopressina 0,025 U/min na solução 0,4 U/mL ≈ 3,75 mL/h", () => {
     const vaso = drug("vasopressina");
-    expect(infusionRate(0.025, vaso, vaso.dilutions[0], 70)).toBeCloseTo(3.75, 5);
+    expect(
+      infusionRate(0.025, vaso, vaso.dilutions.find((d) => d.concentration === 0.4)!, 70),
+    ).toBeCloseTo(3.75, 5);
   });
 
 
