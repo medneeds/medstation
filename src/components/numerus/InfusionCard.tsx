@@ -47,11 +47,25 @@ interface Props {
 export function InfusionCard({ drug, weight }: Props) {
   const [dose, setDose] = useState(drug.start);
   const [dilutionIndex, setDilutionIndex] = useState(0);
+  const [customOn, setCustomOn] = useState(false);
+  const [customText, setCustomText] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const dilution = drug.dilutions[dilutionIndex] ?? drug.dilutions[0];
+  const base = drug.dilutions[dilutionIndex] ?? drug.dilutions[0];
+  const customConc = Number(customText.replace(",", "."));
+  const customValid = isFinite(customConc) && customConc > 0;
+  const dilution =
+    customOn && customValid
+      ? {
+          ...base,
+          label: "Personalizada",
+          recipe: `Concentração informada [1 mL = ${fmt(customConc, 2)} ${base.concUnit.replace("/mL", "")}]`,
+          concentration: customConc,
+        }
+      : base;
   const rate = useMemo(() => infusionRate(dose, drug, dilution, weight), [dose, drug, dilution, weight]);
   const animatedRate = useAnimatedNumber(rate);
+
 
   const pctOf = (v: number) => ((v - drug.min) / (drug.max - drug.min)) * 100;
   const isHigh = dose > drug.usualMax;
@@ -111,17 +125,21 @@ export function InfusionCard({ drug, weight }: Props) {
         </div>
       </div>
 
-      {/* Diluições */}
-      {drug.dilutions.length > 1 && (
-        <div className="flex flex-wrap gap-1.5 mt-3">
+      {/* Diluições / concentração */}
+      <div className="mt-3">
+        <p className="text-[10.5px] uppercase tracking-wide text-muted-foreground mb-1.5">Concentração</p>
+        <div className="flex flex-wrap gap-1.5">
           {drug.dilutions.map((d, i) => (
             <button
               key={d.label}
               type="button"
-              onClick={() => setDilutionIndex(i)}
+              onClick={() => {
+                setDilutionIndex(i);
+                setCustomOn(false);
+              }}
               className={cn(
                 "text-[11px] px-2.5 py-1 rounded-full border transition-colors",
-                i === dilutionIndex
+                !customOn && i === dilutionIndex
                   ? "border-primary/50 bg-primary/10 text-primary font-medium"
                   : "border-border/60 text-muted-foreground hover:text-foreground hover:border-primary/30",
               )}
@@ -129,8 +147,36 @@ export function InfusionCard({ drug, weight }: Props) {
               {d.label}
             </button>
           ))}
+          <button
+            type="button"
+            onClick={() => setCustomOn((v) => !v)}
+            className={cn(
+              "text-[11px] px-2.5 py-1 rounded-full border transition-colors",
+              customOn
+                ? "border-primary/50 bg-primary/10 text-primary font-medium"
+                : "border-dashed border-border/70 text-muted-foreground hover:text-foreground hover:border-primary/30",
+            )}
+          >
+            Outra
+          </button>
         </div>
-      )}
+
+        {customOn && (
+          <div className="mt-2 flex items-center gap-2 rounded-xl border border-border/60 bg-muted/20 px-3 py-2">
+            <span className="text-[11px] text-muted-foreground">1 mL =</span>
+            <input
+              type="number"
+              inputMode="decimal"
+              value={customText}
+              onChange={(e) => setCustomText(e.target.value)}
+              placeholder="ex.: 64"
+              className="h-7 w-24 rounded-md border border-border/60 bg-background px-2 text-sm tabular-nums outline-none focus:border-primary/50"
+            />
+            <span className="text-[11px] text-muted-foreground">{base.concUnit}</span>
+          </div>
+        )}
+      </div>
+
 
       {/* Dose + slider */}
       <div className="mt-4">
