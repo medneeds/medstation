@@ -14,3 +14,6 @@ User-agent: *
 Allow: /
 
 Sitemap: https://medstation-ai.com.br/sitemap.xml
+
+User-agent: *
+Disallow: /ad-video
