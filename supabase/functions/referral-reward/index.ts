@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { sendTemplateEmailWithLog } from "../_shared/transactional-email-templates/send-and-log.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,19 +15,15 @@ const corsHeaders = {
 //   nova indicação. Ao expirar, o acesso cai automaticamente.
 
 async function notify(
-  supabase: any,
+  _supabase: any,
   email: string,
   payload: Record<string, unknown>,
   idempotencyKey: string
 ) {
   try {
-    await supabase.functions.invoke("send-transactional-email", {
-      body: {
-        templateName: "referral-reward-granted",
-        recipientEmail: email,
-        idempotencyKey,
-        templateData: payload,
-      },
+    await sendTemplateEmailWithLog("referral-reward-granted", email, {
+      idempotencyKey,
+      templateData: payload,
     });
   } catch (e) {
     console.error("[REFERRAL-REWARD] email failed", e);
