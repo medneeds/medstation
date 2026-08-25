@@ -98,21 +98,25 @@ const Backdrop: React.FC = () => {
 };
 
 /* ── intercut: internal MedStation environment ───────────────────── */
-const Intercut: React.FC<{ src: string; label: string; focus?: [number, number] }> = ({
-  src,
-  label,
-  focus = [0.5, 0.4],
-}) => {
+const Intercut: React.FC<{ src: string; label: string }> = ({ src, label }) => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
   const inOp = interpolate(frame, [0, 3], [0, 1], { extrapolateRight: "clamp" });
   const outOp = interpolate(frame, [durationInFrames - 4, durationInFrames], [1, 0], {
     extrapolateLeft: "clamp",
   });
-  const scale = interpolate(frame, [0, durationInFrames], [1.14, 1.02]);
+  const scale = interpolate(frame, [0, durationInFrames], [1.02, 1.09]);
 
   return (
-    <AbsoluteFill style={{ opacity: inOp * outOp, overflow: "hidden" }}>
+    <AbsoluteFill
+      style={{
+        opacity: inOp * outOp,
+        overflow: "hidden",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {/* blurred bleed of the same shot for depth */}
       <Img
         src={staticFile(src)}
         style={{
@@ -121,46 +125,66 @@ const Intercut: React.FC<{ src: string; label: string; focus?: [number, number] 
           width: "100%",
           height: "100%",
           objectFit: "cover",
-          objectPosition: `${focus[0] * 100}% ${focus[1] * 100}%`,
+          filter: "blur(46px) saturate(0.6) brightness(0.42)",
+          transform: `scale(${scale * 1.2})`,
+        }}
+      />
+      <AbsoluteFill style={{ background: "rgba(8,11,9,0.55)" }} />
+
+      {/* product card */}
+      <div
+        style={{
+          position: "relative",
+          width: 980,
+          borderRadius: 28,
+          overflow: "hidden",
+          border: `1px solid ${COLORS.line}`,
+          boxShadow: "0 60px 160px rgba(0,0,0,0.7), 0 0 90px rgba(143,227,181,0.18)",
           transform: `scale(${scale})`,
-          filter: "saturate(0.7) contrast(1.06) brightness(0.72)",
+          background: COLORS.bgSoft,
         }}
-      />
-      <AbsoluteFill style={{ background: "rgba(8,11,9,0.42)" }} />
-      <AbsoluteFill
-        style={{
-          background: "radial-gradient(110% 80% at 50% 45%, rgba(0,0,0,0) 26%, rgba(0,0,0,0.88) 100%)",
-        }}
-      />
-      {/* scan sweep */}
+      >
+        <Img
+          src={staticFile(src)}
+          style={{ display: "block", width: "100%", filter: "saturate(0.92) contrast(1.03)" }}
+        />
+        {/* scan sweep over the card */}
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: `${interpolate(frame, [0, durationInFrames], [0, 100])}%`,
+            height: 3,
+            background:
+              "linear-gradient(90deg, rgba(143,227,181,0) 0%, rgba(143,227,181,0.7) 50%, rgba(143,227,181,0) 100%)",
+          }}
+        />
+      </div>
+
       <div
         style={{
           position: "absolute",
-          left: 0,
-          right: 0,
-          top: interpolate(frame, [0, durationInFrames], [0, 1920]),
-          height: 3,
-          background: `linear-gradient(90deg, rgba(143,227,181,0) 0%, rgba(143,227,181,0.55) 50%, rgba(143,227,181,0) 100%)`,
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          left: 90,
-          bottom: 300,
+          bottom: 420,
           fontFamily: mono,
-          fontSize: 30,
-          letterSpacing: 6,
+          fontSize: 34,
+          letterSpacing: 8,
           textTransform: "uppercase",
           color: COLORS.green,
-          opacity: 0.9,
         }}
       >
         {label}
       </div>
+
+      <AbsoluteFill
+        style={{
+          background: "radial-gradient(120% 85% at 50% 48%, rgba(0,0,0,0) 42%, rgba(0,0,0,0.8) 100%)",
+        }}
+      />
     </AbsoluteFill>
   );
 };
+
 
 /* ── main ────────────────────────────────────────────────────────── */
 export const StoryLogo: React.FC = () => {
