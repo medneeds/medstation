@@ -74,6 +74,7 @@ import Unsubscribe from "./pages/Unsubscribe";
 import Indicar from "./pages/Indicar";
 import ReferralRedirect from "./pages/ReferralRedirect";
 import NotFound from "./pages/NotFound";
+import AdVideo from "./pages/AdVideo";
 
 const queryClient = new QueryClient();
 
@@ -376,6 +377,7 @@ const App = () => (
             />
             <Route path="/r/:code" element={<ReferralRedirect />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
+            <Route path="/ad-video" element={<AdVideo />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
