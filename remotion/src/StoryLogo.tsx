@@ -136,7 +136,7 @@ const Intercut: React.FC<{ src: string; label: string }> = ({ src, label }) => {
         style={{
           position: "relative",
           width: 940,
-          height: 1120,
+          height: 1000,
           marginTop: -140,
           borderRadius: 32,
           overflow: "hidden",
@@ -152,8 +152,8 @@ const Intercut: React.FC<{ src: string; label: string }> = ({ src, label }) => {
             position: "absolute",
             top: 0,
             left: 0,
-            width: 1880,
-            transform: `translate(-620px, -40px)`,
+            width: 1420,
+            transform: `translate(-250px, -55px)`,
             filter: "saturate(0.95) contrast(1.04) brightness(1.08)",
           }}
         />
