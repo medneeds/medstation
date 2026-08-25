@@ -74,6 +74,7 @@ import Unsubscribe from "./pages/Unsubscribe";
 import Indicar from "./pages/Indicar";
 import ReferralRedirect from "./pages/ReferralRedirect";
 import NotFound from "./pages/NotFound";
+import AdVideo from "./pages/AdVideo";
 
 const queryClient = new QueryClient();
 
