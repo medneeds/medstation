@@ -39,6 +39,9 @@ const NARRATION_SRC = "/ad/narration.mp3";
 export default function AdVideo() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const rafRef = useRef<number>();
+  const captureParam =
+    typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("t") : null;
+  const captureTime = captureParam !== null ? Number(captureParam) : null;
   const [time, setTime] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [src, setSrc] = useState(NARRATION_SRC);
@@ -94,7 +97,10 @@ export default function AdVideo() {
     setSrc(`data:audio/mpeg;base64,${data.audioContent}`);
   };
 
-  const active = SCENES.find((s) => time >= s.start && time < s.end) ?? (playing ? null : SCENES[0]);
+  const shownTime = captureTime !== null ? captureTime : time;
+  const active =
+    SCENES.find((s) => shownTime >= s.start && shownTime < s.end) ??
+    (playing || captureTime !== null ? null : SCENES[0]);
 
   return (
     <>
@@ -114,12 +120,12 @@ export default function AdVideo() {
           {active && (
             <active.Component
               key={active.id}
-              t={time - active.start}
+              t={shownTime - active.start}
               dur={active.end - active.start}
             />
           )}
 
-          {!playing && (
+          {!playing && captureTime === null && (
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-12 bg-black/85">
               <button
                 onClick={start}
