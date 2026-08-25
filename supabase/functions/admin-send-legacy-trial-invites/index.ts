@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { sendTemplateEmailWithLog } from "../_shared/transactional-email-templates/send-and-log.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 
 const corsHeaders = {
@@ -128,21 +129,20 @@ Deno.serve(async (req) => {
         continue;
       }
       try {
-        const { error: sendError } = await admin.functions.invoke(
-          "send-transactional-email",
+        const sendResult = await sendTemplateEmailWithLog(
+          "legacy-trial-invite",
+          invite.email,
           {
-            body: {
-              templateName: "legacy-trial-invite",
-              recipientEmail: invite.email,
-              idempotencyKey: `legacy-trial-invite-${invite.user_id}${resend ? `-${Date.now()}` : ""}`,
-              templateData: {
-                name: nameById[invite.user_id] ?? undefined,
-                claimUrl: `${APP_URL}/dashboard?convite=7dias`,
-              },
+            idempotencyKey: `legacy-trial-invite-${invite.user_id}${resend ? `-${Date.now()}` : ""}`,
+            templateData: {
+              name: nameById[invite.user_id] ?? undefined,
+              claimUrl: `${APP_URL}/dashboard?convite=7dias`,
             },
           },
         );
-        if (sendError) throw sendError;
+        if (!sendResult.sent) {
+          console.warn("[admin-send-legacy-trial-invites] destinatario suprimido");
+        }
         await admin
           .from("legacy_trial_invites")
           .update({ email_sent_at: new Date().toISOString() })

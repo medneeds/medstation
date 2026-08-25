@@ -132,17 +132,8 @@ export default function Auth() {
 
         // Welcome email for the new lead (non-blocking)
         try {
-          await supabase.functions.invoke("send-transactional-email", {
-            body: {
-              templateName: "welcome-lead",
-              recipientEmail: validated.email,
-              idempotencyKey: `welcome-lead-${data.user.id}`,
-              templateData: {
-                name: validated.fullName,
-                appUrl: window.location.origin,
-                referralUrl: `${window.location.origin}/indicar`,
-              },
-            },
+          await supabase.functions.invoke("send-welcome-lead", {
+            body: { userId: data.user.id },
           });
         } catch (e) {
           console.error("Welcome email failed", e);
