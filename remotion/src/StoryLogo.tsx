@@ -248,13 +248,13 @@ export const StoryLogo: React.FC = () => {
       </AbsoluteFill>
 
       <Sequence from={cuts[0].from} durationInFrames={cuts[0].dur}>
-        <Intercut src="images/consultorio.png" label="Modo Escuta" focus={[0.5, 0.42]} />
+        <Intercut src="images/consultorio.png" label="Modo Escuta" />
       </Sequence>
       <Sequence from={cuts[1].from} durationInFrames={cuts[1].dur}>
-        <Intercut src="images/clinicus.png" label="Assistentes clínicos" focus={[0.45, 0.4]} />
+        <Intercut src="images/clinicus.png" label="Assistentes clínicos" />
       </Sequence>
       <Sequence from={cuts[2].from} durationInFrames={cuts[2].dur}>
-        <Intercut src="images/examinus_resposta.png" label="Exames em segundos" focus={[0.55, 0.42]} />
+        <Intercut src="images/examinus_resposta.png" label="Exames em segundos" />
       </Sequence>
 
       {/* film grain / flicker */}
