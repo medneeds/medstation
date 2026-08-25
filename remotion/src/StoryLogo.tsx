@@ -131,22 +131,31 @@ const Intercut: React.FC<{ src: string; label: string }> = ({ src, label }) => {
       />
       <AbsoluteFill style={{ background: "rgba(8,11,9,0.55)" }} />
 
-      {/* product card */}
+      {/* product card — cropped on the working area, not the chrome */}
       <div
         style={{
           position: "relative",
-          width: 980,
-          borderRadius: 28,
+          width: 940,
+          height: 1120,
+          marginTop: -140,
+          borderRadius: 32,
           overflow: "hidden",
           border: `1px solid ${COLORS.line}`,
-          boxShadow: "0 60px 160px rgba(0,0,0,0.7), 0 0 90px rgba(143,227,181,0.18)",
+          boxShadow: "0 70px 180px rgba(0,0,0,0.75), 0 0 120px rgba(143,227,181,0.2)",
           transform: `scale(${scale})`,
           background: COLORS.bgSoft,
         }}
       >
         <Img
           src={staticFile(src)}
-          style={{ display: "block", width: "100%", filter: "saturate(0.92) contrast(1.03)" }}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: 1880,
+            transform: `translate(-620px, -40px)`,
+            filter: "saturate(0.95) contrast(1.04) brightness(1.08)",
+          }}
         />
         {/* scan sweep over the card */}
         <div
@@ -161,6 +170,7 @@ const Intercut: React.FC<{ src: string; label: string }> = ({ src, label }) => {
           }}
         />
       </div>
+
 
       <div
         style={{
