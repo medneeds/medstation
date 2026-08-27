@@ -30,9 +30,10 @@ serve(async (req) => {
       accessStatus: access.status,
       paid: access.isPaidSubscriber,
       trial: access.isTrial,
+      pricingCohort: access.pricingCohort,
+      pricingReviewDue: access.pricingReviewDue,
     });
 
-    // Preserve referral reward behavior, but only for real Stripe subscribers.
     if (access.isPaidSubscriber) {
       try {
         const supabaseAdmin = createClient(
@@ -69,8 +70,6 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        // Transitional compatibility: existing UI uses `subscribed` as "may use".
-        // New code should prefer access_active + access_status + is_paid_subscriber.
         subscribed: access.canUsePlatform,
         access_active: access.canUsePlatform,
         access_status: access.status,
@@ -94,6 +93,9 @@ serve(async (req) => {
         has_agents: access.hasAgents,
         has_consultorio: access.hasConsultorio,
         available_upgrade: availableUpgrade,
+        pricing_cohort: access.pricingCohort,
+        legacy_full_access_until: access.legacyFullAccessUntil,
+        pricing_review_due: access.pricingReviewDue,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
