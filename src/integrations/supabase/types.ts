@@ -325,6 +325,42 @@ export type Database = {
           },
         ]
       }
+      commercial_policy: {
+        Row: {
+          created_at: string
+          current_monthly_price_cents: number
+          current_yearly_price_cents: number
+          effective_at: string
+          future_monthly_price_cents: number | null
+          future_yearly_price_cents: number | null
+          id: string
+          legacy_full_access_until: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_monthly_price_cents: number
+          current_yearly_price_cents: number
+          effective_at: string
+          future_monthly_price_cents?: number | null
+          future_yearly_price_cents?: number | null
+          id: string
+          legacy_full_access_until: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_monthly_price_cents?: number
+          current_yearly_price_cents?: number
+          effective_at?: string
+          future_monthly_price_cents?: number | null
+          future_yearly_price_cents?: number | null
+          id?: string
+          legacy_full_access_until?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           agent_type: string
