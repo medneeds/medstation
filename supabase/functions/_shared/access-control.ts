@@ -206,15 +206,23 @@ export async function resolveUserAccess(user: Pick<User, "id" | "email" | "creat
     return result;
   }
 
-  const { data: trial } = await supabase
-    .from("user_access")
-    .select("trial_started_at, trial_ends_at, trial_source")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  // A tabela user_access pode ainda não existir em produção (migration pendente).
+  // Qualquer erro aqui é tolerado e caímos no fallback por created_at.
+  let trial: { trial_started_at: string | null; trial_ends_at: string | null; trial_source: string | null } | null = null;
+  try {
+    const { data } = await supabase
+      .from("user_access")
+      .select("trial_started_at, trial_ends_at, trial_source")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    trial = data ?? null;
+  } catch {
+    trial = null;
+  }
 
   if (trial?.trial_ends_at) {
     const active = new Date(trial.trial_ends_at).getTime() > Date.now();
-    const result = base(active ? "trial_active" : "trial_expired");
+    const result = base(active ? "trial_active" : (billingDegraded ? "verification_error" : "trial_expired"));
     result.canUsePlatform = active;
     result.isTrial = active;
     result.trialSource = trial.trial_source === "migration" ? "migration" : "signup";
@@ -222,6 +230,7 @@ export async function resolveUserAccess(user: Pick<User, "id" | "email" | "creat
     result.trialEndsAt = trial.trial_ends_at;
     result.hasAgents = active;
     result.hasConsultorio = active;
+    result.billingCheckDegraded = billingDegraded;
     return result;
   }
 
@@ -229,7 +238,7 @@ export async function resolveUserAccess(user: Pick<User, "id" | "email" | "creat
     const start = new Date(user.created_at).getTime();
     const end = start + 7 * 86400000;
     const active = end > Date.now();
-    const result = base(active ? "trial_active" : "trial_expired");
+    const result = base(active ? "trial_active" : (billingDegraded ? "verification_error" : "trial_expired"));
     result.canUsePlatform = active;
     result.isTrial = active;
     result.trialSource = "migration";
@@ -237,10 +246,14 @@ export async function resolveUserAccess(user: Pick<User, "id" | "email" | "creat
     result.trialEndsAt = new Date(end).toISOString();
     result.hasAgents = active;
     result.hasConsultorio = active;
+    result.billingCheckDegraded = billingDegraded;
     return result;
   }
 
-  return base("none");
+  const fallback = base(billingDegraded ? "verification_error" : "none");
+  fallback.billingCheckDegraded = billingDegraded;
+  return fallback;
+
 }
 
 export async function getAuthenticatedUserAndAccess(req: Request) {
