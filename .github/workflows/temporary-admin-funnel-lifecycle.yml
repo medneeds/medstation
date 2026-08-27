@@ -1,0 +1,121 @@
+name: Temporary lifecycle funnel patch
+
+on:
+  push:
+    branches:
+      - audit/trial-entitlement-p0
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, '[admin-funnel-lifecycle]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/trial-entitlement-p0
+          fetch-depth: 0
+
+      - name: Expand PostHog funnel lifecycle
+        shell: python
+        run: |
+          from pathlib import Path
+
+          backend = Path('supabase/functions/admin-posthog/index.ts')
+          text = backend.read_text()
+
+          old = '''      const EV = "('cta_click','checkout_started','subscription_completed')";\n      const win = `timestamp > ${since}`;'''
+          new = '''      const EV = "('lead_created','signup_started','signup_completed','trial_started','first_login','trial_expired','paywall_viewed','cta_click','checkout_started','subscription_completed')";\n      const QUALITY_EV = "('cta_click','checkout_started','subscription_completed')";\n      const win = `timestamp > ${since}`;'''
+          assert text.count(old) == 1, 'Unexpected EV anchor count'
+          text = text.replace(old, new, 1)
+
+          old = '''               FROM events WHERE ${win} AND event IN ${EV}\n               GROUP BY event, person_id, s HAVING c > 1'''
+          new = '''               FROM events WHERE ${win} AND event IN ${EV}\n               GROUP BY event, person_id, s HAVING c > 1'''
+          assert text.count(old) == 1, 'Unexpected duplicate query anchor count'
+
+          old = '''             FROM events WHERE ${win} AND event IN ${EV}\n             GROUP BY event`,\n            projectId, key,\n          ),\n          hogql(\n            `SELECT coalesce(nullIf(toString(properties.cta_section), ''), 'sem seção') AS s,'''
+          new = '''             FROM events WHERE ${win} AND event IN ${QUALITY_EV}\n             GROUP BY event`,\n            projectId, key,\n          ),\n          hogql(\n            `SELECT coalesce(nullIf(toString(properties.cta_section), ''), 'sem seção') AS s,'''
+          assert text.count(old) == 1, 'Unexpected metadata quality query anchor count'
+          text = text.replace(old, new, 1)
+
+          old = '''          hogql(\n            `SELECT toDate(timestamp) AS d,\n                    countIf(event = 'cta_click') AS cta,\n                    countIf(event = 'checkout_started') AS checkout,\n                    countIf(event = 'subscription_completed') AS subs\n             FROM events WHERE ${win} AND event IN ${EV}\n             GROUP BY d ORDER BY d ASC`,\n            projectId, key,\n          ),'''
+          new = '''          hogql(\n            `SELECT toDate(timestamp) AS d,\n                    countIf(event = 'lead_created') AS leads,\n                    countIf(event = 'signup_completed') AS signups,\n                    countIf(event = 'trial_started') AS trials,\n                    countIf(event = 'first_login') AS first_logins,\n                    countIf(event = 'trial_expired') AS expired,\n                    countIf(event = 'paywall_viewed') AS paywalls,\n                    countIf(event = 'checkout_started') AS checkout,\n                    countIf(event = 'subscription_completed') AS subs\n             FROM events WHERE ${win} AND event IN ${EV}\n             GROUP BY d ORDER BY d ASC`,\n            projectId, key,\n          ),'''
+          assert text.count(old) == 1, 'Unexpected daily query anchor count'
+          text = text.replace(old, new, 1)
+
+          old = '''      const STEPS = [\n        { event: "$pageview", label: "Visitou a landing" },\n        { event: "cta_click", label: "Clicou em um CTA" },\n        { event: "checkout_started", label: "Iniciou checkout" },\n        { event: "subscription_completed", label: "Assinou" },\n      ];'''
+          new = '''      const STEPS = [\n        { event: "$pageview", label: "Visitou a landing" },\n        { event: "lead_created", label: "Lead capturado" },\n        { event: "signup_completed", label: "Cadastro concluído" },\n        { event: "trial_started", label: "Trial iniciado" },\n        { event: "first_login", label: "Primeiro login" },\n        { event: "checkout_started", label: "Iniciou checkout" },\n        { event: "subscription_completed", label: "Assinou" },\n      ];'''
+          assert text.count(old) == 1, 'Unexpected STEPS anchor count'
+          text = text.replace(old, new, 1)
+
+          old = '''      const quality = STEPS.slice(1).map((s) => {\n        const r = mMap.get(s.event);'''
+          new = '''      const QUALITY_STEPS = [\n        { event: "cta_click", label: "Clicou em um CTA" },\n        { event: "checkout_started", label: "Iniciou checkout" },\n        { event: "subscription_completed", label: "Assinou" },\n      ];\n\n      const quality = QUALITY_STEPS.map((s) => {\n        const r = mMap.get(s.event);'''
+          assert text.count(old) == 1, 'Unexpected quality steps anchor count'
+          text = text.replace(old, new, 1)
+
+          old = '''          steps,\n          quality,'''
+          new = '''          steps,\n          trialHealth: {\n            expiredUsers: tMap.get("trial_expired")?.users ?? 0,\n            paywallUsers: tMap.get("paywall_viewed")?.users ?? 0,\n            expiredEvents: tMap.get("trial_expired")?.total ?? 0,\n            paywallEvents: tMap.get("paywall_viewed")?.total ?? 0,\n          },\n          quality,'''
+          assert text.count(old) == 1, 'Unexpected response trialHealth anchor count'
+          text = text.replace(old, new, 1)
+
+          old = '''          daily: daily.map((r) => ({\n            date: String(r[0]), cta: num(r[1]), checkout: num(r[2]), subs: num(r[3]),\n          })),'''
+          new = '''          daily: daily.map((r) => ({\n            date: String(r[0]),\n            leads: num(r[1]), signups: num(r[2]), trials: num(r[3]), firstLogins: num(r[4]),\n            expired: num(r[5]), paywalls: num(r[6]), checkout: num(r[7]), subs: num(r[8]),\n          })),'''
+          assert text.count(old) == 1, 'Unexpected response daily mapping anchor count'
+          backend.write_text(text.replace(old, new, 1))
+
+          ui = Path('src/pages/admin/AdminFunnel.tsx')
+          text = ui.read_text()
+          old = ''' * Aba dedicada ao funil de conversão:\n * cta_click → checkout_started → subscription_completed\n * Além da visualização, valida a chegada dos metadados esperados (plano e\n * origem do CTA) e sinaliza eventos duplicados.'''
+          new = ''' * Aba dedicada ao ciclo de aquisição e conversão:\n * landing → lead → cadastro → trial → primeiro login → checkout → assinatura.\n * Trial expirado e paywall aparecem separadamente porque não são etapas obrigatórias\n * para quem converte antes do fim do teste.'''
+          assert text.count(old) == 1, 'Unexpected UI comment anchor count'
+          text = text.replace(old, new, 1)
+
+          old = '''  steps?: Step[];\n  quality?: Quality[];'''
+          new = '''  steps?: Step[];\n  trialHealth?: { expiredUsers: number; paywallUsers: number; expiredEvents: number; paywallEvents: number };\n  quality?: Quality[];'''
+          assert text.count(old) == 1, 'Unexpected UI trialHealth type anchor count'
+          text = text.replace(old, new, 1)
+
+          old = '''  daily?: { date: string; cta: number; checkout: number; subs: number }[];'''
+          new = '''  daily?: {\n    date: string; leads: number; signups: number; trials: number; firstLogins: number;\n    expired: number; paywalls: number; checkout: number; subs: number;\n  }[];'''
+          assert text.count(old) == 1, 'Unexpected UI daily type anchor count'
+          text = text.replace(old, new, 1)
+
+          old = '''          Do clique no botão até a assinatura, com validação dos dados enviados.'''
+          new = '''          Da chegada à landing até a assinatura, incluindo cadastro, trial e recuperação pós-expiração.'''
+          assert text.count(old) == 1, 'Unexpected UI subtitle anchor count'
+          text = text.replace(old, new, 1)
+
+          marker = '''          {/* Funil em barras proporcionais */}'''
+          insert = '''          <div className="grid gap-3 sm:grid-cols-2">\n            <Card className="p-4">\n              <p className="text-xs uppercase tracking-wider text-muted-foreground">Trials expirados</p>\n              <p className="mt-1 text-2xl font-display font-semibold">{nf(data?.trialHealth?.expiredUsers ?? 0)}</p>\n              <p className="mt-1 text-xs text-muted-foreground">Usuários únicos cujo teste chegou ao fim no período.</p>\n            </Card>\n            <Card className="p-4">\n              <p className="text-xs uppercase tracking-wider text-muted-foreground">Paywall alcançado</p>\n              <p className="mt-1 text-2xl font-display font-semibold">{nf(data?.trialHealth?.paywallUsers ?? 0)}</p>\n              <p className="mt-1 text-xs text-muted-foreground">Usuários únicos que viram o bloqueio e podem ser recuperados.</p>\n            </Card>\n          </div>\n\n'''+marker
+          assert text.count(marker) == 1, 'Unexpected UI funnel marker count'
+          text = text.replace(marker, insert, 1)
+
+          old = '''                <Area\n                  type="monotone"\n                  name="Cliques em CTA"\n                  dataKey="cta"\n                  stroke="hsl(var(--primary))"\n                  fill="url(#gCta)"\n                  strokeWidth={2}\n                />\n                <Area\n                  type="monotone"\n                  name="Checkouts iniciados"'''
+          new = '''                <Area\n                  type="monotone"\n                  name="Leads"\n                  dataKey="leads"\n                  stroke="hsl(var(--primary))"\n                  fill="url(#gCta)"\n                  strokeWidth={2}\n                />\n                <Area\n                  type="monotone"\n                  name="Trials iniciados"\n                  dataKey="trials"\n                  stroke="hsl(var(--primary) / 0.75)"\n                  fill="transparent"\n                  strokeWidth={2}\n                />\n                <Area\n                  type="monotone"\n                  name="Checkouts iniciados"'''
+          assert text.count(old) == 1, 'Unexpected UI daily chart anchor count'
+          ui.write_text(text.replace(old, new, 1))
+
+      - name: Verify scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only | sort)"
+          expected=$'src/pages/admin/AdminFunnel.tsx\nsupabase/functions/admin-posthog/index.ts'
+          test "$changed" = "$expected"
+          git diff --check
+          grep -F 'Lead capturado' supabase/functions/admin-posthog/index.ts
+          grep -F 'trialHealth' supabase/functions/admin-posthog/index.ts
+          grep -F 'Trials expirados' src/pages/admin/AdminFunnel.tsx
+          grep -F 'Paywall alcançado' src/pages/admin/AdminFunnel.tsx
+
+      - name: Commit patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add supabase/functions/admin-posthog/index.ts src/pages/admin/AdminFunnel.tsx
+          git commit -m "[admin-funnel-lifecycle] Expand funnel through signup and trial"
+          git push origin HEAD:audit/trial-entitlement-p0
