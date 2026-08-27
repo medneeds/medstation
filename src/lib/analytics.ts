@@ -62,6 +62,23 @@ const SAFE_ANALYTICS_KEYS = new Set([
   "status",
 ]);
 
+// Propriedades que o SDK pode adicionar automaticamente e que não queremos
+// carregar em eventos de produto/marketing dentro de uma aplicação clínica.
+const POSTHOG_LOCATION_KEYS = [
+  "$current_url",
+  "$pathname",
+  "$referrer",
+  "$referring_domain",
+  "$initial_current_url",
+  "$initial_pathname",
+  "$initial_referrer",
+  "$initial_referring_domain",
+  "$host",
+  "$title",
+  "$search_engine",
+  "$search_engine_query",
+] as const;
+
 const CAMPAIGN_KEY = "ms_campaign_attribution";
 const CAMPAIGN_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -159,6 +176,31 @@ function sanitizeProperties(props?: Record<string, unknown>): Record<string, unk
   return out;
 }
 
+/**
+ * Última barreira de privacidade antes do envio pelo SDK.
+ * O PostHog acrescenta propriedades automáticas a eventos customizados; removemos
+ * qualquer contexto de URL/título em eventos de produto e preservamos URL apenas
+ * para pageviews públicos que nós mesmos emitimos.
+ */
+function sanitizePostHogProperties(
+  properties: Record<string, unknown>,
+  eventName?: string,
+): Record<string, unknown> {
+  const clean = { ...properties };
+
+  for (const key of POSTHOG_LOCATION_KEYS) delete clean[key];
+
+  if (eventName === "$pageview" && typeof window !== "undefined") {
+    const safePath = normalizePath(window.location.pathname);
+    if (PUBLIC_ANALYTICS_PATHS.has(safePath)) {
+      clean.$pathname = safePath;
+      clean.$current_url = `${window.location.origin}${safePath}`;
+    }
+  }
+
+  return clean;
+}
+
 function readStoredCampaign(): Record<string, string> {
   try {
     const raw = sessionStorage.getItem(CAMPAIGN_KEY) ?? localStorage.getItem(CAMPAIGN_KEY);
@@ -222,6 +264,10 @@ export function initAnalytics() {
         mask_all_text: true,
         mask_all_element_attributes: true,
         person_profiles: "identified_only",
+        // Mantido por compatibilidade com a versão instalada. A função atua
+        // depois que o SDK adiciona propriedades automáticas ao evento.
+        sanitize_properties: (properties, eventName) =>
+          sanitizePostHogProperties(properties as Record<string, unknown>, eventName),
       });
     } catch (e) {
       console.warn("[analytics] posthog init failed", e);
@@ -423,12 +469,15 @@ export function trackCheckoutStarted(meta: CheckoutStartedMeta) {
   });
 
   try {
-    window.fbq?.("track", "InitiateCheckout", {
+    const params: Record<string, unknown> = {
       content_name: "MedStation",
       content_category: meta.plan ?? undefined,
-      currency: "BRL",
-      value: meta.price_brl ?? 0,
-    });
+    };
+    if (typeof meta.price_brl === "number") {
+      params.currency = "BRL";
+      params.value = meta.price_brl;
+    }
+    window.fbq?.("track", "InitiateCheckout", params);
   } catch {
     /* noop */
   }
@@ -473,6 +522,7 @@ export function resetAnalyticsIdentity() {
 const FIRST_VALUE_ENDPOINTS: Record<string, string> = {
   "/functions/v1/agent-chat": "clinical_assistant",
   "/functions/v1/structure-anamnesis": "modo_escuta",
+  "/functions/v1/carpe-diem-round": "modo_rotineiro",
   "/functions/v1/generate-medical-document": "medical_document",
 };
 
