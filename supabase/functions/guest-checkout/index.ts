@@ -6,8 +6,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+const logStep = (step: string, details?: Record<string, unknown>) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
   console.log(`[GUEST-CHECKOUT] ${step}${detailsStr}`);
 };
 
@@ -17,9 +17,7 @@ const CURRENT_PRICES: Record<string, string> = {
 };
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     logStep("Function started");
@@ -41,26 +39,34 @@ serve(async (req) => {
       );
     }
 
-    if (!email) {
-      throw new Error("Email é obrigatório");
-    }
+    if (!email) throw new Error("Email é obrigatório");
 
-    logStep("Request parameters", { email, plan, couponCode: couponCode || "none" });
+    logStep("Checkout requested", { plan, coupon: Boolean(couponCode) });
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2025-08-27.basil"
+      apiVersion: "2025-08-27.basil",
     });
 
-    const customers = await stripe.customers.list({ email, limit: 1 });
-    const customerId = customers.data.length > 0 ? customers.data[0].id : undefined;
+    // The same email can legitimately exist on multiple Stripe Customer records.
+    // Never inspect only the first one: an active subscription on another Customer
+    // would otherwise be invisible and a duplicate subscription could be created.
+    const customers = await stripe.customers.list({ email, limit: 10 });
+    let reusableCustomerId: string | undefined;
 
-    if (customerId) {
-      const existingSubs = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 20 });
-      const existingActive = existingSubs.data.find((s) => ["active", "trialing", "past_due"].includes(s.status));
+    for (const customer of customers.data) {
+      reusableCustomerId ??= customer.id;
+      const existingSubs = await stripe.subscriptions.list({
+        customer: customer.id,
+        status: "all",
+        limit: 20,
+      });
+      const existingActive = existingSubs.data.find((subscription) =>
+        ["active", "trialing", "past_due"].includes(subscription.status),
+      );
       if (existingActive) {
         return new Response(
           JSON.stringify({
-            error: "Já existe uma assinatura ativa para este e-mail. Entre na sua conta para continuar.",
+            error: "Já existe uma assinatura para este e-mail. Entre na sua conta para continuar.",
             code: "EXISTING_SUBSCRIPTION",
           }),
           { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -70,16 +76,13 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://medstation.ai";
 
-    const sessionConfig: any = {
-      customer: customerId,
-      customer_email: customerId ? undefined : email,
+    const sessionConfig: Stripe.Checkout.SessionCreateParams = {
+      customer: reusableCustomerId,
+      customer_email: reusableCustomerId ? undefined : email,
       line_items: [{ price: CURRENT_PRICES[plan], quantity: 1 }],
       mode: "subscription",
       success_url: `${origin}/obrigado?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?canceled=true`,
-      // Senha NÃO é mais coletada no Stripe: a conta é criada no backend e o
-      // usuário define a senha pelo fluxo oficial do Supabase.
-
       payment_method_collection: "always",
       phone_number_collection: { enabled: false },
       billing_address_collection: "auto",
@@ -87,9 +90,7 @@ serve(async (req) => {
       metadata: { plan, billingPeriod, pricing_cohort: "current_unified" },
     };
 
-    if (couponCode) {
-      sessionConfig.discounts = [{ coupon: couponCode }];
-    }
+    if (couponCode) sessionConfig.discounts = [{ coupon: couponCode }];
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
     logStep("Checkout session created", { sessionId: session.id, plan });
