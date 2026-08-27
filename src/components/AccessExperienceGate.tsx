@@ -1,6 +1,15 @@
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { CalendarClock, CheckCircle2, Crown, LockKeyhole, Settings2, Sparkles } from "lucide-react";
+import {
+  AlertTriangle,
+  CalendarClock,
+  CheckCircle2,
+  Crown,
+  LockKeyhole,
+  RefreshCw,
+  Settings2,
+  Sparkles,
+} from "lucide-react";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +21,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+
+const WELCOME_TOUR_SEEN_KEY = "medstation:welcomeTourSeen";
 
 function formatDate(iso: string | null) {
   if (!iso) return null;
@@ -33,6 +44,15 @@ export function TrialWelcomeDialog() {
 
   useEffect(() => {
     if (loading || !isTrial || trialSource !== "signup" || !storageKey) return;
+
+    // Never compete with the first-run product tour. Dashboard redirects new users
+    // to /welcome-tour; only show this acknowledgement after that tour was seen/skipped.
+    try {
+      if (localStorage.getItem(WELCOME_TOUR_SEEN_KEY) !== "true") return;
+    } catch {
+      return;
+    }
+
     try {
       const pendingGoogleSignup = localStorage.getItem("ms_google_signup_pending");
       if (pendingGoogleSignup) {
@@ -119,11 +139,18 @@ const ALWAYS_ACCESSIBLE_PATHS = new Set(["/settings", "/pricing", "/precos", "/p
 
 export function AccessContentGate({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
-  const { accessActive, accessStatus, trialEndsAt, loading } = useSubscription();
+  const {
+    accessActive,
+    accessStatus,
+    accessVerificationError,
+    trialEndsAt,
+    loading,
+    checkSubscription,
+  } = useSubscription();
   const alwaysAccessible = ALWAYS_ACCESSIBLE_PATHS.has(pathname);
 
   useEffect(() => {
-    if (loading || accessActive || alwaysAccessible) return;
+    if (loading || accessVerificationError || accessActive || alwaysAccessible) return;
     const dedupe = `${accessStatus}:${trialEndsAt ?? "none"}`;
     if (accessStatus === "trial_expired") {
       trackLifecycleEvent("trial_expired", {
@@ -136,13 +163,45 @@ export function AccessContentGate({ children }: { children: ReactNode }) {
       trial_ends_at: trialEndsAt,
       blocked_path: pathname,
     });
-  }, [loading, accessActive, accessStatus, trialEndsAt, pathname, alwaysAccessible]);
+  }, [
+    loading,
+    accessVerificationError,
+    accessActive,
+    accessStatus,
+    trialEndsAt,
+    pathname,
+    alwaysAccessible,
+  ]);
 
   if (loading) {
     return <div className="py-16 text-center text-sm text-muted-foreground">Verificando seu acesso...</div>;
   }
 
   if (accessActive || alwaysAccessible) return <>{children}</>;
+
+  if (accessVerificationError) {
+    return (
+      <div className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center py-8">
+        <Card className="w-full border-amber-500/30">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
+            <CardTitle className="font-display text-2xl">Não conseguimos verificar seu acesso agora</CardTitle>
+            <CardDescription className="mx-auto max-w-lg leading-relaxed">
+              Sua assinatura não foi alterada. Houve uma falha temporária na verificação de acesso. Tente novamente em instantes.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button className="w-full" size="lg" onClick={() => void checkSubscription()}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Tentar novamente
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const expired = accessStatus === "trial_expired";
 
