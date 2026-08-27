@@ -186,6 +186,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Redireciona apenas no primeiro acesso para o tour de 3 telas
     if (!hasSeenWelcomeTour()) {
       navigate("/welcome-tour", { replace: true });
       return;
@@ -263,10 +264,14 @@ export default function Dashboard() {
     <>
       <BrandIntro />
     <div className="space-y-6">
+      {/* Welcome section */}
       <div className="rounded-xl border border-primary/20 p-5 md:p-9 text-primary-foreground shadow-elevated relative overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/75 dark:from-primary dark:via-primary/90 dark:to-primary/60">
+        {/* Soft radial highlights */}
         <div className="absolute -top-24 -right-16 h-64 w-64 rounded-full bg-primary-foreground/15 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-primary-foreground/10 blur-3xl pointer-events-none" />
+        {/* Diagonal sheen */}
         <div className="absolute inset-0 bg-[linear-gradient(110deg,transparent_0%,hsl(var(--primary-foreground)/0.07)_45%,transparent_65%)] pointer-events-none" />
+        {/* Varredura de luz cinematográfica */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none motion-reduce:hidden">
           <div className="absolute inset-y-0 -left-1/3 w-1/3 bg-[linear-gradient(90deg,transparent,hsl(var(--primary-foreground)/0.22),transparent)] blur-md animate-brand-sweep" />
         </div>
@@ -289,11 +294,56 @@ export default function Dashboard() {
             Assistente clínico inteligente para otimizar seu fluxo de trabalho médico — produza mais, digite menos.
           </p>
         </div>
+
+        {/* <Button variant="secondary" size="sm" className="md:size-lg" asChild>
+          <Link to="/patients">
+            <Users className="mr-2 h-4 w-4" />
+            Ver Pacientes
+          </Link>
+        </Button> */}
       </div>
 
+      {/* Hero de ações rápidas — o que o médico quer fazer agora */}
       <FreeExaminusSpotlight />
+
       <QuickActionsHero />
 
+      {/* <div>
+        <div className="flex items-center gap-2 mb-4">
+          <Stethoscope className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+          <h2 className="text-xl md:text-2xl font-bold">Prática Médica</h2>
+        </div>
+        <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          {practiceModules.map((module) => (
+            <Link key={module.title} to={module.url}>
+              <Card className="h-full hover:shadow-elevated hover:border-primary/50 transition-all cursor-pointer group relative">
+                <CardHeader className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className={`rounded-xl p-4 bg-gradient-to-br from-primary/10 to-primary/5 ${module.color}`}>
+                      <module.icon className="h-8 w-8" />
+                    </div>
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl mb-2 group-hover:text-primary transition-colors">
+                      {module.title}
+                    </CardTitle>
+                    <CardDescription className="text-sm leading-relaxed">
+                      {module.description}
+                    </CardDescription>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                    Acessar
+                  </Button>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </div> */}
+
+      {/* AI Agents - Main Section */}
       <div>
         <div className="flex items-center gap-2 mb-4">
           <Activity className="h-5 w-5 md:h-6 md:w-6 text-primary" />
@@ -303,7 +353,9 @@ export default function Dashboard() {
           {agentModules.map((module) => (
             <Link key={module.title} to={module.url} className="group/card focus:outline-none">
               <Card className="h-full cursor-pointer relative overflow-hidden border-border/60 bg-card/80 backdrop-blur-sm transition-all duration-300 ease-out hover:border-primary/40 hover:shadow-elevated hover:-translate-y-0.5">
+                {/* Soft hover glow */}
                 <div className="pointer-events-none absolute inset-0 opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 bg-[radial-gradient(ellipse_at_top_left,hsl(var(--primary)/0.08),transparent_60%)]" />
+                {/* Top accent line */}
                 <div className="pointer-events-none absolute top-0 left-0 h-px w-full bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
                 <CardHeader className="space-y-4 relative">
                   <div className="flex items-center justify-between">
@@ -343,6 +395,58 @@ export default function Dashboard() {
           ))}
         </div>
       </div>
+
+      {/* Quick stats - HIDDEN */}
+      {/* <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {quickStats.map((stat) => (
+          <Card key={stat.label}>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {stat.label}
+              </CardTitle>
+              <stat.icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stat.value}</div>
+              <p className="text-xs text-muted-foreground mt-1">{stat.trend}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div> */}
+
+      {/* Recent alerts - HIDDEN */}
+      {/* <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-warning" />
+            Alertas e Pendências
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
+              <div className="flex items-center gap-3">
+                <Activity className="h-5 w-5 text-warning" />
+                <div>
+                  <p className="text-sm font-medium">Paciente com exame crítico</p>
+                  <p className="text-xs text-muted-foreground">João Silva - K+ 6.2 mEq/L</p>
+                </div>
+              </div>
+              <Button size="sm" variant="outline">Ver</Button>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
+              <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-destructive" />
+                <div>
+                  <p className="text-sm font-medium">Relatório aguardando assinatura</p>
+                  <p className="text-xs text-muted-foreground">Maria Santos - Transferência UTI</p>
+                </div>
+              </div>
+              <Button size="sm" variant="outline">Assinar</Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card> */}
     </div>
     </>
   );
