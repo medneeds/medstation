@@ -3,6 +3,7 @@ import { DISPLAY_PRICING } from "@/lib/subscription-tiers";
 
 const SITE = "https://medstation-ai.com.br";
 const DEFAULT_IMAGE = `${SITE}/og-image.png`;
+const INDEXABLE_PATHS = new Set(["/", "/pricing"]);
 
 interface SeoProps {
   title: string;
@@ -72,15 +73,24 @@ export function Seo({
   jsonLd,
 }: SeoProps) {
   const url = `${SITE}${path}`;
-  const structuredData = jsonLd ?? defaultJsonLd(path);
+  // Fonte única da política de indexação: hoje apenas home e pricing são páginas
+  // orgânicas. `noIndex` pode endurecer ainda mais, nunca ampliar a allowlist.
+  const effectiveNoIndex = noIndex || !INDEXABLE_PATHS.has(path);
+  const structuredData = effectiveNoIndex ? [] : (jsonLd ?? defaultJsonLd(path));
 
   return (
     <Helmet>
       <html lang="pt-BR" />
       <title>{title}</title>
       <meta name="description" content={description} />
-      <meta name="robots" content={noIndex ? "noindex,nofollow,noarchive" : "index,follow,max-image-preview:large"} />
-      <meta name="googlebot" content={noIndex ? "noindex,nofollow,noarchive" : "index,follow,max-image-preview:large"} />
+      <meta
+        name="robots"
+        content={effectiveNoIndex ? "noindex,nofollow,noarchive" : "index,follow,max-image-preview:large"}
+      />
+      <meta
+        name="googlebot"
+        content={effectiveNoIndex ? "noindex,nofollow,noarchive" : "index,follow,max-image-preview:large"}
+      />
       <link rel="canonical" href={url} />
 
       <meta property="og:locale" content="pt_BR" />
