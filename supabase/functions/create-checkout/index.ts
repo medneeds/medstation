@@ -93,6 +93,20 @@ serve(async (req) => {
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     const customerId = customers.data.length > 0 ? customers.data[0].id : undefined;
 
+    if (customerId) {
+      const existingSubs = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 20 });
+      const existingActive = existingSubs.data.find((s) => ["active", "trialing", "past_due"].includes(s.status));
+      if (existingActive) {
+        return new Response(
+          JSON.stringify({
+            error: "Sua conta já possui uma assinatura ativa.",
+            code: "EXISTING_SUBSCRIPTION",
+          }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
     const sessionConfig: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,

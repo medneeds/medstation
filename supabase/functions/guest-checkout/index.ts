@@ -54,6 +54,20 @@ serve(async (req) => {
     const customers = await stripe.customers.list({ email, limit: 1 });
     const customerId = customers.data.length > 0 ? customers.data[0].id : undefined;
 
+    if (customerId) {
+      const existingSubs = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 20 });
+      const existingActive = existingSubs.data.find((s) => ["active", "trialing", "past_due"].includes(s.status));
+      if (existingActive) {
+        return new Response(
+          JSON.stringify({
+            error: "Já existe uma assinatura ativa para este e-mail. Entre na sua conta para continuar.",
+            code: "EXISTING_SUBSCRIPTION",
+          }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
     const origin = req.headers.get("origin") || "https://medstation.ai";
 
     const sessionConfig: any = {
