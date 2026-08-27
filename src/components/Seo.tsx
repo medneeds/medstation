@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { DISPLAY_PRICING } from "@/lib/subscription-tiers";
 
 const SITE = "https://medstation-ai.com.br";
 const DEFAULT_IMAGE = `${SITE}/og-image.png`;
@@ -45,14 +46,14 @@ function defaultJsonLd(path: string): Record<string, unknown>[] {
         {
           "@type": "Offer",
           priceCurrency: "BRL",
-          price: "49.90",
+          price: DISPLAY_PRICING.bundle.monthly.now.toFixed(2),
           category: "monthly subscription",
           url: `${SITE}/pricing`,
         },
         {
           "@type": "Offer",
           priceCurrency: "BRL",
-          price: "499.90",
+          price: DISPLAY_PRICING.bundle.yearly.now.toFixed(2),
           category: "yearly subscription",
           url: `${SITE}/pricing`,
         },
