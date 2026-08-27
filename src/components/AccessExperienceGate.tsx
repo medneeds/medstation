@@ -34,9 +34,9 @@ export function TrialWelcomeDialog() {
 
   useEffect(() => {
     if (loading || !isTrial || trialSource !== "signup" || !storageKey) return;
-    // O tour de primeiro acesso (/welcome-tour) é a única introdução automática.
-    // O aviso de trial só aparece depois que ele foi concluído ou pulado.
-    if (!hasSeenWelcomeTour()) return;
+
+    // Acquisition/lifecycle events reflect the actual entitlement state and must
+    // not depend on whether the user has completed the optional welcome tour.
     try {
       const pendingGoogleSignup = localStorage.getItem("ms_google_signup_pending");
       if (pendingGoogleSignup) {
@@ -62,6 +62,10 @@ export function TrialWelcomeDialog() {
       trial_source: trialSource,
       trial_started_at: trialStartedAt,
     }, trialStartedAt ?? undefined);
+
+    // The welcome dialog itself remains sequenced after /welcome-tour so the
+    // first-run UX stays calm and we do not show two introductions at once.
+    if (!hasSeenWelcomeTour()) return;
 
     try {
       if (localStorage.getItem(storageKey) !== "seen") {
@@ -148,7 +152,6 @@ export function AccessContentGate({ children }: { children: ReactNode }) {
 
   if (accessActive || alwaysAccessible) return <>{children}</>;
 
-  // Falha temporária na verificação de cobrança NÃO deve virar paywall.
   if (accessStatus === "verification_error") {
     return (
       <div className="py-16 text-center text-sm text-muted-foreground">
