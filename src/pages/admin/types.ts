@@ -31,7 +31,10 @@ export interface SubscriberRecord {
   interval: string | null;
   auth_missing: boolean;
   in_trial?: boolean;
+  trial_expired?: boolean;
+  trial_started_at?: string | null;
   trial_ends_at?: string | null;
+  trial_source?: "signup" | "migration" | null;
   access_active?: boolean;
   courtesy: CourtesyInfo | null;
   effective_status: string;
@@ -49,6 +52,7 @@ export interface SubscriberStats {
   admin: number;
   auth_missing: number;
   free_trial?: number;
+  free_trial_expired?: number;
   access_active?: number;
   mrr_cents: number;
   arr_cents: number;
@@ -56,7 +60,6 @@ export interface SubscriberStats {
   currency: string;
   paying_total: number;
 }
-
 
 export type FilteredSubscriberStats = SubscriberStats;
 
