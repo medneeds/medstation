@@ -11,6 +11,8 @@ export type AccessStatus =
   | "trial_expired"
   | "none";
 
+type TrialSource = "signup" | "migration" | "legacy" | null;
+
 interface SubscriptionContextType {
   /** Legacy compatibility: use accessActive for new access-control code. */
   subscribed: boolean;
@@ -24,7 +26,7 @@ interface SubscriptionContextType {
   hasConsultorio: boolean;
   availableUpgrade: AvailableUpgrade;
   isTrial: boolean;
-  trialSource: "signup" | "legacy" | null;
+  trialSource: TrialSource;
   trialStartedAt: string | null;
   trialEndsAt: string | null;
   loading: boolean;
@@ -45,7 +47,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [hasConsultorio, setHasConsultorio] = useState(false);
   const [availableUpgrade, setAvailableUpgrade] = useState<AvailableUpgrade>(null);
   const [isTrial, setIsTrial] = useState(false);
-  const [trialSource, setTrialSource] = useState<"signup" | "legacy" | null>(null);
+  const [trialSource, setTrialSource] = useState<TrialSource>(null);
   const [trialStartedAt, setTrialStartedAt] = useState<string | null>(null);
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -90,7 +92,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       setHasConsultorio(data?.has_consultorio === true);
       setAvailableUpgrade((data?.available_upgrade as AvailableUpgrade) || null);
       setIsTrial(data?.trial === true);
-      setTrialSource((data?.trial_source as "signup" | "legacy") || null);
+      setTrialSource((data?.trial_source as TrialSource) || null);
       setTrialStartedAt(data?.trial_started_at || null);
       setTrialEndsAt(data?.trial_ends_at || null);
     } catch (error) {
