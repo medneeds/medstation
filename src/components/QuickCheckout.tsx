@@ -166,7 +166,7 @@ export function QuickCheckout({
         <p className="text-[10px] text-center text-muted-foreground">
           Ao continuar, você concorda com nossos termos de uso.
           <br />
-          Você criará sua senha no checkout.
+          Após o pagamento, você receberá um link seguro para definir sua senha.
         </p>
       </form>
     </Card>

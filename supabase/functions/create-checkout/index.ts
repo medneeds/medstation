@@ -7,38 +7,34 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+const logStep = (step: string, details?: Record<string, unknown>) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
-// New acquisition is intentionally limited to the unified MedStation plan.
-// Legacy price/product IDs remain recognized by entitlement code for existing subscribers,
-// but can no longer be sold by this endpoint.
 const CURRENT_PRICES: Record<string, string> = {
   pro_completo: "price_1U4Zo7ACiwQRloW4cJIn0jYn",
   pro_completo_yearly: "price_1U4ZoTACiwQRloW4f30FmEPb",
 };
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    Deno.env.get("SUPABASE_ANON_KEY") ?? "",
   );
 
   try {
     logStep("Function started");
 
-    const authHeader = req.headers.get("Authorization")!;
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) throw new Error("User not authenticated");
     const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabaseClient.auth.getUser(token);
+    const { data, error: userError } = await supabaseClient.auth.getUser(token);
     const user = data.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    if (userError || !user?.email) throw new Error("User not authenticated or email not available");
+    logStep("User authenticated", { authenticated: true });
 
     const body = await req.json().catch(() => ({}));
     let couponCode = body.couponCode?.trim();
@@ -63,11 +59,13 @@ serve(async (req) => {
             .maybeSingle();
           if (pendingRef) {
             couponCode = referralCoupon;
-            logStep("Auto-applying referral coupon", { coupon: referralCoupon });
+            logStep("Referral discount selected", { referral: true });
           }
         }
-      } catch (e) {
-        console.error("[CREATE-CHECKOUT] referral lookup failed", e);
+      } catch (error) {
+        console.error("[CREATE-CHECKOUT] referral lookup failed", {
+          message: error instanceof Error ? error.message : "unknown",
+        });
       }
     }
 
@@ -84,18 +82,27 @@ serve(async (req) => {
       );
     }
 
-    logStep("Unified plan resolved", { plan, couponCode: couponCode || "none" });
+    logStep("Unified plan resolved", { plan, coupon: Boolean(couponCode) });
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2025-08-27.basil"
+      apiVersion: "2025-08-27.basil",
     });
 
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    const customerId = customers.data.length > 0 ? customers.data[0].id : undefined;
+    // A user can have several Stripe Customer records sharing the same email.
+    // Inspect all reasonable matches before allowing another subscription.
+    const customers = await stripe.customers.list({ email: user.email, limit: 10 });
+    let reusableCustomerId: string | undefined;
 
-    if (customerId) {
-      const existingSubs = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 20 });
-      const existingActive = existingSubs.data.find((s) => ["active", "trialing", "past_due"].includes(s.status));
+    for (const customer of customers.data) {
+      reusableCustomerId ??= customer.id;
+      const existingSubs = await stripe.subscriptions.list({
+        customer: customer.id,
+        status: "all",
+        limit: 20,
+      });
+      const existingActive = existingSubs.data.find((subscription) =>
+        ["active", "trialing", "past_due"].includes(subscription.status),
+      );
       if (existingActive) {
         return new Response(
           JSON.stringify({
@@ -107,22 +114,23 @@ serve(async (req) => {
       }
     }
 
-    const sessionConfig: any = {
-      customer: customerId,
-      customer_email: customerId ? undefined : user.email,
+    const origin = req.headers.get("origin");
+    if (!origin) throw new Error("Request origin is required");
+
+    const sessionConfig: Stripe.Checkout.SessionCreateParams = {
+      customer: reusableCustomerId,
+      customer_email: reusableCustomerId ? undefined : user.email,
       line_items: [{ price: CURRENT_PRICES[plan], quantity: 1 }],
       mode: "subscription",
-      success_url: `${req.headers.get("origin")}/obrigado?success=true&plan=${plan}&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get("origin")}/pricing?canceled=true`,
+      success_url: `${origin}/obrigado?success=true&plan=${plan}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/pricing?canceled=true`,
       payment_method_collection: "always",
       phone_number_collection: { enabled: false },
       billing_address_collection: "auto",
       metadata: { plan, user_id: user.id, pricing_cohort: "current_unified" },
     };
 
-    if (couponCode) {
-      sessionConfig.discounts = [{ coupon: couponCode }];
-    }
+    if (couponCode) sessionConfig.discounts = [{ coupon: couponCode }];
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
     logStep("Checkout session created", { sessionId: session.id, plan });
