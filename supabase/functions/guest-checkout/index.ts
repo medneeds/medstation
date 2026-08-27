@@ -77,14 +77,9 @@ serve(async (req) => {
       mode: "subscription",
       success_url: `${origin}/obrigado?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?canceled=true`,
-      custom_fields: [
-        {
-          key: "password",
-          label: { type: "custom", custom: "Crie sua senha (opcional — pode definir depois)" },
-          type: "text",
-          optional: true,
-        },
-      ],
+      // Senha NÃO é mais coletada no Stripe: a conta é criada no backend e o
+      // usuário define a senha pelo fluxo oficial do Supabase.
+
       payment_method_collection: "always",
       phone_number_collection: { enabled: false },
       billing_address_collection: "auto",
