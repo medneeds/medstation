@@ -10,7 +10,6 @@ import { HeaderUserMenu } from "@/components/HeaderUserMenu";
 import { HeaderThemeToggle } from "@/components/HeaderThemeToggle";
 import { SupportChat } from "@/components/SupportChat";
 import { FloatingConsultationButton } from "@/components/FloatingConsultationButton";
-import { OnboardingTour } from "@/components/OnboardingTour";
 import { AnnouncementsBanner } from "@/components/AnnouncementsBanner";
 import { TrialCountdownBanner } from "@/components/TrialCountdownBanner";
 import { LegacyTrialInviteDialog } from "@/components/LegacyTrialInviteDialog";
@@ -146,7 +145,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <TrialWelcomeDialog />
       <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
       <SupportChat />
-      <OnboardingTour />
       <NpsWidget />
       <AssistantPromoEngine />
       <ConciergeInternal open={conciergeOpen} onOpenChange={setConciergeOpen} />
