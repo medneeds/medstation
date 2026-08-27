@@ -7,153 +7,135 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+const logStep = (step: string, details?: Record<string, unknown>) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
   console.log(`[COMPLETE-CHECKOUT] ${step}${detailsStr}`);
 };
 
+const generateTempPassword = () => {
+  const bytes = new Uint8Array(24);
+  crypto.getRandomValues(bytes);
+  return `${Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("")}A1!`;
+};
+
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     logStep("Function started");
 
     const body = await req.json().catch(() => ({}));
     const sessionId = body.sessionId;
-    
-    if (!sessionId) {
-      throw new Error("Session ID é obrigatório");
-    }
-    
-    logStep("Processing session", { sessionId });
+    if (!sessionId) throw new Error("Session ID é obrigatório");
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
-      apiVersion: "2025-08-27.basil" 
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+      apiVersion: "2025-08-27.basil",
     });
-    
-    // Get checkout session details
+
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ['customer', 'subscription', 'custom_fields'],
+      expand: ["customer", "subscription", "custom_fields"],
     });
-    
-    logStep("Session retrieved", { 
+
+    logStep("Session retrieved", {
       status: session.status,
-      customerEmail: session.customer_email,
       paymentStatus: session.payment_status,
     });
-    
+
     const paymentOk =
-      session.payment_status === 'paid' || session.payment_status === 'no_payment_required';
-    if (session.status !== 'complete' || !paymentOk) {
+      session.payment_status === "paid" || session.payment_status === "no_payment_required";
+    if (session.status !== "complete" || !paymentOk) {
       throw new Error("Pagamento não foi concluído");
     }
-    
-    const email = session.customer_email || (session.customer as any)?.email;
-    if (!email) {
-      throw new Error("Email não encontrado na sessão");
-    }
-    
-    // Senha vinda do custom_field (preenchida em fluxos cartão).
-    // Em pagamentos via Apple Pay / Google Pay / Link, o wallet não preenche
-    // custom_fields, então a senha pode vir vazia — geramos uma temporária
-    // e sinalizamos ao frontend para acionar definição de senha.
-    const passwordField = session.custom_fields?.find((f: { key: string; text?: { value: string } }) => f.key === 'password');
-    const providedPassword = passwordField?.text?.value?.trim();
-    const passwordWasSkipped = !providedPassword;
 
-    // Senha forte aleatória usada quando o usuário pagou via wallet.
-    const generateTempPassword = () => {
-      const bytes = new Uint8Array(18);
-      crypto.getRandomValues(bytes);
-      return btoa(String.fromCharCode(...bytes)).replace(/[^A-Za-z0-9]/g, '') + 'A1!';
-    };
+    const email = (session.customer_details?.email ||
+      session.customer_email ||
+      (typeof session.customer === "object" && session.customer && "email" in session.customer
+        ? session.customer.email
+        : null))?.toLowerCase();
 
-    const password = providedPassword || generateTempPassword();
+    if (!email) throw new Error("Email não encontrado na sessão");
 
-    logStep("Creating user account", { email, passwordWasSkipped });
-
-    // Create Supabase client with service role
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      { auth: { persistSession: false } }
+      { auth: { persistSession: false } },
     );
 
-    // Check if user already exists
-    const { data: existingUser } = await supabaseAdmin.auth.admin.listUsers();
-    const userExists = existingUser?.users?.some(u => u.email === email);
+    // Supabase Admin listUsers is paginated. The previous unpaginated call only
+    // inspected the first page and could try to recreate an existing paid user.
+    const { data: usersPage, error: listError } = await supabaseAdmin.auth.admin.listUsers({
+      page: 1,
+      perPage: 1000,
+    });
+    if (listError) throw new Error(`Não foi possível validar a conta existente: ${listError.message}`);
 
-    if (userExists) {
-      logStep("User already exists, returning success");
-      return new Response(JSON.stringify({
-        success: true,
-        message: "Usuário já existe. Faça login com sua senha.",
-        userExists: true,
-        email,
-        passwordWasSkipped,
-        plan: session.metadata?.plan ?? null,
-        amountTotal: session.amount_total ?? null,
-        currency: session.currency ?? null,
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+    const existingUser = usersPage.users.find((u) => u.email?.toLowerCase() === email);
+    if (existingUser) {
+      logStep("Existing account found after payment", { userExists: true });
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: "Assinatura confirmada. Entre para continuar.",
+          userExists: true,
+          email,
+          passwordWasSkipped: false,
+          plan: session.metadata?.plan ?? null,
+          amountTotal: session.amount_total ?? null,
+          currency: session.currency ?? null,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+      );
     }
 
-    // Create new user
+    // Backward compatibility only: old checkout sessions may contain a password
+    // custom field. New guest checkouts no longer collect credentials in Stripe.
+    const legacyPasswordField = session.custom_fields?.find(
+      (field: any) => field.key === "password",
+    );
+    const legacyPassword = legacyPasswordField && "text" in legacyPasswordField
+      ? legacyPasswordField.text?.value?.trim()
+      : undefined;
+    const passwordWasSkipped = !legacyPassword;
+    const password = legacyPassword || generateTempPassword();
+
+    const stripeCustomerId =
+      typeof session.customer === "string" ? session.customer : session.customer?.id ?? null;
+
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: true, // Auto-confirm email
+      email_confirm: true,
       user_metadata: {
         checkout_session_id: sessionId,
-        stripe_customer_id: typeof session.customer === 'string' ? session.customer : session.customer?.id,
+        stripe_customer_id: stripeCustomerId,
         password_pending_setup: passwordWasSkipped,
       },
     });
 
     if (createError) {
-      logStep("Error creating user", { error: createError.message });
-      throw new Error(`Erro ao criar conta: ${createError.message}`);
+      logStep("Account provisioning failed", { code: createError.code ?? "unknown" });
+      throw new Error(`Erro ao criar conta após o pagamento: ${createError.message}`);
     }
 
-    logStep("User created successfully", { userId: newUser.user.id, passwordWasSkipped });
-
-    // Magic link para autologin (sempre tenta — útil tanto para wallet quanto
-    // para usuários que digitaram senha em outro device).
-    const { data: sessionData, error: sessionError } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'magiclink',
-      email,
-      options: {
-        redirectTo: `${req.headers.get("origin")}/onboarding`,
-      }
+    logStep("Account created after payment", {
+      userCreated: Boolean(newUser.user),
+      passwordSetupRequired: passwordWasSkipped,
     });
 
-    if (sessionError) {
-      logStep("Could not generate auto-login link", { error: sessionError.message });
-    }
-
-    return new Response(JSON.stringify({
-      success: true,
-      message: "Conta criada com sucesso!",
-      userExists: false,
-      email,
-      userId: newUser.user.id,
-      passwordWasSkipped,
-      plan: session.metadata?.plan ?? null,
-      amountTotal: session.amount_total ?? null,
-      currency: session.currency ?? null,
-      // Para wallets: o frontend pode disparar email de "definir senha".
-      autoLoginUrl: sessionData?.properties?.hashed_token ?
-        `${req.headers.get("origin")}/auth/callback?token=${sessionData.properties.hashed_token}` :
-        null,
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
-    
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: "Conta criada com sucesso!",
+        userExists: false,
+        email,
+        userId: newUser.user.id,
+        passwordWasSkipped,
+        plan: session.metadata?.plan ?? null,
+        amountTotal: session.amount_total ?? null,
+        currency: session.currency ?? null,
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+    );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: errorMessage });
