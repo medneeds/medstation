@@ -299,7 +299,7 @@ export default function Lp3() {
                     <span className="text-sm text-muted-foreground">{cycle === "monthly" ? "/mês" : "/ano"}</span>
                   </div>
                   <div className="mt-1 text-xs text-muted-foreground">
-                    Em breve <span className="line-through">{brl(p.list)}</span> — hoje no valor de lançamento
+                    Valor vigente no plano único MedStation.
                   </div>
                   <p className="mt-3 text-xs text-muted-foreground">
                     {cycle === "monthly"
@@ -311,40 +311,9 @@ export default function Lp3() {
             })}
           </div>
 
-          <div className="mt-6 max-w-xl mx-auto rounded-2xl border border-primary/20 bg-primary/5 p-5">
-            <div className="grid grid-cols-3 gap-3 text-center">
-              <div>
-                <div className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">Valor em breve</div>
-                <div className="mt-1 text-base md:text-lg font-semibold line-through text-muted-foreground">
-                  {brl(price.list)}
-                </div>
-              </div>
-              <div>
-                <div className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">Você paga hoje</div>
-                <div className="mt-1 text-base md:text-lg font-bold text-primary">{brl(price.now)}</div>
-              </div>
-              <div>
-                <div className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">Desconto</div>
-                <div className="mt-1 text-base md:text-lg font-semibold text-primary">
-                  {Math.round((1 - price.now / price.list) * 100)}%
-                </div>
-              </div>
-            </div>
-            <p className="mt-4 pt-3 border-t border-primary/15 text-center text-sm">
-              Economia de{" "}
-              <strong className="text-primary">{brl(price.list - price.now)}</strong>{" "}
-              {billing === "monthly" ? "por mês" : "por ano"} —{" "}
-              {billing === "monthly"
-                ? `${brl((price.list - price.now) * 12)} em 12 meses.`
-                : `equivale a ${brl(price.now / 12)} por mês.`}
-            </p>
-          </div>
-
           <div className="mt-6 max-w-xl mx-auto rounded-xl border border-primary/25 bg-background px-4 py-3 text-center text-xs md:text-sm">
-            <strong className="text-primary">Aviso de reajuste:</strong> em breve o plano passa a
-            custar {brl(99.9)} por mês ou {brl(999.9)} por ano. Quem assinar agora mantém o valor de
-            hoje por pelo menos 12 meses.
-
+            <strong className="text-primary">Preço vigente:</strong> este é o valor atual do plano único MedStation.
+            Eventuais reajustes futuros serão definidos conforme a evolução do produto e comunicados antes de qualquer mudança na cobrança.
           </div>
 
           <p className="mt-4 text-center text-xs text-muted-foreground">

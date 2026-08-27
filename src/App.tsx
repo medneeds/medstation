@@ -30,7 +30,6 @@ import ConsultorioHistorico from "./pages/ConsultorioHistorico";
 import Rotina from "./pages/Rotina";
 import RotinaArquivo from "./pages/RotinaArquivo";
 
-import ConsultorioLanding from "./pages/ConsultorioLanding";
 import Examinus from "./pages/Examinus";
 import Scorius from "./pages/Scorius";
 import Numerus from "./pages/Numerus";
@@ -98,7 +97,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/confirmar-email" element={<ConfirmarEmail />} />
             <Route path="/pricing" element={<Pricing />} />
-            <Route path="/consultorio-landing" element={<ConsultorioLanding />} />
+            <Route path="/consultorio-landing" element={<Navigate to="/" replace />} />
             <Route
               path="/consultorio"
               element={
