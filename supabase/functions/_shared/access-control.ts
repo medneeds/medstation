@@ -32,12 +32,12 @@ export type AccessResolution = {
 const CURRENT_UNIFIED_PRODUCT_ID = "prod_V4jGKeBPH2hGYg";
 
 const LEGACY_PRODUCT_IDS = new Set([
-  "prod_TgR7u5urUle7om", // Assistentes standalone
-  "prod_UUfvAeta3d1Rn5", // Upgrade Assistentes
-  "prod_UUfuDkH9yfcfb3", // Consultório / Modo Escuta standalone
-  "prod_UUfu9AzBtaGsCW", // Upgrade Consultório
-  "prod_UUfw2uz4UPwkco", // Pro 2 bundle legado
-  "prod_V4BACwTTBf5tBk", // Pro Completo legado
+  "prod_TgR7u5urUle7om",
+  "prod_UUfvAeta3d1Rn5",
+  "prod_UUfuDkH9yfcfb3",
+  "prod_UUfu9AzBtaGsCW",
+  "prod_UUfw2uz4UPwkco",
+  "prod_V4BACwTTBf5tBk",
 ]);
 
 const AGENTS_PRODUCT_IDS = new Set([
@@ -79,52 +79,67 @@ function serviceClient() {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
+/**
+ * Legacy Stripe entitlement lookup.
+ * Search several Customers because the same email may have been attached to more
+ * than one Customer historically. A durable user_id -> stripe_customer_id mapping
+ * remains the preferred long-term design.
+ */
 async function stripeAccess(email: string): Promise<AccessResolution | null> {
   const key = Deno.env.get("STRIPE_SECRET_KEY");
   if (!key) return null;
 
   const stripe = new Stripe(key, { apiVersion: "2025-08-27.basil" });
-  const customers = await stripe.customers.list({ email, limit: 1 });
+  const customers = await stripe.customers.list({ email, limit: 10 });
   if (!customers.data.length) return null;
-
-  const subscriptions = await stripe.subscriptions.list({
-    customer: customers.data[0].id,
-    status: "all",
-    limit: 20,
-  });
-
-  const valid = subscriptions.data.filter((s) =>
-    ["active", "trialing", "past_due"].includes(s.status),
-  );
-  if (!valid.length) return null;
 
   const productIds: string[] = [];
   let subscriptionEnd: string | null = null;
   let hasHealthy = false;
   let hasPastDue = false;
 
-  for (const subscription of valid) {
-    if (subscription.status === "active" || subscription.status === "trialing") hasHealthy = true;
-    if (subscription.status === "past_due") hasPastDue = true;
+  for (const customer of customers.data) {
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customer.id,
+      status: "all",
+      limit: 20,
+    });
 
-    for (const item of subscription.items.data) {
-      const pid = item.price.product as string;
-      if (pid && !productIds.includes(pid)) productIds.push(pid);
-    }
+    const valid = subscriptions.data.filter((subscription) =>
+      ["active", "trialing", "past_due"].includes(subscription.status),
+    );
 
-    if (subscription.current_period_end) {
-      const candidate = new Date(subscription.current_period_end * 1000).toISOString();
-      if (!subscriptionEnd || candidate > subscriptionEnd) subscriptionEnd = candidate;
+    for (const subscription of valid) {
+      if (subscription.status === "active" || subscription.status === "trialing") {
+        hasHealthy = true;
+      }
+      if (subscription.status === "past_due") hasPastDue = true;
+
+      for (const item of subscription.items.data) {
+        const productId = item.price.product as string;
+        if (productId && !productIds.includes(productId)) productIds.push(productId);
+
+        // Stripe API 2025-08-27 exposes current_period_end on subscription items.
+        if (item.current_period_end) {
+          const candidate = new Date(item.current_period_end * 1000).toISOString();
+          if (!subscriptionEnd || candidate > subscriptionEnd) subscriptionEnd = candidate;
+        }
+      }
     }
   }
 
-  const result = base(hasHealthy ? "paid_active" : hasPastDue ? "past_due" : "none");
+  if (!hasHealthy && !hasPastDue) return null;
+
+  const result = base(hasHealthy ? "paid_active" : "past_due");
   result.canUsePlatform = true;
   result.isPaidSubscriber = true;
   result.subscriptionEnd = subscriptionEnd;
   result.productIds = productIds;
   result.hasAgents = productIds.some((id) => AGENTS_PRODUCT_IDS.has(id));
   result.hasConsultorio = productIds.some((id) => CONSULTORIO_PRODUCT_IDS.has(id));
+
+  // TODO(P0-dunning): replace indefinite past_due access with a persisted,
+  // webhook-driven 7-day grace period. Do not infer a grace clock in memory.
   return result;
 }
 
@@ -144,25 +159,29 @@ async function applyCommercialPolicy(
 
   paid.pricingCohort = "legacy_pre_unification";
 
-  const { data: policy } = await supabase
+  const { data: policy, error } = await supabase
     .from("commercial_policy")
     .select("legacy_full_access_until")
     .eq("id", "medstation_unified_2026")
     .maybeSingle();
 
+  // Production may temporarily precede this migration. Legacy access must not
+  // disappear merely because the commercial-policy table is not present yet.
+  if (error) {
+    console.warn("[ACCESS] commercial policy unavailable; preserving legacy access");
+  }
+
   paid.legacyFullAccessUntil = policy?.legacy_full_access_until ?? null;
   paid.pricingReviewDue = !!paid.legacyFullAccessUntil
     && new Date(paid.legacyFullAccessUntil).getTime() <= Date.now();
-
-  // Legacy subscribers receive the whole platform during the protection period.
-  // After the review date we DO NOT alter price or revoke features automatically;
-  // the account is flagged for an explicit commercial decision in Admin.
   paid.hasAgents = true;
   paid.hasConsultorio = true;
   return paid;
 }
 
-export async function resolveUserAccess(user: Pick<User, "id" | "email" | "created_at">): Promise<AccessResolution> {
+export async function resolveUserAccess(
+  user: Pick<User, "id" | "email" | "created_at">,
+): Promise<AccessResolution> {
   const supabase = serviceClient();
 
   const { data: isAdmin } = await supabase.rpc("has_role", {
@@ -177,9 +196,17 @@ export async function resolveUserAccess(user: Pick<User, "id" | "email" | "creat
     return result;
   }
 
+  let stripeUnavailable = false;
   if (user.email) {
-    const paid = await stripeAccess(user.email);
-    if (paid) return applyCommercialPolicy(supabase, paid);
+    try {
+      const paid = await stripeAccess(user.email);
+      if (paid) return applyCommercialPolicy(supabase, paid);
+    } catch (error) {
+      stripeUnavailable = true;
+      console.error("[ACCESS] Stripe entitlement lookup unavailable", {
+        message: error instanceof Error ? error.message : "unknown",
+      });
+    }
   }
 
   const { data: hasCourtesy } = await supabase.rpc("has_active_courtesy", {
@@ -204,11 +231,18 @@ export async function resolveUserAccess(user: Pick<User, "id" | "email" | "creat
     return result;
   }
 
-  const { data: trial } = await supabase
+  const { data: trial, error: trialError } = await supabase
     .from("user_access")
     .select("trial_started_at, trial_ends_at, trial_source")
     .eq("user_id", user.id)
     .maybeSingle();
+
+  if (trialError) {
+    // Rollout compatibility: the production DB may not have received the
+    // user_access migration yet. Falling back to immutable auth.created_at keeps
+    // the existing 7-day semantics without granting anybody a fresh trial.
+    console.warn("[ACCESS] user_access unavailable; using created_at fallback");
+  }
 
   if (trial?.trial_ends_at) {
     const active = new Date(trial.trial_ends_at).getTime() > Date.now();
@@ -227,14 +261,30 @@ export async function resolveUserAccess(user: Pick<User, "id" | "email" | "creat
     const start = new Date(user.created_at).getTime();
     const end = start + 7 * 86400000;
     const active = end > Date.now();
-    const result = base(active ? "trial_active" : "trial_expired");
-    result.canUsePlatform = active;
-    result.isTrial = active;
-    result.trialSource = "migration";
+    if (active) {
+      const result = base("trial_active");
+      result.canUsePlatform = true;
+      result.isTrial = true;
+      result.trialSource = "migration";
+      result.trialStartedAt = new Date(start).toISOString();
+      result.trialEndsAt = new Date(end).toISOString();
+      result.hasAgents = true;
+      result.hasConsultorio = true;
+      return result;
+    }
+  }
+
+  // If Stripe could not be verified and there is no independent evidence of
+  // access/trial/courtesy, do not mislabel the account as unpaid. Surface a
+  // temporary verification failure so callers can show a retry state, not a sale.
+  if (stripeUnavailable) throw new Error("ACCESS_VERIFICATION_UNAVAILABLE");
+
+  if (user.created_at) {
+    const start = new Date(user.created_at).getTime();
+    const result = base("trial_expired");
     result.trialStartedAt = new Date(start).toISOString();
-    result.trialEndsAt = new Date(end).toISOString();
-    result.hasAgents = active;
-    result.hasConsultorio = active;
+    result.trialEndsAt = new Date(start + 7 * 86400000).toISOString();
+    result.trialSource = "migration";
     return result;
   }
 
