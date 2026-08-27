@@ -6,8 +6,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+const logStep = (step: string, details?: Record<string, unknown>) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
   console.log(`[GUEST-CHECKOUT] ${step}${detailsStr}`);
 };
 
@@ -41,26 +41,33 @@ serve(async (req) => {
       );
     }
 
-    if (!email) {
-      throw new Error("Email é obrigatório");
-    }
+    if (!email) throw new Error("Email é obrigatório");
 
-    logStep("Request parameters", { email, plan, couponCode: couponCode || "none" });
+    logStep("Checkout requested", { plan, coupon: Boolean(couponCode) });
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2025-08-27.basil"
+      apiVersion: "2025-08-27.basil",
     });
 
-    const customers = await stripe.customers.list({ email, limit: 1 });
-    const customerId = customers.data.length > 0 ? customers.data[0].id : undefined;
+    // Email is still the legacy lookup key. Search more than one customer so a
+    // duplicate Stripe Customer cannot hide an existing subscription.
+    const customers = await stripe.customers.list({ email, limit: 10 });
+    let customerId: string | undefined;
 
-    if (customerId) {
-      const existingSubs = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 20 });
-      const existingActive = existingSubs.data.find((s) => ["active", "trialing", "past_due"].includes(s.status));
+    for (const customer of customers.data) {
+      customerId ??= customer.id;
+      const existingSubs = await stripe.subscriptions.list({
+        customer: customer.id,
+        status: "all",
+        limit: 20,
+      });
+      const existingActive = existingSubs.data.find((s) =>
+        ["active", "trialing", "past_due"].includes(s.status),
+      );
       if (existingActive) {
         return new Response(
           JSON.stringify({
-            error: "Já existe uma assinatura ativa para este e-mail. Entre na sua conta para continuar.",
+            error: "Já existe uma assinatura para este e-mail. Entre na sua conta para continuar.",
             code: "EXISTING_SUBSCRIPTION",
           }),
           { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -70,21 +77,13 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://medstation.ai";
 
-    const sessionConfig: any = {
+    const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,
       customer_email: customerId ? undefined : email,
       line_items: [{ price: CURRENT_PRICES[plan], quantity: 1 }],
       mode: "subscription",
       success_url: `${origin}/obrigado?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?canceled=true`,
-      custom_fields: [
-        {
-          key: "password",
-          label: { type: "custom", custom: "Crie sua senha (opcional — pode definir depois)" },
-          type: "text",
-          optional: true,
-        },
-      ],
       payment_method_collection: "always",
       phone_number_collection: { enabled: false },
       billing_address_collection: "auto",
@@ -92,9 +91,7 @@ serve(async (req) => {
       metadata: { plan, billingPeriod, pricing_cohort: "current_unified" },
     };
 
-    if (couponCode) {
-      sessionConfig.discounts = [{ coupon: couponCode }];
-    }
+    if (couponCode) sessionConfig.discounts = [{ coupon: couponCode }];
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
     logStep("Checkout session created", { sessionId: session.id, plan });
