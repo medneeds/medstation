@@ -69,9 +69,9 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
     });
     if (error) throw error;
 
-    // Só existe lead_created se o backend confirmou a gravação.
-    // A chave de dedupe não contém e-mail, telefone ou CRM.
-    trackLifecycleEvent("lead_created", { source }, `lead:${source}`);
+    // Um evento para cada linha de lead que o backend confirmou.
+    // Nenhum identificador pessoal é enviado ao analytics.
+    trackLifecycleEvent("lead_created", { source });
   };
 
   const handleStep1 = async (e: React.FormEvent) => {
