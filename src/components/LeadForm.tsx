@@ -18,16 +18,6 @@ interface LeadFormProps {
   className?: string;
 }
 
-const phoneMask = (v: string) => {
-  const d = v.replace(/\D/g, "").slice(0, 11);
-  if (d.length <= 2) return d.replace(/^(\d{0,2})/, "($1");
-  if (d.length <= 6) return d.replace(/^(\d{2})(\d{0,4})/, "($1) $2");
-  if (d.length <= 10) return d.replace(/^(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3");
-  return d.replace(/^(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3");
-};
-
-const isPhoneValid = (v: string) => v.replace(/\D/g, "").length >= 10;
-
 function collectUtm() {
   if (typeof window === "undefined") return {};
   const p = new URLSearchParams(window.location.search);
@@ -40,19 +30,17 @@ function collectUtm() {
 }
 
 /**
- * Captação de lead em dois passos curtos:
- * 1) nome + telefone + e-mail (gravado no backend antes de qualquer navegação)
- * 2) senha para concluir a conta e liberar os 7 dias de teste
+ * Cadastro de menor fricção possível:
+ * - Google como primeira opção visível.
+ * - Fluxo por e-mail em dois passos curtos: (1) nome + e-mail, (2) senha.
+ * Telefone e CRM/UF não são pedidos antes da ativação (coletados depois no perfil).
  */
 export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grátis", className = "" }: LeadFormProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [step, setStep] = useState<1 | 2>(1);
   const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [crm, setCrm] = useState("");
-  const [crmState, setCrmState] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -60,9 +48,9 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
     const { error } = await supabase.from("leads").insert({
       full_name: fullName.trim(),
       email: email.trim().toLowerCase(),
-      phone: phone.trim(),
-      crm: crm.trim() || null,
-      crm_state: crmState.trim().toUpperCase() || null,
+      // A coluna phone é NOT NULL no banco; mantemos string vazia por
+      // compatibilidade enquanto o telefone deixa de bloquear o cadastro.
+      phone: "",
       source,
       utm: collectUtm(),
       referrer: typeof document !== "undefined" ? document.referrer || null : null,
@@ -79,10 +67,6 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
     if (loading) return;
     if (!fullName.trim() || fullName.trim().length < 3) {
       toast({ variant: "destructive", title: "Informe seu nome completo" });
-      return;
-    }
-    if (!isPhoneValid(phone)) {
-      toast({ variant: "destructive", title: "Telefone inválido", description: "Use o formato (00) 00000-0000." });
       return;
     }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) {
@@ -118,9 +102,6 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
         options: {
           data: {
             full_name: validated.fullName,
-            phone: phone.trim(),
-            crm: crm.trim() || null,
-            crm_state: crmState.trim().toUpperCase() || null,
           },
           emailRedirectTo: `${window.location.origin}/auth?confirmed=1`,
         },
@@ -158,18 +139,6 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
       }
 
       if (data.session) {
-        try {
-          await supabase
-            .from("profiles")
-            .update({
-              phone: phone.trim(),
-              crm: crm.trim() || null,
-              crm_state: crmState.trim().toUpperCase() || null,
-            })
-            .eq("id", data.user!.id);
-        } catch (err) {
-          console.error("Profile update failed", err);
-        }
         navigate("/dashboard", { replace: true });
         return;
       }
@@ -202,8 +171,23 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
         Acesso completo aos 12 assistentes. Sem cartão de crédito.
       </p>
 
+      <div className="mt-4 space-y-3">
+        <GoogleAuthButton
+          label="Continuar com Google"
+          redirectTo="/dashboard"
+          hideDivider
+          trackAsSignup
+          source={source}
+        />
+        <div className="flex items-center gap-3">
+          <span className="h-px flex-1 bg-border" />
+          <span className="text-[11px] uppercase tracking-wider text-muted-foreground">ou por e-mail</span>
+          <span className="h-px flex-1 bg-border" />
+        </div>
+      </div>
+
       {step === 1 ? (
-        <form onSubmit={handleStep1} className="mt-5 space-y-3">
+        <form onSubmit={handleStep1} className="mt-4 space-y-3">
           <div className="space-y-1.5">
             <Label htmlFor="lead-name" className="text-[11px] uppercase tracking-wider text-muted-foreground">
               Nome completo
@@ -214,21 +198,6 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Dra. Maria Souza"
               autoComplete="name"
-              required
-              className="h-11"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="lead-phone" className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              Telefone (WhatsApp)
-            </Label>
-            <Input
-              id="lead-phone"
-              value={phone}
-              onChange={(e) => setPhone(phoneMask(e.target.value))}
-              placeholder="(11) 90000-0000"
-              inputMode="tel"
-              autoComplete="tel"
               required
               className="h-11"
             />
@@ -248,34 +217,6 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
               className="h-11"
             />
           </div>
-          <div className="grid grid-cols-[1fr_88px] gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="lead-crm" className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                CRM <span className="normal-case tracking-normal">(opcional)</span>
-              </Label>
-              <Input
-                id="lead-crm"
-                value={crm}
-                onChange={(e) => setCrm(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                placeholder="123456"
-                inputMode="numeric"
-                className="h-11"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="lead-crm-uf" className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                UF
-              </Label>
-              <Input
-                id="lead-crm-uf"
-                value={crmState}
-                onChange={(e) => setCrmState(e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 2))}
-                placeholder="SP"
-                className="h-11"
-              />
-            </div>
-          </div>
-
           <Button type="submit" className="w-full h-12 text-sm md:text-base" disabled={loading}>
             {loading ? (
               <>
@@ -289,7 +230,7 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
           </Button>
         </form>
       ) : (
-        <form onSubmit={handleStep2} className="mt-5 space-y-3">
+        <form onSubmit={handleStep2} className="mt-4 space-y-3">
           <div className="rounded-xl bg-muted/50 px-3 py-2 text-xs text-muted-foreground flex items-center gap-2">
             <Check className="w-3.5 h-3.5 text-primary shrink-0" />
             <span className="truncate">{email}</span>
@@ -329,8 +270,6 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
               </>
             )}
           </Button>
-
-          <GoogleAuthButton label="Continuar com Google" redirectTo="/dashboard" hideDivider trackAsSignup source={source} />
         </form>
       )}
 

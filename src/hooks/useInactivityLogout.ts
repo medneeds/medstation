@@ -2,8 +2,8 @@ import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const INACTIVITY_MS = 30 * 60 * 1000; // 30 minutes
-const WARNING_MS = 60 * 1000; // 1 min warning before logout
+const INACTIVITY_MS = 8 * 60 * 60 * 1000; // 8 hours
+const WARNING_MS = 5 * 60 * 1000; // 5 min warning before logout
 const ACTIVITY_EVENTS = [
   "mousedown",
   "keydown",
@@ -13,7 +13,7 @@ const ACTIVITY_EVENTS = [
 ] as const;
 
 /**
- * Logs the user out automatically after 30 minutes of inactivity.
+ * Logs the user out automatically after 8 hours of inactivity.
  * Activity = mouse, keyboard, touch, scroll or tab focus.
  */
 export function useInactivityLogout(enabled: boolean) {
@@ -34,7 +34,7 @@ export function useInactivityLogout(enabled: boolean) {
         await supabase.auth.signOut();
       } finally {
         toast.error("Sessão encerrada por inatividade", {
-          description: "Você ficou 30 minutos sem atividade. Faça login novamente.",
+          description: "Você ficou 8 horas sem atividade. Faça login novamente.",
         });
       }
     };
@@ -43,7 +43,7 @@ export function useInactivityLogout(enabled: boolean) {
       lastActivity.current = Date.now();
       clearTimers();
       warningTimer.current = window.setTimeout(() => {
-        toast.warning("Sua sessão expirará em 1 minuto", {
+        toast.warning("Sua sessão expirará em 5 minutos", {
           description: "Mexa o mouse ou toque na tela para continuar conectado.",
         });
       }, INACTIVITY_MS - WARNING_MS);

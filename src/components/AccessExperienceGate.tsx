@@ -5,6 +5,7 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { trackLifecycleEvent } from "@/lib/analytics";
+import { hasSeenWelcomeTour } from "@/pages/WelcomeTour";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,9 @@ export function TrialWelcomeDialog() {
 
   useEffect(() => {
     if (loading || !isTrial || trialSource !== "signup" || !storageKey) return;
+    // O tour de primeiro acesso (/welcome-tour) é a única introdução automática.
+    // O aviso de trial só aparece depois que ele foi concluído ou pulado.
+    if (!hasSeenWelcomeTour()) return;
     try {
       const pendingGoogleSignup = localStorage.getItem("ms_google_signup_pending");
       if (pendingGoogleSignup) {
@@ -143,6 +147,15 @@ export function AccessContentGate({ children }: { children: ReactNode }) {
   }
 
   if (accessActive || alwaysAccessible) return <>{children}</>;
+
+  // Falha temporária na verificação de cobrança NÃO deve virar paywall.
+  if (accessStatus === "verification_error") {
+    return (
+      <div className="py-16 text-center text-sm text-muted-foreground">
+        Não conseguimos confirmar seu acesso agora. Atualize a página em instantes — nada foi alterado na sua conta.
+      </div>
+    );
+  }
 
   const expired = accessStatus === "trial_expired";
 

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { findUserByEmail, generateTempPassword, maskEmail } from "../_shared/admin-users.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -40,7 +41,6 @@ serve(async (req) => {
     
     logStep("Session retrieved", { 
       status: session.status,
-      customerEmail: session.customer_email,
       paymentStatus: session.payment_status,
     });
     
@@ -55,24 +55,15 @@ serve(async (req) => {
       throw new Error("Email não encontrado na sessão");
     }
     
-    // Senha vinda do custom_field (preenchida em fluxos cartão).
-    // Em pagamentos via Apple Pay / Google Pay / Link, o wallet não preenche
-    // custom_fields, então a senha pode vir vazia — geramos uma temporária
-    // e sinalizamos ao frontend para acionar definição de senha.
+    // Compatibilidade: sessões ANTIGAS podem trazer senha em custom_fields.
+    // Novos fluxos NÃO coletam senha no Stripe — a conta é criada com senha
+    // temporária forte e o usuário define a senha pelo fluxo do Supabase.
     const passwordField = session.custom_fields?.find((f: { key: string; text?: { value: string } }) => f.key === 'password');
-    const providedPassword = passwordField?.text?.value?.trim();
-    const passwordWasSkipped = !providedPassword;
+    const legacyPassword = passwordField?.text?.value?.trim();
+    const passwordWasSkipped = !legacyPassword;
+    const password = legacyPassword || generateTempPassword();
 
-    // Senha forte aleatória usada quando o usuário pagou via wallet.
-    const generateTempPassword = () => {
-      const bytes = new Uint8Array(18);
-      crypto.getRandomValues(bytes);
-      return btoa(String.fromCharCode(...bytes)).replace(/[^A-Za-z0-9]/g, '') + 'A1!';
-    };
-
-    const password = providedPassword || generateTempPassword();
-
-    logStep("Creating user account", { email, passwordWasSkipped });
+    logStep("Creating user account", { email: maskEmail(email), passwordWasSkipped });
 
     // Create Supabase client with service role
     const supabaseAdmin = createClient(
@@ -81,11 +72,14 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    // Check if user already exists
-    const { data: existingUser } = await supabaseAdmin.auth.admin.listUsers();
-    const userExists = existingUser?.users?.some(u => u.email === email);
+    // listUsers() sem paginação só devolve os 50 primeiros usuários — isso
+    // fazia contas existentes serem tratadas como inexistentes.
+    const existing = await findUserByEmail(
+      (params) => supabaseAdmin.auth.admin.listUsers(params) as any,
+      email,
+    );
 
-    if (userExists) {
+    if (existing) {
       logStep("User already exists, returning success");
       return new Response(JSON.stringify({
         success: true,
@@ -121,18 +115,18 @@ serve(async (req) => {
 
     logStep("User created successfully", { userId: newUser.user.id, passwordWasSkipped });
 
-    // Magic link para autologin (sempre tenta — útil tanto para wallet quanto
-    // para usuários que digitaram senha em outro device).
-    const { data: sessionData, error: sessionError } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'magiclink',
+    // Link de acesso gerado pelo próprio Supabase (action_link). Nunca montamos
+    // URL manual com hashed_token.
+    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+      type: passwordWasSkipped ? 'recovery' : 'magiclink',
       email,
       options: {
         redirectTo: `${req.headers.get("origin")}/onboarding`,
       }
     });
 
-    if (sessionError) {
-      logStep("Could not generate auto-login link", { error: sessionError.message });
+    if (linkError) {
+      logStep("Could not generate access link", { error: linkError.message });
     }
 
     return new Response(JSON.stringify({
@@ -145,14 +139,13 @@ serve(async (req) => {
       plan: session.metadata?.plan ?? null,
       amountTotal: session.amount_total ?? null,
       currency: session.currency ?? null,
-      // Para wallets: o frontend pode disparar email de "definir senha".
-      autoLoginUrl: sessionData?.properties?.hashed_token ?
-        `${req.headers.get("origin")}/auth/callback?token=${sessionData.properties.hashed_token}` :
-        null,
+      // action_link oficial do Supabase (define senha / entra na conta).
+      autoLoginUrl: linkData?.properties?.action_link ?? null,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
+
     
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

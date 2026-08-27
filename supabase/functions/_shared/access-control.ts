@@ -1,5 +1,6 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient, User } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { summarizeSubscriptions, type MinimalSubscription } from "./stripe-access.ts";
 
 export type AccessStatus =
   | "admin"
@@ -8,9 +9,11 @@ export type AccessStatus =
   | "courtesy_active"
   | "trial_active"
   | "trial_expired"
+  | "verification_error"
   | "none";
 
 export type PricingCohort = "current_unified" | "legacy_pre_unification" | null;
+
 
 export type AccessResolution = {
   status: AccessStatus;
@@ -27,7 +30,10 @@ export type AccessResolution = {
   pricingCohort: PricingCohort;
   legacyFullAccessUntil: string | null;
   pricingReviewDue: boolean;
+  /** true when Stripe could not be reached and access came from other evidence. */
+  billingCheckDegraded: boolean;
 };
+
 
 const CURRENT_UNIFIED_PRODUCT_ID = "prod_V4jGKeBPH2hGYg";
 
@@ -69,6 +75,7 @@ function base(status: AccessStatus): AccessResolution {
     pricingCohort: null,
     legacyFullAccessUntil: null,
     pricingReviewDue: false,
+    billingCheckDegraded: false,
   };
 }
 
@@ -84,49 +91,34 @@ async function stripeAccess(email: string): Promise<AccessResolution | null> {
   if (!key) return null;
 
   const stripe = new Stripe(key, { apiVersion: "2025-08-27.basil" });
-  const customers = await stripe.customers.list({ email, limit: 1 });
+  // Um mesmo e-mail pode ter mais de um customer no Stripe (checkout convidado,
+  // e-mail alterado, duplicidade). Verificar apenas o primeiro bloqueava pagantes.
+  const customers = await stripe.customers.list({ email, limit: 10 });
   if (!customers.data.length) return null;
 
-  const subscriptions = await stripe.subscriptions.list({
-    customer: customers.data[0].id,
-    status: "all",
-    limit: 20,
-  });
-
-  const valid = subscriptions.data.filter((s) =>
-    ["active", "trialing", "past_due"].includes(s.status),
-  );
-  if (!valid.length) return null;
-
-  const productIds: string[] = [];
-  let subscriptionEnd: string | null = null;
-  let hasHealthy = false;
-  let hasPastDue = false;
-
-  for (const subscription of valid) {
-    if (subscription.status === "active" || subscription.status === "trialing") hasHealthy = true;
-    if (subscription.status === "past_due") hasPastDue = true;
-
-    for (const item of subscription.items.data) {
-      const pid = item.price.product as string;
-      if (pid && !productIds.includes(pid)) productIds.push(pid);
-    }
-
-    if (subscription.current_period_end) {
-      const candidate = new Date(subscription.current_period_end * 1000).toISOString();
-      if (!subscriptionEnd || candidate > subscriptionEnd) subscriptionEnd = candidate;
-    }
+  const collected: MinimalSubscription[] = [];
+  for (const customer of customers.data) {
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customer.id,
+      status: "all",
+      limit: 20,
+    });
+    collected.push(...(subscriptions.data as unknown as MinimalSubscription[]));
   }
 
-  const result = base(hasHealthy ? "paid_active" : hasPastDue ? "past_due" : "none");
+  const summary = summarizeSubscriptions(collected);
+  if (!summary) return null;
+
+  const result = base(summary.hasHealthy ? "paid_active" : summary.hasPastDue ? "past_due" : "none");
   result.canUsePlatform = true;
   result.isPaidSubscriber = true;
-  result.subscriptionEnd = subscriptionEnd;
-  result.productIds = productIds;
-  result.hasAgents = productIds.some((id) => AGENTS_PRODUCT_IDS.has(id));
-  result.hasConsultorio = productIds.some((id) => CONSULTORIO_PRODUCT_IDS.has(id));
+  result.subscriptionEnd = summary.subscriptionEnd;
+  result.productIds = summary.productIds;
+  result.hasAgents = summary.productIds.some((id) => AGENTS_PRODUCT_IDS.has(id));
+  result.hasConsultorio = summary.productIds.some((id) => CONSULTORIO_PRODUCT_IDS.has(id));
   return result;
 }
+
 
 async function applyCommercialPolicy(
   supabase: ReturnType<typeof serviceClient>,
@@ -177,10 +169,20 @@ export async function resolveUserAccess(user: Pick<User, "id" | "email" | "creat
     return result;
   }
 
+  let billingDegraded = false;
   if (user.email) {
-    const paid = await stripeAccess(user.email);
-    if (paid) return applyCommercialPolicy(supabase, paid);
+    try {
+      const paid = await stripeAccess(user.email);
+      if (paid) return applyCommercialPolicy(supabase, paid);
+    } catch (err) {
+      // Falha temporária da Stripe NÃO pode virar paywall automaticamente.
+      // Seguimos para cortesia/trial persistido e só sinalizamos erro se não
+      // houver nenhuma outra evidência de acesso. Sem PII no log.
+      billingDegraded = true;
+      console.error("[access-control] Stripe lookup failed", (err as Error)?.message);
+    }
   }
+
 
   const { data: hasCourtesy } = await supabase.rpc("has_active_courtesy", {
     _user_id: user.id,
@@ -204,15 +206,23 @@ export async function resolveUserAccess(user: Pick<User, "id" | "email" | "creat
     return result;
   }
 
-  const { data: trial } = await supabase
-    .from("user_access")
-    .select("trial_started_at, trial_ends_at, trial_source")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  // A tabela user_access pode ainda não existir em produção (migration pendente).
+  // Qualquer erro aqui é tolerado e caímos no fallback por created_at.
+  let trial: { trial_started_at: string | null; trial_ends_at: string | null; trial_source: string | null } | null = null;
+  try {
+    const { data } = await supabase
+      .from("user_access")
+      .select("trial_started_at, trial_ends_at, trial_source")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    trial = data ?? null;
+  } catch {
+    trial = null;
+  }
 
   if (trial?.trial_ends_at) {
     const active = new Date(trial.trial_ends_at).getTime() > Date.now();
-    const result = base(active ? "trial_active" : "trial_expired");
+    const result = base(active ? "trial_active" : (billingDegraded ? "verification_error" : "trial_expired"));
     result.canUsePlatform = active;
     result.isTrial = active;
     result.trialSource = trial.trial_source === "migration" ? "migration" : "signup";
@@ -220,6 +230,7 @@ export async function resolveUserAccess(user: Pick<User, "id" | "email" | "creat
     result.trialEndsAt = trial.trial_ends_at;
     result.hasAgents = active;
     result.hasConsultorio = active;
+    result.billingCheckDegraded = billingDegraded;
     return result;
   }
 
@@ -227,7 +238,7 @@ export async function resolveUserAccess(user: Pick<User, "id" | "email" | "creat
     const start = new Date(user.created_at).getTime();
     const end = start + 7 * 86400000;
     const active = end > Date.now();
-    const result = base(active ? "trial_active" : "trial_expired");
+    const result = base(active ? "trial_active" : (billingDegraded ? "verification_error" : "trial_expired"));
     result.canUsePlatform = active;
     result.isTrial = active;
     result.trialSource = "migration";
@@ -235,10 +246,14 @@ export async function resolveUserAccess(user: Pick<User, "id" | "email" | "creat
     result.trialEndsAt = new Date(end).toISOString();
     result.hasAgents = active;
     result.hasConsultorio = active;
+    result.billingCheckDegraded = billingDegraded;
     return result;
   }
 
-  return base("none");
+  const fallback = base(billingDegraded ? "verification_error" : "none");
+  fallback.billingCheckDegraded = billingDegraded;
+  return fallback;
+
 }
 
 export async function getAuthenticatedUserAndAccess(req: Request) {

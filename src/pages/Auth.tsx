@@ -46,28 +46,22 @@ export default function Auth() {
   const fromPath = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
   const destination = fromPath && fromPath !== "/auth" ? fromPath : "/dashboard";
 
-  // Fluxo de retorno da confirmação de e-mail: encerra a sessão criada pelo link
-  // e mantém o usuário na tela de login.
+  // Retorno da confirmação de e-mail: se o link já devolveu uma sessão válida,
+  // o usuário entra direto (o efeito abaixo redireciona). Sem signOut, sem loop.
   const justConfirmed = searchParams.get("confirmed") === "1";
   const [confirmHandled, setConfirmHandled] = useState(!justConfirmed);
 
   useEffect(() => {
     if (!justConfirmed) return;
-    (async () => {
-      try {
-        await supabase.auth.signOut();
-      } catch {
-        /* noop */
-      }
-      setConfirmHandled(true);
-      toast({
-        title: "E-mail confirmado",
-        description: "Sua conta está ativa. Entre com seu e-mail e senha.",
-      });
-      setSearchParams({}, { replace: true });
-    })();
+    toast({
+      title: "E-mail confirmado",
+      description: "Sua conta está ativa.",
+    });
+    setConfirmHandled(true);
+    setSearchParams({}, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [justConfirmed]);
+
 
   useEffect(() => {
     if (!confirmHandled) return;
