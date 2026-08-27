@@ -1,7 +1,6 @@
 # Pacote P0 — Conversão e Controle de Acesso
 
-Entrega apenas em código. Nada foi publicado, nenhuma migration foi aplicada em
-produção, Stripe não foi alterado e nenhuma edge function foi implantada à mão.
+Pacote P0 publicado e migrations de entitlement/política comercial aplicadas em produção em 27/08/2026. Stripe não foi alterado diretamente durante o rollout.
 
 ## O que mudou
 
@@ -9,8 +8,7 @@ produção, Stripe não foi alterado e nenhuma edge function foi implantada à m
    primeira opção do formulário. O fluxo por e-mail pede apenas nome completo e
    e-mail (passo 1) e senha (passo 2). Telefone e CRM/UF deixaram de bloquear o
    cadastro; o lead é gravado com `phone: ""` para compatibilidade com a coluna
-   NOT NULL (sem migration). UTM, `lead_created` e eventos de ciclo de vida
-   permanecem intactos.
+   NOT NULL. UTM, `lead_created` e eventos de ciclo de vida permanecem intactos.
 2. **Confirmação de e-mail (`src/pages/Auth.tsx`)** — removido o `signOut()` no
    retorno com `?confirmed=1`. Se o link devolver sessão válida, o usuário entra
    direto; sem sessão, apenas o toast de confirmação e login normal. Nenhum
@@ -31,8 +29,7 @@ produção, Stripe não foi alterado e nenhuma edge function foi implantada à m
    `items.data[].current_period_end`; busca de customers com `limit: 10` e
    varredura das assinaturas de todos eles; falha temporária da Stripe não vira
    paywall (fallback para cortesia/trial e novo status `verification_error`
-   somente sem outra evidência); ausência da tabela `user_access` é tolerada;
-   sem PII em log.
+   somente sem outra evidência); sem PII em log.
 8. **`past_due`** — comportamento atual preservado. O grace period explícito de
    7 dias está preparado em `_shared/stripe-access.ts`
    (`PAST_DUE_GRACE_DAYS`, `pastDueGraceDeadline`) com TODO: requer webhook
@@ -40,17 +37,24 @@ produção, Stripe não foi alterado e nenhuma edge function foi implantada à m
    entrou em `past_due`.
 9. **Analytics** — `first_value_action` intacto; PostHog não foi reestruturado.
 
-## Migration `user_access` — rollout seguro
+## Migrations aplicadas em produção
 
-A migration `20260827180000_create_user_access_trial_entitlements.sql`
-**permanece não aplicada em produção**. Ordem recomendada:
+As migrations foram aplicadas pelo mecanismo normal de migration da Lovable/Supabase e registradas no histórico remoto com as versões abaixo:
 
-1. Validar este pacote em produção (o access-control já tolera a ausência da
-   tabela; hoje o trial vem do fallback `auth.users.created_at + 7 dias` com
-   `trial_source = "migration"`).
-2. Só depois aplicar a migration.
-3. Após aplicá-la, novos cadastros passam a ter `trial_source = "signup"`, o que
-   reativa o diálogo de boas-vindas e os eventos de trial.
+- `20260827223525_79553cce-211f-47ec-99da-621dedfbbb2d.sql` — cria `public.user_access`, faz backfill usando `auth.users.created_at` e instala o trigger `on_auth_user_created_initialize_trial`.
+- `20260827223552_e74faf73-6936-4bed-ab5c-a52012f94c5b.sql` — cria `public.commercial_policy` e registra a política comercial unificada.
+
+Validação imediatamente após a aplicação:
+
+- 94 usuários em `auth.users` e 94 registros em `user_access`;
+- 12 trials ainda ativos e 82 expirados;
+- todos os 94 registros existentes foram marcados como `trial_source = "migration"`;
+- 0 usuários antigos receberam um novo período gratuito;
+- novos cadastros passam a ser inseridos pelo trigger com `trial_source = "signup"`;
+- preço registrado: R$ 49,90/mês e R$ 499,90/ano;
+- proteção comercial dos assinantes legados até 27/02/2027.
+
+Os arquivos antigos `20260827180000_create_user_access_trial_entitlements.sql` e `20260827203000_create_commercial_pricing_policy.sql` foram removidos do repositório após a aplicação porque continham o mesmo SQL sob versões diferentes e poderiam aparecer como migrations pendentes em sincronizações futuras.
 
 ## Testes
 
