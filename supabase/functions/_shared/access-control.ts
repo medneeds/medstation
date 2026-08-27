@@ -75,6 +75,7 @@ function base(status: AccessStatus): AccessResolution {
     pricingCohort: null,
     legacyFullAccessUntil: null,
     pricingReviewDue: false,
+    billingCheckDegraded: false,
   };
 }
 
@@ -90,49 +91,34 @@ async function stripeAccess(email: string): Promise<AccessResolution | null> {
   if (!key) return null;
 
   const stripe = new Stripe(key, { apiVersion: "2025-08-27.basil" });
-  const customers = await stripe.customers.list({ email, limit: 1 });
+  // Um mesmo e-mail pode ter mais de um customer no Stripe (checkout convidado,
+  // e-mail alterado, duplicidade). Verificar apenas o primeiro bloqueava pagantes.
+  const customers = await stripe.customers.list({ email, limit: 10 });
   if (!customers.data.length) return null;
 
-  const subscriptions = await stripe.subscriptions.list({
-    customer: customers.data[0].id,
-    status: "all",
-    limit: 20,
-  });
-
-  const valid = subscriptions.data.filter((s) =>
-    ["active", "trialing", "past_due"].includes(s.status),
-  );
-  if (!valid.length) return null;
-
-  const productIds: string[] = [];
-  let subscriptionEnd: string | null = null;
-  let hasHealthy = false;
-  let hasPastDue = false;
-
-  for (const subscription of valid) {
-    if (subscription.status === "active" || subscription.status === "trialing") hasHealthy = true;
-    if (subscription.status === "past_due") hasPastDue = true;
-
-    for (const item of subscription.items.data) {
-      const pid = item.price.product as string;
-      if (pid && !productIds.includes(pid)) productIds.push(pid);
-    }
-
-    if (subscription.current_period_end) {
-      const candidate = new Date(subscription.current_period_end * 1000).toISOString();
-      if (!subscriptionEnd || candidate > subscriptionEnd) subscriptionEnd = candidate;
-    }
+  const collected: MinimalSubscription[] = [];
+  for (const customer of customers.data) {
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customer.id,
+      status: "all",
+      limit: 20,
+    });
+    collected.push(...(subscriptions.data as unknown as MinimalSubscription[]));
   }
 
-  const result = base(hasHealthy ? "paid_active" : hasPastDue ? "past_due" : "none");
+  const summary = summarizeSubscriptions(collected);
+  if (!summary) return null;
+
+  const result = base(summary.hasHealthy ? "paid_active" : summary.hasPastDue ? "past_due" : "none");
   result.canUsePlatform = true;
   result.isPaidSubscriber = true;
-  result.subscriptionEnd = subscriptionEnd;
-  result.productIds = productIds;
-  result.hasAgents = productIds.some((id) => AGENTS_PRODUCT_IDS.has(id));
-  result.hasConsultorio = productIds.some((id) => CONSULTORIO_PRODUCT_IDS.has(id));
+  result.subscriptionEnd = summary.subscriptionEnd;
+  result.productIds = summary.productIds;
+  result.hasAgents = summary.productIds.some((id) => AGENTS_PRODUCT_IDS.has(id));
+  result.hasConsultorio = summary.productIds.some((id) => CONSULTORIO_PRODUCT_IDS.has(id));
   return result;
 }
+
 
 async function applyCommercialPolicy(
   supabase: ReturnType<typeof serviceClient>,
