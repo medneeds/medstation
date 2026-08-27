@@ -1,80 +1,69 @@
-# Auditoria P0 — Autenticação, Trial/Acesso e Stripe (somente leitura)
+# Auditoria comercial — agregados Stripe sem PII
 
-Nada foi editado, migrado ou alterado. Todos os pontos abaixo foram confirmados por leitura de código, consulta ao banco de produção e leitura da API Stripe (modo leitura).
+Somente leitura. Nada foi alterado em código, banco ou Stripe. Sem e-mails, nomes ou IDs de clientes. Referência: 27/08/2026 21:54 UTC. Janelas: 30 dias (desde 28/07) e 7 dias (desde 20/08). Sigma não está habilitado na conta, então os números foram agregados localmente a partir das listagens da API.
 
-## 1. Migration `public.user_access` (27/08/2026): NÃO está aplicada
+## 1. Checkout sessions criadas
 
-- Existem no repositório: `20260827180000_create_user_access_trial_entitlements.sql` e `20260827203000_create_commercial_pricing_policy.sql`.
-- Consulta ao `information_schema` de produção: as tabelas `user_access` e `commercial_policy` **não existem**. Existem apenas `courtesy_access` e `legacy_trial_invites`.
-- Em produção, o trigger `on_auth_user_created_initialize_trial` e a função `initialize_signup_trial` também não existem. O único trigger de novo usuário ativo é `handle_new_user`, que apenas insere em `profiles`.
+Últimos 30 dias — 14 sessões:
+- complete + paid: 3
+- expired + unpaid: 11
+- open: 0
 
-## 2. Como novos usuários (Google e e-mail) recebem trial hoje
+Últimos 7 dias — 1 sessão:
+- complete + paid: 1
+- expired + unpaid: 0
+- open: 0
 
-`supabase/functions/_shared/access-control.ts` faz:
-1. `has_role(admin)` → acesso total;
-2. Stripe por e-mail → assinante;
-3. `has_active_courtesy` → cortesia;
-4. `select ... from user_access` → **falha silenciosamente** (tabela inexistente; o erro do PostgREST é ignorado, só `data` é lido, resultando em `null`);
-5. **Fallback por `auth.users.created_at`**: `created_at + 7 dias`, `trialSource = "migration"`.
+Taxa de conversão de sessão em 30 dias: 3/14 = 21,4%.
 
-Ou seja: o trial de 7 dias hoje funciona em produção **exclusivamente pelo fallback do `created_at`**, igual para Google e e-mail/senha. Consequências factuais:
-- O trial é sempre contado a partir da criação da conta, não do primeiro uso; não é possível pausar, estender ou registrar consumo.
-- `trial_source` retornado é sempre `"migration"`, nunca `"signup"` — portanto o `TrialWelcomeDialog` (`src/components/AccessExperienceGate.tsx`), que exige `trialSource === "signup"`, **nunca aparece** e os eventos `trial_started` / `first_login` / `signup_completed` (Google) nunca são disparados.
+Valores das sessões em 30 dias: 7 sessões a R$ 29,90, 6 a R$ 49,90 e 1 a R$ 499,90 (anual) — ou seja, ainda circularam links do preço legado de R$ 29,90 durante boa parte do período.
 
-## 3. Risco de acesso bloqueado indevidamente
+## 2. Identidades únicas que iniciaram checkout
 
-- Base atual: 94 usuários em `auth.users`, 12 criados nos últimos 7 dias, 1 cortesia ativa, 1 admin, 9 assinaturas Stripe ativas. Todo o restante (contas com mais de 7 dias sem assinatura/cortesia) cai em `trial_expired` e é bloqueado por `AccessContentGate`. Isso é o comportamento desenhado, mas hoje depende de uma tabela inexistente — não há registro nem exceção manual possível a não ser `courtesy_access`.
-- Risco real de bloqueio indevido: `check-subscription` responde **500** em qualquer falha (inclusive erro/timeout da Stripe). O `SubscriptionContext` captura o erro e mantém `accessActive = false` com `loading = false` → o usuário, inclusive pagante, vê o paywall. Um incidente da Stripe bloqueia toda a plataforma.
-- O mesmo módulo é usado por 15 edge functions (agent-chat, transcrições, OCR, documentos etc.), então cada requisição depende de uma chamada Stripe ao vivo.
-- Se as migrations forem aplicadas depois, o backfill usa `auth.users.created_at`, o que preserva o relógio atual — sem reset indevido.
+Das 14 sessões de 30 dias, apenas 4 tinham um customer Stripe vinculado (4 identidades distintas). As outras 10 são sessões de convidado, criadas com `customer_creation: always`, sem customer atribuído enquanto não há pagamento. Como e-mail e nome vêm redigidos, não é possível deduplicar convidados sem expor PII.
 
-## 4. Localização de customer/subscription na Stripe
+Leitura honesta: entre 4 e 14 identidades únicas iniciaram checkout em 30 dias; o dado disponível não permite fechar esse intervalo sem acessar dados pessoais.
 
-- `create-checkout`, `guest-checkout`, `customer-portal`, `check-subscription` e `access-control.ts` usam todos `stripe.customers.list({ email, limit: 1 })`.
-- Não existe persistência de `stripe_customer_id` em nenhuma tabela do banco (apenas em `user_metadata` de contas criadas por `complete-checkout`).
-- Riscos confirmados por design: e-mail duplicado na Stripe (dois customers, o `limit: 1` pega o mais recente e pode ignorar o que tem a assinatura), e-mail alterado na Stripe ou no Supabase, diferença de caixa/alias → assinante pagante fica sem acesso, e `customer-portal` retorna "No Stripe customer found".
+## 3. Novas subscriptions criadas no período (status atual)
 
-## 5. Tratamento de `past_due`
+- 30 dias: 3 criadas — todas `active` hoje.
+- 7 dias: 1 criada — `active`.
 
-- Em `access-control.ts`, `past_due` entra na lista de assinaturas válidas: `canUsePlatform = true`, `isPaidSubscriber = true`, `status = "past_due"`.
-- Não há prazo de tolerância, restrição de funcionalidade nem aviso na interface — o acesso continua integral por tempo indeterminado enquanto a Stripe mantiver o status.
-- `create-checkout` e `guest-checkout` bloqueiam nova assinatura para quem está `past_due` (HTTP 409), então o usuário inadimplente não consegue reassinar sozinho pelo checkout; só pelo portal.
+Consistente com as 3 sessões complete+paid de 30 dias.
 
-## 6. Contagens agregadas sem PII (obtidas agora)
+## 4. Cancelamentos e cancel_at_period_end
 
-Stripe Sigma não está habilitado na conta; os números abaixo vieram da API de listagem, agregados localmente sem exibir dados pessoais.
+- Cancelamentos no período: 3 em 30 dias, 1 em 7 dias.
+- Assinaturas ativas hoje com `cancel_at_period_end = true`: **0**.
+- Base total de assinaturas (19): 9 `active`, 10 `canceled`, 0 `trialing`, 0 `past_due`.
+- Motivo dos 10 cancelamentos históricos: 9 por `payment_failed` (falha de cobrança, não pedido do cliente) e 1 por `cancellation_requested`. Esse é o dado comercial mais relevante do lote: o churn atual é predominantemente involuntário, de cartão, não de insatisfação declarada.
 
-Assinaturas (todas, 19 no total, sem paginação pendente):
-- active: 9
-- trialing: 0
-- past_due: 0
-- canceled: 10
-- 1 assinatura ativa marcada com `cancel_at_period_end`
+Saldo de 30 dias: +3 novas, −3 canceladas → base estável em 9.
 
-Distribuição por preço (19 assinaturas): 13 no preço legado `price_1Sj4Fb…`, 5 em `price_1TVga8…`, 1 no plano unificado atual `price_1U4Zo7…` (R$ 49,90).
+## 5. MRR bruto aproximado das assinaturas ativas
 
-Checkouts (últimas 50 sessões, de 10/05/2026 a 24/08/2026):
-- complete + paid: 12
-- expired + unpaid: 38
-- Há mais páginas além dessas 50.
+Todas as 9 ativas são mensais (nenhuma anual ativa):
 
-Banco (agregado): 94 usuários, 12 criados nos últimos 7 dias, 1 cortesia ativa, 1 admin.
+| Preço | Coorte | Assinaturas | MRR |
+|---|---|---|---|
+| R$ 49,90/mês (plano unificado atual) | atual | 1 | R$ 49,90 |
+| R$ 49,90/mês (bundle Pro legado) | legado | 2 | R$ 99,80 |
+| R$ 29,90/mês (Assistentes legado) | legado | 6 | R$ 179,40 |
+| **Total** | | **9** | **R$ 329,10** |
 
-## 7. Bugs confirmados
+MRR legado: R$ 279,20 (85%). MRR na precificação atual: R$ 49,90 (15%). Ticket médio atual: R$ 36,57.
 
-P0
-1. Migrations de 27/08 (`user_access`, `commercial_policy`) não aplicadas em produção; o código de entitlement consulta essas tabelas e ignora o erro, mascarando a falha. Todo o trial roda em fallback implícito.
-2. `complete-checkout` verifica duplicidade com `supabaseAdmin.auth.admin.listUsers()` **sem paginação** (padrão 50 por página) com 94 usuários na base. Contas fora da primeira página são vistas como inexistentes → `createUser` falha → resposta 500 na volta do pagamento, mesmo com cobrança concluída.
-3. `check-subscription` retorna 500 em qualquer erro e o frontend interpreta como "sem acesso": falha da Stripe = paywall para todos, inclusive assinantes ativos.
-4. Não há webhook Stripe. O reconhecimento do pagamento depende do retorno do usuário a `/obrigado` e do polling de 5 minutos; se o navegador fechar após o pagamento (fluxo guest), a conta pode não ser criada.
+## 6. Sobre "9 ativas" e a contagem operacional de 8
 
-P1
-5. `subscription.current_period_end` não existe mais no nível da assinatura na API `2025-08-27.basil` (confirmado no payload: o campo aparece apenas em `items.data[].current_period_end`). `access-control.ts` lê o campo do nível errado → `subscription_end` fica `null` para assinantes.
-6. Lookup de customer por e-mail com `limit: 1` e sem `stripe_customer_id` persistido (itens do ponto 4).
-7. `past_due` com acesso integral e sem prazo, e ao mesmo tempo bloqueado de reassinar via checkout (409).
-8. `trial_source` nunca é `"signup"` em produção → diálogo de boas-vindas do trial e eventos de ciclo de vida (`trial_started`, `first_login`, `signup_completed` do Google) não disparam.
-9. `admin-list-subscribers` consulta `user_access` e `commercial_policy`; com as tabelas ausentes os erros são ignorados e as colunas de trial e a proteção de preço legado aparecem vazias no painel admin — sem qualquer aviso.
-10. `applyCommercialPolicy` sempre resulta em `legacyFullAccessUntil = null` e `pricingReviewDue = false`, então a régua de proteção dos assinantes legados não existe de fato em produção.
-11. `complete-checkout` monta `autoLoginUrl` manualmente a partir de `hashed_token`, fora do formato de verificação do Supabase; em pagamentos por wallet a conta fica com senha temporária e o auto-login tende a falhar.
+**Não.** As 9 assinaturas `active` **não** incluem nenhuma marcada para cancelar — `cancel_at_period_end` é `false` em todas as 9. A única assinatura da base com essa marcação já está `canceled` desde fevereiro de 2026 e não conta como ativa.
 
-Nenhuma correção foi aplicada. Posso detalhar qualquer item ou preparar um plano de correção quando você autorizar.
+Portanto, a contagem operacional correta de assinantes que pretendem continuar é **9, não 8**. Se em algum relatório anterior apareceu "1 com cancel_at_period_end", esse número veio de uma contagem sobre as 19 assinaturas (incluindo canceladas), não sobre as ativas — é um artefato de filtro, não uma intenção de cancelamento pendente.
+
+Ressalva: 9 assinaturas ativas ≠ necessariamente 9 pessoas distintas. Como a plataforma localiza o cliente por e-mail com `limit: 1` e não guarda `stripe_customer_id` no banco, duplicidade de customer com o mesmo e-mail não é detectável aqui sem expor PII.
+
+## Limitações do levantamento
+
+- Sigma indisponível na conta (`acct_…` sem plano), então não há queries SQL históricas nem coortes.
+- Todos os campos de identificação vêm redigidos pela conexão, o que impede deduplicar convidados de checkout.
+- MRR é bruto: não desconta cupons ativos, impostos, reembolsos ou falhas de cobrança futuras.
+- O nome de exibição da conta Stripe ainda aparece como "MEDNEEDS" nas telas de checkout — não é um agregado, mas é uma inconsistência de marca visível ao cliente pagante.
