@@ -25,27 +25,30 @@ jobs:
 
           app = Path('src/App.tsx')
           text = app.read_text()
-          old = '<Route path="/consultorio-landing" element={<ConsultorioLanding />} />'
-          new = '<Route path="/consultorio-landing" element={<Navigate to="/" replace />} />'
-          assert text.count(old) == 1, 'Unexpected consultorio landing route count'
-          app.write_text(text.replace(old, new, 1))
+          old_import = 'import ConsultorioLanding from "./pages/ConsultorioLanding";\n'
+          assert text.count(old_import) == 1, 'Unexpected ConsultorioLanding import count'
+          text = text.replace(old_import, '', 1)
+          old_route = '<Route path="/consultorio-landing" element={<ConsultorioLanding />} />'
+          new_route = '<Route path="/consultorio-landing" element={<Navigate to="/" replace />} />'
+          assert text.count(old_route) == 1, 'Unexpected consultorio landing route count'
+          app.write_text(text.replace(old_route, new_route, 1))
 
           lp3 = Path('src/pages/Lp3.tsx')
           text = lp3.read_text()
-          old = 'Em breve <span className="line-through">{brl(p.list)}</span> — hoje no valor de lançamento'
-          new = 'Valor vigente no plano único MedStation.'
-          assert text.count(old) == 1, 'Unexpected Lp3 future-price copy count'
-          lp3.write_text(text.replace(old, new, 1))
+          old_card_copy = '''                  <div className="mt-1 text-xs text-muted-foreground">\n                    Em breve <span className="line-through">{brl(p.list)}</span> — hoje no valor de lançamento\n                  </div>'''
+          new_card_copy = '''                  <div className="mt-1 text-xs text-muted-foreground">\n                    Valor vigente no plano único MedStation.\n                  </div>'''
+          assert text.count(old_card_copy) == 1, 'Unexpected Lp3 card future-price copy count'
+          text = text.replace(old_card_copy, new_card_copy, 1)
+
+          old_anchor = '''          <div className="mt-6 max-w-xl mx-auto rounded-2xl border border-primary/20 bg-primary/5 p-5">\n            <div className="grid grid-cols-3 gap-3 text-center">\n              <div>\n                <div className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">Valor em breve</div>\n                <div className="mt-1 text-base md:text-lg font-semibold line-through text-muted-foreground">\n                  {brl(price.list)}\n                </div>\n              </div>\n              <div>\n                <div className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">Você paga hoje</div>\n                <div className="mt-1 text-base md:text-lg font-bold text-primary">{brl(price.now)}</div>\n              </div>\n              <div>\n                <div className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">Desconto</div>\n                <div className="mt-1 text-base md:text-lg font-semibold text-primary">\n                  {Math.round((1 - price.now / price.list) * 100)}%\n                </div>\n              </div>\n            </div>\n            <p className="mt-4 pt-3 border-t border-primary/15 text-center text-sm">\n              Economia de{" "}\n              <strong className="text-primary">{brl(price.list - price.now)}</strong>{" "}\n              {billing === "monthly" ? "por mês" : "por ano"} —{" "}\n              {billing === "monthly"\n                ? `${brl((price.list - price.now) * 12)} em 12 meses.`\n                : `equivale a ${brl(price.now / 12)} por mês.`}\n            </p>\n          </div>\n\n          <div className="mt-6 max-w-xl mx-auto rounded-xl border border-primary/25 bg-background px-4 py-3 text-center text-xs md:text-sm">\n            <strong className="text-primary">Aviso de reajuste:</strong> em breve o plano passa a\n            custar {brl(99.9)} por mês ou {brl(999.9)} por ano. Quem assinar agora mantém o valor de\n            hoje por pelo menos 12 meses.\n\n          </div>'''
+          new_anchor = '''          <div className="mt-6 max-w-xl mx-auto rounded-xl border border-primary/25 bg-background px-4 py-3 text-center text-xs md:text-sm">\n            <strong className="text-primary">Preço vigente:</strong> este é o valor atual do plano único MedStation.\n            Eventuais reajustes futuros serão definidos conforme a evolução do produto e comunicados antes de qualquer mudança na cobrança.\n          </div>'''
+          assert text.count(old_anchor) == 1, 'Unexpected Lp3 pricing anchor block count'
+          lp3.write_text(text.replace(old_anchor, new_anchor, 1))
 
           pricing = Path('src/pages/Pricing.tsx')
           text = pricing.read_text()
-          old = '''                <strong className="text-primary">Aviso de reajuste:</strong> em breve o plano passa a
-                custar {brl(99.9)} por mês ou {brl(999.9)} por ano. Quem assinar agora mantém o valor
-                atual por pelo menos 12 meses.
-'''
-          new = '''                <strong className="text-primary">Preço vigente:</strong> este é o valor atual do plano único MedStation.
-                Eventuais reajustes futuros serão definidos conforme a evolução do produto e comunicados antes de qualquer mudança na cobrança.
-'''
+          old = '''                <strong className="text-primary">Aviso de reajuste:</strong> em breve o plano passa a\n                custar {brl(99.9)} por mês ou {brl(999.9)} por ano. Quem assinar agora mantém o valor\n                atual por pelo menos 12 meses.\n\n'''
+          new = '''                <strong className="text-primary">Preço vigente:</strong> este é o valor atual do plano único MedStation.\n                Eventuais reajustes futuros serão definidos conforme a evolução do produto e comunicados antes de qualquer mudança na cobrança.\n'''
           assert text.count(old) == 1, 'Unexpected Pricing future-price notice count'
           pricing.write_text(text.replace(old, new, 1))
 
@@ -58,8 +61,12 @@ jobs:
           test "$changed" = "$expected"
           git diff --check
           grep -F '<Route path="/consultorio-landing" element={<Navigate to="/" replace />} />' src/App.tsx
+          ! grep -F 'ConsultorioLanding' src/App.tsx
           grep -F 'Valor vigente no plano único MedStation.' src/pages/Lp3.tsx
+          grep -F 'Eventuais reajustes futuros serão definidos' src/pages/Lp3.tsx
           grep -F 'Eventuais reajustes futuros serão definidos' src/pages/Pricing.tsx
+          ! grep -F 'hoje por pelo menos 12 meses' src/pages/Lp3.tsx
+          ! grep -F 'atual por pelo menos 12 meses' src/pages/Pricing.tsx
 
       - name: Commit patch
         shell: bash
