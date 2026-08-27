@@ -1,0 +1,72 @@
+name: Temporary unified pricing copy patch
+
+on:
+  push:
+    branches:
+      - audit/trial-entitlement-p0
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, '[pricing-copy-patch]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/trial-entitlement-p0
+          fetch-depth: 0
+
+      - name: Apply surgical pricing copy updates
+        shell: python
+        run: |
+          from pathlib import Path
+
+          app = Path('src/App.tsx')
+          text = app.read_text()
+          old = '<Route path="/consultorio-landing" element={<ConsultorioLanding />} />'
+          new = '<Route path="/consultorio-landing" element={<Navigate to="/" replace />} />'
+          assert text.count(old) == 1, 'Unexpected consultorio landing route count'
+          app.write_text(text.replace(old, new, 1))
+
+          lp3 = Path('src/pages/Lp3.tsx')
+          text = lp3.read_text()
+          old = 'Em breve <span className="line-through">{brl(p.list)}</span> — hoje no valor de lançamento'
+          new = 'Valor vigente no plano único MedStation.'
+          assert text.count(old) == 1, 'Unexpected Lp3 future-price copy count'
+          lp3.write_text(text.replace(old, new, 1))
+
+          pricing = Path('src/pages/Pricing.tsx')
+          text = pricing.read_text()
+          old = '''                <strong className="text-primary">Aviso de reajuste:</strong> em breve o plano passa a
+                custar {brl(99.9)} por mês ou {brl(999.9)} por ano. Quem assinar agora mantém o valor
+                atual por pelo menos 12 meses.
+'''
+          new = '''                <strong className="text-primary">Preço vigente:</strong> este é o valor atual do plano único MedStation.
+                Eventuais reajustes futuros serão definidos conforme a evolução do produto e comunicados antes de qualquer mudança na cobrança.
+'''
+          assert text.count(old) == 1, 'Unexpected Pricing future-price notice count'
+          pricing.write_text(text.replace(old, new, 1))
+
+      - name: Verify scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only | sort)"
+          expected=$'src/App.tsx\nsrc/pages/Lp3.tsx\nsrc/pages/Pricing.tsx'
+          test "$changed" = "$expected"
+          git diff --check
+          grep -F '<Route path="/consultorio-landing" element={<Navigate to="/" replace />} />' src/App.tsx
+          grep -F 'Valor vigente no plano único MedStation.' src/pages/Lp3.tsx
+          grep -F 'Eventuais reajustes futuros serão definidos' src/pages/Pricing.tsx
+
+      - name: Commit patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/App.tsx src/pages/Lp3.tsx src/pages/Pricing.tsx
+          git commit -m "[pricing-copy-patch] Align public pricing with unified plan"
+          git push origin HEAD:audit/trial-entitlement-p0
