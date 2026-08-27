@@ -88,8 +88,6 @@ serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
-    // A user can have several Stripe Customer records sharing the same email.
-    // Inspect all reasonable matches before allowing another subscription.
     const customers = await stripe.customers.list({ email: user.email, limit: 10 });
     let reusableCustomerId: string | undefined;
 
@@ -128,6 +126,13 @@ serve(async (req) => {
       phone_number_collection: { enabled: false },
       billing_address_collection: "auto",
       metadata: { plan, user_id: user.id, pricing_cohort: "current_unified" },
+      subscription_data: {
+        metadata: {
+          user_id: user.id,
+          pricing_cohort: "current_unified",
+          billing_origin: "authenticated_checkout",
+        },
+      },
     };
 
     if (couponCode) sessionConfig.discounts = [{ coupon: couponCode }];
