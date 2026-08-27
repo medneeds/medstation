@@ -38,8 +38,8 @@
     <meta name="twitter:description" content="Anamnese, exame, conduta e alta prontos em segundos. 12 assistentes clínicos, Modo Escuta e Modo Rotineiro. Teste 7 dias grátis, sem cartão." />
     <meta name="twitter:image" content="https://medstation-ai.com.br/og-image.png" />
 
-    <!-- Meta Pixel: inicializa somente. PageView e eventos são disparados no app
-         apenas em superfícies públicas, evitando enviar navegação clínica ao Meta. -->
+    <!-- Meta Pixel: inicializa sem configuração/eventos automáticos. PageView e
+         conversões são emitidos explicitamente pelo app, apenas nos pontos permitidos. -->
     <script>
       !function(f,b,e,v,n,t,s)
       {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -49,7 +49,9 @@
       t.src=v;s=b.getElementsByTagName(e)[0];
       s.parentNode.insertBefore(t,s)}(window, document,'script',
       'https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', '1120398934987866');
+      var META_PIXEL_ID = '1120398934987866';
+      fbq('set', 'autoConfig', false, META_PIXEL_ID);
+      fbq('init', META_PIXEL_ID);
     </script>
     <!-- End Meta Pixel Code -->
   </head>
