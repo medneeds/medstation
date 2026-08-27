@@ -62,7 +62,7 @@ serve(async (req) => {
       }
     }
 
-    const legacyTrialSource = access.trialSource === "legacy" ? "legacy" : access.isTrial ? "signup" : null;
+    const trialSource = access.isTrial ? access.trialSource : null;
     const availableUpgrade = access.isPaidSubscriber
       ? computeAvailableUpgrade(access.hasAgents, access.hasConsultorio)
       : null;
@@ -76,7 +76,7 @@ serve(async (req) => {
         access_status: access.status,
         is_paid_subscriber: access.isPaidSubscriber,
         trial: access.isTrial,
-        trial_source: legacyTrialSource,
+        trial_source: trialSource,
         trial_started_at: access.trialStartedAt,
         trial_ends_at: access.trialEndsAt,
         product_ids: access.productIds.length
