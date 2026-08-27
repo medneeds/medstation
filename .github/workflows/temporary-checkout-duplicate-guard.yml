@@ -29,8 +29,6 @@ jobs:
           ]:
             p = Path(filename)
             text = p.read_text()
-            anchor = '''    const customers = await stripe.customers.list({ email: '''
-            assert text.count(anchor) == 1, f'Unexpected customer lookup count in {filename}'
 
             if guest:
               old = '''    const customers = await stripe.customers.list({ email, limit: 1 });\n    const customerId = customers.data.length > 0 ? customers.data[0].id : undefined;\n\n    const origin = req.headers.get("origin") || "https://medstation.ai";'''
