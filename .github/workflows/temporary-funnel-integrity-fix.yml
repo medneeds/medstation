@@ -18,23 +18,23 @@ jobs:
           ref: audit/trial-entitlement-p0
           fetch-depth: 0
 
-      - name: Fix signup completion and landing baseline
+      - name: Fix OAuth signup completion and landing baseline
         shell: python
         run: |
           from pathlib import Path
 
-          lead = Path('src/components/LeadForm.tsx')
-          text = lead.read_text()
-          old = '''      if (data.user) {\n        trackLifecycleEvent("signup_completed", {\n          source,\n          auth_method: "email",\n          user_id: data.user.id,\n        }, data.user.id);\n\n        try {'''
-          new = '''      if (data.user) {\n        try {'''
-          assert text.count(old) == 1, 'Unexpected email signup_completed block count'
-          lead.write_text(text.replace(old, new, 1))
+          google = Path('src/components/auth/GoogleAuthButton.tsx')
+          text = google.read_text()
+          old = '''    if (trackAsSignup) {\n      trackLifecycleEvent("signup_started", {\n        source,\n        auth_method: "google",\n        destination,\n      });\n    }'''
+          new = '''    if (trackAsSignup) {\n      trackLifecycleEvent("signup_started", {\n        source,\n        auth_method: "google",\n        destination,\n      });\n      try {\n        localStorage.setItem("ms_google_signup_pending", JSON.stringify({ source, destination }));\n      } catch {\n        /* acquisition attribution is best-effort */\n      }\n    }'''
+          assert text.count(old) == 1, 'Unexpected Google signup_started block count'
+          google.write_text(text.replace(old, new, 1))
 
           gate = Path('src/components/AccessExperienceGate.tsx')
           text = gate.read_text()
-          old = '''    trackLifecycleEvent("trial_started", {\n      trial_source: trialSource,\n      trial_started_at: trialStartedAt,\n      trial_ends_at: trialEndsAt,\n    }, trialStartedAt ?? undefined);\n    trackLifecycleEvent("first_login", {'''
-          new = '''    trackLifecycleEvent("signup_completed", {\n      trial_source: trialSource,\n      trial_started_at: trialStartedAt,\n    }, trialStartedAt ?? undefined);\n    trackLifecycleEvent("trial_started", {\n      trial_source: trialSource,\n      trial_started_at: trialStartedAt,\n      trial_ends_at: trialEndsAt,\n    }, trialStartedAt ?? undefined);\n    trackLifecycleEvent("first_login", {'''
-          assert text.count(old) == 1, 'Unexpected trial lifecycle anchor count'
+          old = '''    trackLifecycleEvent("trial_started", {\n      trial_source: trialSource,\n      trial_started_at: trialStartedAt,\n      trial_ends_at: trialEndsAt,\n    }, trialStartedAt ?? undefined);'''
+          new = '''    try {\n      const pendingGoogleSignup = localStorage.getItem("ms_google_signup_pending");\n      if (pendingGoogleSignup) {\n        const pending = JSON.parse(pendingGoogleSignup) as { source?: string; destination?: string };\n        trackLifecycleEvent("signup_completed", {\n          source: pending.source ?? "oauth",\n          auth_method: "google",\n          destination: pending.destination ?? "/dashboard",\n          trial_started_at: trialStartedAt,\n        }, `google:${trialStartedAt ?? "signup"}`);\n        localStorage.removeItem("ms_google_signup_pending");\n      }\n    } catch {\n      /* acquisition attribution is best-effort */\n    }\n\n    trackLifecycleEvent("trial_started", {\n      trial_source: trialSource,\n      trial_started_at: trialStartedAt,\n      trial_ends_at: trialEndsAt,\n    }, trialStartedAt ?? undefined);'''
+          assert text.count(old) == 1, 'Unexpected trial_started anchor count'
           gate.write_text(text.replace(old, new, 1))
 
           posthog = Path('supabase/functions/admin-posthog/index.ts')
@@ -49,11 +49,11 @@ jobs:
         run: |
           set -euo pipefail
           changed="$(git diff --name-only | sort)"
-          expected=$'src/components/AccessExperienceGate.tsx\nsrc/components/LeadForm.tsx\nsupabase/functions/admin-posthog/index.ts'
+          expected=$'src/components/AccessExperienceGate.tsx\nsrc/components/auth/GoogleAuthButton.tsx\nsupabase/functions/admin-posthog/index.ts'
           test "$changed" = "$expected"
           git diff --check
+          grep -F 'ms_google_signup_pending' src/components/auth/GoogleAuthButton.tsx
           grep -F 'trackLifecycleEvent("signup_completed"' src/components/AccessExperienceGate.tsx
-          ! grep -F 'trackLifecycleEvent("signup_completed"' src/components/LeadForm.tsx
           grep -F "properties.\$pathname" supabase/functions/admin-posthog/index.ts
 
       - name: Commit patch
@@ -62,6 +62,6 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/components/AccessExperienceGate.tsx src/components/LeadForm.tsx supabase/functions/admin-posthog/index.ts
+          git add src/components/auth/GoogleAuthButton.tsx src/components/AccessExperienceGate.tsx supabase/functions/admin-posthog/index.ts
           git commit -m "[funnel-integrity] Count completed OAuth signups and landing visits"
           git push origin HEAD:audit/trial-entitlement-p0
