@@ -4,7 +4,9 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main]
+    branches:
+      - main
+      - audit/marketing-analytics-hardening
 
 permissions:
   contents: read
