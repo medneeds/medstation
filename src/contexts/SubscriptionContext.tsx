@@ -2,9 +2,21 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { supabase } from "@/integrations/supabase/client";
 
 type AvailableUpgrade = "consultorio_upgrade" | "agents_upgrade" | null;
+export type AccessStatus =
+  | "admin"
+  | "paid_active"
+  | "past_due"
+  | "courtesy_active"
+  | "trial_active"
+  | "trial_expired"
+  | "none";
 
 interface SubscriptionContextType {
+  /** Legacy compatibility: use accessActive for new access-control code. */
   subscribed: boolean;
+  accessActive: boolean;
+  accessStatus: AccessStatus;
+  isPaidSubscriber: boolean;
   productId: string | null;
   productIds: string[];
   subscriptionEnd: string | null;
@@ -13,6 +25,8 @@ interface SubscriptionContextType {
   availableUpgrade: AvailableUpgrade;
   isTrial: boolean;
   trialSource: "signup" | "legacy" | null;
+  trialStartedAt: string | null;
+  trialEndsAt: string | null;
   loading: boolean;
   checkSubscription: () => Promise<void>;
 }
@@ -21,6 +35,9 @@ const SubscriptionContext = createContext<SubscriptionContextType | undefined>(u
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [subscribed, setSubscribed] = useState(false);
+  const [accessActive, setAccessActive] = useState(false);
+  const [accessStatus, setAccessStatus] = useState<AccessStatus>("none");
+  const [isPaidSubscriber, setIsPaidSubscriber] = useState(false);
   const [productId, setProductId] = useState<string | null>(null);
   const [productIds, setProductIds] = useState<string[]>([]);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
@@ -29,10 +46,15 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [availableUpgrade, setAvailableUpgrade] = useState<AvailableUpgrade>(null);
   const [isTrial, setIsTrial] = useState(false);
   const [trialSource, setTrialSource] = useState<"signup" | "legacy" | null>(null);
+  const [trialStartedAt, setTrialStartedAt] = useState<string | null>(null);
+  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const reset = () => {
     setSubscribed(false);
+    setAccessActive(false);
+    setAccessStatus("none");
+    setIsPaidSubscriber(false);
     setProductId(null);
     setProductIds([]);
     setSubscriptionEnd(null);
@@ -41,6 +63,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     setAvailableUpgrade(null);
     setIsTrial(false);
     setTrialSource(null);
+    setTrialStartedAt(null);
+    setTrialEndsAt(null);
   };
 
   const checkSubscription = async () => {
@@ -56,6 +80,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
 
       setSubscribed(data?.subscribed === true);
+      setAccessActive(data?.access_active === true || data?.subscribed === true);
+      setAccessStatus((data?.access_status as AccessStatus) || "none");
+      setIsPaidSubscriber(data?.is_paid_subscriber === true);
       setProductId(data?.product_id || null);
       setProductIds(data?.product_ids || []);
       setSubscriptionEnd(data?.subscription_end || null);
@@ -64,6 +91,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       setAvailableUpgrade((data?.available_upgrade as AvailableUpgrade) || null);
       setIsTrial(data?.trial === true);
       setTrialSource((data?.trial_source as "signup" | "legacy") || null);
+      setTrialStartedAt(data?.trial_started_at || null);
+      setTrialEndsAt(data?.trial_ends_at || null);
     } catch (error) {
       console.error("[SubscriptionContext] Error checking subscription:", error);
     } finally {
@@ -92,10 +121,12 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-
   return (
     <SubscriptionContext.Provider value={{
       subscribed,
+      accessActive,
+      accessStatus,
+      isPaidSubscriber,
       productId,
       productIds,
       subscriptionEnd,
@@ -104,6 +135,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       availableUpgrade,
       isTrial,
       trialSource,
+      trialStartedAt,
+      trialEndsAt,
       loading,
       checkSubscription,
     }}>
