@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Check, Loader2, ShieldCheck } from "lucide-react";
+import { ArrowRight, Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,22 +11,10 @@ import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { trackCtaClick, trackLifecycleEvent } from "@/lib/analytics";
 
 interface LeadFormProps {
-  /** Identificador da origem gravado junto do lead. */
   source?: string;
-  /** Rótulo do botão principal do primeiro passo. */
   ctaLabel?: string;
   className?: string;
 }
-
-const phoneMask = (v: string) => {
-  const d = v.replace(/\D/g, "").slice(0, 11);
-  if (d.length <= 2) return d.replace(/^(\d{0,2})/, "($1");
-  if (d.length <= 6) return d.replace(/^(\d{2})(\d{0,4})/, "($1) $2");
-  if (d.length <= 10) return d.replace(/^(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3");
-  return d.replace(/^(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3");
-};
-
-const isPhoneValid = (v: string) => v.replace(/\D/g, "").length >= 10;
 
 function collectUtm() {
   if (typeof window === "undefined") return {};
@@ -40,82 +28,76 @@ function collectUtm() {
 }
 
 /**
- * Captação de lead em dois passos curtos:
- * 1) nome + telefone + e-mail (gravado no backend antes de qualquer navegação)
- * 2) senha para concluir a conta e liberar os 7 dias de teste
+ * Low-friction acquisition entry point.
+ * Google is intentionally first because production data shows materially faster
+ * time-to-first-value than the email confirmation path.
+ * Professional profile data is collected only after the user has reached value.
  */
-export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grátis", className = "" }: LeadFormProps) {
+export function LeadForm({
+  source = "lp3",
+  ctaLabel = "Quero testar 7 dias grátis",
+  className = "",
+}: LeadFormProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [step, setStep] = useState<1 | 2>(1);
   const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [crm, setCrm] = useState("");
-  const [crmState, setCrmState] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const saveLead = async () => {
-    await supabase.from("leads").insert({
+  const saveLead = async (validatedEmail: string) => {
+    const { error } = await supabase.from("leads").insert({
       full_name: fullName.trim(),
-      email: email.trim().toLowerCase(),
-      phone: phone.trim(),
-      crm: crm.trim() || null,
-      crm_state: crmState.trim().toUpperCase() || null,
+      email: validatedEmail.toLowerCase(),
+      // `phone` is currently NOT NULL in production. Keep an empty value for
+      // compatibility instead of forcing a high-friction field before activation.
+      phone: "",
+      crm: null,
+      crm_state: null,
       source,
       utm: collectUtm(),
       referrer: typeof document !== "undefined" ? document.referrer || null : null,
     });
-    trackLifecycleEvent("lead_created", { source }, `${source}:${email.trim().toLowerCase()}`);
+    if (error) throw error;
+    trackLifecycleEvent("lead_created", { source }, `${source}:${validatedEmail.toLowerCase()}`);
   };
 
-  const handleStep1 = async (e: React.FormEvent) => {
+  const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
-    if (!fullName.trim() || fullName.trim().length < 3) {
-      toast({ variant: "destructive", title: "Informe seu nome completo" });
-      return;
-    }
-    if (!isPhoneValid(phone)) {
-      toast({ variant: "destructive", title: "Telefone inválido", description: "Use o formato (00) 00000-0000." });
-      return;
-    }
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) {
-      toast({ variant: "destructive", title: "E-mail inválido" });
-      return;
-    }
-    setLoading(true);
-    trackCtaClick({ cta: "lead_form_dados", section: source, plan: "trial", destination: "senha" });
-    try {
-      await saveLead();
-    } catch (err) {
-      console.error("Lead insert failed", err);
-    } finally {
-      setLoading(false);
-      setStep(2);
-    }
-  };
 
-  const handleStep2 = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (loading) return;
     setLoading(true);
     try {
-      const validated = signUpSchema.parse({ email: email.trim(), password, fullName: fullName.trim() });
-      trackCtaClick({ cta: "lead_form_conta", section: source, plan: "trial", destination: "/confirmar-email" });
-      trackLifecycleEvent("signup_started", { source, auth_method: "email" }, `email:${validated.email.toLowerCase()}`);
+      const validated = signUpSchema.parse({
+        email: email.trim(),
+        password,
+        fullName: fullName.trim(),
+      });
+
+      trackCtaClick({
+        cta: "lead_form_email_signup",
+        section: source,
+        plan: "trial",
+        destination: "/confirmar-email",
+      });
+      trackLifecycleEvent(
+        "signup_started",
+        { source, auth_method: "email" },
+        `email:${validated.email.toLowerCase()}`,
+      );
+
+      try {
+        await saveLead(validated.email);
+      } catch (leadError) {
+        // Acquisition telemetry must never prevent account creation.
+        console.error("Lead insert failed", leadError);
+      }
 
       const { data, error } = await supabase.auth.signUp({
         email: validated.email,
         password: validated.password,
         options: {
-          data: {
-            full_name: validated.fullName,
-            phone: phone.trim(),
-            crm: crm.trim() || null,
-            crm_state: crmState.trim().toUpperCase() || null,
-          },
+          data: { full_name: validated.fullName },
           emailRedirectTo: `${window.location.origin}/auth?confirmed=1`,
         },
       });
@@ -125,12 +107,16 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
           ? "Este e-mail já possui cadastro. Tente entrar ou recuperar a senha."
           : error.message;
         toast({ variant: "destructive", title: "Erro no cadastro", description: msg });
-        setLoading(false);
         return;
       }
 
       if (data.user) {
-        trackLifecycleEvent("signup_completed", { source, auth_method: "email" }, data.user.id);
+        trackLifecycleEvent(
+          "signup_completed",
+          { source, auth_method: "email" },
+          data.user.id,
+        );
+
         try {
           const refCode = localStorage.getItem("medstation_ref_code");
           if (refCode) {
@@ -138,32 +124,20 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
             localStorage.removeItem("medstation_ref_code");
             localStorage.removeItem("medstation_ref_expiry");
           }
-        } catch (err) {
-          console.error("Referral tracking failed", err);
+        } catch (referralError) {
+          console.error("Referral tracking failed", referralError);
         }
 
         try {
           await supabase.functions.invoke("send-welcome-lead", {
             body: { userId: data.user.id },
           });
-        } catch (err) {
-          console.error("Welcome email failed", err);
+        } catch (welcomeError) {
+          console.error("Welcome email failed", welcomeError);
         }
       }
 
       if (data.session) {
-        try {
-          await supabase
-            .from("profiles")
-            .update({
-              phone: phone.trim(),
-              crm: crm.trim() || null,
-              crm_state: crmState.trim().toUpperCase() || null,
-            })
-            .eq("id", data.user!.id);
-        } catch (err) {
-          console.error("Profile update failed", err);
-        }
         navigate("/dashboard", { replace: true });
         return;
       }
@@ -186,151 +160,84 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
     <div
       className={`rounded-3xl border border-border/70 bg-card/90 backdrop-blur-sm p-5 md:p-7 shadow-[0_24px_60px_-32px_hsl(var(--primary)/0.45)] ${className}`}
     >
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-semibold">
-          {step === 1 ? "Comece seu teste de 7 dias" : "Crie sua senha"}
-        </p>
-        <span className="text-[11px] text-muted-foreground">Passo {step} de 2</span>
-      </div>
+      <p className="text-sm font-semibold">Comece seu teste de 7 dias</p>
       <p className="mt-1 text-xs text-muted-foreground">
-        Acesso completo aos 12 assistentes. Sem cartão de crédito.
+        Acesso completo. Sem cartão de crédito.
       </p>
 
-      {step === 1 ? (
-        <form onSubmit={handleStep1} className="mt-5 space-y-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="lead-name" className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              Nome completo
-            </Label>
-            <Input
-              id="lead-name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Dra. Maria Souza"
-              autoComplete="name"
-              required
-              className="h-11"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="lead-phone" className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              Telefone (WhatsApp)
-            </Label>
-            <Input
-              id="lead-phone"
-              value={phone}
-              onChange={(e) => setPhone(phoneMask(e.target.value))}
-              placeholder="(11) 90000-0000"
-              inputMode="tel"
-              autoComplete="tel"
-              required
-              className="h-11"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="lead-email" className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              E-mail
-            </Label>
-            <Input
-              id="lead-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="voce@email.com"
-              autoComplete="email"
-              required
-              className="h-11"
-            />
-          </div>
-          <div className="grid grid-cols-[1fr_88px] gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="lead-crm" className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                CRM <span className="normal-case tracking-normal">(opcional)</span>
-              </Label>
-              <Input
-                id="lead-crm"
-                value={crm}
-                onChange={(e) => setCrm(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                placeholder="123456"
-                inputMode="numeric"
-                className="h-11"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="lead-crm-uf" className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                UF
-              </Label>
-              <Input
-                id="lead-crm-uf"
-                value={crmState}
-                onChange={(e) => setCrmState(e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 2))}
-                placeholder="SP"
-                className="h-11"
-              />
-            </div>
-          </div>
+      <div className="mt-5">
+        <GoogleAuthButton
+          label="Continuar com Google"
+          redirectTo="/dashboard"
+          trackAsSignup
+          source={source}
+        />
+      </div>
 
-          <Button type="submit" className="w-full h-12 text-sm md:text-base" disabled={loading}>
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Enviando...
-              </>
-            ) : (
-              <>
-                {ctaLabel} <ArrowRight className="w-4 h-4 ml-2" />
-              </>
-            )}
-          </Button>
-        </form>
-      ) : (
-        <form onSubmit={handleStep2} className="mt-5 space-y-3">
-          <div className="rounded-xl bg-muted/50 px-3 py-2 text-xs text-muted-foreground flex items-center gap-2">
-            <Check className="w-3.5 h-3.5 text-primary shrink-0" />
-            <span className="truncate">{email}</span>
-            <button
-              type="button"
-              className="ml-auto underline shrink-0"
-              onClick={() => setStep(1)}
-            >
-              alterar
-            </button>
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="lead-password" className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              Senha
-            </Label>
-            <Input
-              id="lead-password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Mínimo de 8 caracteres"
-              autoComplete="new-password"
-              required
-              autoFocus
-              className="h-11"
-            />
-          </div>
+      <form onSubmit={handleEmailSignup} className="mt-4 space-y-3">
+        <div className="space-y-1.5">
+          <Label htmlFor="lead-name" className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            Nome completo
+          </Label>
+          <Input
+            id="lead-name"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            placeholder="Dra. Maria Souza"
+            autoComplete="name"
+            required
+            className="h-11"
+          />
+        </div>
 
-          <Button type="submit" className="w-full h-12 text-sm md:text-base" disabled={loading}>
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Liberando seu acesso...
-              </>
-            ) : (
-              <>
-                Liberar meus 7 dias <ArrowRight className="w-4 h-4 ml-2" />
-              </>
-            )}
-          </Button>
+        <div className="space-y-1.5">
+          <Label htmlFor="lead-email" className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            E-mail
+          </Label>
+          <Input
+            id="lead-email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="voce@email.com"
+            autoComplete="email"
+            required
+            className="h-11"
+          />
+        </div>
 
-          <GoogleAuthButton label="Continuar com Google" redirectTo="/dashboard" hideDivider trackAsSignup source={source} />
-        </form>
-      )}
+        <div className="space-y-1.5">
+          <Label htmlFor="lead-password" className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            Senha
+          </Label>
+          <Input
+            id="lead-password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Mínimo de 8 caracteres"
+            autoComplete="new-password"
+            required
+            className="h-11"
+          />
+        </div>
+
+        <Button type="submit" className="w-full h-12 text-sm md:text-base" disabled={loading}>
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Criando sua conta...
+            </>
+          ) : (
+            <>
+              {ctaLabel} <ArrowRight className="w-4 h-4 ml-2" />
+            </>
+          )}
+        </Button>
+      </form>
 
       <p className="mt-4 flex items-center gap-1.5 text-[11px] text-muted-foreground">
         <ShieldCheck className="w-3.5 h-3.5 text-primary shrink-0" />
-        Seus dados ficam protegidos e são usados só para liberar seu acesso.
+        Dados profissionais podem ser adicionados depois. Primeiro, teste a plataforma.
       </p>
     </div>
   );
