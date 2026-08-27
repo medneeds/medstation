@@ -74,11 +74,11 @@ serve(async (req) => {
 
     // ------------------------------------------------------------------
     // View "funnel": validação e visualização detalhada do funil de venda
-    // (cta_click -> checkout_started -> subscription_completed), incluindo
+    // (landing -> trial -> primeiro valor -> checkout -> assinatura), incluindo
     // qualidade dos metadados e detecção de eventos duplicados.
     // ------------------------------------------------------------------
     if (url.searchParams.get("view") === "funnel") {
-      const EV = "('lead_created','signup_started','signup_completed','trial_started','first_login','trial_expired','paywall_viewed','cta_click','checkout_started','subscription_completed')";
+      const EV = "('lead_created','signup_started','signup_completed','trial_started','first_login','first_value_action','trial_expired','paywall_viewed','cta_click','checkout_started','subscription_completed')";
       const QUALITY_EV = "('cta_click','checkout_started','subscription_completed')";
       const win = `timestamp > ${since}`;
 
@@ -155,6 +155,7 @@ serve(async (req) => {
                     countIf(event = 'signup_completed') AS signups,
                     countIf(event = 'trial_started') AS trials,
                     countIf(event = 'first_login') AS first_logins,
+                    countIf(event = 'first_value_action') AS first_value,
                     countIf(event = 'trial_expired') AS expired,
                     countIf(event = 'paywall_viewed') AS paywalls,
                     countIf(event = 'checkout_started') AS checkout,
@@ -191,6 +192,7 @@ serve(async (req) => {
         { event: "signup_completed", label: "Cadastro concluído" },
         { event: "trial_started", label: "Trial iniciado" },
         { event: "first_login", label: "Primeiro login" },
+        { event: "first_value_action", label: "Primeiro valor percebido" },
         { event: "checkout_started", label: "Iniciou checkout" },
         { event: "subscription_completed", label: "Assinou" },
       ];
@@ -263,7 +265,7 @@ serve(async (req) => {
           daily: daily.map((r) => ({
             date: String(r[0]),
             leads: num(r[1]), signups: num(r[2]), trials: num(r[3]), firstLogins: num(r[4]),
-            expired: num(r[5]), paywalls: num(r[6]), checkout: num(r[7]), subs: num(r[8]),
+            firstValue: num(r[5]), expired: num(r[6]), paywalls: num(r[7]), checkout: num(r[8]), subs: num(r[9]),
           })),
           sample: sample.map((r) => ({
             timestamp: String(r[0]), event: String(r[1]), cta: String(r[2] ?? ""),

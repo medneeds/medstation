@@ -45,7 +45,7 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
   const [loading, setLoading] = useState(false);
 
   const saveLead = async () => {
-    await supabase.from("leads").insert({
+    const { error } = await supabase.from("leads").insert({
       full_name: fullName.trim(),
       email: email.trim().toLowerCase(),
       // A coluna phone é NOT NULL no banco; mantemos string vazia por
@@ -55,7 +55,11 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
       utm: collectUtm(),
       referrer: typeof document !== "undefined" ? document.referrer || null : null,
     });
-    trackLifecycleEvent("lead_created", { source }, `${source}:${email.trim().toLowerCase()}`);
+    if (error) throw error;
+
+    // Um evento para cada linha de lead que o backend confirmou.
+    // Nenhum identificador pessoal é enviado ao analytics.
+    trackLifecycleEvent("lead_created", { source });
   };
 
   const handleStep1 = async (e: React.FormEvent) => {
@@ -88,7 +92,9 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
     try {
       const validated = signUpSchema.parse({ email: email.trim(), password, fullName: fullName.trim() });
       trackCtaClick({ cta: "lead_form_conta", section: source, plan: "trial", destination: "/confirmar-email" });
-      trackLifecycleEvent("signup_started", { source, auth_method: "email" }, `email:${validated.email.toLowerCase()}`);
+      // signup_started mede tentativas reais. Não deduplicar permanentemente: após
+      // uma falha válida o usuário pode tentar novamente e isso é informação útil.
+      trackLifecycleEvent("signup_started", { source, auth_method: "email" });
 
       const { data, error } = await supabase.auth.signUp({
         email: validated.email,
