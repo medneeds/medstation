@@ -183,10 +183,10 @@ function sanitizeProperties(props?: Record<string, unknown>): Record<string, unk
  * para pageviews públicos que nós mesmos emitimos.
  */
 function sanitizePostHogProperties(
-  properties: Record<string, unknown>,
+  properties: Record<string, any>,
   eventName?: string,
-): Record<string, unknown> {
-  const clean = { ...properties };
+): Record<string, any> {
+  const clean: Record<string, any> = { ...properties };
 
   for (const key of POSTHOG_LOCATION_KEYS) delete clean[key];
 
@@ -266,8 +266,7 @@ export function initAnalytics() {
         person_profiles: "identified_only",
         // Mantido por compatibilidade com a versão instalada. A função atua
         // depois que o SDK adiciona propriedades automáticas ao evento.
-        sanitize_properties: (properties, eventName) =>
-          sanitizePostHogProperties(properties as Record<string, unknown>, eventName),
+        sanitize_properties: (properties, eventName) => sanitizePostHogProperties(properties, eventName),
       });
     } catch (e) {
       console.warn("[analytics] posthog init failed", e);
