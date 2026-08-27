@@ -8,12 +8,10 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { signUpSchema } from "@/lib/validations";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
-import { trackCtaClick } from "@/lib/analytics";
+import { trackCtaClick, trackLifecycleEvent } from "@/lib/analytics";
 
 interface LeadFormProps {
-  /** Identificador da origem gravado junto do lead. */
   source?: string;
-  /** Rótulo do botão principal do primeiro passo. */
   ctaLabel?: string;
   className?: string;
 }
@@ -39,11 +37,6 @@ function collectUtm() {
   return out;
 }
 
-/**
- * Captação de lead em dois passos curtos:
- * 1) nome + telefone + e-mail (gravado no backend antes de qualquer navegação)
- * 2) senha para concluir a conta e liberar os 7 dias de teste
- */
 export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grátis", className = "" }: LeadFormProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -56,10 +49,12 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const normalizedEmail = () => email.trim().toLowerCase();
+
   const saveLead = async () => {
-    await supabase.from("leads").insert({
+    const { error } = await supabase.from("leads").insert({
       full_name: fullName.trim(),
-      email: email.trim().toLowerCase(),
+      email: normalizedEmail(),
       phone: phone.trim(),
       crm: crm.trim() || null,
       crm_state: crmState.trim().toUpperCase() || null,
@@ -67,6 +62,12 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
       utm: collectUtm(),
       referrer: typeof document !== "undefined" ? document.referrer || null : null,
     });
+    if (error) throw error;
+
+    trackLifecycleEvent("lead_created", {
+      source,
+      auth_method: "email_pending",
+    }, `${source}:${normalizedEmail()}`);
   };
 
   const handleStep1 = async (e: React.FormEvent) => {
@@ -103,6 +104,10 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
     try {
       const validated = signUpSchema.parse({ email: email.trim(), password, fullName: fullName.trim() });
       trackCtaClick({ cta: "lead_form_conta", section: source, plan: "trial", destination: "/confirmar-email" });
+      trackLifecycleEvent("signup_started", {
+        source,
+        auth_method: "email",
+      }, `email:${validated.email.toLowerCase()}`);
 
       const { data, error } = await supabase.auth.signUp({
         email: validated.email,
@@ -128,6 +133,12 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
       }
 
       if (data.user) {
+        trackLifecycleEvent("signup_completed", {
+          source,
+          auth_method: "email",
+          user_id: data.user.id,
+        }, data.user.id);
+
         try {
           const refCode = localStorage.getItem("medstation_ref_code");
           if (refCode) {
@@ -196,87 +207,30 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
       {step === 1 ? (
         <form onSubmit={handleStep1} className="mt-5 space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="lead-name" className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              Nome completo
-            </Label>
-            <Input
-              id="lead-name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Dra. Maria Souza"
-              autoComplete="name"
-              required
-              className="h-11"
-            />
+            <Label htmlFor="lead-name" className="text-[11px] uppercase tracking-wider text-muted-foreground">Nome completo</Label>
+            <Input id="lead-name" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Dra. Maria Souza" autoComplete="name" required className="h-11" />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="lead-phone" className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              Telefone (WhatsApp)
-            </Label>
-            <Input
-              id="lead-phone"
-              value={phone}
-              onChange={(e) => setPhone(phoneMask(e.target.value))}
-              placeholder="(11) 90000-0000"
-              inputMode="tel"
-              autoComplete="tel"
-              required
-              className="h-11"
-            />
+            <Label htmlFor="lead-phone" className="text-[11px] uppercase tracking-wider text-muted-foreground">Telefone (WhatsApp)</Label>
+            <Input id="lead-phone" value={phone} onChange={(e) => setPhone(phoneMask(e.target.value))} placeholder="(11) 90000-0000" inputMode="tel" autoComplete="tel" required className="h-11" />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="lead-email" className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              E-mail
-            </Label>
-            <Input
-              id="lead-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="voce@email.com"
-              autoComplete="email"
-              required
-              className="h-11"
-            />
+            <Label htmlFor="lead-email" className="text-[11px] uppercase tracking-wider text-muted-foreground">E-mail</Label>
+            <Input id="lead-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@email.com" autoComplete="email" required className="h-11" />
           </div>
           <div className="grid grid-cols-[1fr_88px] gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="lead-crm" className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                CRM <span className="normal-case tracking-normal">(opcional)</span>
-              </Label>
-              <Input
-                id="lead-crm"
-                value={crm}
-                onChange={(e) => setCrm(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                placeholder="123456"
-                inputMode="numeric"
-                className="h-11"
-              />
+              <Label htmlFor="lead-crm" className="text-[11px] uppercase tracking-wider text-muted-foreground">CRM <span className="normal-case tracking-normal">(opcional)</span></Label>
+              <Input id="lead-crm" value={crm} onChange={(e) => setCrm(e.target.value.replace(/\D/g, "").slice(0, 10))} placeholder="123456" inputMode="numeric" className="h-11" />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="lead-crm-uf" className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                UF
-              </Label>
-              <Input
-                id="lead-crm-uf"
-                value={crmState}
-                onChange={(e) => setCrmState(e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 2))}
-                placeholder="SP"
-                className="h-11"
-              />
+              <Label htmlFor="lead-crm-uf" className="text-[11px] uppercase tracking-wider text-muted-foreground">UF</Label>
+              <Input id="lead-crm-uf" value={crmState} onChange={(e) => setCrmState(e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 2))} placeholder="SP" className="h-11" />
             </div>
           </div>
 
           <Button type="submit" className="w-full h-12 text-sm md:text-base" disabled={loading}>
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Enviando...
-              </>
-            ) : (
-              <>
-                {ctaLabel} <ArrowRight className="w-4 h-4 ml-2" />
-              </>
-            )}
+            {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Enviando...</> : <>{ctaLabel} <ArrowRight className="w-4 h-4 ml-2" /></>}
           </Button>
         </form>
       ) : (
@@ -284,44 +238,18 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
           <div className="rounded-xl bg-muted/50 px-3 py-2 text-xs text-muted-foreground flex items-center gap-2">
             <Check className="w-3.5 h-3.5 text-primary shrink-0" />
             <span className="truncate">{email}</span>
-            <button
-              type="button"
-              className="ml-auto underline shrink-0"
-              onClick={() => setStep(1)}
-            >
-              alterar
-            </button>
+            <button type="button" className="ml-auto underline shrink-0" onClick={() => setStep(1)}>alterar</button>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="lead-password" className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              Senha
-            </Label>
-            <Input
-              id="lead-password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Mínimo de 8 caracteres"
-              autoComplete="new-password"
-              required
-              autoFocus
-              className="h-11"
-            />
+            <Label htmlFor="lead-password" className="text-[11px] uppercase tracking-wider text-muted-foreground">Senha</Label>
+            <Input id="lead-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mínimo de 8 caracteres" autoComplete="new-password" required autoFocus className="h-11" />
           </div>
 
           <Button type="submit" className="w-full h-12 text-sm md:text-base" disabled={loading}>
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Liberando seu acesso...
-              </>
-            ) : (
-              <>
-                Liberar meus 7 dias <ArrowRight className="w-4 h-4 ml-2" />
-              </>
-            )}
+            {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Liberando seu acesso...</> : <>Liberar meus 7 dias <ArrowRight className="w-4 h-4 ml-2" /></>}
           </Button>
 
-          <GoogleAuthButton label="Continuar com Google" redirectTo="/dashboard" hideDivider />
+          <GoogleAuthButton label="Continuar com Google" redirectTo="/dashboard" hideDivider trackAsSignup source={source} />
         </form>
       )}
 
