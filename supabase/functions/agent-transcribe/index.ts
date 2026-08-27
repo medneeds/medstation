@@ -1,8 +1,8 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { logAIUsage } from "../_shared/ai-logger.ts";
 import { estimateAudioSecondsFromBytes } from "../_shared/auth-helpers.ts";
+import { accessDeniedResponse, requirePlatformAccess } from "../_shared/access-control.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,22 +18,9 @@ serve(async (req) => {
   console.log("[AGENT-TRANSCRIBE] Function started");
 
   try {
-    // Authentication check
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      console.error("[AGENT-TRANSCRIBE] No authorization header");
-      return new Response(
-        JSON.stringify({ error: "Não autorizado" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    const { user, access } = await requirePlatformAccess(req);
+    console.log(`[AGENT-TRANSCRIBE] Access granted: user=${user.id} status=${access.status}`);
 
-    const token = authHeader.replace("Bearer ", "");
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    
-    // ElevenLabs Scribe - high-fidelity medical transcription
     const elevenLabsKey = Deno.env.get("ELEVENLABS_API_KEY");
     if (!elevenLabsKey) {
       console.error("[AGENT-TRANSCRIBE] ELEVENLABS_API_KEY not configured");
@@ -43,84 +30,6 @@ serve(async (req) => {
       );
     }
 
-    // Verify user authentication
-    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey);
-    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
-    
-    if (authError || !user) {
-      console.error("[AGENT-TRANSCRIBE] Authentication failed:", authError);
-      return new Response(
-        JSON.stringify({ error: "Não autorizado" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    console.log(`[AGENT-TRANSCRIBE] User authenticated: ${user.id}`);
-
-    // Check if user is admin (bypass subscription check)
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { data: adminRole } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-
-    const isAdmin = !!adminRole;
-
-    // Courtesy / referral access counts as active access (same rule as check-subscription)
-    let hasCourtesy = false;
-    if (!isAdmin) {
-      const { data: courtesy } = await supabase.rpc("has_active_courtesy", { _user_id: user.id });
-      hasCourtesy = !!courtesy;
-    }
-
-    if (!isAdmin && !hasCourtesy) {
-      const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-      if (!stripeKey) {
-        console.error("[AGENT-TRANSCRIBE] STRIPE_SECRET_KEY not set");
-        return new Response(
-          JSON.stringify({ error: "Funcionalidade não disponível", requiresPro: true }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      // Check Stripe subscription
-      const Stripe = (await import("https://esm.sh/stripe@14.21.0")).default;
-      const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
-
-      const customers = await stripe.customers.list({ email: user.email!, limit: 1 });
-
-      let active = false;
-      if (customers.data.length > 0) {
-        const subscriptions = await stripe.subscriptions.list({
-          customer: customers.data[0].id,
-          status: "active",
-          limit: 1,
-        });
-        active = subscriptions.data.length > 0;
-      }
-
-      if (!active) {
-        console.log("[AGENT-TRANSCRIBE] No active subscription - requires Pro");
-        return new Response(
-          JSON.stringify({
-            error: "Reconhecimento de voz disponível apenas no plano Pro",
-            requiresPro: true,
-          }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      console.log("[AGENT-TRANSCRIBE] User has active Pro subscription");
-    } else {
-      console.log(`[AGENT-TRANSCRIBE] Access granted (${isAdmin ? "admin" : "courtesy"})`);
-    }
-
-
-
-
-    // Parse request
     const { audio, language = "pt", context, mimeType: clientMimeType } = await req.json();
 
     if (!audio) {
@@ -133,7 +42,6 @@ serve(async (req) => {
     console.log(`[AGENT-TRANSCRIBE] Processing audio with ElevenLabs Scribe, context: ${context || 'none'}, mimeType: ${clientMimeType || 'not specified'}`);
     console.log(`[AGENT-TRANSCRIBE] Audio base64 length: ${audio.length}`);
 
-    // Decode base64 -> binary
     const binaryString = atob(audio);
     const audioBytes = new Uint8Array(binaryString.length);
     for (let i = 0; i < binaryString.length; i++) {
@@ -141,7 +49,6 @@ serve(async (req) => {
     }
     const audioSeconds = estimateAudioSecondsFromBytes(audioBytes.byteLength);
 
-    // Determine extension/mime
     const mime = clientMimeType || "audio/webm";
     let ext = "webm";
     if (mime.includes("mp4") || mime.includes("m4a")) ext = "m4a";
@@ -150,8 +57,6 @@ serve(async (req) => {
     else if (mime.includes("mpeg") || mime.includes("mp3")) ext = "mp3";
 
     const audioBlob = new Blob([audioBytes], { type: mime.split(";")[0] });
-
-    // Map language to ISO 639-3 for ElevenLabs
     const langMap: Record<string, string> = { pt: "por", en: "eng", es: "spa" };
     const languageCode = langMap[language] || "por";
 
@@ -200,8 +105,6 @@ serve(async (req) => {
     const transcription = (aiResult.text || "").trim();
 
     const processingTime = Date.now() - startTime;
-    console.log(`[AGENT-TRANSCRIBE] Transcription complete in ${processingTime}ms`);
-    console.log(`[AGENT-TRANSCRIBE] Result preview: ${transcription.substring(0, 100)}...`);
     void logAIUsage({
       userId: user.id, assistant: context || 'agent', functionName: 'agent-transcribe',
       model: 'elevenlabs/scribe_v2', audioSeconds, latencyMs: Date.now() - sttStart, status: 'ok',
@@ -212,13 +115,22 @@ serve(async (req) => {
         success: true,
         transcription,
         duration: audioSeconds,
-        language: language,
+        language,
         processingTime,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
   } catch (error: any) {
+    if (error instanceof Error && error.message === "ACCESS_REQUIRED") {
+      return accessDeniedResponse((error as Error & { access?: any }).access);
+    }
+    if (error instanceof Error && error.message === "UNAUTHENTICATED") {
+      return new Response(JSON.stringify({ error: "Não autorizado" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     console.error("[AGENT-TRANSCRIBE] Error:", error.message);
     return new Response(
       JSON.stringify({ error: error.message || "Erro ao processar áudio" }),
