@@ -57,7 +57,7 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
   const [loading, setLoading] = useState(false);
 
   const saveLead = async () => {
-    await supabase.from("leads").insert({
+    const { error } = await supabase.from("leads").insert({
       full_name: fullName.trim(),
       email: email.trim().toLowerCase(),
       phone: phone.trim(),
@@ -67,7 +67,11 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
       utm: collectUtm(),
       referrer: typeof document !== "undefined" ? document.referrer || null : null,
     });
-    trackLifecycleEvent("lead_created", { source }, `${source}:${email.trim().toLowerCase()}`);
+    if (error) throw error;
+
+    // Só existe lead_created se o backend confirmou a gravação.
+    // A chave de dedupe não contém e-mail, telefone ou CRM.
+    trackLifecycleEvent("lead_created", { source }, `lead:${source}`);
   };
 
   const handleStep1 = async (e: React.FormEvent) => {
@@ -104,7 +108,7 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
     try {
       const validated = signUpSchema.parse({ email: email.trim(), password, fullName: fullName.trim() });
       trackCtaClick({ cta: "lead_form_conta", section: source, plan: "trial", destination: "/confirmar-email" });
-      trackLifecycleEvent("signup_started", { source, auth_method: "email" }, `email:${validated.email.toLowerCase()}`);
+      trackLifecycleEvent("signup_started", { source, auth_method: "email" }, `signup:${source}:email`);
 
       const { data, error } = await supabase.auth.signUp({
         email: validated.email,
