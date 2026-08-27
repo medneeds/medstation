@@ -78,7 +78,8 @@ serve(async (req) => {
     // qualidade dos metadados e detecção de eventos duplicados.
     // ------------------------------------------------------------------
     if (url.searchParams.get("view") === "funnel") {
-      const EV = "('cta_click','checkout_started','subscription_completed')";
+      const EV = "('lead_created','signup_started','signup_completed','trial_started','first_login','trial_expired','paywall_viewed','cta_click','checkout_started','subscription_completed')";
+      const QUALITY_EV = "('cta_click','checkout_started','subscription_completed')";
       const win = `timestamp > ${since}`;
 
       const [totals, pageviews, dupRows, metaRows, bySection, byCta, byPlan, byOrigin, daily, sample] =
@@ -112,7 +113,7 @@ serve(async (req) => {
                     countIf(coalesce(nullIf(toString(properties.cta), ''), '') != '') AS with_cta,
                     countIf(coalesce(nullIf(toString(properties.cta_section), ''), '') != '') AS with_section,
                     countIf(coalesce(nullIf(toString(properties.origin), ''), '') != '') AS with_origin
-             FROM events WHERE ${win} AND event IN ${EV}
+             FROM events WHERE ${win} AND event IN ${QUALITY_EV}
              GROUP BY event`,
             projectId, key,
           ),
@@ -149,7 +150,12 @@ serve(async (req) => {
           ),
           hogql(
             `SELECT toDate(timestamp) AS d,
-                    countIf(event = 'cta_click') AS cta,
+                    countIf(event = 'lead_created') AS leads,
+                    countIf(event = 'signup_completed') AS signups,
+                    countIf(event = 'trial_started') AS trials,
+                    countIf(event = 'first_login') AS first_logins,
+                    countIf(event = 'trial_expired') AS expired,
+                    countIf(event = 'paywall_viewed') AS paywalls,
                     countIf(event = 'checkout_started') AS checkout,
                     countIf(event = 'subscription_completed') AS subs
              FROM events WHERE ${win} AND event IN ${EV}
@@ -180,7 +186,10 @@ serve(async (req) => {
 
       const STEPS = [
         { event: "$pageview", label: "Visitou a landing" },
-        { event: "cta_click", label: "Clicou em um CTA" },
+        { event: "lead_created", label: "Lead capturado" },
+        { event: "signup_completed", label: "Cadastro concluído" },
+        { event: "trial_started", label: "Trial iniciado" },
+        { event: "first_login", label: "Primeiro login" },
         { event: "checkout_started", label: "Iniciou checkout" },
         { event: "subscription_completed", label: "Assinou" },
       ];
@@ -201,7 +210,13 @@ serve(async (req) => {
         };
       });
 
-      const quality = STEPS.slice(1).map((s) => {
+      const QUALITY_STEPS = [
+        { event: "cta_click", label: "Clicou em um CTA" },
+        { event: "checkout_started", label: "Iniciou checkout" },
+        { event: "subscription_completed", label: "Assinou" },
+      ];
+
+      const quality = QUALITY_STEPS.map((s) => {
         const r = mMap.get(s.event);
         const total = num(r?.[1]);
         const expected =
@@ -231,6 +246,12 @@ serve(async (req) => {
           configured: true,
           window: { days },
           steps,
+          trialHealth: {
+            expiredUsers: tMap.get("trial_expired")?.users ?? 0,
+            paywallUsers: tMap.get("paywall_viewed")?.users ?? 0,
+            expiredEvents: tMap.get("trial_expired")?.total ?? 0,
+            paywallEvents: tMap.get("paywall_viewed")?.total ?? 0,
+          },
           quality,
           bySection: bySection.map((r) => ({
             name: String(r[0]), clicks: num(r[1]), checkouts: num(r[2]), subs: num(r[3]),
@@ -239,7 +260,9 @@ serve(async (req) => {
           byPlan: byPlan.map((r) => ({ name: String(r[0]), checkouts: num(r[1]), subs: num(r[2]) })),
           byOrigin: byOrigin.map((r) => ({ name: String(r[0]), checkouts: num(r[1]) })),
           daily: daily.map((r) => ({
-            date: String(r[0]), cta: num(r[1]), checkout: num(r[2]), subs: num(r[3]),
+            date: String(r[0]),
+            leads: num(r[1]), signups: num(r[2]), trials: num(r[3]), firstLogins: num(r[4]),
+            expired: num(r[5]), paywalls: num(r[6]), checkout: num(r[7]), subs: num(r[8]),
           })),
           sample: sample.map((r) => ({
             timestamp: String(r[0]), event: String(r[1]), cta: String(r[2] ?? ""),

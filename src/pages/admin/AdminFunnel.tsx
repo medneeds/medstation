@@ -25,10 +25,10 @@ import {
 } from "recharts";
 
 /* -------------------------------------------------------------------------
- * Aba dedicada ao funil de conversão:
- * cta_click → checkout_started → subscription_completed
- * Além da visualização, valida a chegada dos metadados esperados (plano e
- * origem do CTA) e sinaliza eventos duplicados.
+ * Aba dedicada ao ciclo de aquisição e conversão:
+ * landing → lead → cadastro → trial → primeiro login → checkout → assinatura.
+ * Trial expirado e paywall aparecem separadamente porque não são etapas obrigatórias
+ * para quem converte antes do fim do teste.
  * ---------------------------------------------------------------------- */
 
 interface Step {
@@ -51,12 +51,16 @@ interface FunnelResponse {
   error?: string;
   window?: { days: number };
   steps?: Step[];
+  trialHealth?: { expiredUsers: number; paywallUsers: number; expiredEvents: number; paywallEvents: number };
   quality?: Quality[];
   bySection?: { name: string; clicks: number; checkouts: number; subs: number }[];
   byCta?: { name: string; clicks: number; users: number }[];
   byPlan?: { name: string; checkouts: number; subs: number }[];
   byOrigin?: { name: string; checkouts: number }[];
-  daily?: { date: string; cta: number; checkout: number; subs: number }[];
+  daily?: {
+    date: string; leads: number; signups: number; trials: number; firstLogins: number;
+    expired: number; paywalls: number; checkout: number; subs: number;
+  }[];
   sample?: {
     timestamp: string;
     event: string;
@@ -196,7 +200,7 @@ export default function AdminFunnel() {
     <div className="p-4 sm:p-6 space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          Do clique no botão até a assinatura, com validação dos dados enviados.
+          Da chegada à landing até a assinatura, incluindo cadastro, trial e recuperação pós-expiração.
         </p>
 
         <div className="flex items-center gap-2">
@@ -277,6 +281,19 @@ export default function AdminFunnel() {
             </div>
           </Card>
 
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Card className="p-4">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">Trials expirados</p>
+              <p className="mt-1 text-2xl font-display font-semibold">{nf(data?.trialHealth?.expiredUsers ?? 0)}</p>
+              <p className="mt-1 text-xs text-muted-foreground">Usuários únicos cujo teste chegou ao fim no período.</p>
+            </Card>
+            <Card className="p-4">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">Paywall alcançado</p>
+              <p className="mt-1 text-2xl font-display font-semibold">{nf(data?.trialHealth?.paywallUsers ?? 0)}</p>
+              <p className="mt-1 text-xs text-muted-foreground">Usuários únicos que viram o bloqueio e podem ser recuperados.</p>
+            </Card>
+          </div>
+
           {/* Funil em barras proporcionais */}
           <Panel
             title="Etapas do funil"
@@ -346,10 +363,18 @@ export default function AdminFunnel() {
                 <Legend wrapperStyle={{ fontSize: 11 }} />
                 <Area
                   type="monotone"
-                  name="Cliques em CTA"
-                  dataKey="cta"
+                  name="Leads"
+                  dataKey="leads"
                   stroke="hsl(var(--primary))"
                   fill="url(#gCta)"
+                  strokeWidth={2}
+                />
+                <Area
+                  type="monotone"
+                  name="Trials iniciados"
+                  dataKey="trials"
+                  stroke="hsl(var(--primary) / 0.75)"
+                  fill="transparent"
                   strokeWidth={2}
                 />
                 <Area
