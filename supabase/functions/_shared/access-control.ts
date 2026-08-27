@@ -103,7 +103,7 @@ async function stripeAccess(email: string): Promise<AccessResolution | null> {
   }
 
   const result = base(hasHealthy ? "paid_active" : hasPastDue ? "past_due" : "none");
-  result.canUsePlatform = true; // Preserves current grace behavior for past_due.
+  result.canUsePlatform = true;
   result.isPaidSubscriber = true;
   result.subscriptionEnd = subscriptionEnd;
   result.productIds = productIds;
@@ -173,7 +173,6 @@ export async function resolveUserAccess(user: Pick<User, "id" | "email" | "creat
     return result;
   }
 
-  // Temporary compatibility fallback while the migration rolls out.
   if (user.created_at) {
     const start = new Date(user.created_at).getTime();
     const end = start + 7 * 86400000;
@@ -226,7 +225,11 @@ export function accessDeniedResponse(access?: AccessResolution) {
     }),
     {
       status: 403,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+        "Content-Type": "application/json",
+      },
     },
   );
 }
