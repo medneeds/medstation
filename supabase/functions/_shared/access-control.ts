@@ -169,10 +169,20 @@ export async function resolveUserAccess(user: Pick<User, "id" | "email" | "creat
     return result;
   }
 
+  let billingDegraded = false;
   if (user.email) {
-    const paid = await stripeAccess(user.email);
-    if (paid) return applyCommercialPolicy(supabase, paid);
+    try {
+      const paid = await stripeAccess(user.email);
+      if (paid) return applyCommercialPolicy(supabase, paid);
+    } catch (err) {
+      // Falha temporária da Stripe NÃO pode virar paywall automaticamente.
+      // Seguimos para cortesia/trial persistido e só sinalizamos erro se não
+      // houver nenhuma outra evidência de acesso. Sem PII no log.
+      billingDegraded = true;
+      console.error("[access-control] Stripe lookup failed", (err as Error)?.message);
+    }
   }
+
 
   const { data: hasCourtesy } = await supabase.rpc("has_active_courtesy", {
     _user_id: user.id,
