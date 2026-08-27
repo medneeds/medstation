@@ -32,7 +32,7 @@ export function TrialWelcomeDialog() {
   }, [trialStartedAt]);
 
   useEffect(() => {
-    if (loading || !isTrial || trialSource === "legacy" || !storageKey) return;
+    if (loading || !isTrial || trialSource !== "signup" || !storageKey) return;
     trackLifecycleEvent("trial_started", {
       trial_source: trialSource,
       trial_started_at: trialStartedAt,
@@ -67,7 +67,7 @@ export function TrialWelcomeDialog() {
     setOpen(false);
   };
 
-  if (!isTrial || trialSource === "legacy") return null;
+  if (!isTrial || trialSource !== "signup") return null;
 
   return (
     <Dialog open={open} onOpenChange={(next) => (next ? setOpen(true) : close())}>
