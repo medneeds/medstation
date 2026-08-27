@@ -1,69 +1,53 @@
-# Auditoria comercial — agregados Stripe sem PII
+# Auditoria de erros em produção — logs (somente leitura)
 
-Somente leitura. Nada foi alterado em código, banco ou Stripe. Sem e-mails, nomes ou IDs de clientes. Referência: 27/08/2026 21:54 UTC. Janelas: 30 dias (desde 28/07) e 7 dias (desde 20/08). Sigma não está habilitado na conta, então os números foram agregados localmente a partir das listagens da API.
+Nada foi editado. Nenhum e-mail, nome, token ou ID de usuário é reproduzido abaixo.
 
-## 1. Checkout sessions criadas
+## Conclusão principal: os logs NÃO permitem responder 7 dias nem 24h
 
-Últimos 30 dias — 14 sessões:
-- complete + paid: 3
-- expired + unpaid: 11
-- open: 0
+Consultei diretamente as três fontes de log da plataforma e a janela retida é de **minutos**, não de dias:
 
-Últimos 7 dias — 1 sessão:
-- complete + paid: 1
-- expired + unpaid: 0
-- open: 0
+| Fonte | Registros retidos | Janela coberta |
+|---|---|---|
+| `function_edge_logs` (HTTP das Edge Functions) | 19 | 21:46 → 21:55 UTC de hoje (~9 minutos) |
+| `auth_logs` | 17 | 21:47 → 21:55 UTC de hoje (~8 minutos) |
+| `postgres_logs` | 5 | 21:46 → 21:52 UTC de hoje (~6 minutos) |
 
-Taxa de conversão de sessão em 30 dias: 3/14 = 21,4%.
+Portanto: **não é possível produzir agregados de 7 dias nem de 24 horas**, nem buscar historicamente por `ACCESS_REQUIRED`, `UNAUTHENTICATED`, 429/rate limit, erros Stripe, `user_access`, "already registered", "create user" ou "payment". Qualquer número que eu apresentasse para esses períodos seria inventado.
 
-Valores das sessões em 30 dias: 7 sessões a R$ 29,90, 6 a R$ 49,90 e 1 a R$ 499,90 (anual) — ou seja, ainda circularam links do preço legado de R$ 29,90 durante boa parte do período.
+Isso é, por si só, um achado operacional: hoje não existe retenção de log suficiente para investigar um incidente de pagamento ou de acesso relatado por um usuário algumas horas depois. Investigação de incidentes depende hoje da API da Stripe e do banco, não dos logs.
 
-## 2. Identidades únicas que iniciaram checkout
+## O que a janela disponível mostra (≈9 minutos, não extrapolável)
 
-Das 14 sessões de 30 dias, apenas 4 tinham um customer Stripe vinculado (4 identidades distintas). As outras 10 são sessões de convidado, criadas com `customer_creation: always`, sem customer atribuído enquanto não há pagamento. Como e-mail e nome vêm redigidos, não é possível deduplicar convidados sem expor PII.
+Edge Functions — respostas por função e código:
 
-Leitura honesta: entre 4 e 14 identidades únicas iniciaram checkout em 30 dias; o dado disponível não permite fechar esse intervalo sem acessar dados pessoais.
+| Função | 2xx | 4xx | 5xx | Top código |
+|---|---|---|---|---|
+| check-subscription | 17 | 0 | 0 | 200 |
+| agent-chat | 2 | 0 | 0 | 200 |
 
-## 3. Novas subscriptions criadas no período (status atual)
+Sem tráfego registrado no período para `create-checkout`, `guest-checkout`, `complete-checkout`, `examinus-chat`, `consultation-transcribe`, `structure-anamnesis` e `transcribe-audio` — ausência de tráfego, não ausência de erro.
 
-- 30 dias: 3 criadas — todas `active` hoje.
-- 7 dias: 1 criada — `active`.
+Auth — eventos por rota:
 
-Consistente com as 3 sessões complete+paid de 30 dias.
+| Rota | 200 | 400 |
+|---|---|---|
+| `/user` (validação de sessão) | 15 | 0 |
+| `/token` (login / refresh) | 1 | 1 |
+| sem rota registrada | 1 | — |
 
-## 4. Cancelamentos e cancel_at_period_end
+Nenhum evento de logout, recovery ou confirmation-requested no período. Houve **1 resposta 400 em `/token`** — a granularidade do log não distingue credencial inválida de refresh token expirado.
 
-- Cancelamentos no período: 3 em 30 dias, 1 em 7 dias.
-- Assinaturas ativas hoje com `cancel_at_period_end = true`: **0**.
-- Base total de assinaturas (19): 9 `active`, 10 `canceled`, 0 `trialing`, 0 `past_due`.
-- Motivo dos 10 cancelamentos históricos: 9 por `payment_failed` (falha de cobrança, não pedido do cliente) e 1 por `cancellation_requested`. Esse é o dado comercial mais relevante do lote: o churn atual é predominantemente involuntário, de cartão, não de insatisfação declarada.
+Postgres: 5 registros, **0** com severidade ERROR/FATAL/PANIC.
 
-Saldo de 30 dias: +3 novas, −3 canceladas → base estável em 9.
+Busca por padrões (`ACCESS_REQUIRED`, `UNAUTHENTICATED`, 429, Stripe, `user_access`, "already registered", "create user", "payment"): nenhuma ocorrência dentro da janela retida. Com ~9 minutos de dados isso não significa que não ocorram.
 
-## 5. MRR bruto aproximado das assinaturas ativas
+## Dois achados colaterais relevantes
 
-Todas as 9 ativas são mensais (nenhuma anual ativa):
+1. **PII em log de aplicação.** `check-subscription` grava o e-mail do usuário em texto claro no log (`User authenticated - {userId, email}`). O mesmo padrão aparece em outras funções que usam `logStep`. Não reproduzo os valores aqui, mas isso expõe dado pessoal de paciente-usuário em logs de terceiros e conflita com o cuidado de LGPD esperado para uma plataforma médica.
+2. **Volume de chamadas de `check-subscription`.** 17 chamadas em ~9 minutos para um único usuário ativo. Cada chamada dispara uma consulta à Stripe. Com base maior isso vira custo, latência e risco de rate limit da Stripe — coerente com o problema de acoplamento já apontado na auditoria anterior.
 
-| Preço | Coorte | Assinaturas | MRR |
-|---|---|---|---|
-| R$ 49,90/mês (plano unificado atual) | atual | 1 | R$ 49,90 |
-| R$ 49,90/mês (bundle Pro legado) | legado | 2 | R$ 99,80 |
-| R$ 29,90/mês (Assistentes legado) | legado | 6 | R$ 179,40 |
-| **Total** | | **9** | **R$ 329,10** |
+## Alternativas para obter o que você pediu (sem alterar nada agora)
 
-MRR legado: R$ 279,20 (85%). MRR na precificação atual: R$ 49,90 (15%). Ticket médio atual: R$ 36,57.
-
-## 6. Sobre "9 ativas" e a contagem operacional de 8
-
-**Não.** As 9 assinaturas `active` **não** incluem nenhuma marcada para cancelar — `cancel_at_period_end` é `false` em todas as 9. A única assinatura da base com essa marcação já está `canceled` desde fevereiro de 2026 e não conta como ativa.
-
-Portanto, a contagem operacional correta de assinantes que pretendem continuar é **9, não 8**. Se em algum relatório anterior apareceu "1 com cancel_at_period_end", esse número veio de uma contagem sobre as 19 assinaturas (incluindo canceladas), não sobre as ativas — é um artefato de filtro, não uma intenção de cancelamento pendente.
-
-Ressalva: 9 assinaturas ativas ≠ necessariamente 9 pessoas distintas. Como a plataforma localiza o cliente por e-mail com `limit: 1` e não guarda `stripe_customer_id` no banco, duplicidade de customer com o mesmo e-mail não é detectável aqui sem expor PII.
-
-## Limitações do levantamento
-
-- Sigma indisponível na conta (`acct_…` sem plano), então não há queries SQL históricas nem coortes.
-- Todos os campos de identificação vêm redigidos pela conexão, o que impede deduplicar convidados de checkout.
-- MRR é bruto: não desconta cupons ativos, impostos, reembolsos ou falhas de cobrança futuras.
-- O nome de exibição da conta Stripe ainda aparece como "MEDNEEDS" nas telas de checkout — não é um agregado, mas é uma inconsistência de marca visível ao cliente pagante.
+- Erros de pagamento em 7/30 dias: já são obteníveis pela API da Stripe (feito na auditoria comercial anterior — 9 dos 10 cancelamentos foram `payment_failed`).
+- Sinais de acesso bloqueado: a tabela `security_events` e `ai_usage_logs` no banco têm retenção real e podem ser agregadas sem PII, se você quiser que eu faça isso numa próxima leitura.
+- Para ter de fato histórico de erro por função, seria necessário passar a persistir eventos de erro em tabela própria — mudança de código, fora do escopo desta auditoria.
