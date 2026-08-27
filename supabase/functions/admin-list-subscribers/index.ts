@@ -32,6 +32,16 @@ const PRODUCT_LABELS: Record<string, string> = {
   prod_UUfu9AzBtaGsCW: "Upgrade Modo Escuta (legado)",
 };
 
+const CURRENT_UNIFIED_PRODUCT_ID = "prod_V4jGKeBPH2hGYg";
+const LEGACY_PRODUCT_IDS = new Set([
+  "prod_V4BACwTTBf5tBk",
+  "prod_UUfw2uz4UPwkco",
+  "prod_TgR7u5urUle7om",
+  "prod_UUfvAeta3d1Rn5",
+  "prod_UUfuDkH9yfcfb3",
+  "prod_UUfu9AzBtaGsCW",
+]);
+
 function planLabel(productIds: string[], interval: string | null): string | null {
   if (!productIds.length) return null;
   const names = productIds.map((id) => PRODUCT_LABELS[id] || id);
@@ -204,11 +214,12 @@ serve(async (req) => {
       pageNum++;
     }
 
-    const [courtesyRes, rolesRes, profilesRes, accessRes] = await Promise.all([
+    const [courtesyRes, rolesRes, profilesRes, accessRes, policyRes] = await Promise.all([
       supabaseAdmin.from("courtesy_access").select("*"),
       supabaseAdmin.from("user_roles").select("user_id, role"),
       supabaseAdmin.from("profiles").select("id, full_name, specialty, crm, crm_state, phone"),
       supabaseAdmin.from("user_access").select("user_id, trial_started_at, trial_ends_at, trial_source"),
+      supabaseAdmin.from("commercial_policy").select("legacy_full_access_until").eq("id", "medstation_unified_2026").maybeSingle(),
     ]);
 
     const courtesyMap = new Map((courtesyRes.data || []).map((c: any) => [c.user_id, c]));
@@ -219,6 +230,7 @@ serve(async (req) => {
     }
     const profilesMap = new Map((profilesRes.data || []).map((p: any) => [p.id, p]));
     const accessMap = new Map((accessRes.data || []).map((a: any) => [a.user_id, a]));
+    const legacyFullAccessUntil: string | null = policyRes.data?.legacy_full_access_until || null;
 
     const { customers, customersById, subscriptionsByCustomer } = await fetchAllStripeData(stripe, refresh);
 
@@ -232,6 +244,17 @@ serve(async (req) => {
       const profile = u ? profilesMap.get(u.id) : null;
       const entitlement = u ? accessMap.get(u.id) : null;
       const paying = PAYING_STATUSES.has(stripe.status);
+      const hasCurrentUnified = stripe.productIds.includes(CURRENT_UNIFIED_PRODUCT_ID);
+      const hasLegacyProduct = stripe.productIds.some((id) => LEGACY_PRODUCT_IDS.has(id));
+      const pricingCohort = paying
+        ? hasCurrentUnified
+          ? "current_unified"
+          : hasLegacyProduct
+            ? "legacy_pre_unification"
+            : null
+        : null;
+      const legacyProtectionUntil = pricingCohort === "legacy_pre_unification" ? legacyFullAccessUntil : null;
+      const pricingReviewDue = !!legacyProtectionUntil && new Date(legacyProtectionUntil).getTime() <= Date.now();
 
       const trialStartedAt: string | null = entitlement?.trial_started_at || null;
       const trialEndsAt: string | null = entitlement?.trial_ends_at || null;
@@ -274,6 +297,9 @@ serve(async (req) => {
         trial_started_at: trialStartedAt,
         trial_ends_at: trialEndsAt,
         trial_source: entitlement?.trial_source || null,
+        pricing_cohort: pricingCohort,
+        legacy_full_access_until: legacyProtectionUntil,
+        pricing_review_due: pricingReviewDue,
         courtesy: courtesy
           ? {
               id: courtesy.id,
@@ -327,6 +353,8 @@ serve(async (req) => {
       free_trial: records.filter((r) => r.in_trial).length,
       free_trial_expired: records.filter((r) => r.trial_expired).length,
       access_active: records.filter((r) => r.access_active).length,
+      legacy_pricing: records.filter((r) => r.pricing_cohort === "legacy_pre_unification").length,
+      pricing_review_due: records.filter((r) => r.pricing_review_due).length,
       mrr_cents: Math.round(globalMrrCents),
       arr_cents: Math.round(globalMrrCents * 12),
       avg_ticket_cents: payingAll.length ? Math.round(globalMrrCents / payingAll.length) : 0,
@@ -347,6 +375,8 @@ serve(async (req) => {
       else if (statusFilter === "access_active") filtered = filtered.filter((r) => r.access_active);
       else if (statusFilter === "trial") filtered = filtered.filter((r) => r.in_trial);
       else if (statusFilter === "trial_expired") filtered = filtered.filter((r) => r.trial_expired);
+      else if (statusFilter === "legacy_pricing") filtered = filtered.filter((r) => r.pricing_cohort === "legacy_pre_unification");
+      else if (statusFilter === "pricing_review_due") filtered = filtered.filter((r) => r.pricing_review_due);
       else if (stripeStatusFilters.has(statusFilter)) filtered = filtered.filter((r) => r.stripe_status === statusFilter);
       else filtered = filtered.filter((r) => r.effective_status === statusFilter);
     }

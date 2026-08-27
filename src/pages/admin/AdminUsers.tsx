@@ -31,6 +31,9 @@ interface UserRow {
   trial_started_at?: string | null;
   trial_ends_at?: string | null;
   trial_source?: "signup" | "migration" | null;
+  pricing_cohort?: "current_unified" | "legacy_pre_unification" | null;
+  legacy_full_access_until?: string | null;
+  pricing_review_due?: boolean;
   access_active?: boolean;
   subscription_end: string | null;
   courtesy: any;
@@ -73,6 +76,8 @@ interface Stats {
   free_trial?: number;
   free_trial_expired?: number;
   access_active?: number;
+  legacy_pricing?: number;
+  pricing_review_due?: number;
   mrr_cents: number;
   currency: string;
 }
@@ -141,7 +146,7 @@ export default function AdminUsers() {
       </header>
 
       {stats && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-9 gap-2 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-11 gap-2 text-xs">
           {[
             { label: "Assinantes", value: stats.active, color: "text-emerald-600" },
             { label: "Teste 7 dias", value: stats.free_trial ?? 0, color: "text-indigo-600" },
@@ -151,6 +156,8 @@ export default function AdminUsers() {
             { label: "Cortesia", value: stats.courtesy, color: "text-purple-600" },
             { label: "Sem plano", value: stats.none, color: "text-muted-foreground" },
             { label: "Admins", value: stats.admin, color: "text-primary" },
+            { label: "Legado protegido", value: stats.legacy_pricing ?? 0, color: "text-violet-600" },
+            { label: "Revisar preço", value: stats.pricing_review_due ?? 0, color: "text-rose-600" },
             { label: "MRR", value: fmtMoney(stats.mrr_cents, stats.currency), color: "text-emerald-600" },
           ].map((s) => (
             <Card key={s.label} className="px-3 py-2">
@@ -181,6 +188,8 @@ export default function AdminUsers() {
             <SelectItem value="active">Assinantes ativos</SelectItem>
             <SelectItem value="trial">Teste 7 dias ativo</SelectItem>
             <SelectItem value="trial_expired">Teste 7 dias expirado</SelectItem>
+            <SelectItem value="legacy_pricing">Preço legado protegido</SelectItem>
+            <SelectItem value="pricing_review_due">Revisão de preço pendente</SelectItem>
             <SelectItem value="trialing">Trial Stripe</SelectItem>
             <SelectItem value="courtesy">Cortesia</SelectItem>
             <SelectItem value="past_due">Em atraso</SelectItem>
@@ -354,6 +363,18 @@ function UserDetailSheet({ user, onClose, onChanged }: { user: UserRow | null; o
                     <div className="text-xs text-muted-foreground">Origem</div>
                     <div className="text-xs">{user.trial_source === "signup" ? "Novo cadastro" : user.trial_source === "migration" ? "Conta existente migrada" : "—"}</div>
                   </div>
+                </div>
+              )}
+              {user.pricing_cohort === "legacy_pre_unification" && (
+                <div className="p-3 rounded-md bg-violet-500/5 border border-violet-500/20">
+                  <div className="text-xs font-medium text-violet-600">Coorte comercial legada</div>
+                  <div className="text-xs text-muted-foreground mt-1">Acesso integral garantido por 6 meses após a unificação.</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Proteção até: {user.legacy_full_access_until ? new Date(user.legacy_full_access_until).toLocaleDateString("pt-BR") : "—"}
+                  </div>
+                  {user.pricing_review_due && (
+                    <Badge variant="outline" className="mt-2 bg-rose-500/10 text-rose-600 border-rose-500/20">Revisão de preço pendente</Badge>
+                  )}
                 </div>
               )}
               <div>
