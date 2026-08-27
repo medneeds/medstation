@@ -1,6 +1,4 @@
 // Analytics: PostHog + tabela local `page_views`.
-// PostHog fornece painéis ricos em posthog.com; a tabela local alimenta
-// gráficos nativos do painel admin.
 import posthog from "posthog-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -54,7 +52,6 @@ export function initAnalytics() {
 const LANDING_PATHS = new Set(["/", "/precos", "/pricing", "/planos"]);
 
 export async function trackPageView(path: string, referrer?: string) {
-  // PostHog já captura automaticamente; forçamos apenas em SPAs no route change
   if (initialized && TOKEN) {
     try {
       posthog.capture("$pageview", { $current_url: window.location.href });
@@ -63,7 +60,6 @@ export async function trackPageView(path: string, referrer?: string) {
     }
   }
 
-  // Registro local só para páginas relevantes ao funil de venda (evita ruído)
   if (!LANDING_PATHS.has(path)) return;
   try {
     await supabase.from("page_views").insert({
@@ -74,7 +70,6 @@ export async function trackPageView(path: string, referrer?: string) {
       device: detectDevice(),
     });
   } catch (e) {
-    // silencioso: analytics não deve quebrar UX
     console.debug("[analytics] page_view insert failed", e);
   }
 }
@@ -88,12 +83,31 @@ export function trackEvent(name: string, props?: Record<string, unknown>) {
   }
 }
 
+/**
+ * Product lifecycle events that sit between acquisition and checkout.
+ * `onceKey` prevents accidental duplicate milestones on rerender/reload on the
+ * same browser while still allowing ordinary repeatable events such as paywall views.
+ */
+export function trackLifecycleEvent(
+  name: "lead_created" | "signup_started" | "signup_completed" | "trial_started" | "first_login" |
+    "trial_welcome_viewed" | "first_value_action" | "trial_expired" | "paywall_viewed",
+  props: Record<string, unknown> = {},
+  onceKey?: string,
+) {
+  if (onceKey) {
+    try {
+      const key = `ms_event:${name}:${onceKey}`;
+      if (localStorage.getItem(key) === "1") return;
+      localStorage.setItem(key, "1");
+    } catch {
+      /* analytics dedupe is best-effort */
+    }
+  }
+  trackEvent(name, { ...utmContext(), ...props });
+}
+
 /* -------------------------------------------------------------------------
- * Funil de conversão: cta_click → checkout_started → subscription_completed
- * Cada etapa carrega o plano e a origem do CTA. A atribuição do último CTA
- * clicado é persistida na sessão para que as etapas seguintes (que acontecem
- * em outra página, ou após o redirect do provedor de pagamento) mantenham
- * o contexto de onde a intenção nasceu.
+ * Funil de conversão e atribuição.
  * ---------------------------------------------------------------------- */
 
 const ATTRIBUTION_KEY = "ms_funnel_attribution";
@@ -125,8 +139,6 @@ function utmContext(): Record<string, unknown> {
 function saveAttribution(attr: FunnelAttribution) {
   try {
     sessionStorage.setItem(ATTRIBUTION_KEY, JSON.stringify(attr));
-    // O checkout redireciona para fora do domínio; localStorage garante que a
-    // atribuição sobreviva até o retorno em /welcome.
     localStorage.setItem(ATTRIBUTION_KEY, JSON.stringify(attr));
   } catch {
     /* noop */
@@ -152,14 +164,10 @@ export function clearFunnelAttribution() {
 }
 
 export type CtaClickMeta = {
-  /** Identificador único do botão, ex.: "hero_ver_planos" */
   cta: string;
-  /** Bloco da página onde o CTA vive, ex.: "hero", "pricing", "footer" */
   section?: string;
-  /** Plano associado ao CTA, quando houver */
   plan?: string | null;
   billing_period?: "monthly" | "yearly" | null;
-  /** Destino do clique, ex.: "/pricing" ou "#planos" */
   destination?: string;
   [key: string]: unknown;
 };
@@ -178,12 +186,10 @@ export function trackCtaClick(meta: CtaClickMeta) {
 }
 
 export type CheckoutStartedMeta = {
-  /** Slug do plano no Stripe, ex.: "pro2_bundle_yearly" */
   plan?: string | null;
   product?: string | null;
   billing_period?: "monthly" | "yearly" | null;
   price_brl?: number | null;
-  /** Onde o checkout foi iniciado, ex.: "pricing_page", "landing_inline", "agent_guard" */
   origin: string;
   auth_state?: "guest" | "authenticated";
   coupon?: string | null;
@@ -218,7 +224,6 @@ export function trackSubscriptionCompleted(meta: Record<string, unknown> = {}) {
   });
   clearFunnelAttribution();
 }
-
 
 export function identifyUser(userId: string, traits?: Record<string, unknown>) {
   if (!initialized || !TOKEN) return;
