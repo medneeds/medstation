@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { logAIUsage } from "../_shared/ai-logger.ts";
-
+import { accessDeniedResponse, requirePlatformAccess } from "../_shared/access-control.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,23 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    // Auth check
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('Não autorizado');
-    }
-
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      global: { headers: { Authorization: authHeader } }
-    });
-
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
-      throw new Error('Usuário não autenticado');
-    }
-
+    const { user } = await requirePlatformAccess(req);
     const { transcription, mode, specialty } = await req.json();
 
     const specialtyRaw = typeof specialty === 'string' ? specialty.slice(0, 60).trim() : '';
@@ -48,7 +31,6 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY não configurada');
     }
 
-    // ---- Modo resumo inteligente ------------------------------------------
     if (mode === 'summary') {
       const summaryPrompt = `Você é um médico experiente resumindo uma consulta para o prontuário.
 
@@ -127,7 +109,6 @@ PRÓXIMOS PASSOS
       );
     }
 
-
     const systemPrompt = `Você é um assistente médico especializado em estruturação de anamneses.
 
 Analise a transcrição da consulta médica e organize em seções clínicas padronizadas.
@@ -176,54 +157,18 @@ SEÇÕES PARA ESTRUTURAR:
               parameters: {
                 type: 'object',
                 properties: {
-                  chiefComplaint: { 
-                    type: 'string', 
-                    description: 'Queixa principal com duração' 
-                  },
-                  historyPresentIllness: { 
-                    type: 'string', 
-                    description: 'História da doença atual detalhada' 
-                  },
-                  pastMedicalHistory: { 
-                    type: 'string', 
-                    description: 'Antecedentes patológicos' 
-                  },
-                  familyHistory: { 
-                    type: 'string', 
-                    description: 'História familiar' 
-                  },
-                  medications: { 
-                    type: 'string', 
-                    description: 'Medicamentos em uso com doses' 
-                  },
-                  allergies: { 
-                    type: 'string', 
-                    description: 'Alergias conhecidas' 
-                  },
-                  socialHistory: { 
-                    type: 'string', 
-                    description: 'Hábitos de vida' 
-                  },
-                  reviewOfSystems: { 
-                    type: 'string', 
-                    description: 'Revisão de sistemas' 
-                  },
-                  physicalExam: { 
-                    type: 'string', 
-                    description: 'Achados do exame físico' 
-                  },
-                  diagnosticHypotheses: { 
-                    type: 'string', 
-                    description: 'Hipóteses diagnósticas' 
-                  },
-                  plan: { 
-                    type: 'string', 
-                    description: 'Conduta proposta' 
-                  },
-                  detectedSpecialty: {
-                    type: 'string',
-                    description: 'Especialidade médica identificada ou informada (nome curto em português)',
-                  },
+                  chiefComplaint: { type: 'string', description: 'Queixa principal com duração' },
+                  historyPresentIllness: { type: 'string', description: 'História da doença atual detalhada' },
+                  pastMedicalHistory: { type: 'string', description: 'Antecedentes patológicos' },
+                  familyHistory: { type: 'string', description: 'História familiar' },
+                  medications: { type: 'string', description: 'Medicamentos em uso com doses' },
+                  allergies: { type: 'string', description: 'Alergias conhecidas' },
+                  socialHistory: { type: 'string', description: 'Hábitos de vida' },
+                  reviewOfSystems: { type: 'string', description: 'Revisão de sistemas' },
+                  physicalExam: { type: 'string', description: 'Achados do exame físico' },
+                  diagnosticHypotheses: { type: 'string', description: 'Hipóteses diagnósticas' },
+                  plan: { type: 'string', description: 'Conduta proposta' },
+                  detectedSpecialty: { type: 'string', description: 'Especialidade médica identificada ou informada (nome curto em português)' },
                 },
                 required: ['chiefComplaint'],
                 additionalProperties: false,
@@ -238,7 +183,6 @@ SEÇÕES PARA ESTRUTURAR:
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Lovable AI error:', errorText);
-      
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: 'Limite de requisições excedido. Tente novamente em alguns segundos.' }),
@@ -251,13 +195,10 @@ SEÇÕES PARA ESTRUTURAR:
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      
       throw new Error(`Erro na estruturação: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('AI response received');
-
     void logAIUsage({
       userId: user.id,
       assistant: "consultorio",
@@ -269,29 +210,30 @@ SEÇÕES PARA ESTRUTURAR:
       status: "ok",
     });
 
-    // Extract structured data from tool call
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall) {
-      throw new Error('Resposta inválida da IA');
-    }
+    if (!toolCall) throw new Error('Resposta inválida da IA');
 
     const structure = JSON.parse(toolCall.function.arguments);
-    console.log('Anamnesis structured successfully');
-
     return new Response(
       JSON.stringify({ structure }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error: unknown) {
+    if (error instanceof Error && error.message === 'ACCESS_REQUIRED') {
+      return accessDeniedResponse((error as Error & { access?: any }).access);
+    }
+    if (error instanceof Error && error.message === 'UNAUTHENTICATED') {
+      return new Response(JSON.stringify({ error: 'Não autorizado' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     console.error('Error in structure-anamnesis:', error);
     const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
     return new Response(
       JSON.stringify({ error: errorMessage }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
