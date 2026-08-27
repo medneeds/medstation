@@ -33,6 +33,22 @@ export function TrialWelcomeDialog() {
 
   useEffect(() => {
     if (loading || !isTrial || trialSource !== "signup" || !storageKey) return;
+    try {
+      const pendingGoogleSignup = localStorage.getItem("ms_google_signup_pending");
+      if (pendingGoogleSignup) {
+        const pending = JSON.parse(pendingGoogleSignup) as { source?: string; destination?: string };
+        trackLifecycleEvent("signup_completed", {
+          source: pending.source ?? "oauth",
+          auth_method: "google",
+          destination: pending.destination ?? "/dashboard",
+          trial_started_at: trialStartedAt,
+        }, `google:${trialStartedAt ?? "signup"}`);
+        localStorage.removeItem("ms_google_signup_pending");
+      }
+    } catch {
+      /* acquisition attribution is best-effort */
+    }
+
     trackLifecycleEvent("trial_started", {
       trial_source: trialSource,
       trial_started_at: trialStartedAt,

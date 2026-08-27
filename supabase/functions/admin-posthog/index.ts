@@ -93,7 +93,8 @@ serve(async (req) => {
           ),
           hogql(
             `SELECT count() AS total, count(DISTINCT person_id) AS users
-             FROM events WHERE ${win} AND event = '$pageview'`,
+             FROM events WHERE ${win} AND event = '$pageview'
+               AND coalesce(nullIf(toString(properties.$pathname), ''), '/') = '/'`,
             projectId, key,
           ),
           // Duplicatas: mesmo usuário, mesmo evento, mesmo segundo.

@@ -49,6 +49,11 @@ export function GoogleAuthButton({
         auth_method: "google",
         destination,
       });
+      try {
+        localStorage.setItem("ms_google_signup_pending", JSON.stringify({ source, destination }));
+      } catch {
+        /* acquisition attribution is best-effort */
+      }
     }
 
     try {
