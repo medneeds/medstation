@@ -73,3 +73,21 @@ describe("complete-checkout com mais de 50 usuários", () => {
     expect(await findUserByEmail(listUsers, "nao@existe.com", 1000)).toBeNull();
   });
 });
+
+describe("complete-checkout preserva posse de identidade", () => {
+  const source = readFileSync(
+    path.resolve(__dirname, "../../../supabase/functions/complete-checkout/index.ts"),
+    "utf8",
+  );
+
+  it("não auto-confirma e-mail nem devolve link de acesso ao navegador", () => {
+    expect(source).not.toContain("email_confirm: true");
+    expect(source).not.toContain("generateLink(");
+    expect(source).not.toContain("autoLoginUrl");
+  });
+
+  it("usa convite por e-mail para conta nova", () => {
+    expect(source).toContain("inviteUserByEmail(email");
+    expect(source).toContain('accountSetup: "invite_sent"');
+  });
+});
