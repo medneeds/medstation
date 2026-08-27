@@ -108,7 +108,9 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
     try {
       const validated = signUpSchema.parse({ email: email.trim(), password, fullName: fullName.trim() });
       trackCtaClick({ cta: "lead_form_conta", section: source, plan: "trial", destination: "/confirmar-email" });
-      trackLifecycleEvent("signup_started", { source, auth_method: "email" }, `signup:${source}:email`);
+      // signup_started mede tentativas reais. Não deduplicar permanentemente: após
+      // uma falha válida o usuário pode tentar novamente e isso é informação útil.
+      trackLifecycleEvent("signup_started", { source, auth_method: "email" });
 
       const { data, error } = await supabase.auth.signUp({
         email: validated.email,
