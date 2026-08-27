@@ -10,17 +10,17 @@ import { supabase } from "@/integrations/supabase/client";
 const TOKEN = import.meta.env.VITE_LOVABLE_CONNECTOR_POSTHOG_API_KEY as string | undefined;
 const REGION = (import.meta.env.VITE_LOVABLE_CONNECTOR_POSTHOG_REGION as string | undefined) ?? "eu";
 const HOST = REGION === "us" ? "https://us.i.posthog.com" : "https://eu.i.posthog.com";
+const META_PIXEL_ID = "1120398934987866";
 
 let initialized = false;
 let bootedSessionId: string | null = null;
-let firstValueFetchInstalled = false;
+let identifiedUserId: string | null = null;
+let firstValueTrackingInstalled = false;
 
-const LANDING_PATHS = new Set(["/", "/precos", "/pricing", "/planos"]);
+const LANDING_PATHS = new Set(["/", "/pricing"]);
 const PUBLIC_ANALYTICS_PATHS = new Set([
   "/",
   "/pricing",
-  "/precos",
-  "/planos",
   "/auth",
   "/confirmar-email",
   "/obrigado",
@@ -62,8 +62,8 @@ const SAFE_ANALYTICS_KEYS = new Set([
   "status",
 ]);
 
-// Propriedades que o SDK pode adicionar automaticamente e que não queremos
-// carregar em eventos de produto/marketing dentro de uma aplicação clínica.
+// O SDK pode adicionar contexto de navegação automaticamente. Em uma aplicação
+// clínica, eventos de produto não devem carregar URL, pathname, título ou referrer.
 const POSTHOG_LOCATION_KEYS = [
   "$current_url",
   "$pathname",
@@ -81,6 +81,7 @@ const POSTHOG_LOCATION_KEYS = [
 
 const CAMPAIGN_KEY = "ms_campaign_attribution";
 const CAMPAIGN_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+const ATTRIBUTION_KEY = "ms_funnel_attribution";
 
 interface StoredCampaign {
   captured_at: number;
@@ -128,16 +129,18 @@ function normalizePath(input: string): string {
     pathname = input.split(/[?#]/)[0] || "/";
   }
 
-  return pathname
-    .split("/")
-    .map((segment) => {
-      if (!segment) return segment;
-      if (/^[0-9]+$/.test(segment)) return ":id";
-      if (/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(segment)) return ":id";
-      if (/^[A-Za-z0-9_-]{20,}$/.test(segment)) return ":id";
-      return cleanString(segment, 48);
-    })
-    .join("/") || "/";
+  return (
+    pathname
+      .split("/")
+      .map((segment) => {
+        if (!segment) return segment;
+        if (/^[0-9]+$/.test(segment)) return ":id";
+        if (/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(segment)) return ":id";
+        if (/^[A-Za-z0-9_-]{20,}$/.test(segment)) return ":id";
+        return cleanString(segment, 48);
+      })
+      .join("/") || "/"
+  );
 }
 
 function safeReferrerHost(referrer?: string | null): string | undefined {
@@ -177,10 +180,9 @@ function sanitizeProperties(props?: Record<string, unknown>): Record<string, unk
 }
 
 /**
- * Última barreira de privacidade antes do envio pelo SDK.
- * O PostHog acrescenta propriedades automáticas a eventos customizados; removemos
- * qualquer contexto de URL/título em eventos de produto e preservamos URL apenas
- * para pageviews públicos que nós mesmos emitimos.
+ * Última barreira antes do envio pelo PostHog. Mantém localização somente no
+ * pageview público que nós mesmos emitimos; eventos internos não carregam contexto
+ * de rota, mesmo que o SDK tente acrescentá-lo automaticamente.
  */
 function sanitizePostHogProperties(
   properties: Record<string, any>,
@@ -219,6 +221,7 @@ function readStoredCampaign(): Record<string, string> {
 
 function captureCampaignContext(): Record<string, string> {
   if (typeof window === "undefined") return {};
+
   try {
     const p = new URLSearchParams(window.location.search);
     const current: Record<string, string> = {};
@@ -226,6 +229,7 @@ function captureCampaignContext(): Record<string, string> {
       const value = p.get(key);
       if (value) current[key] = cleanString(value, 120);
     }
+
     const referrer = safeReferrerHost(document.referrer);
     if (referrer) current.referrer = referrer;
 
@@ -253,24 +257,24 @@ export function initAnalytics() {
   initialized = true;
   captureCampaignContext();
 
-  if (TOKEN) {
-    try {
-      posthog.init(TOKEN, {
-        api_host: HOST,
-        autocapture: false,
-        capture_pageview: false,
-        capture_pageleave: false,
-        disable_session_recording: true,
-        mask_all_text: true,
-        mask_all_element_attributes: true,
-        person_profiles: "identified_only",
-        // Mantido por compatibilidade com a versão instalada. A função atua
-        // depois que o SDK adiciona propriedades automáticas ao evento.
-        sanitize_properties: (properties, eventName) => sanitizePostHogProperties(properties, eventName),
-      });
-    } catch (e) {
-      console.warn("[analytics] posthog init failed", e);
-    }
+  if (!TOKEN) return;
+
+  try {
+    posthog.init(TOKEN, {
+      api_host: HOST,
+      autocapture: false,
+      capture_pageview: false,
+      capture_pageleave: false,
+      disable_session_recording: true,
+      mask_all_text: true,
+      mask_all_element_attributes: true,
+      person_profiles: "identified_only",
+      // Compatível com a versão do SDK instalada no projeto. Atua depois que
+      // propriedades automáticas são adicionadas pelo PostHog.
+      sanitize_properties: (properties, eventName) => sanitizePostHogProperties(properties, eventName),
+    });
+  } catch (e) {
+    console.warn("[analytics] posthog init failed", e);
   }
 }
 
@@ -281,7 +285,6 @@ export async function trackPageView(path: string, referrer?: string) {
   const safePath = normalizePath(path);
   if (!PUBLIC_ANALYTICS_PATHS.has(safePath)) return;
 
-  // PostHog recebe apenas URLs públicas sem query/hash.
   if (TOKEN) {
     try {
       posthog.capture("$pageview", {
@@ -293,23 +296,23 @@ export async function trackPageView(path: string, referrer?: string) {
     }
   }
 
-  // Meta também recebe PageView somente em superfícies públicas.
   try {
     window.fbq?.("track", "PageView");
   } catch {
     /* noop */
   }
 
-  // Registro local apenas para páginas relevantes ao funil de venda.
   if (!LANDING_PATHS.has(safePath)) return;
+
   try {
-    await supabase.from("page_views").insert({
+    const { error } = await supabase.from("page_views").insert({
       path: safePath,
       referrer: safeReferrerHost(referrer ?? document.referrer) ?? null,
       session_id: getSessionId(),
       user_agent: navigator.userAgent.slice(0, 500),
       device: detectDevice(),
     });
+    if (error) console.debug("[analytics] page_view insert failed", error.message);
   } catch (e) {
     console.debug("[analytics] page_view insert failed", e);
   }
@@ -334,7 +337,9 @@ function trackMetaLifecycle(name: string) {
         : name === "trial_started"
           ? "StartTrial"
           : null;
+
   if (!metaEvent) return;
+
   try {
     window.fbq?.("track", metaEvent, { content_name: "MedStation" });
   } catch {
@@ -347,8 +352,16 @@ function trackMetaLifecycle(name: string) {
  * Somente metadados comerciais da allowlist acima podem sair do navegador.
  */
 export function trackLifecycleEvent(
-  name: "lead_created" | "signup_started" | "signup_completed" | "trial_started" | "first_login" |
-    "trial_welcome_viewed" | "first_value_action" | "trial_expired" | "paywall_viewed",
+  name:
+    | "lead_created"
+    | "signup_started"
+    | "signup_completed"
+    | "trial_started"
+    | "first_login"
+    | "trial_welcome_viewed"
+    | "first_value_action"
+    | "trial_expired"
+    | "paywall_viewed",
   props: Record<string, unknown> = {},
   onceKey?: string,
 ) {
@@ -365,12 +378,6 @@ export function trackLifecycleEvent(
   trackEvent(name, { ...utmContext(), ...props });
   trackMetaLifecycle(name);
 }
-
-/* -------------------------------------------------------------------------
- * Funil de conversão e atribuição.
- * ---------------------------------------------------------------------- */
-
-const ATTRIBUTION_KEY = "ms_funnel_attribution";
 
 export type FunnelAttribution = {
   cta?: string;
@@ -426,6 +433,7 @@ export function trackCtaClick(meta: CtaClickMeta) {
     billing_period: meta.billing_period ?? null,
     clicked_at: new Date().toISOString(),
   };
+
   saveAttribution(attribution);
   trackEvent("cta_click", {
     ...utmContext(),
@@ -497,8 +505,11 @@ export function trackSubscriptionCompleted(meta: Record<string, unknown> = {}) {
 }
 
 export function identifyUser(userId: string, traits?: Record<string, unknown>) {
+  if (!userId) return;
+  identifiedUserId = userId;
   initAnalytics();
-  if (!TOKEN || !userId) return;
+  if (!TOKEN) return;
+
   try {
     posthog.identify(userId, {
       account_state: "authenticated",
@@ -510,6 +521,7 @@ export function identifyUser(userId: string, traits?: Record<string, unknown>) {
 }
 
 export function resetAnalyticsIdentity() {
+  identifiedUserId = null;
   if (!TOKEN || !initialized) return;
   try {
     posthog.reset();
@@ -518,19 +530,64 @@ export function resetAnalyticsIdentity() {
   }
 }
 
-const FIRST_VALUE_ENDPOINTS: Record<string, string> = {
-  "/functions/v1/agent-chat": "clinical_assistant",
-  "/functions/v1/structure-anamnesis": "modo_escuta",
-  "/functions/v1/carpe-diem-round": "modo_rotineiro",
-  "/functions/v1/generate-medical-document": "medical_document",
-};
+async function currentUserId(): Promise<string | null> {
+  if (identifiedUserId) return identifiedUserId;
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const id = session?.user?.id ?? null;
+    if (id) identifiedUserId = id;
+    return id;
+  } catch {
+    return null;
+  }
+}
+
+async function trackFirstValue(feature: string) {
+  const userId = await currentUserId();
+  if (!userId) return;
+  trackLifecycleEvent("first_value_action", { feature }, `user:${userId}`);
+}
+
+function hasUsefulStructuredAnamnesis(data: any): boolean {
+  const structure = data?.structure;
+  if (!structure || typeof structure !== "object") return false;
+  return Object.entries(structure).some(
+    ([key, value]) => key !== "detectedSpecialty" && typeof value === "string" && value.trim().length > 0,
+  );
+}
+
+function hasUsefulFunctionResult(functionName: string, data: any): boolean {
+  if (functionName === "structure-anamnesis") return hasUsefulStructuredAnamnesis(data);
+  if (functionName === "carpe-diem-round") {
+    return typeof data?.content === "string" && data.content.trim().length > 0;
+  }
+  if (functionName === "generate-medical-document") {
+    return typeof data?.content === "string" && data.content.trim().length > 0;
+  }
+  return false;
+}
+
+function featureForFunction(functionName: string): string | null {
+  if (functionName === "structure-anamnesis") return "modo_escuta";
+  if (functionName === "carpe-diem-round") return "modo_rotineiro";
+  if (functionName === "generate-medical-document") return "medical_document";
+  return null;
+}
 
 /**
- * Observa apenas o status HTTP de endpoints que geram uma saída útil.
- * Não lê, clona ou envia request/response bodies.
+ * Primeira entrega de valor da conta.
+ *
+ * - AgentChat usa fetch direto, então observamos apenas status/URL do endpoint.
+ * - A versão de supabase-js usada pelo projeto expõe `functions` como getter que
+ *   cria um FunctionsClient por acesso. Fixamos um cliente equivalente no próprio
+ *   objeto Supabase e envolvemos apenas `invoke`, preservando o fetchWithAuth.
+ * - Para Functions, o conteúdo é lido apenas localmente para responder um booleano
+ *   (há saída útil?). Nenhum texto clínico é enviado ao analytics.
  */
 export function installFirstValueResponseTracker(): () => void {
-  if (typeof window === "undefined" || firstValueFetchInstalled) return () => undefined;
+  if (typeof window === "undefined" || firstValueTrackingInstalled) return () => undefined;
 
   const nativeFetch = window.fetch.bind(window);
   const wrappedFetch: typeof window.fetch = async (...args) => {
@@ -544,9 +601,8 @@ export function installFirstValueResponseTracker(): () => void {
             ? input.toString()
             : input.url;
       const pathname = new URL(rawUrl, window.location.origin).pathname;
-      const feature = Object.entries(FIRST_VALUE_ENDPOINTS).find(([endpoint]) => pathname.endsWith(endpoint))?.[1];
-      if (response.ok && feature) {
-        trackLifecycleEvent("first_value_action", { feature }, "global");
+      if (response.ok && pathname.endsWith("/functions/v1/agent-chat")) {
+        void trackFirstValue("clinical_assistant");
       }
     } catch {
       /* tracking must never interfere with product traffic */
@@ -554,11 +610,41 @@ export function installFirstValueResponseTracker(): () => void {
     return response;
   };
 
+  const originalFunctionsDescriptor = Object.getOwnPropertyDescriptor(supabase, "functions");
+  const functionsClient = supabase.functions as any;
+  const nativeInvoke = functionsClient.invoke.bind(functionsClient);
+  functionsClient.invoke = async (functionName: string, options?: unknown) => {
+    const result = await nativeInvoke(functionName, options);
+    try {
+      if (!result?.error && hasUsefulFunctionResult(functionName, result?.data)) {
+        const feature = featureForFunction(functionName);
+        if (feature) void trackFirstValue(feature);
+      }
+    } catch {
+      /* tracking must never interfere with Edge Function calls */
+    }
+    return result;
+  };
+
   window.fetch = wrappedFetch;
-  firstValueFetchInstalled = true;
+  Object.defineProperty(supabase, "functions", {
+    configurable: true,
+    enumerable: false,
+    value: functionsClient,
+  });
+  firstValueTrackingInstalled = true;
 
   return () => {
     if (window.fetch === wrappedFetch) window.fetch = nativeFetch;
-    firstValueFetchInstalled = false;
+    if (originalFunctionsDescriptor) {
+      Object.defineProperty(supabase, "functions", originalFunctionsDescriptor);
+    } else {
+      delete (supabase as any).functions;
+    }
+    firstValueTrackingInstalled = false;
   };
 }
+
+// Exportado apenas para manter uma única fonte do identificador do pixel no bundle
+// e facilitar auditorias futuras sem espalhar o ID por novos arquivos.
+export const META_PIXEL = META_PIXEL_ID;
