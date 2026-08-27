@@ -9,6 +9,7 @@ export type AccessStatus =
   | "courtesy_active"
   | "trial_active"
   | "trial_expired"
+  | "verification_error"
   | "none";
 
 type TrialSource = "signup" | "migration" | "legacy" | null;
