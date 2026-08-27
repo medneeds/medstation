@@ -62,6 +62,8 @@ serve(async (req) => {
         JSON.stringify({
           success: true,
           userExists: true,
+          email,
+          passwordWasSkipped: false,
           accountSetup: "existing_user",
           plan: session.metadata?.plan ?? null,
           amountTotal: session.amount_total ?? null,
@@ -73,8 +75,8 @@ serve(async (req) => {
 
     // SECURITY: a successful Stripe payment proves payment, not ownership of the
     // email typed in Checkout. Never auto-confirm that email and never return a
-    // magic/recovery action link to the browser. The initial account setup must
-    // be completed through an invitation delivered to the mailbox owner.
+    // magic/recovery action link to the browser. Initial access is delivered to
+    // the mailbox owner through a Supabase invitation.
     const origin = req.headers.get("origin") || "https://medstation-ai.com.br";
     const { data: invited, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
       redirectTo: `${origin}/onboarding`,
@@ -94,6 +96,8 @@ serve(async (req) => {
         JSON.stringify({
           success: true,
           userExists: false,
+          email,
+          passwordWasSkipped: true,
           accountSetup: "invite_failed",
           message: "Pagamento confirmado, mas não foi possível enviar o convite de acesso agora.",
           plan: session.metadata?.plan ?? null,
@@ -113,6 +117,8 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         userExists: false,
+        email,
+        passwordWasSkipped: true,
         accountSetup: "invite_sent",
         message: "Pagamento confirmado. Enviamos um convite para você concluir o acesso pelo seu e-mail.",
         plan: session.metadata?.plan ?? null,
