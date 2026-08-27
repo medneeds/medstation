@@ -1,5 +1,6 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient, User } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { summarizeSubscriptions, type MinimalSubscription } from "./stripe-access.ts";
 
 export type AccessStatus =
   | "admin"
@@ -8,9 +9,11 @@ export type AccessStatus =
   | "courtesy_active"
   | "trial_active"
   | "trial_expired"
+  | "verification_error"
   | "none";
 
 export type PricingCohort = "current_unified" | "legacy_pre_unification" | null;
+
 
 export type AccessResolution = {
   status: AccessStatus;
