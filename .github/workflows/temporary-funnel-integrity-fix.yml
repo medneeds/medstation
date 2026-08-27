@@ -1,0 +1,67 @@
+name: Temporary funnel integrity fix
+
+on:
+  push:
+    branches:
+      - audit/trial-entitlement-p0
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, '[funnel-integrity]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/trial-entitlement-p0
+          fetch-depth: 0
+
+      - name: Fix signup completion and landing baseline
+        shell: python
+        run: |
+          from pathlib import Path
+
+          lead = Path('src/components/LeadForm.tsx')
+          text = lead.read_text()
+          old = '''      if (data.user) {\n        trackLifecycleEvent("signup_completed", {\n          source,\n          auth_method: "email",\n          user_id: data.user.id,\n        }, data.user.id);\n\n        try {'''
+          new = '''      if (data.user) {\n        try {'''
+          assert text.count(old) == 1, 'Unexpected email signup_completed block count'
+          lead.write_text(text.replace(old, new, 1))
+
+          gate = Path('src/components/AccessExperienceGate.tsx')
+          text = gate.read_text()
+          old = '''    trackLifecycleEvent("trial_started", {\n      trial_source: trialSource,\n      trial_started_at: trialStartedAt,\n      trial_ends_at: trialEndsAt,\n    }, trialStartedAt ?? undefined);\n    trackLifecycleEvent("first_login", {'''
+          new = '''    trackLifecycleEvent("signup_completed", {\n      trial_source: trialSource,\n      trial_started_at: trialStartedAt,\n    }, trialStartedAt ?? undefined);\n    trackLifecycleEvent("trial_started", {\n      trial_source: trialSource,\n      trial_started_at: trialStartedAt,\n      trial_ends_at: trialEndsAt,\n    }, trialStartedAt ?? undefined);\n    trackLifecycleEvent("first_login", {'''
+          assert text.count(old) == 1, 'Unexpected trial lifecycle anchor count'
+          gate.write_text(text.replace(old, new, 1))
+
+          posthog = Path('supabase/functions/admin-posthog/index.ts')
+          text = posthog.read_text()
+          old = '''          hogql(\n            `SELECT count() AS total, count(DISTINCT person_id) AS users\n             FROM events WHERE ${win} AND event = '$pageview'`,\n            projectId, key,\n          ),'''
+          new = '''          hogql(\n            `SELECT count() AS total, count(DISTINCT person_id) AS users\n             FROM events WHERE ${win} AND event = '$pageview'\n               AND coalesce(nullIf(toString(properties.$pathname), ''), '/') = '/'`,\n            projectId, key,\n          ),'''
+          assert text.count(old) == 1, 'Unexpected funnel pageview query count'
+          posthog.write_text(text.replace(old, new, 1))
+
+      - name: Verify scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only | sort)"
+          expected=$'src/components/AccessExperienceGate.tsx\nsrc/components/LeadForm.tsx\nsupabase/functions/admin-posthog/index.ts'
+          test "$changed" = "$expected"
+          git diff --check
+          grep -F 'trackLifecycleEvent("signup_completed"' src/components/AccessExperienceGate.tsx
+          ! grep -F 'trackLifecycleEvent("signup_completed"' src/components/LeadForm.tsx
+          grep -F "properties.\$pathname" supabase/functions/admin-posthog/index.ts
+
+      - name: Commit patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/components/AccessExperienceGate.tsx src/components/LeadForm.tsx supabase/functions/admin-posthog/index.ts
+          git commit -m "[funnel-integrity] Count completed OAuth signups and landing visits"
+          git push origin HEAD:audit/trial-entitlement-p0
