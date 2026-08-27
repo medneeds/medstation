@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { logAIUsage } from "../_shared/ai-logger.ts";
-import { getUserIdFromAuth, estimateAudioSecondsFromBytes } from "../_shared/auth-helpers.ts";
+import { estimateAudioSecondsFromBytes } from "../_shared/auth-helpers.ts";
+import { accessDeniedResponse, requirePlatformAccess } from "../_shared/access-control.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -34,7 +35,8 @@ serve(async (req) => {
   }
 
   try {
-    const userId = await getUserIdFromAuth(req);
+    const { user } = await requirePlatformAccess(req);
+    const userId = user.id;
     const body = await req.json();
     const { audio, transcript: providedTranscript } = body;
 
@@ -46,7 +48,6 @@ serve(async (req) => {
 
     let transcription = (providedTranscript ?? '').toString().trim();
 
-    // If transcript not provided, transcribe the audio (prefer ElevenLabs Scribe v2 for PT-BR quality)
     if (!transcription) {
       if (!audio) throw new Error('Nenhum áudio nem texto fornecido');
       const binaryAudio = processBase64Chunks(audio);
@@ -54,7 +55,6 @@ serve(async (req) => {
       const audioSeconds = estimateAudioSecondsFromBytes(binaryAudio.byteLength);
 
       if (ELEVENLABS_API_KEY) {
-        console.log('Transcrevendo com ElevenLabs Scribe v2...');
         const sttStart = Date.now();
         const fd = new FormData();
         fd.append('file', blob, 'audio.webm');
@@ -67,7 +67,6 @@ serve(async (req) => {
         });
         if (!resp.ok) {
           const err = await resp.text();
-          console.error('ElevenLabs error:', err);
           void logAIUsage({
             userId, assistant: 'consultorio', functionName: 'transcribe-case',
             model: 'elevenlabs/scribe_v2', audioSeconds, latencyMs: Date.now() - sttStart,
@@ -82,7 +81,6 @@ serve(async (req) => {
           model: 'elevenlabs/scribe_v2', audioSeconds, latencyMs: Date.now() - sttStart, status: 'ok',
         });
       } else if (OPENAI_API_KEY) {
-        console.log('Transcrevendo com Whisper (fallback)...');
         const sttStart = Date.now();
         const fd = new FormData();
         fd.append('file', blob, 'audio.webm');
@@ -188,6 +186,15 @@ Campos:
       },
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
   } catch (error: any) {
+    if (error instanceof Error && error.message === 'ACCESS_REQUIRED') {
+      return accessDeniedResponse((error as Error & { access?: any }).access);
+    }
+    if (error instanceof Error && error.message === 'UNAUTHENTICATED') {
+      return new Response(JSON.stringify({ success: false, error: 'Não autorizado' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     console.error('Erro:', error);
     return new Response(JSON.stringify({ success: false, error: error.message || 'Erro desconhecido' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
