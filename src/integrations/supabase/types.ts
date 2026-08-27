@@ -325,6 +325,42 @@ export type Database = {
           },
         ]
       }
+      commercial_policy: {
+        Row: {
+          created_at: string
+          current_monthly_price_cents: number
+          current_yearly_price_cents: number
+          effective_at: string
+          future_monthly_price_cents: number | null
+          future_yearly_price_cents: number | null
+          id: string
+          legacy_full_access_until: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_monthly_price_cents: number
+          current_yearly_price_cents: number
+          effective_at: string
+          future_monthly_price_cents?: number | null
+          future_yearly_price_cents?: number | null
+          id: string
+          legacy_full_access_until: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_monthly_price_cents?: number
+          current_yearly_price_cents?: number
+          effective_at?: string
+          future_monthly_price_cents?: number | null
+          future_yearly_price_cents?: number | null
+          id?: string
+          legacy_full_access_until?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           agent_type: string
@@ -1526,6 +1562,36 @@ export type Database = {
           id?: string
           metadata?: Json | null
           reason?: string
+        }
+        Relationships: []
+      }
+      user_access: {
+        Row: {
+          created_at: string
+          trial_consumed_at: string
+          trial_ends_at: string
+          trial_source: string
+          trial_started_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          trial_consumed_at: string
+          trial_ends_at: string
+          trial_source?: string
+          trial_started_at: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          trial_consumed_at?: string
+          trial_ends_at?: string
+          trial_source?: string
+          trial_started_at?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
