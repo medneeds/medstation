@@ -99,12 +99,15 @@ export function TrialWelcomeDialog() {
   );
 }
 
+const ALWAYS_ACCESSIBLE_PATHS = new Set(["/settings", "/pricing", "/precos", "/planos"]);
+
 export function AccessContentGate({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const { accessActive, accessStatus, trialEndsAt, loading } = useSubscription();
+  const alwaysAccessible = ALWAYS_ACCESSIBLE_PATHS.has(pathname);
 
   useEffect(() => {
-    if (loading || accessActive || pathname === "/settings") return;
+    if (loading || accessActive || alwaysAccessible) return;
     const dedupe = `${accessStatus}:${trialEndsAt ?? "none"}`;
     if (accessStatus === "trial_expired") {
       trackLifecycleEvent("trial_expired", {
@@ -117,13 +120,13 @@ export function AccessContentGate({ children }: { children: ReactNode }) {
       trial_ends_at: trialEndsAt,
       blocked_path: pathname,
     });
-  }, [loading, accessActive, accessStatus, trialEndsAt, pathname]);
+  }, [loading, accessActive, accessStatus, trialEndsAt, pathname, alwaysAccessible]);
 
   if (loading) {
     return <div className="py-16 text-center text-sm text-muted-foreground">Verificando seu acesso...</div>;
   }
 
-  if (accessActive || pathname === "/settings") return <>{children}</>;
+  if (accessActive || alwaysAccessible) return <>{children}</>;
 
   const expired = accessStatus === "trial_expired";
 
