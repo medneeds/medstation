@@ -30,7 +30,10 @@ export type AccessResolution = {
   pricingCohort: PricingCohort;
   legacyFullAccessUntil: string | null;
   pricingReviewDue: boolean;
+  /** true when Stripe could not be reached and access came from other evidence. */
+  billingCheckDegraded: boolean;
 };
+
 
 const CURRENT_UNIFIED_PRODUCT_ID = "prod_V4jGKeBPH2hGYg";
 
