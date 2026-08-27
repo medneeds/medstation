@@ -89,7 +89,7 @@ const agentModules = [
     icon: FlaskConical,
     url: "/examinus",
     color: "text-examinus",
-    isPremium: false,
+    isPremium: true,
   },
   {
     title: "Scorius",
@@ -366,11 +366,6 @@ export default function Dashboard() {
                       <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
                         <Crown className="w-3 h-3 mr-1" />
                         Pro
-                      </Badge>
-                    )}
-                    {!module.isPremium && (
-                      <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-500/20">
-                        Grátis
                       </Badge>
                     )}
                   </div>

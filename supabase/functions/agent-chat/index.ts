@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { resolveUserAccess, accessDeniedResponse } from "../_shared/access-control.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -164,6 +165,12 @@ serve(async (req) => {
     }
 
     console.log(`Authenticated user: ${user.id}`);
+
+    // Commercial entitlement must be resolved before rate limiting or any AI cost.
+    const access = await resolveUserAccess(user);
+    if (!access.canUsePlatform) {
+      return accessDeniedResponse(access);
+    }
 
     // Rate limiting check (50 messages per hour)
     const RATE_LIMIT = 50;

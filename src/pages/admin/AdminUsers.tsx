@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Search, RefreshCw, Shield, Gift, KeyRound, Loader2, ShieldCheck, ShieldOff, Gift as GiftIcon } from "lucide-react";
+import { Search, RefreshCw, Gift, KeyRound, Loader2, ShieldCheck, ShieldOff, Gift as GiftIcon } from "lucide-react";
 
 interface UserRow {
   user_id: string;
@@ -27,7 +27,13 @@ interface UserRow {
   stripe_status: string;
   plan_label?: string | null;
   in_trial?: boolean;
+  trial_expired?: boolean;
+  trial_started_at?: string | null;
   trial_ends_at?: string | null;
+  trial_source?: "signup" | "migration" | null;
+  pricing_cohort?: "current_unified" | "legacy_pre_unification" | null;
+  legacy_full_access_until?: string | null;
+  pricing_review_due?: boolean;
   access_active?: boolean;
   subscription_end: string | null;
   courtesy: any;
@@ -37,6 +43,7 @@ const STATUS_COLORS: Record<string, string> = {
   active: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
   trialing: "bg-sky-500/10 text-sky-600 border-sky-500/20",
   trial: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
+  trial_expired: "bg-orange-500/10 text-orange-600 border-orange-500/20",
   past_due: "bg-amber-500/10 text-amber-600 border-amber-500/20",
   canceled: "bg-red-500/10 text-red-600 border-red-500/20",
   none: "bg-muted text-muted-foreground border-border",
@@ -48,13 +55,13 @@ const STATUS_LABELS: Record<string, string> = {
   active: "Assinante",
   trialing: "Trial Stripe",
   trial: "Teste 7 dias",
+  trial_expired: "Teste expirado",
   past_due: "Pagamento pendente",
   canceled: "Cancelado",
   none: "Sem assinatura",
   courtesy: "Cortesia",
   admin: "Admin",
 };
-
 
 interface Stats {
   total_users: number;
@@ -66,6 +73,11 @@ interface Stats {
   admin: number;
   none: number;
   paying_total: number;
+  free_trial?: number;
+  free_trial_expired?: number;
+  access_active?: number;
+  legacy_pricing?: number;
+  pricing_review_due?: number;
   mrr_cents: number;
   currency: string;
 }
@@ -134,15 +146,18 @@ export default function AdminUsers() {
       </header>
 
       {stats && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-11 gap-2 text-xs">
           {[
-            { label: "Ativos", value: stats.active, color: "text-emerald-600" },
-            { label: "Trial", value: stats.trialing, color: "text-sky-600" },
+            { label: "Assinantes", value: stats.active, color: "text-emerald-600" },
+            { label: "Teste 7 dias", value: stats.free_trial ?? 0, color: "text-indigo-600" },
+            { label: "Teste expirado", value: stats.free_trial_expired ?? 0, color: "text-orange-600" },
+            { label: "Trial Stripe", value: stats.trialing, color: "text-sky-600" },
             { label: "Em atraso", value: stats.past_due, color: "text-amber-600" },
             { label: "Cortesia", value: stats.courtesy, color: "text-purple-600" },
-            { label: "Cancelados", value: stats.canceled, color: "text-red-600" },
-            { label: "Admins", value: stats.admin, color: "text-primary" },
             { label: "Sem plano", value: stats.none, color: "text-muted-foreground" },
+            { label: "Admins", value: stats.admin, color: "text-primary" },
+            { label: "Legado protegido", value: stats.legacy_pricing ?? 0, color: "text-violet-600" },
+            { label: "Revisar preço", value: stats.pricing_review_due ?? 0, color: "text-rose-600" },
             { label: "MRR", value: fmtMoney(stats.mrr_cents, stats.currency), color: "text-emerald-600" },
           ].map((s) => (
             <Card key={s.label} className="px-3 py-2">
@@ -153,8 +168,8 @@ export default function AdminUsers() {
         </div>
       )}
 
-      <div className="flex gap-2 items-center">
-        <div className="relative flex-1 max-w-md">
+      <div className="flex gap-2 items-center flex-wrap">
+        <div className="relative flex-1 min-w-[240px] max-w-md">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             className="pl-8"
@@ -165,15 +180,17 @@ export default function AdminUsers() {
           />
         </div>
         <Select value={status} onValueChange={(v) => { setStatus(v); setPage(1); }}>
-          <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos os status</SelectItem>
             <SelectItem value="access_active">Com acesso ativo</SelectItem>
             <SelectItem value="paying">Pagantes (todos)</SelectItem>
-            <SelectItem value="active">Ativos</SelectItem>
-            <SelectItem value="trial">Teste 7 dias</SelectItem>
+            <SelectItem value="active">Assinantes ativos</SelectItem>
+            <SelectItem value="trial">Teste 7 dias ativo</SelectItem>
+            <SelectItem value="trial_expired">Teste 7 dias expirado</SelectItem>
+            <SelectItem value="legacy_pricing">Preço legado protegido</SelectItem>
+            <SelectItem value="pricing_review_due">Revisão de preço pendente</SelectItem>
             <SelectItem value="trialing">Trial Stripe</SelectItem>
-
             <SelectItem value="courtesy">Cortesia</SelectItem>
             <SelectItem value="past_due">Em atraso</SelectItem>
             <SelectItem value="canceled">Cancelados</SelectItem>
@@ -193,7 +210,7 @@ export default function AdminUsers() {
                 <th className="text-left px-4 py-2">Nome</th>
                 <th className="text-left px-4 py-2">Contato / CRM</th>
                 <th className="text-left px-4 py-2">Status</th>
-                <th className="text-left px-4 py-2">Plano</th>
+                <th className="text-left px-4 py-2">Acesso / plano</th>
                 <th className="text-left px-4 py-2">Criado</th>
                 <th className="text-left px-4 py-2">Último login</th>
               </tr>
@@ -218,14 +235,17 @@ export default function AdminUsers() {
                       {STATUS_LABELS[r.effective_status] || r.effective_status}
                     </Badge>
                   </td>
-                  <td className="px-4 py-2 text-xs text-muted-foreground max-w-[200px] truncate">
-                    {r.plan_label || (r.in_trial ? "Teste de 7 dias" : "—")}
+                  <td className="px-4 py-2 text-xs text-muted-foreground max-w-[220px]">
+                    {r.plan_label || (r.in_trial
+                      ? `Teste até ${r.trial_ends_at ? new Date(r.trial_ends_at).toLocaleDateString("pt-BR") : "—"}`
+                      : r.trial_expired
+                        ? `Teste expirado${r.trial_ends_at ? ` em ${new Date(r.trial_ends_at).toLocaleDateString("pt-BR")}` : ""}`
+                        : "—")}
                   </td>
                   <td className="px-4 py-2 text-muted-foreground text-xs">{new Date(r.created_at).toLocaleDateString("pt-BR")}</td>
                   <td className="px-4 py-2 text-muted-foreground text-xs">{r.last_sign_in_at ? new Date(r.last_sign_in_at).toLocaleDateString("pt-BR") : "—"}</td>
                 </tr>
               ))}
-
             </tbody>
           </table>
         </div>
@@ -325,8 +345,38 @@ function UserDetailSheet({ user, onClose, onChanged }: { user: UserRow | null; o
               </div>
               <div>
                 <div className="text-xs text-muted-foreground">Status efetivo</div>
-                <Badge variant="outline" className={STATUS_COLORS[user.effective_status]}>{user.effective_status}</Badge>
+                <Badge variant="outline" className={STATUS_COLORS[user.effective_status]}>
+                  {STATUS_LABELS[user.effective_status] || user.effective_status}
+                </Badge>
               </div>
+              {user.trial_started_at && (
+                <div className="grid grid-cols-2 gap-3 rounded-md border border-border/60 p-3">
+                  <div>
+                    <div className="text-xs text-muted-foreground">Início do teste</div>
+                    <div>{new Date(user.trial_started_at).toLocaleDateString("pt-BR")}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">Fim do teste</div>
+                    <div>{user.trial_ends_at ? new Date(user.trial_ends_at).toLocaleDateString("pt-BR") : "—"}</div>
+                  </div>
+                  <div className="col-span-2">
+                    <div className="text-xs text-muted-foreground">Origem</div>
+                    <div className="text-xs">{user.trial_source === "signup" ? "Novo cadastro" : user.trial_source === "migration" ? "Conta existente migrada" : "—"}</div>
+                  </div>
+                </div>
+              )}
+              {user.pricing_cohort === "legacy_pre_unification" && (
+                <div className="p-3 rounded-md bg-violet-500/5 border border-violet-500/20">
+                  <div className="text-xs font-medium text-violet-600">Coorte comercial legada</div>
+                  <div className="text-xs text-muted-foreground mt-1">Acesso integral garantido por 6 meses após a unificação.</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Proteção até: {user.legacy_full_access_until ? new Date(user.legacy_full_access_until).toLocaleDateString("pt-BR") : "—"}
+                  </div>
+                  {user.pricing_review_due && (
+                    <Badge variant="outline" className="mt-2 bg-rose-500/10 text-rose-600 border-rose-500/20">Revisão de preço pendente</Badge>
+                  )}
+                </div>
+              )}
               <div>
                 <div className="text-xs text-muted-foreground">Fim assinatura</div>
                 <div>{user.subscription_end ? new Date(user.subscription_end).toLocaleDateString("pt-BR") : "—"}</div>
@@ -342,7 +392,7 @@ function UserDetailSheet({ user, onClose, onChanged }: { user: UserRow | null; o
               </div>
               {user.courtesy && (
                 <div className="p-3 rounded-md bg-purple-500/5 border border-purple-500/20">
-                  <div className="text-xs font-medium text-purple-600 mb-1">Cortesia ativa</div>
+                  <div className="text-xs font-medium text-purple-600 mb-1">Cortesia</div>
                   <div className="text-xs text-muted-foreground">{user.courtesy.reason}</div>
                   <div className="text-xs text-muted-foreground mt-1">
                     Expira: {user.courtesy.expires_at ? new Date(user.courtesy.expires_at).toLocaleDateString("pt-BR") : "Indefinido"}

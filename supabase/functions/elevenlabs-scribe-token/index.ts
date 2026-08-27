@@ -1,3 +1,5 @@
+import { accessDeniedResponse, requirePlatformAccess } from "../_shared/access-control.ts";
+
 // Edge function: returns a single-use realtime Scribe token (15min validity)
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,6 +12,8 @@ Deno.serve(async (req) => {
   }
 
   try {
+    await requirePlatformAccess(req);
+
     const apiKey = Deno.env.get('ELEVENLABS_API_KEY');
     if (!apiKey) {
       return new Response(
@@ -41,6 +45,15 @@ Deno.serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (err) {
+    if (err instanceof Error && err.message === 'ACCESS_REQUIRED') {
+      return accessDeniedResponse((err as Error & { access?: any }).access);
+    }
+    if (err instanceof Error && err.message === 'UNAUTHENTICATED') {
+      return new Response(JSON.stringify({ error: 'Não autorizado' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     console.error('Token function error:', err);
     return new Response(
       JSON.stringify({ error: (err as Error).message }),

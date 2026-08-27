@@ -197,10 +197,8 @@ export default function Pricing() {
               </p>
 
               <div className="mt-4 rounded-md border border-primary/25 bg-primary/5 p-3 text-[11px] md:text-xs leading-relaxed">
-                <strong className="text-primary">Aviso de reajuste:</strong> em breve o plano passa a
-                custar {brl(99.9)} por mês ou {brl(999.9)} por ano. Quem assinar agora mantém o valor
-                atual por pelo menos 12 meses.
-
+                <strong className="text-primary">Preço vigente:</strong> este é o valor atual do plano único MedStation.
+                Eventuais reajustes futuros serão definidos conforme a evolução do produto e comunicados antes de qualquer mudança na cobrança.
               </div>
 
               <Button

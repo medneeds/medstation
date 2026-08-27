@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { lovable } from "@/integrations/lovable/index";
+import { trackLifecycleEvent } from "@/lib/analytics";
 
 interface GoogleAuthButtonProps {
   label?: string;
@@ -11,18 +12,18 @@ interface GoogleAuthButtonProps {
   redirectTo?: string;
   /** Hide the divider rendered below the button */
   hideDivider?: boolean;
+  /** Mark this OAuth action as acquisition/signup instead of ordinary sign-in. */
+  trackAsSignup?: boolean;
+  /** Acquisition surface, such as lp3. */
+  source?: string;
 }
 
-/**
- * Botão de login com Google.
- * - Preserva a rota de origem (state.from) para retomar após o callback
- * - Usa prompt=select_account para permitir trocar de conta facilmente
- * - Tratamento de erro humanizado e estado de carregamento acessível
- */
 export function GoogleAuthButton({
   label = "Continuar com Google",
   redirectTo,
   hideDivider = false,
+  trackAsSignup = false,
+  source = "auth",
 }: GoogleAuthButtonProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -39,15 +40,26 @@ export function GoogleAuthButton({
     if (loading) return;
     setLoading(true);
 
-    // Constrói o redirect_uri preservando o destino pretendido após o callback OAuth.
     const destination = resolveDestination();
     const redirectUri = `${window.location.origin}${destination}`;
+
+    if (trackAsSignup) {
+      trackLifecycleEvent("signup_started", {
+        source,
+        auth_method: "google",
+        destination,
+      });
+      try {
+        localStorage.setItem("ms_google_signup_pending", JSON.stringify({ source, destination }));
+      } catch {
+        /* acquisition attribution is best-effort */
+      }
+    }
 
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: redirectUri,
         extraParams: {
-          // Sempre mostra o seletor de contas — evita logar com a conta errada por engano.
           prompt: "select_account",
         },
       });
@@ -65,12 +77,7 @@ export function GoogleAuthButton({
         return;
       }
 
-      if (result.redirected) {
-        // Navegador será redirecionado para o Google; mantém o estado de loading.
-        return;
-      }
-
-      // Sessão já estabelecida sem redirect — navega via SPA, sem full reload.
+      if (result.redirected) return;
       navigate(destination, { replace: true });
     } catch (err) {
       console.error("Google sign-in error", err);

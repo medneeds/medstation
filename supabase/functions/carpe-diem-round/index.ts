@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { logAIUsage } from "../_shared/ai-logger.ts";
+import { accessDeniedResponse, requirePlatformAccess } from "../_shared/access-control.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,31 +29,17 @@ REGRAS CLÍNICAS:
 Responda somente com o texto da evolução, pronto para copiar no prontuário.`;
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("Não autorizado");
-
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } },
-    );
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) throw new Error("Usuário não autenticado");
-
+    const { user } = await requirePlatformAccess(req);
     const body = await req.json();
     const patient = body?.patient ?? {};
     const previous = typeof body?.previousRound === "string" ? body.previousRound.slice(0, 20000) : "";
     const changes = typeof body?.changes === "string" ? body.changes.slice(0, 10000).trim() : "";
     const roundDate = typeof body?.roundDate === "string" ? body.roundDate.slice(0, 20) : "";
 
-    if (!changes && !previous) {
-      throw new Error("Informe as mudanças do dia ou uma evolução anterior");
-    }
+    if (!changes && !previous) throw new Error("Informe as mudanças do dia ou uma evolução anterior");
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY não configurada");
@@ -135,6 +121,15 @@ Escreva a evolução de hoje.`;
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error: any) {
+    if (error instanceof Error && error.message === "ACCESS_REQUIRED") {
+      return accessDeniedResponse((error as Error & { access?: any }).access);
+    }
+    if (error instanceof Error && error.message === "UNAUTHENTICATED") {
+      return new Response(JSON.stringify({ error: "Não autorizado" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     return new Response(JSON.stringify({ error: error?.message || "Erro inesperado" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

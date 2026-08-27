@@ -11,14 +11,7 @@ const logStep = (step: string, details?: any) => {
   console.log(`[GUEST-CHECKOUT] ${step}${detailsStr}`);
 };
 
-// Price IDs - LIVE MODE (Produção)
-const PRICES: Record<string, string> = {
-  agents_monthly: "price_1Sj4FbACiwQRloW42xp6WqYH",
-  agents_yearly: "price_1TVe5RACiwQRloW4KsjZ5QsK",
-  consultorio_monthly: "price_1TVgYdACiwQRloW4w2R2GJ2i",
-  consultorio_yearly: "price_1TVgq1ACiwQRloW4w3EKIaBC",
-  pro2_bundle: "price_1TVga8ACiwQRloW4fPGUzAF9",
-  pro2_bundle_yearly: "price_1TVgqWACiwQRloW4BwMkM74x",
+const CURRENT_PRICES: Record<string, string> = {
   pro_completo: "price_1U4Zo7ACiwQRloW4cJIn0jYn",
   pro_completo_yearly: "price_1U4ZoTACiwQRloW4f30FmEPb",
 };
@@ -35,14 +28,17 @@ serve(async (req) => {
     const email = body.email?.trim().toLowerCase();
     const billingPeriod = body.billingPeriod || "monthly";
     const couponCode = body.couponCode?.trim();
-    let plan: string | undefined = body.plan;
+    const requestedPlan: string | undefined = body.plan;
+    const plan = requestedPlan || (billingPeriod === "yearly" ? "pro_completo_yearly" : "pro_completo");
 
-    if (!plan) {
-      plan = billingPeriod === "yearly" ? "agents_yearly" : "agents_monthly";
-    }
-
-    if (!PRICES[plan]) {
-      throw new Error(`Plano inválido para guest checkout: ${plan}`);
+    if (!CURRENT_PRICES[plan]) {
+      return new Response(
+        JSON.stringify({
+          error: "Este plano legado não está mais disponível para novas contratações. Escolha o plano único MedStation Completo.",
+          code: "LEGACY_PLAN_RETIRED",
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     if (!email) {
@@ -56,9 +52,20 @@ serve(async (req) => {
     });
 
     const customers = await stripe.customers.list({ email, limit: 1 });
-    let customerId;
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
+    const customerId = customers.data.length > 0 ? customers.data[0].id : undefined;
+
+    if (customerId) {
+      const existingSubs = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 20 });
+      const existingActive = existingSubs.data.find((s) => ["active", "trialing", "past_due"].includes(s.status));
+      if (existingActive) {
+        return new Response(
+          JSON.stringify({
+            error: "Já existe uma assinatura ativa para este e-mail. Entre na sua conta para continuar.",
+            code: "EXISTING_SUBSCRIPTION",
+          }),
+          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
     }
 
     const origin = req.headers.get("origin") || "https://medstation.ai";
@@ -66,13 +73,10 @@ serve(async (req) => {
     const sessionConfig: any = {
       customer: customerId,
       customer_email: customerId ? undefined : email,
-      line_items: [{ price: PRICES[plan], quantity: 1 }],
+      line_items: [{ price: CURRENT_PRICES[plan], quantity: 1 }],
       mode: "subscription",
       success_url: `${origin}/obrigado?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?canceled=true`,
-      // Senha agora é OPCIONAL: Apple Pay / Google Pay / Link não preenchem
-      // custom_fields. Se o usuário pagar via wallet, criamos a conta sem
-      // senha e oferecemos definir depois pelo fluxo de recuperação.
       custom_fields: [
         {
           key: "password",
@@ -81,12 +85,11 @@ serve(async (req) => {
           optional: true,
         },
       ],
-      // Maximiza disponibilidade de wallets (Apple Pay, Google Pay, Link).
       payment_method_collection: "always",
       phone_number_collection: { enabled: false },
       billing_address_collection: "auto",
       allow_promotion_codes: !couponCode,
-      metadata: { plan, billingPeriod },
+      metadata: { plan, billingPeriod, pricing_cohort: "current_unified" },
     };
 
     if (couponCode) {

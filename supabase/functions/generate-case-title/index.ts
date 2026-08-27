@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { accessDeniedResponse, requirePlatformAccess } from "../_shared/access-control.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,6 +13,7 @@ serve(async (req) => {
   }
 
   try {
+    await requirePlatformAccess(req);
     const { chief_complaint, notes } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
@@ -34,12 +36,7 @@ Retorne apenas o título, sem aspas ou formatação adicional.`;
       },
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash-lite',
-        messages: [
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
+        messages: [{ role: 'user', content: prompt }],
         max_tokens: 100
       }),
     });
@@ -47,14 +44,8 @@ Retorne apenas o título, sem aspas ou formatação adicional.`;
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Erro na API:', errorText);
-      
-      if (response.status === 429) {
-        throw new Error('Limite de requisições excedido. Aguarde alguns segundos.');
-      }
-      if (response.status === 402) {
-        throw new Error('Créditos esgotados. Entre em contato com o suporte.');
-      }
-      
+      if (response.status === 429) throw new Error('Limite de requisições excedido. Aguarde alguns segundos.');
+      if (response.status === 402) throw new Error('Créditos esgotados. Entre em contato com o suporte.');
       throw new Error('Erro ao gerar título');
     }
 
@@ -63,20 +54,23 @@ Retorne apenas o título, sem aspas ou formatação adicional.`;
 
     return new Response(
       JSON.stringify({ title }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
 
   } catch (error: any) {
+    if (error instanceof Error && error.message === 'ACCESS_REQUIRED') {
+      return accessDeniedResponse((error as Error & { access?: any }).access);
+    }
+    if (error instanceof Error && error.message === 'UNAUTHENTICATED') {
+      return new Response(JSON.stringify({ error: 'Não autorizado' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     console.error('Erro:', error);
     return new Response(
       JSON.stringify({ error: error.message || 'Erro ao gerar título' }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
 });

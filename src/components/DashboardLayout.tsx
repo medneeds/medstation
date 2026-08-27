@@ -17,6 +17,7 @@ import { LegacyTrialInviteDialog } from "@/components/LegacyTrialInviteDialog";
 import { NpsWidget } from "@/components/NpsWidget";
 import { AssistantPromoEngine } from "@/components/AssistantPromoEngine";
 import { ConciergeInternal } from "@/components/ConciergeInternal";
+import { AccessContentGate, TrialWelcomeDialog } from "@/components/AccessExperienceGate";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -64,7 +65,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   if (isEmbed) {
     return (
       <main className="min-h-screen w-full bg-background overflow-x-hidden p-3 md:p-4">
-        {children}
+        <AccessContentGate>{children}</AccessContentGate>
       </main>
     );
   }
@@ -86,14 +87,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="flex min-h-screen w-full bg-background">
           <AppSidebar />
           <div className="flex flex-1 flex-col min-w-0">
-            {/* Editorial top bar — hairline only, no shadow */}
             <header className="sticky top-0 z-20 flex h-14 items-center justify-between hairline-b bg-background/85 backdrop-blur-md px-3 md:px-5">
               <div className="flex items-center gap-3 md:gap-5 flex-1 min-w-0">
                 <SidebarTrigger
                   className="h-8 w-8 rounded-sm border border-hairline hover:bg-accent hover:border-foreground/40 transition-colors"
                 />
 
-                {/* Editorial breadcrumb */}
                 <div className="hidden md:flex items-center gap-3 min-w-0">
                   <span className="font-mono text-2xs uppercase tracking-mono text-muted-foreground/70">
                     MedStation
@@ -104,7 +103,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   </span>
                 </div>
 
-                {/* Search trigger — opens command palette */}
                 <button
                   type="button"
                   onClick={() => setSearchOpen(true)}
@@ -137,15 +135,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               </div>
             </header>
 
-            {/* Main */}
             <main className="flex-1 overflow-x-hidden bg-background p-4 md:p-6 lg:p-8">
               <AnnouncementsBanner />
               <TrialCountdownBanner />
-              {children}
+              <AccessContentGate>{children}</AccessContentGate>
             </main>
           </div>
         </div>
       </SidebarProvider>
+      <TrialWelcomeDialog />
       <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
       <SupportChat />
       <OnboardingTour />
@@ -154,6 +152,5 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <ConciergeInternal open={conciergeOpen} onOpenChange={setConciergeOpen} />
       <LegacyTrialInviteDialog />
     </>
-
   );
 }

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { logAIUsage } from "../_shared/ai-logger.ts";
+import { accessDeniedResponse, requirePlatformAccess } from "../_shared/access-control.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,6 +14,7 @@ serve(async (req) => {
   }
 
   try {
+    const { user } = await requirePlatformAccess(req);
     const { document_type, diagnosis, observations, cid_code, validity_days } =
       await req.json();
 
@@ -21,7 +23,6 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY não configurada");
     }
 
-    // Definir prompt baseado no tipo de documento
     let systemPrompt = "";
     let userPrompt = "";
 
@@ -72,7 +73,6 @@ O atestado deve ser objetivo e seguir as normas do CFM.`;
 
     console.log("Gerando documento:", document_type);
 
-    // Chamar Lovable AI
     const aiResponse = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
       {
@@ -105,6 +105,7 @@ O atestado deve ser objetivo e seguir as normas do CFM.`;
     }
 
     void logAIUsage({
+      userId: user.id,
       assistant: "documentos",
       functionName: "generate-medical-document",
       model: "google/gemini-3-flash-preview",
@@ -115,7 +116,6 @@ O atestado deve ser objetivo e seguir as normas do CFM.`;
       metadata: { document_type },
     });
 
-    // Gerar título se não fornecido
     let title = "";
     switch (document_type) {
       case "laudo":
@@ -140,6 +140,15 @@ O atestado deve ser objetivo e seguir as normas do CFM.`;
       }
     );
   } catch (error) {
+    if (error instanceof Error && error.message === "ACCESS_REQUIRED") {
+      return accessDeniedResponse((error as Error & { access?: any }).access);
+    }
+    if (error instanceof Error && error.message === "UNAUTHENTICATED") {
+      return new Response(JSON.stringify({ success: false, error: "Não autorizado" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     console.error("Erro ao gerar documento:", error);
     const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
     return new Response(

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { accessDeniedResponse, requirePlatformAccess } from "../_shared/access-control.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,44 +13,17 @@ serve(async (req) => {
   }
 
   try {
-    // Authentication check
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: "Não autorizado" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const token = authHeader.replace("Bearer ", "");
+    const { user } = await requirePlatformAccess(req);
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
 
-    // Verify user authentication
-    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey);
-    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
-    
-    if (authError || !user) {
-      console.error("Authentication failed:", authError);
-      return new Response(
-        JSON.stringify({ error: "Não autorizado" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    console.log(`Authenticated user: ${user.id}`);
-
-    // Rate limiting check (5 audio transcriptions per hour)
     const RATE_LIMIT = 5;
     const WINDOW_MINUTES = 60;
     const now = new Date();
     const windowStart = new Date(now.getTime() - WINDOW_MINUTES * 60 * 1000);
-
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check rate limit
     const { data: rateLimitData, error: rateLimitError } = await supabase
       .from("rate_limits")
       .select("*")
@@ -60,55 +34,43 @@ serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
-    if (rateLimitError) {
-      console.error("Rate limit check error:", rateLimitError);
-    }
+    if (rateLimitError) console.error("Rate limit check error:", rateLimitError);
 
     if (rateLimitData && rateLimitData.request_count >= RATE_LIMIT) {
       const resetTime = new Date(new Date(rateLimitData.window_start).getTime() + WINDOW_MINUTES * 60 * 1000);
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: "Limite de transcrições de áudio excedido. Tente novamente mais tarde.",
           resetAt: resetTime.toISOString()
         }),
-        { 
-          status: 429, 
-          headers: { 
-            ...corsHeaders, 
+        {
+          status: 429,
+          headers: {
+            ...corsHeaders,
             "Content-Type": "application/json",
             "X-RateLimit-Limit": RATE_LIMIT.toString(),
             "X-RateLimit-Remaining": "0",
             "X-RateLimit-Reset": resetTime.toISOString()
-          } 
+          }
         }
       );
     }
 
-    // Update or create rate limit record
     if (rateLimitData) {
       await supabase
         .from("rate_limits")
-        .update({ 
-          request_count: rateLimitData.request_count + 1,
-          updated_at: now.toISOString()
-        })
+        .update({ request_count: rateLimitData.request_count + 1, updated_at: now.toISOString() })
         .eq("id", rateLimitData.id);
     } else {
-      await supabase
-        .from("rate_limits")
-        .insert({
-          user_id: user.id,
-          function_name: "transcribe-audio",
-          request_count: 1,
-          window_start: now.toISOString()
-        });
+      await supabase.from("rate_limits").insert({
+        user_id: user.id,
+        function_name: "transcribe-audio",
+        request_count: 1,
+        window_start: now.toISOString()
+      });
     }
 
-    console.log(`Rate limit check passed for user ${user.id}`);
-
     const { evidenceId } = await req.json();
-
-    // Validate input
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!evidenceId || !uuidRegex.test(evidenceId)) {
       return new Response(
@@ -117,52 +79,31 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Transcribing audio for evidence: ${evidenceId}`);
-
-    // Get evidence data and verify user owns it through case
     const { data: evidence, error: fetchError } = await supabase
       .from("evidences")
-      .select(`
-        *,
-        cases!inner(user_id)
-      `)
+      .select(`*, cases!inner(user_id)`)
       .eq("id", evidenceId)
       .single();
 
-    if (fetchError) {
-      console.error("Error fetching evidence:", fetchError);
-      throw fetchError;
-    }
+    if (fetchError) throw fetchError;
 
-    // Verify user owns the case
     if (evidence.cases?.user_id !== user.id) {
-      console.error("Access denied: user does not own this evidence");
       return new Response(
         JSON.stringify({ error: "Acesso negado" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    if (!evidence.file_path) {
-      throw new Error("No file path found for this evidence");
-    }
+    if (!evidence.file_path) throw new Error("No file path found for this evidence");
 
-    console.log(`Transcribing audio file: ${evidence.file_path}`);
-
-    // Download audio file from storage
     const { data: fileData, error: downloadError } = await supabase.storage
       .from("evidences")
       .download(evidence.file_path);
-
     if (downloadError) throw downloadError;
 
-    // Convert audio to base64
     const arrayBuffer = await fileData.arrayBuffer();
     const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
 
-    console.log("Sending audio to Lovable AI for transcription");
-
-    // Use Gemini Flash for audio transcription
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -188,16 +129,8 @@ Formate a transcrição de forma clara e organizada, separando por parágrafos q
           {
             role: "user",
             content: [
-              {
-                type: "text",
-                text: "Transcreva este áudio médico:",
-              },
-              {
-                type: "audio_url",
-                audio_url: {
-                  url: `data:audio/webm;base64,${base64Audio}`,
-                },
-              },
+              { type: "text", text: "Transcreva este áudio médico:" },
+              { type: "audio_url", audio_url: { url: `data:audio/webm;base64,${base64Audio}` } },
             ],
           },
         ],
@@ -205,7 +138,6 @@ Formate a transcrição de forma clara e organizada, separando por parágrafos q
     });
 
     if (!aiResponse.ok) {
-      console.error("AI transcription failed with status:", aiResponse.status);
       return new Response(
         JSON.stringify({ error: "Falha ao transcrever áudio. Tente novamente." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -214,7 +146,6 @@ Formate a transcrição de forma clara e organizada, separando por parágrafos q
 
     const aiResult = await aiResponse.json();
     const transcription = aiResult.choices?.[0]?.message?.content || "";
-
     const metadata = {
       processing_method: "transcription_gemini_flash",
       processed_at: new Date().toISOString(),
@@ -222,23 +153,15 @@ Formate a transcrição de forma clara e organizada, separando por parágrafos q
       word_count: transcription.split(/\s+/).filter(Boolean).length,
     };
 
-    console.log(`Transcribed ${transcription.length} characters`);
-
-    // Update evidence with transcription
     const { error: updateError } = await supabase
       .from("evidences")
       .update({
         content: transcription,
-        metadata: {
-          ...evidence.metadata,
-          ...metadata,
-        },
+        metadata: { ...evidence.metadata, ...metadata },
       })
       .eq("id", evidenceId);
 
     if (updateError) throw updateError;
-
-    console.log("Audio transcription completed successfully");
 
     return new Response(
       JSON.stringify({
@@ -246,18 +169,22 @@ Formate a transcrição de forma clara e organizada, separando por parágrafos q
         transcription: transcription.substring(0, 500) + "...",
         metadata,
       }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: any) {
+    if (error instanceof Error && error.message === "ACCESS_REQUIRED") {
+      return accessDeniedResponse((error as Error & { access?: any }).access);
+    }
+    if (error instanceof Error && error.message === "UNAUTHENTICATED") {
+      return new Response(JSON.stringify({ error: "Não autorizado" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     console.error("Error transcribing audio:", error.message);
     return new Response(
       JSON.stringify({ error: "Erro ao transcrever áudio" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });

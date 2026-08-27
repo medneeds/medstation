@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { signUpSchema } from "@/lib/validations";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
-import { trackCtaClick } from "@/lib/analytics";
+import { trackCtaClick, trackLifecycleEvent } from "@/lib/analytics";
 
 interface LeadFormProps {
   /** Identificador da origem gravado junto do lead. */
@@ -67,6 +67,7 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
       utm: collectUtm(),
       referrer: typeof document !== "undefined" ? document.referrer || null : null,
     });
+    trackLifecycleEvent("lead_created", { source }, `${source}:${email.trim().toLowerCase()}`);
   };
 
   const handleStep1 = async (e: React.FormEvent) => {
@@ -103,6 +104,7 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
     try {
       const validated = signUpSchema.parse({ email: email.trim(), password, fullName: fullName.trim() });
       trackCtaClick({ cta: "lead_form_conta", section: source, plan: "trial", destination: "/confirmar-email" });
+      trackLifecycleEvent("signup_started", { source, auth_method: "email" }, `email:${validated.email.toLowerCase()}`);
 
       const { data, error } = await supabase.auth.signUp({
         email: validated.email,
@@ -128,6 +130,7 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
       }
 
       if (data.user) {
+        trackLifecycleEvent("signup_completed", { source, auth_method: "email" }, data.user.id);
         try {
           const refCode = localStorage.getItem("medstation_ref_code");
           if (refCode) {
@@ -321,7 +324,7 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
             )}
           </Button>
 
-          <GoogleAuthButton label="Continuar com Google" redirectTo="/dashboard" hideDivider />
+          <GoogleAuthButton label="Continuar com Google" redirectTo="/dashboard" hideDivider trackAsSignup source={source} />
         </form>
       )}
 
