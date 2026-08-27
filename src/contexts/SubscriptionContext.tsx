@@ -18,6 +18,7 @@ interface SubscriptionContextType {
   subscribed: boolean;
   accessActive: boolean;
   accessStatus: AccessStatus;
+  accessVerificationError: boolean;
   isPaidSubscriber: boolean;
   productId: string | null;
   productIds: string[];
@@ -39,6 +40,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [subscribed, setSubscribed] = useState(false);
   const [accessActive, setAccessActive] = useState(false);
   const [accessStatus, setAccessStatus] = useState<AccessStatus>("none");
+  const [accessVerificationError, setAccessVerificationError] = useState(false);
   const [isPaidSubscriber, setIsPaidSubscriber] = useState(false);
   const [productId, setProductId] = useState<string | null>(null);
   const [productIds, setProductIds] = useState<string[]>([]);
@@ -56,6 +58,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     setSubscribed(false);
     setAccessActive(false);
     setAccessStatus("none");
+    setAccessVerificationError(false);
     setIsPaidSubscriber(false);
     setProductId(null);
     setProductIds([]);
@@ -81,6 +84,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase.functions.invoke("check-subscription");
       if (error) throw error;
 
+      setAccessVerificationError(false);
       setSubscribed(data?.subscribed === true);
       setAccessActive(data?.access_active === true || data?.subscribed === true);
       setAccessStatus((data?.access_status as AccessStatus) || "none");
@@ -96,6 +100,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       setTrialStartedAt(data?.trial_started_at || null);
       setTrialEndsAt(data?.trial_ends_at || null);
     } catch (error) {
+      // Do not turn a transient entitlement-verification outage into a sales
+      // paywall. Preserve any last-known state and let the UI show a retry state.
+      setAccessVerificationError(true);
       console.error("[SubscriptionContext] Error checking subscription:", error);
     } finally {
       setLoading(false);
@@ -105,8 +112,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     checkSubscription();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      // TOKEN_REFRESHED ocorre a cada renovação de token; revalidar a assinatura
-      // nesse evento gerava chamadas em rajada e rate limit (429).
+      // TOKEN_REFRESHED occurs routinely. Rechecking entitlement here used to
+      // create bursts of auth/Stripe calls and 429 risk.
       if (event === "TOKEN_REFRESHED") return;
       if (session) {
         checkSubscription();
@@ -115,7 +122,6 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       }
     });
-    // Revalidação periódica mais espaçada (5 min) para não saturar a API de auth.
     const interval = setInterval(checkSubscription, 300000);
     return () => {
       subscription.unsubscribe();
@@ -128,6 +134,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       subscribed,
       accessActive,
       accessStatus,
+      accessVerificationError,
       isPaidSubscriber,
       productId,
       productIds,
