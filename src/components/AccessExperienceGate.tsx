@@ -4,6 +4,7 @@ import { CalendarClock, CheckCircle2, Crown, LockKeyhole, Settings2, Sparkles } 
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { trackLifecycleEvent } from "@/lib/analytics";
 import {
   Dialog,
   DialogContent,
@@ -32,12 +33,28 @@ export function TrialWelcomeDialog() {
 
   useEffect(() => {
     if (loading || !isTrial || trialSource === "legacy" || !storageKey) return;
+    trackLifecycleEvent("trial_started", {
+      trial_source: trialSource,
+      trial_started_at: trialStartedAt,
+      trial_ends_at: trialEndsAt,
+    }, trialStartedAt ?? undefined);
+    trackLifecycleEvent("first_login", {
+      trial_source: trialSource,
+      trial_started_at: trialStartedAt,
+    }, trialStartedAt ?? undefined);
+
     try {
-      if (localStorage.getItem(storageKey) !== "seen") setOpen(true);
+      if (localStorage.getItem(storageKey) !== "seen") {
+        setOpen(true);
+        trackLifecycleEvent("trial_welcome_viewed", {
+          trial_source: trialSource,
+          trial_ends_at: trialEndsAt,
+        }, trialStartedAt ?? undefined);
+      }
     } catch {
       setOpen(true);
     }
-  }, [isTrial, loading, storageKey, trialSource]);
+  }, [isTrial, loading, storageKey, trialSource, trialStartedAt, trialEndsAt]);
 
   const close = () => {
     if (storageKey) {
@@ -76,9 +93,7 @@ export function TrialWelcomeDialog() {
           </div>
         </div>
 
-        <Button className="w-full" onClick={close}>
-          Começar a usar
-        </Button>
+        <Button className="w-full" onClick={close}>Começar a usar</Button>
       </DialogContent>
     </Dialog>
   );
@@ -88,11 +103,26 @@ export function AccessContentGate({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const { accessActive, accessStatus, trialEndsAt, loading } = useSubscription();
 
+  useEffect(() => {
+    if (loading || accessActive || pathname === "/settings") return;
+    const dedupe = `${accessStatus}:${trialEndsAt ?? "none"}`;
+    if (accessStatus === "trial_expired") {
+      trackLifecycleEvent("trial_expired", {
+        access_status: accessStatus,
+        trial_ends_at: trialEndsAt,
+      }, dedupe);
+    }
+    trackLifecycleEvent("paywall_viewed", {
+      access_status: accessStatus,
+      trial_ends_at: trialEndsAt,
+      blocked_path: pathname,
+    });
+  }, [loading, accessActive, accessStatus, trialEndsAt, pathname]);
+
   if (loading) {
     return <div className="py-16 text-center text-sm text-muted-foreground">Verificando seu acesso...</div>;
   }
 
-  // Perfil/configurações permanece acessível mesmo sem entitlement.
   if (accessActive || pathname === "/settings") return <>{children}</>;
 
   const expired = accessStatus === "trial_expired";
