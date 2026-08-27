@@ -20,10 +20,8 @@ let stripeCache: {
 } | null = null;
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
-const TRIAL_DAYS = 7;
 const PAYING_STATUSES = new Set(["active", "trialing", "past_due"]);
 
-// Rótulo comercial do plano a partir dos produtos Stripe
 const PRODUCT_LABELS: Record<string, string> = {
   prod_V4jGKeBPH2hGYg: "MedStation Completo (49,90)",
   prod_V4BACwTTBf5tBk: "Pro Completo (legado 99,90)",
@@ -40,7 +38,6 @@ function planLabel(productIds: string[], interval: string | null): string | null
   const cycle = interval === "year" ? " · anual" : interval === "month" ? " · mensal" : "";
   return names.join(" + ") + cycle;
 }
-
 
 async function fetchAllStripeData(stripe: Stripe, force = false) {
   const now = Date.now();
@@ -82,30 +79,22 @@ async function fetchAllStripeData(stripe: Stripe, force = false) {
     hasMore = page.has_more;
     if (hasMore) startingAfter = page.data[page.data.length - 1].id;
   }
-  log("Stripe data fetched", {
-    customers: customers.size,
-    customersById: customersById.size,
-    subCustomers: subscriptionsByCustomer.size,
-  });
 
   stripeCache = { customers, customersById, subscriptionsByCustomer, fetchedAt: now };
   return stripeCache;
 }
 
-// Normalize a price to a monthly amount (in cents)
 function monthlyFromPrice(price: any, quantity = 1): number {
   if (!price?.unit_amount || !price?.recurring) return 0;
   const amount = price.unit_amount * quantity;
   const { interval, interval_count = 1 } = price.recurring;
-  const perMonth =
-    interval === "year"
-      ? amount / (12 * interval_count)
-      : interval === "week"
+  return interval === "year"
+    ? amount / (12 * interval_count)
+    : interval === "week"
       ? (amount * 52) / (12 * interval_count)
       : interval === "day"
-      ? (amount * 365) / (12 * interval_count)
-      : amount / interval_count; // month
-  return perMonth;
+        ? (amount * 365) / (12 * interval_count)
+        : amount / interval_count;
 }
 
 function summarize(subs: any[] | undefined) {
@@ -147,10 +136,10 @@ function summarize(subs: any[] | undefined) {
   if (top.current_period_end) {
     try {
       endDate = new Date(top.current_period_end * 1000).toISOString();
-    } catch { /* skip */ }
+    } catch {
+      /* skip */
+    }
   }
-
-  const currentSubCreated = top.created ? new Date(top.created * 1000).toISOString() : null;
 
   return {
     status: top.status,
@@ -158,7 +147,7 @@ function summarize(subs: any[] | undefined) {
     productIds,
     monthlyAmountCents: Math.round(monthlyAmountCents),
     currency,
-    currentSubCreated,
+    currentSubCreated: top.created ? new Date(top.created * 1000).toISOString() : null,
     interval,
   };
 }
@@ -170,7 +159,7 @@ serve(async (req) => {
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      { auth: { persistSession: false } }
+      { auth: { persistSession: false } },
     );
 
     const authHeader = req.headers.get("Authorization");
@@ -215,11 +204,13 @@ serve(async (req) => {
       pageNum++;
     }
 
-    const [courtesyRes, rolesRes, profilesRes] = await Promise.all([
+    const [courtesyRes, rolesRes, profilesRes, accessRes] = await Promise.all([
       supabaseAdmin.from("courtesy_access").select("*"),
       supabaseAdmin.from("user_roles").select("user_id, role"),
       supabaseAdmin.from("profiles").select("id, full_name, specialty, crm, crm_state, phone"),
+      supabaseAdmin.from("user_access").select("user_id, trial_started_at, trial_ends_at, trial_source"),
     ]);
+
     const courtesyMap = new Map((courtesyRes.data || []).map((c: any) => [c.user_id, c]));
     const rolesMap = new Map<string, string[]>();
     for (const r of rolesRes.data || []) {
@@ -227,43 +218,34 @@ serve(async (req) => {
       rolesMap.get(r.user_id)!.push(r.role);
     }
     const profilesMap = new Map((profilesRes.data || []).map((p: any) => [p.id, p]));
+    const accessMap = new Map((accessRes.data || []).map((a: any) => [a.user_id, a]));
 
     const { customers, customersById, subscriptionsByCustomer } = await fetchAllStripeData(stripe, refresh);
 
-    const usersByEmail = new Map<string, any>();
-    for (const u of allUsers) {
-      if (u.email) usersByEmail.set(u.email.toLowerCase(), u);
-    }
-
-    // Build records: iterate every user AND every stripe customer that has subs (to catch missing/mismatched auth accounts)
     const buildRecord = (u: any | null, customer: any | null) => {
-      const email = (u?.email || customer?.email || "").toLowerCase();
       const subs = customer ? subscriptionsByCustomer.get(customer.id) : undefined;
       const stripe = summarize(subs);
-
       const courtesy = u ? courtesyMap.get(u.id) : null;
       const courtesyActive = courtesy && (!courtesy.expires_at || new Date(courtesy.expires_at) > new Date());
       const roles = u ? (rolesMap.get(u.id) || []) : [];
       const isAdminUser = roles.includes("admin");
       const profile = u ? profilesMap.get(u.id) : null;
-
-      // Teste de 7 dias sem cartão (mesma regra da check-subscription: idade da conta)
+      const entitlement = u ? accessMap.get(u.id) : null;
       const paying = PAYING_STATUSES.has(stripe.status);
-      let trialEndsAt: string | null = null;
-      let inTrial = false;
-      if (u?.created_at && !paying && !courtesyActive && !isAdminUser) {
-        const end = new Date(u.created_at).getTime() + TRIAL_DAYS * 86400000;
-        if (end > Date.now()) {
-          inTrial = true;
-          trialEndsAt = new Date(end).toISOString();
-        }
-      }
+
+      const trialStartedAt: string | null = entitlement?.trial_started_at || null;
+      const trialEndsAt: string | null = entitlement?.trial_ends_at || null;
+      const entitlementExists = !!trialEndsAt;
+      const trialWindowActive = entitlementExists && new Date(trialEndsAt).getTime() > Date.now();
+      const inTrial = !!trialWindowActive && !paying && !courtesyActive && !isAdminUser;
+      const trialExpired = entitlementExists && !trialWindowActive && !paying && !courtesyActive && !isAdminUser;
 
       let effectiveStatus: string;
       if (isAdminUser) effectiveStatus = "admin";
       else if (paying) effectiveStatus = stripe.status;
       else if (courtesyActive) effectiveStatus = "courtesy";
       else if (inTrial) effectiveStatus = "trial";
+      else if (trialExpired) effectiveStatus = "trial_expired";
       else effectiveStatus = stripe.status;
 
       return {
@@ -288,7 +270,10 @@ serve(async (req) => {
         interval: stripe.interval,
         auth_missing: !u,
         in_trial: inTrial,
+        trial_expired: trialExpired,
+        trial_started_at: trialStartedAt,
         trial_ends_at: trialEndsAt,
+        trial_source: entitlement?.trial_source || null,
         courtesy: courtesy
           ? {
               id: courtesy.id,
@@ -300,32 +285,22 @@ serve(async (req) => {
             }
           : null,
         effective_status: effectiveStatus,
-        // "ativo de verdade": pagante, cortesia vigente ou em teste de 7 dias
         access_active: paying || !!courtesyActive || inTrial || isAdminUser,
       };
     };
 
-
     const records: any[] = allUsers.map((u: any) => {
-      const email = (u.email || "").toLowerCase();
-      const customer = customers.get(email) || null;
+      const customer = customers.get((u.email || "").toLowerCase()) || null;
       return buildRecord(u, customer);
     });
 
-    // Add stripe customers that don't map to any auth user (missing/mismatched account)
     const seenCustomerIds = new Set(records.filter((r) => r.stripe_customer_id).map((r) => r.stripe_customer_id));
     for (const [cid, subs] of subscriptionsByCustomer.entries()) {
-      if (seenCustomerIds.has(cid)) continue;
-      if (!subs || subs.length === 0) continue;
+      if (seenCustomerIds.has(cid) || !subs?.length) continue;
       const customer = customersById.get(cid);
-      if (!customer) continue;
-      records.push(buildRecord(null, customer));
+      if (customer) records.push(buildRecord(null, customer));
     }
 
-    // ---- GLOBAL stats (always computed on ALL records, ignoring search/status filter) ----
-    // A user counts as "paying" whenever Stripe reports a real recurring status,
-    // even if effective_status is overridden by admin/courtesy — otherwise
-    // admin owners with real paid subs (e.g. Marcio Serra) disappear from MRR.
     const payingStatuses = new Set(["active", "trialing", "past_due"]);
     const payingAll = records.filter((r) => payingStatuses.has(r.stripe_status));
     const globalActive = records.filter((r) => r.stripe_status === "active");
@@ -334,9 +309,7 @@ serve(async (req) => {
     const globalCanceled = records.filter((r) => r.stripe_status === "canceled");
     const globalCourtesy = records.filter((r) => r.effective_status === "courtesy");
     const globalAdmin = records.filter((r) => r.is_admin);
-    const globalNone = records.filter(
-      (r) => r.stripe_status === "none" && !r.is_admin && r.effective_status !== "courtesy"
-    );
+    const globalNone = records.filter((r) => r.effective_status === "none");
     const globalMrrCents = payingAll.reduce((sum, r) => sum + (r.monthly_amount_cents || 0), 0);
     const globalCurrency = payingAll.find((r) => r.currency)?.currency || "brl";
 
@@ -352,41 +325,35 @@ serve(async (req) => {
       admin: globalAdmin.length,
       auth_missing: records.filter((r) => r.auth_missing).length,
       free_trial: records.filter((r) => r.in_trial).length,
+      free_trial_expired: records.filter((r) => r.trial_expired).length,
       access_active: records.filter((r) => r.access_active).length,
       mrr_cents: Math.round(globalMrrCents),
       arr_cents: Math.round(globalMrrCents * 12),
       avg_ticket_cents: payingAll.length ? Math.round(globalMrrCents / payingAll.length) : 0,
       currency: globalCurrency,
       paying_total: payingAll.length,
-
     };
 
-    // ---- Apply filters only to the returned records list (pagination/search) ----
     let filtered = records;
     if (search) {
       filtered = filtered.filter(
-        (r) => r.email?.toLowerCase().includes(search) || r.full_name?.toLowerCase().includes(search)
+        (r) => r.email?.toLowerCase().includes(search) || r.full_name?.toLowerCase().includes(search),
       );
     }
+
     if (statusFilter !== "all") {
       const stripeStatusFilters = new Set(["active", "trialing", "past_due", "canceled"]);
-      if (statusFilter === "paying") {
-        filtered = filtered.filter((r) => payingStatuses.has(r.stripe_status));
-      } else if (statusFilter === "access_active") {
-        filtered = filtered.filter((r) => r.access_active);
-      } else if (statusFilter === "trial") {
-        filtered = filtered.filter((r) => r.in_trial);
-      } else if (stripeStatusFilters.has(statusFilter)) {
-        // Match real Stripe status so admins/courtesies with paid subs are included
-        filtered = filtered.filter((r) => r.stripe_status === statusFilter);
-      } else {
-        filtered = filtered.filter((r) => r.effective_status === statusFilter);
-      }
+      if (statusFilter === "paying") filtered = filtered.filter((r) => payingStatuses.has(r.stripe_status));
+      else if (statusFilter === "access_active") filtered = filtered.filter((r) => r.access_active);
+      else if (statusFilter === "trial") filtered = filtered.filter((r) => r.in_trial);
+      else if (statusFilter === "trial_expired") filtered = filtered.filter((r) => r.trial_expired);
+      else if (stripeStatusFilters.has(statusFilter)) filtered = filtered.filter((r) => r.stripe_status === statusFilter);
+      else filtered = filtered.filter((r) => r.effective_status === statusFilter);
     }
 
     if (from || to) {
       filtered = filtered.filter((r) => {
-        const ref = r.subscription_created || r.created_at;
+        const ref = r.subscription_created || r.trial_started_at || r.created_at;
         if (!ref) return false;
         const d = new Date(ref);
         if (from && d < from) return false;
@@ -396,8 +363,8 @@ serve(async (req) => {
     }
 
     filtered.sort(
-      (a, b) => new Date(b.subscription_created || b.created_at || 0).getTime() -
-                new Date(a.subscription_created || a.created_at || 0).getTime()
+      (a, b) => new Date(b.subscription_created || b.trial_started_at || b.created_at || 0).getTime() -
+                new Date(a.subscription_created || a.trial_started_at || a.created_at || 0).getTime(),
     );
 
     const total = filtered.length;
@@ -405,8 +372,6 @@ serve(async (req) => {
     const start = (page - 1) * perPage;
     const paginated = filtered.slice(start, start + perPage);
 
-    // Per-filter stats (for contextual display when a filter is active).
-    // Shape mirrors `stats` so frontends can swap between global/filtered without extra branching.
     const filteredPaying = filtered.filter((r) => payingStatuses.has(r.stripe_status));
     const filteredMrr = filteredPaying.reduce((s, r) => s + (r.monthly_amount_cents || 0), 0);
     const filteredCurrency = filteredPaying.find((r) => r.currency)?.currency || stats.currency;
@@ -417,15 +382,13 @@ serve(async (req) => {
       trialing: filtered.filter((r) => r.stripe_status === "trialing").length,
       past_due: filtered.filter((r) => r.stripe_status === "past_due").length,
       canceled: filtered.filter((r) => r.stripe_status === "canceled").length,
-      none: filtered.filter(
-        (r) => r.stripe_status === "none" && !r.is_admin && r.effective_status !== "courtesy",
-      ).length,
+      none: filtered.filter((r) => r.effective_status === "none").length,
       courtesy: filtered.filter((r) => r.effective_status === "courtesy").length,
       admin: filtered.filter((r) => r.is_admin).length,
       auth_missing: filtered.filter((r) => r.auth_missing).length,
       free_trial: filtered.filter((r) => r.in_trial).length,
+      free_trial_expired: filtered.filter((r) => r.trial_expired).length,
       access_active: filtered.filter((r) => r.access_active).length,
-
       mrr_cents: Math.round(filteredMrr),
       arr_cents: Math.round(filteredMrr * 12),
       avg_ticket_cents: filteredPaying.length ? Math.round(filteredMrr / filteredPaying.length) : 0,
@@ -444,7 +407,7 @@ serve(async (req) => {
         filteredStats,
         cacheAge: stripeCache ? Date.now() - stripeCache.fetchedAt : 0,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
     );
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
