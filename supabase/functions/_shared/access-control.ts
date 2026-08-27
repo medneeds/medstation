@@ -10,6 +10,8 @@ export type AccessStatus =
   | "trial_expired"
   | "none";
 
+export type PricingCohort = "current_unified" | "legacy_pre_unification" | null;
+
 export type AccessResolution = {
   status: AccessStatus;
   canUsePlatform: boolean;
@@ -22,14 +24,25 @@ export type AccessResolution = {
   productIds: string[];
   hasAgents: boolean;
   hasConsultorio: boolean;
+  pricingCohort: PricingCohort;
+  legacyFullAccessUntil: string | null;
+  pricingReviewDue: boolean;
 };
 
+const CURRENT_UNIFIED_PRODUCT_ID = "prod_V4jGKeBPH2hGYg";
+
+const LEGACY_PRODUCT_IDS = new Set([
+  "prod_TgR7u5urUle7om", // Assistentes standalone
+  "prod_UUfvAeta3d1Rn5", // Upgrade Assistentes
+  "prod_UUfuDkH9yfcfb3", // Consultório / Modo Escuta standalone
+  "prod_UUfu9AzBtaGsCW", // Upgrade Consultório
+  "prod_UUfw2uz4UPwkco", // Pro 2 bundle legado
+  "prod_V4BACwTTBf5tBk", // Pro Completo legado
+]);
+
 const AGENTS_PRODUCT_IDS = new Set([
-  "prod_TgR7u5urUle7om",
-  "prod_UUfvAeta3d1Rn5",
-  "prod_UUfw2uz4UPwkco",
-  "prod_V4BACwTTBf5tBk",
-  "prod_V4jGKeBPH2hGYg",
+  ...LEGACY_PRODUCT_IDS,
+  CURRENT_UNIFIED_PRODUCT_ID,
 ]);
 
 const CONSULTORIO_PRODUCT_IDS = new Set([
@@ -37,7 +50,7 @@ const CONSULTORIO_PRODUCT_IDS = new Set([
   "prod_UUfu9AzBtaGsCW",
   "prod_UUfw2uz4UPwkco",
   "prod_V4BACwTTBf5tBk",
-  "prod_V4jGKeBPH2hGYg",
+  CURRENT_UNIFIED_PRODUCT_ID,
 ]);
 
 function base(status: AccessStatus): AccessResolution {
@@ -53,6 +66,9 @@ function base(status: AccessStatus): AccessResolution {
     productIds: [],
     hasAgents: false,
     hasConsultorio: false,
+    pricingCohort: null,
+    legacyFullAccessUntil: null,
+    pricingReviewDue: false,
   };
 }
 
@@ -112,6 +128,40 @@ async function stripeAccess(email: string): Promise<AccessResolution | null> {
   return result;
 }
 
+async function applyCommercialPolicy(
+  supabase: ReturnType<typeof serviceClient>,
+  paid: AccessResolution,
+): Promise<AccessResolution> {
+  if (paid.productIds.includes(CURRENT_UNIFIED_PRODUCT_ID)) {
+    paid.pricingCohort = "current_unified";
+    paid.hasAgents = true;
+    paid.hasConsultorio = true;
+    return paid;
+  }
+
+  const isLegacy = paid.productIds.some((id) => LEGACY_PRODUCT_IDS.has(id));
+  if (!isLegacy) return paid;
+
+  paid.pricingCohort = "legacy_pre_unification";
+
+  const { data: policy } = await supabase
+    .from("commercial_policy")
+    .select("legacy_full_access_until")
+    .eq("id", "medstation_unified_2026")
+    .maybeSingle();
+
+  paid.legacyFullAccessUntil = policy?.legacy_full_access_until ?? null;
+  paid.pricingReviewDue = !!paid.legacyFullAccessUntil
+    && new Date(paid.legacyFullAccessUntil).getTime() <= Date.now();
+
+  // Legacy subscribers receive the whole platform during the protection period.
+  // After the review date we DO NOT alter price or revoke features automatically;
+  // the account is flagged for an explicit commercial decision in Admin.
+  paid.hasAgents = true;
+  paid.hasConsultorio = true;
+  return paid;
+}
+
 export async function resolveUserAccess(user: Pick<User, "id" | "email" | "created_at">): Promise<AccessResolution> {
   const supabase = serviceClient();
 
@@ -129,7 +179,7 @@ export async function resolveUserAccess(user: Pick<User, "id" | "email" | "creat
 
   if (user.email) {
     const paid = await stripeAccess(user.email);
-    if (paid) return paid;
+    if (paid) return applyCommercialPolicy(supabase, paid);
   }
 
   const { data: hasCourtesy } = await supabase.rpc("has_active_courtesy", {
