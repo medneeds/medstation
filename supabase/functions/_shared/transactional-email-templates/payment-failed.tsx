@@ -25,7 +25,7 @@ const MUTED = '#5b5b5b'
 
 const PaymentFailedEmail = ({
   name,
-  billingUrl = 'https://medstation-ai.com.br/settings?billing=recover',
+  billingUrl = 'https://medstation-ai.com.br/settings',
 }: PaymentFailedProps) => (
   <Html lang="pt-BR" dir="ltr">
     <Head />
@@ -49,7 +49,7 @@ const PaymentFailedEmail = ({
           </Button>
         </Section>
         <Text style={footer}>
-          Se você já atualizou o pagamento, pode ignorar esta mensagem. A MedStation nunca solicita dados do cartão por e-mail.
+          Ao abrir as configurações, use “Gerenciar Assinatura” para acessar o portal seguro de cobrança. Se você já atualizou o pagamento, pode ignorar esta mensagem. A MedStation nunca solicita dados do cartão por e-mail.
         </Text>
       </Container>
     </Body>
@@ -62,7 +62,7 @@ export const template = {
   displayName: 'Falha de pagamento / recuperação',
   previewData: {
     name: 'Dr. Artur',
-    billingUrl: 'https://medstation-ai.com.br/settings?billing=recover',
+    billingUrl: 'https://medstation-ai.com.br/settings',
   },
 } satisfies TemplateEntry
 
