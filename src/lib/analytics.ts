@@ -696,7 +696,7 @@ export function installFirstValueResponseTracker(): () => void {
           .clone()
           .text()
           .then((text) => {
-            if (text.trim().length > 0) void trackValueDelivered(feature, agentType);
+            if (hasUsefulAgentChatResponse(text)) void trackValueDelivered(feature, agentType);
           })
           .catch(() => undefined);
       }
