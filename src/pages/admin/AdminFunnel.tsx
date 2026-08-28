@@ -381,6 +381,79 @@ export default function AdminFunnel() {
             </div>
           </Panel>
 
+          {/* Ativação: tempo até o primeiro valor e valor entregue por ferramenta */}
+          <Panel
+            title="Ativação"
+            subtitle="Quanto tempo o médico leva para receber a primeira saída útil e por qual ferramenta"
+          >
+            <div className="grid gap-3 sm:grid-cols-4">
+              <Card className="p-4">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">Mediana</p>
+                <p className="mt-1 text-2xl font-display font-semibold">
+                  {minutes(data?.timeToFirstValue?.medianMinutes)}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {nf(data?.timeToFirstValue?.users ?? 0)} usuário(s) com cadastro e primeiro valor no período.
+                </p>
+              </Card>
+              <Card className="p-4">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">P75</p>
+                <p className="mt-1 text-2xl font-display font-semibold">
+                  {minutes(data?.timeToFirstValue?.p75Minutes)}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">3 em cada 4 chegam ao valor até aqui.</p>
+              </Card>
+              <Card className="p-4">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">P90</p>
+                <p className="mt-1 text-2xl font-display font-semibold">
+                  {minutes(data?.timeToFirstValue?.p90Minutes)}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">Cauda lenta da ativação.</p>
+              </Card>
+              <Card className="p-4">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">Até 10 min</p>
+                <p className="mt-1 text-2xl font-display font-semibold">
+                  {data?.timeToFirstValue?.under10Percent === null ||
+                  data?.timeToFirstValue?.under10Percent === undefined
+                    ? "—"
+                    : `${data.timeToFirstValue.under10Percent.toFixed(0)}%`}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {nf(data?.timeToFirstValue?.under10Minutes ?? 0)} usuário(s) ativados em até 10 minutos.
+                </p>
+              </Card>
+            </div>
+
+            <div className="mt-5">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                Valor entregue por ferramenta
+              </p>
+              <div className="space-y-2">
+                {(data?.activationByFeature ?? []).map((f) => (
+                  <div key={f.feature} className="flex items-baseline justify-between gap-3">
+                    <span className="text-sm truncate">{featureLabel(f.feature)}</span>
+                    <div className="flex items-baseline gap-3 shrink-0 text-xs tabular-nums">
+                      <span className="text-sm font-semibold">{nf(f.users)}</span>
+                      <span className="text-muted-foreground w-20 text-right">
+                        {nf(f.actions)} ações
+                      </span>
+                      <span className="text-muted-foreground w-14 text-right">
+                        {f.percentOfActivated === null ? "—" : `${f.percentOfActivated.toFixed(0)}%`}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                {!(data?.activationByFeature ?? []).length && (
+                  <p className="text-sm text-muted-foreground">
+                    Nenhuma entrega de valor registrada no período.
+                  </p>
+                )}
+              </div>
+            </div>
+          </Panel>
+
+
+
           {/* Evolução diária */}
           <Panel title="Evolução diária" subtitle="Volume de eventos por dia">
             <ResponsiveContainer width="100%" height={260}>
