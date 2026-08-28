@@ -7,6 +7,8 @@ import { sendTemplateEmailWithLog } from "../_shared/transactional-email-templat
 
 const BILLING_RECOVERY_URL = "https://medstation-ai.com.br/settings";
 
+type WebhookStatus = "processing" | "processed" | "failed";
+
 function serviceClient() {
   return createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
@@ -103,30 +105,71 @@ async function getCustomerEmail(stripe: Stripe, customerId: string | null): Prom
   return customer.email ?? null;
 }
 
-async function markWebhook(
+async function claimWebhook(
   supabase: ReturnType<typeof serviceClient>,
   eventId: string,
   eventType: string,
-  status: "processing" | "processed" | "failed",
-  errorMessage: string | null = null,
-) {
-  const { data: previous } = await supabase
-    .from("stripe_webhook_events")
-    .select("attempts")
-    .eq("stripe_event_id", eventId)
-    .maybeSingle();
-
-  const { error } = await supabase.from("stripe_webhook_events").upsert({
+): Promise<boolean> {
+  const nowIso = new Date().toISOString();
+  const { error: insertError } = await supabase.from("stripe_webhook_events").insert({
     stripe_event_id: eventId,
     event_type: eventType,
+    status: "processing",
+    attempts: 1,
+    last_error: null,
+    processed_at: null,
+    updated_at: nowIso,
+  });
+
+  if (!insertError) return true;
+  if (insertError.code !== "23505") {
+    throw new Error(`Failed to claim webhook event: ${insertError.message}`);
+  }
+
+  const { data: existing, error: readError } = await supabase
+    .from("stripe_webhook_events")
+    .select("status, attempts")
+    .eq("stripe_event_id", eventId)
+    .maybeSingle();
+  if (readError) throw new Error(`Failed to read webhook claim: ${readError.message}`);
+
+  if (!existing || existing.status === "processed" || existing.status === "processing") {
+    return false;
+  }
+
+  // Only one retry is allowed to atomically move a failed event back to processing.
+  const { data: reclaimed, error: reclaimError } = await supabase
+    .from("stripe_webhook_events")
+    .update({
+      status: "processing",
+      attempts: (existing.attempts ?? 0) + 1,
+      last_error: null,
+      processed_at: null,
+      updated_at: nowIso,
+    })
+    .eq("stripe_event_id", eventId)
+    .eq("status", "failed")
+    .select("stripe_event_id")
+    .maybeSingle();
+
+  if (reclaimError) throw new Error(`Failed to reclaim webhook event: ${reclaimError.message}`);
+  return Boolean(reclaimed);
+}
+
+async function finishWebhook(
+  supabase: ReturnType<typeof serviceClient>,
+  eventId: string,
+  status: Extract<WebhookStatus, "processed" | "failed">,
+  errorMessage: string | null = null,
+) {
+  const { error } = await supabase.from("stripe_webhook_events").update({
     status,
-    attempts: status === "processing" ? (previous?.attempts ?? 0) + 1 : previous?.attempts ?? 1,
     last_error: errorMessage?.slice(0, 1000) ?? null,
     processed_at: status === "processed" ? new Date().toISOString() : null,
     updated_at: new Date().toISOString(),
-  }, { onConflict: "stripe_event_id" });
+  }).eq("stripe_event_id", eventId);
 
-  if (error) throw new Error(`Failed to persist webhook event: ${error.message}`);
+  if (error) throw new Error(`Failed to finish webhook event: ${error.message}`);
 }
 
 serve(async (req) => {
@@ -157,19 +200,13 @@ serve(async (req) => {
   const supabase = serviceClient();
 
   try {
-    const { data: existing } = await supabase
-      .from("stripe_webhook_events")
-      .select("status")
-      .eq("stripe_event_id", event.id)
-      .maybeSingle();
-    if (existing?.status === "processed") {
+    const claimed = await claimWebhook(supabase, event.id, event.type);
+    if (!claimed) {
       return new Response(JSON.stringify({ received: true, duplicate: true }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
     }
-
-    await markWebhook(supabase, event.id, event.type, "processing");
 
     switch (event.type) {
       case "customer.subscription.created":
@@ -190,6 +227,7 @@ serve(async (req) => {
       case "invoice.payment_failed":
       case "invoice.payment_action_required": {
         const invoice = event.data.object as unknown as Record<string, unknown>;
+        const invoiceId = typeof invoice.id === "string" ? invoice.id : event.id;
         const subscriptionId = invoiceSubscriptionId(invoice);
         let customerId = objectId(invoice.customer);
         let userId: string | null = null;
@@ -213,7 +251,7 @@ serve(async (req) => {
           }
           await sendTemplateEmailWithLog("payment-failed", email, {
             templateData: { name, billingUrl: BILLING_RECOVERY_URL },
-            idempotencyKey: `stripe:${event.id}:payment-failed`,
+            idempotencyKey: `stripe:invoice:${invoiceId}:payment-recovery`,
           });
         }
         break;
@@ -236,7 +274,7 @@ serve(async (req) => {
         break;
     }
 
-    await markWebhook(supabase, event.id, event.type, "processed");
+    await finishWebhook(supabase, event.id, "processed");
     return new Response(JSON.stringify({ received: true }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
@@ -245,7 +283,7 @@ serve(async (req) => {
     const message = error instanceof Error ? error.message : String(error);
     console.error("[stripe-webhook] Processing failed", { type: event.type, message });
     try {
-      await markWebhook(supabase, event.id, event.type, "failed", message);
+      await finishWebhook(supabase, event.id, "failed", message);
     } catch {
       // Preserve the original failure so Stripe retries the event.
     }
