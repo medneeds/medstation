@@ -47,9 +47,6 @@ serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
-    // The same email can legitimately exist on multiple Stripe Customer records.
-    // Never inspect only the first one: an active subscription on another Customer
-    // would otherwise be invisible and a duplicate subscription could be created.
     const customers = await stripe.customers.list({ email, limit: 10 });
     let reusableCustomerId: string | undefined;
 
@@ -74,7 +71,13 @@ serve(async (req) => {
       }
     }
 
-    const origin = req.headers.get("origin") || "https://medstation.ai";
+    const origin = req.headers.get("origin") || "https://medstation-ai.com.br";
+    const subscriptionMetadata = {
+      plan,
+      billing_period: billingPeriod,
+      pricing_cohort: "current_unified",
+      acquisition: "guest_checkout",
+    };
 
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       customer: reusableCustomerId,
@@ -87,7 +90,8 @@ serve(async (req) => {
       phone_number_collection: { enabled: false },
       billing_address_collection: "auto",
       allow_promotion_codes: !couponCode,
-      metadata: { plan, billingPeriod, pricing_cohort: "current_unified" },
+      metadata: subscriptionMetadata,
+      subscription_data: { metadata: subscriptionMetadata },
     };
 
     if (couponCode) sessionConfig.discounts = [{ coupon: couponCode }];
