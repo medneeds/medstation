@@ -204,10 +204,11 @@ export function MedStationDiscovery() {
 
       {/* Estado selecionado */}
       <div
+        key={path.id}
         id="path-panel"
         role="tabpanel"
         aria-labelledby={`path-tab-${path.id}`}
-        className="space-y-4"
+        className="space-y-4 animate-fade-in motion-reduce:animate-none"
       >
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h3 className="font-display text-lg md:text-xl font-semibold tracking-tight">
@@ -217,6 +218,10 @@ export function MedStationDiscovery() {
             {path.label}
           </span>
         </div>
+
+        <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+          {path.confirmation}
+        </p>
 
         <ul className="flex flex-wrap gap-2">
           {path.examples.map((e) => (
@@ -240,7 +245,7 @@ export function MedStationDiscovery() {
                 className={cn(
                   "group flex items-start gap-3 rounded-xl border border-border/60 bg-card/80 backdrop-blur-sm",
                   "p-4 min-h-[76px] transition-all duration-300 ease-out motion-reduce:transition-none",
-                  "hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-elevated motion-reduce:hover:translate-y-0",
+                  "md:hover:border-primary/40 md:hover:-translate-y-0.5 md:hover:shadow-elevated motion-reduce:md:hover:translate-y-0 active:scale-[0.99] motion-reduce:active:scale-100",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 )}
               >
@@ -262,9 +267,6 @@ export function MedStationDiscovery() {
 
         <p className="text-sm text-muted-foreground">
           Tudo isso faz parte da mesma MedStation.
-          {isTrial && (
-            <span className="text-muted-foreground/80"> Seu teste inclui todos os caminhos.</span>
-          )}
         </p>
       </div>
     </section>
