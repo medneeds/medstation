@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, ChevronDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -7,6 +7,8 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import {
   DISCOVERY_BLOCKS,
   DISCOVERY_PATHS,
+  readStoredDiscoveryPath,
+  storeDiscoveryPath,
   type DiscoveryPathId,
 } from "@/lib/discoveryPaths";
 
@@ -16,30 +18,49 @@ import {
  * "Descubra a MedStation" é apenas a camada de explicação — não é um pilar.
  */
 export function MedStationDiscovery() {
-  const [selected, setSelected] = useState<DiscoveryPathId>("documentation");
+  const storedRef = useRef<DiscoveryPathId | null>(null);
+  const [selected, setSelected] = useState<DiscoveryPathId>(() => {
+    const stored = readStoredDiscoveryPath();
+    storedRef.current = stored;
+    return stored ?? "documentation";
+  });
   const [discoverOpen, setDiscoverOpen] = useState(false);
   const { isTrial } = useSubscription();
 
   const path = DISCOVERY_PATHS.find((p) => p.id === selected)!;
+  const hasPreviousChoice = storedRef.current !== null;
+
+  useEffect(() => {
+    storeDiscoveryPath(selected);
+  }, [selected]);
 
   const selectPath = (id: DiscoveryPathId) => {
     setSelected(id);
-    trackEvent("discovery_path_selected", { feature: id });
+    trackEvent("discovery_path_selected", {
+      feature: id,
+      source: hasPreviousChoice ? "returning_choice" : "first_access",
+    });
   };
+
+  const otherPaths = DISCOVERY_PATHS.filter((p) => p.id !== selected).map((p) => p.label);
 
   return (
     <section aria-labelledby="discovery-title" className="space-y-6 md:space-y-8">
       <header className="max-w-2xl">
+        <span className="font-mono text-2xs uppercase tracking-[0.28em] text-muted-foreground/70">
+          MedStation
+        </span>
         <h2
           id="discovery-title"
-          className="font-display text-2xl md:text-3xl font-semibold tracking-tight"
+          className="mt-2 font-display text-2xl md:text-3xl font-semibold tracking-tight"
         >
-          O que você quer resolver agora?
+          Comece pelo que mais pesa na sua rotina.
         </h2>
         <p className="mt-2 text-sm md:text-base text-muted-foreground leading-relaxed">
-          Escolha um caminho. A MedStation mostra as ferramentas certas para você.
+          Escolha um caminho. A MedStation organiza o resto.
         </p>
       </header>
+
 
       {/* 3 caminhos */}
       <div
@@ -61,21 +82,28 @@ export function MedStationDiscovery() {
               onClick={() => selectPath(p.id)}
               className={cn(
                 "group relative overflow-hidden text-left rounded-xl border bg-card/80 backdrop-blur-sm",
-                "p-4 md:p-6 min-h-[132px] md:min-h-[168px] flex flex-col justify-between",
+                "p-4 md:p-6 min-h-[132px] md:min-h-[172px] flex flex-col justify-between",
                 "transition-all duration-300 ease-out motion-reduce:transition-none",
+                "active:scale-[0.99] motion-reduce:active:scale-100",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 active
-                  ? "border-primary/50 shadow-elevated"
-                  : "border-border/60 hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-elevated motion-reduce:hover:translate-y-0",
+                  ? "border-primary/60 shadow-elevated ring-1 ring-primary/20 translate-y-0"
+                  : "border-border/60 md:hover:border-primary/40 md:hover:-translate-y-0.5 md:hover:shadow-elevated motion-reduce:md:hover:translate-y-0",
               )}
             >
               <div
                 className={cn(
                   "pointer-events-none absolute inset-0 transition-opacity duration-500 motion-reduce:transition-none",
                   "bg-[radial-gradient(ellipse_at_top_left,hsl(var(--primary)/0.10),transparent_65%)]",
-                  active ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+                  active ? "opacity-100" : "opacity-0 md:group-hover:opacity-100",
                 )}
               />
+              {active && (
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute left-0 top-0 h-full w-[3px] bg-primary/70"
+                />
+              )}
               <div className="relative flex items-start justify-between">
                 <span
                   className={cn(
@@ -92,7 +120,7 @@ export function MedStationDiscovery() {
                     "h-4 w-4 transition-all duration-300 motion-reduce:transition-none",
                     active
                       ? "text-primary translate-x-0.5"
-                      : "text-muted-foreground/50 group-hover:translate-x-1 group-hover:text-foreground",
+                      : "text-muted-foreground/50 md:group-hover:translate-x-1 md:group-hover:text-foreground",
                   )}
                 />
               </div>
@@ -100,7 +128,15 @@ export function MedStationDiscovery() {
                 <h3 className="font-display text-base md:text-lg font-semibold tracking-tight">
                   {p.label}
                 </h3>
-                <p className="mt-1 text-xs md:text-sm text-muted-foreground leading-snug">
+                <p
+                  className={cn(
+                    "mt-1 text-sm md:text-base leading-snug",
+                    active ? "text-foreground/90" : "text-foreground/75",
+                  )}
+                >
+                  {p.intent}
+                </p>
+                <p className="mt-1.5 text-xs text-muted-foreground/80 leading-snug">
                   {p.tagline}
                 </p>
               </div>
@@ -108,6 +144,17 @@ export function MedStationDiscovery() {
           );
         })}
       </div>
+
+      {/* Descoberta progressiva discreta durante o trial */}
+      {isTrial && (
+        <p className="text-xs md:text-sm text-muted-foreground/80">
+          Seu teste inclui os três caminhos.
+          {hasPreviousChoice && (
+            <span> Já encontrou seu jeito de usar? Explore também {otherPaths.join(" ou ")}.</span>
+          )}
+        </p>
+      )}
+
 
       {/* Descubra a MedStation — ação secundária, separada dos pilares */}
       <div className="flex justify-center sm:justify-start">
@@ -157,10 +204,11 @@ export function MedStationDiscovery() {
 
       {/* Estado selecionado */}
       <div
+        key={path.id}
         id="path-panel"
         role="tabpanel"
         aria-labelledby={`path-tab-${path.id}`}
-        className="space-y-4"
+        className="space-y-4 animate-fade-in motion-reduce:animate-none"
       >
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h3 className="font-display text-lg md:text-xl font-semibold tracking-tight">
@@ -170,6 +218,10 @@ export function MedStationDiscovery() {
             {path.label}
           </span>
         </div>
+
+        <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+          {path.confirmation}
+        </p>
 
         <ul className="flex flex-wrap gap-2">
           {path.examples.map((e) => (
@@ -193,7 +245,7 @@ export function MedStationDiscovery() {
                 className={cn(
                   "group flex items-start gap-3 rounded-xl border border-border/60 bg-card/80 backdrop-blur-sm",
                   "p-4 min-h-[76px] transition-all duration-300 ease-out motion-reduce:transition-none",
-                  "hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-elevated motion-reduce:hover:translate-y-0",
+                  "md:hover:border-primary/40 md:hover:-translate-y-0.5 md:hover:shadow-elevated motion-reduce:md:hover:translate-y-0 active:scale-[0.99] motion-reduce:active:scale-100",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 )}
               >
@@ -215,9 +267,6 @@ export function MedStationDiscovery() {
 
         <p className="text-sm text-muted-foreground">
           Tudo isso faz parte da mesma MedStation.
-          {isTrial && (
-            <span className="text-muted-foreground/80"> Seu teste inclui todos os caminhos.</span>
-          )}
         </p>
       </div>
     </section>

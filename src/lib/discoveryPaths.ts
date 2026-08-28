@@ -30,7 +30,11 @@ export interface DiscoveryTool {
 export interface DiscoveryPath {
   id: DiscoveryPathId;
   label: string;
+  /** frase-intenção humana, em primeira pessoa */
+  intent: string;
   tagline: string;
+  /** confirmação curta exibida ao selecionar o caminho */
+  confirmation: string;
   icon: LucideIcon;
   examples: string[];
   tools: DiscoveryTool[];
@@ -40,6 +44,8 @@ export const DISCOVERY_PATHS: DiscoveryPath[] = [
   {
     id: "documentation",
     label: "Documentação",
+    intent: "Quero parar de perder tempo digitando.",
+    confirmation: "A MedStation transforma o que você já tem em texto clínico pronto.",
     tagline: "Transforme informação clínica em texto pronto para usar.",
     icon: FileText,
     examples: [
@@ -60,6 +66,8 @@ export const DISCOVERY_PATHS: DiscoveryPath[] = [
   {
     id: "copilot",
     label: "Copiloto",
+    intent: "Quero apoio para decidir mais rápido.",
+    confirmation: "A MedStation entra quando você precisa consultar, calcular ou discutir.",
     tagline: "Ganhe uma segunda camada de raciocínio no plantão.",
     icon: Activity,
     examples: [
@@ -85,6 +93,8 @@ export const DISCOVERY_PATHS: DiscoveryPath[] = [
   {
     id: "workflow",
     label: "Fluxo",
+    intent: "Quero que minha rotina trabalhe comigo.",
+    confirmation: "A MedStation acompanha o trabalho ao longo da consulta, visita e evolução.",
     tagline: "Reduza o trabalho repetitivo da sua rotina.",
     icon: Layers,
     examples: [
@@ -136,3 +146,27 @@ export const DISCOVERY_BLOCKS = [
     examples: ["Consulta por voz", "Evolução de leitos", "Continuidade entre dias"],
   },
 ];
+
+/** Chave de preferência local do caminho escolhido (nunca vai ao banco). */
+export const DISCOVERY_PATH_STORAGE_KEY = "medstation:discovery-path";
+
+export function isDiscoveryPathId(value: unknown): value is DiscoveryPathId {
+  return value === "documentation" || value === "copilot" || value === "workflow";
+}
+
+export function readStoredDiscoveryPath(): DiscoveryPathId | null {
+  try {
+    const raw = window.localStorage.getItem(DISCOVERY_PATH_STORAGE_KEY);
+    return isDiscoveryPathId(raw) ? raw : null;
+  } catch {
+    return null;
+  }
+}
+
+export function storeDiscoveryPath(id: DiscoveryPathId): void {
+  try {
+    window.localStorage.setItem(DISCOVERY_PATH_STORAGE_KEY, id);
+  } catch {
+    /* preferência local é opcional */
+  }
+}
