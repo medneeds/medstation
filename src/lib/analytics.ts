@@ -654,7 +654,17 @@ export function installFirstValueResponseTracker(): () => void {
             : input.url;
       const pathname = new URL(rawUrl, window.location.origin).pathname;
       if (response.ok && pathname.endsWith("/functions/v1/agent-chat")) {
-        void trackFirstValue("clinical_assistant");
+        const init = args[1] as RequestInit | undefined;
+        const agentType = extractAgentTypeFromRequestBody(init?.body);
+        const feature = featureForAgentType(agentType);
+        // O corpo é lido apenas localmente para responder "houve saída útil?".
+        void response
+          .clone()
+          .text()
+          .then((text) => {
+            if (text.trim().length > 0) void trackValueDelivered(feature, agentType);
+          })
+          .catch(() => undefined);
       }
     } catch {
       /* tracking must never interfere with product traffic */
@@ -670,7 +680,8 @@ export function installFirstValueResponseTracker(): () => void {
     try {
       if (!result?.error && hasUsefulFunctionResult(functionName, result?.data)) {
         const feature = featureForFunction(functionName);
-        if (feature) void trackFirstValue(feature);
+        if (feature) void trackValueDelivered(feature);
+
       }
     } catch {
       /* tracking must never interfere with Edge Function calls */
