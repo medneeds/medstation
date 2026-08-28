@@ -13,6 +13,33 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[COMPLETE-CHECKOUT] ${step}${detailsStr}`);
 };
 
+function subscriptionIdFromSession(session: Stripe.Checkout.Session): string | null {
+  if (typeof session.subscription === "string") return session.subscription;
+  return session.subscription?.id ?? null;
+}
+
+async function attachUserToSubscription(
+  stripe: Stripe,
+  session: Stripe.Checkout.Session,
+  userId: string,
+) {
+  const subscriptionId = subscriptionIdFromSession(session);
+  if (!subscriptionId) return;
+
+  const current = typeof session.subscription === "object" && session.subscription
+    ? session.subscription
+    : await stripe.subscriptions.retrieve(subscriptionId);
+
+  await stripe.subscriptions.update(subscriptionId, {
+    metadata: {
+      ...current.metadata,
+      user_id: userId,
+      pricing_cohort: current.metadata?.pricing_cohort || session.metadata?.pricing_cohort || "current_unified",
+      plan: current.metadata?.plan || session.metadata?.plan || "pro_completo",
+    },
+  });
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -54,6 +81,7 @@ serve(async (req) => {
     );
 
     if (existing) {
+      await attachUserToSubscription(stripe, session, existing.id);
       logStep("Existing account matched to paid checkout", {
         userId: existing.id,
         email: maskEmail(email),
@@ -106,6 +134,10 @@ serve(async (req) => {
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
       );
+    }
+
+    if (invited.user?.id) {
+      await attachUserToSubscription(stripe, session, invited.user.id);
     }
 
     logStep("Secure account invitation sent", {

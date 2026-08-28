@@ -88,8 +88,6 @@ serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
-    // A user can have several Stripe Customer records sharing the same email.
-    // Inspect all reasonable matches before allowing another subscription.
     const customers = await stripe.customers.list({ email: user.email, limit: 10 });
     let reusableCustomerId: string | undefined;
 
@@ -117,6 +115,13 @@ serve(async (req) => {
     const origin = req.headers.get("origin");
     if (!origin) throw new Error("Request origin is required");
 
+    const subscriptionMetadata = {
+      user_id: user.id,
+      plan,
+      pricing_cohort: "current_unified",
+      acquisition: "authenticated_checkout",
+    };
+
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       customer: reusableCustomerId,
       customer_email: reusableCustomerId ? undefined : user.email,
@@ -127,7 +132,8 @@ serve(async (req) => {
       payment_method_collection: "always",
       phone_number_collection: { enabled: false },
       billing_address_collection: "auto",
-      metadata: { plan, user_id: user.id, pricing_cohort: "current_unified" },
+      metadata: subscriptionMetadata,
+      subscription_data: { metadata: subscriptionMetadata },
     };
 
     if (couponCode) sessionConfig.discounts = [{ coupon: couponCode }];
