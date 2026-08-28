@@ -94,6 +94,31 @@ const META_LABEL: Record<string, string> = {
   origin: "origem do checkout",
 };
 
+const FEATURE_LABEL: Record<string, string> = {
+  examinus: "Examinus",
+  clinicus: "Clínicus",
+  prescriptus: "Prescriptus",
+  gasometrus: "Gasometrus",
+  codexus: "Codexus",
+  mediscuss: "Mediscuss",
+  legalis: "Legalis",
+  protocolus: "Protocolus",
+  atestus: "Atestus",
+  orientus: "Orientus",
+  numerus: "Numerus",
+  scorius: "Scorius",
+  modo_escuta: "Modo Escuta",
+  modo_rotineiro: "Modo Rotineiro",
+  medical_document: "Documentos médicos",
+  clinical_assistant: "Assistente clínico",
+};
+
+const featureLabel = (f: string) => FEATURE_LABEL[f] ?? f;
+
+const minutes = (v: number | null | undefined) =>
+  v === null || v === undefined ? "—" : `${v.toLocaleString("pt-BR")} min`;
+
+
 const tooltipStyle = {
   background: "hsl(var(--card))",
   border: "1px solid hsl(var(--border))",
