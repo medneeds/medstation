@@ -6,6 +6,7 @@ import { resolveSubscriptionEnd, type MinimalSubscription } from "../_shared/str
 import { sendTemplateEmailWithLog } from "../_shared/transactional-email-templates/send-and-log.ts";
 
 const BILLING_RECOVERY_URL = "https://medstation-ai.com.br/settings";
+const STALE_PROCESSING_MS = 5 * 60 * 1000;
 
 type WebhookStatus = "processing" | "processed" | "failed";
 
@@ -63,12 +64,13 @@ async function syncSubscription(
   const customerId = objectId(subscription.customer);
   if (!customerId) throw new Error("Subscription has no customer id");
 
-  const userId = await resolveUserId(supabase, stripe, subscription);
+  const resolvedUserId = await resolveUserId(supabase, stripe, subscription);
   const { data: existing } = await supabase
     .from("stripe_subscriptions")
-    .select("past_due_since")
+    .select("past_due_since, user_id")
     .eq("stripe_subscription_id", subscription.id)
     .maybeSingle();
+  const userId = resolvedUserId ?? existing?.user_id ?? null;
 
   const nowIso = new Date().toISOString();
   const status = subscription.status;
@@ -128,17 +130,18 @@ async function claimWebhook(
 
   const { data: existing, error: readError } = await supabase
     .from("stripe_webhook_events")
-    .select("status, attempts")
+    .select("status, attempts, updated_at")
     .eq("stripe_event_id", eventId)
     .maybeSingle();
   if (readError) throw new Error(`Failed to read webhook claim: ${readError.message}`);
+  if (!existing || existing.status === "processed") return false;
 
-  if (!existing || existing.status === "processed" || existing.status === "processing") {
-    return false;
-  }
+  const isStaleProcessing = existing.status === "processing"
+    && Date.now() - new Date(existing.updated_at).getTime() > STALE_PROCESSING_MS;
+  if (existing.status === "processing" && !isStaleProcessing) return false;
 
-  // Only one retry is allowed to atomically move a failed event back to processing.
-  const { data: reclaimed, error: reclaimError } = await supabase
+  const expectedStatus = existing.status as Extract<WebhookStatus, "processing" | "failed">;
+  let reclaim = supabase
     .from("stripe_webhook_events")
     .update({
       status: "processing",
@@ -148,7 +151,12 @@ async function claimWebhook(
       updated_at: nowIso,
     })
     .eq("stripe_event_id", eventId)
-    .eq("status", "failed")
+    .eq("status", expectedStatus);
+
+  // For stale in-flight events, compare the observed timestamp as an optimistic lock.
+  if (isStaleProcessing) reclaim = reclaim.eq("updated_at", existing.updated_at);
+
+  const { data: reclaimed, error: reclaimError } = await reclaim
     .select("stripe_event_id")
     .maybeSingle();
 
