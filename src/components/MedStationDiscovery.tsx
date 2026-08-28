@@ -42,22 +42,20 @@ export function MedStationDiscovery() {
     });
   };
 
-  const otherPaths = DISCOVERY_PATHS.filter((p) => p.id !== selected).map((p) => p.label);
+
+  
 
   return (
     <section aria-labelledby="discovery-title" className="space-y-6 md:space-y-8">
       <header className="max-w-2xl">
-        <span className="font-mono text-2xs uppercase tracking-[0.28em] text-muted-foreground/70">
-          MedStation
-        </span>
         <h2
           id="discovery-title"
-          className="mt-2 font-display text-2xl md:text-3xl font-semibold tracking-tight"
+          className="font-display text-2xl md:text-3xl font-semibold tracking-tight"
         >
-          Comece pelo que mais pesa na sua rotina.
+          O que você quer resolver agora?
         </h2>
         <p className="mt-2 text-sm md:text-base text-muted-foreground leading-relaxed">
-          Escolha um caminho. A MedStation organiza o resto.
+          Escolha um caminho e veja as ferramentas mais adequadas para cada etapa do seu trabalho.
         </p>
       </header>
 
@@ -130,13 +128,10 @@ export function MedStationDiscovery() {
                 </h3>
                 <p
                   className={cn(
-                    "mt-1 text-sm md:text-base leading-snug",
+                    "mt-1.5 text-sm md:text-base leading-snug",
                     active ? "text-foreground/90" : "text-foreground/75",
                   )}
                 >
-                  {p.intent}
-                </p>
-                <p className="mt-1.5 text-xs text-muted-foreground/80 leading-snug">
                   {p.tagline}
                 </p>
               </div>
@@ -149,9 +144,6 @@ export function MedStationDiscovery() {
       {isTrial && (
         <p className="text-xs md:text-sm text-muted-foreground/80">
           Seu teste inclui os três caminhos.
-          {hasPreviousChoice && (
-            <span> Já encontrou seu jeito de usar? Explore também {otherPaths.join(" ou ")}.</span>
-          )}
         </p>
       )}
 

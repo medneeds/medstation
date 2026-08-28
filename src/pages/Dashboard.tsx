@@ -253,19 +253,6 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Topo compacto — identidade leve, sem hero cinematográfico */}
-      <header className="flex flex-col gap-1 pt-1">
-        <span className="font-mono text-2xs uppercase tracking-[0.22em] text-muted-foreground/70">
-          MedStation
-        </span>
-        <h1 className="font-display text-xl md:text-2xl font-semibold tracking-tight">
-          Sua estação de trabalho clínica.
-        </h1>
-        <p className="text-sm text-muted-foreground leading-relaxed max-w-xl">
-          Documentação, apoio clínico e fluxo em um só lugar.
-        </p>
-      </header>
-
       {/* Descoberta orientada a 3 caminhos — dominante */}
       <MedStationDiscovery />
 

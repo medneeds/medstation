@@ -30,8 +30,6 @@ export interface DiscoveryTool {
 export interface DiscoveryPath {
   id: DiscoveryPathId;
   label: string;
-  /** frase-intenção humana, em primeira pessoa */
-  intent: string;
   tagline: string;
   /** confirmação curta exibida ao selecionar o caminho */
   confirmation: string;
@@ -44,8 +42,7 @@ export const DISCOVERY_PATHS: DiscoveryPath[] = [
   {
     id: "documentation",
     label: "Documentação",
-    intent: "Quero parar de perder tempo digitando.",
-    confirmation: "A MedStation transforma o que você já tem em texto clínico pronto.",
+    confirmation: "Organize informações clínicas e gere textos prontos para revisão e uso.",
     tagline: "Transforme informação clínica em texto pronto para usar.",
     icon: FileText,
     examples: [
@@ -66,8 +63,7 @@ export const DISCOVERY_PATHS: DiscoveryPath[] = [
   {
     id: "copilot",
     label: "Copiloto",
-    intent: "Quero apoio para decidir mais rápido.",
-    confirmation: "A MedStation entra quando você precisa consultar, calcular ou discutir.",
+    confirmation: "Consulte, calcule e discuta decisões clínicas com apoio contextual.",
     tagline: "Ganhe uma segunda camada de raciocínio no plantão.",
     icon: Activity,
     examples: [
@@ -93,8 +89,7 @@ export const DISCOVERY_PATHS: DiscoveryPath[] = [
   {
     id: "workflow",
     label: "Fluxo",
-    intent: "Quero que minha rotina trabalhe comigo.",
-    confirmation: "A MedStation acompanha o trabalho ao longo da consulta, visita e evolução.",
+    confirmation: "Integre voz, rotina e continuidade do cuidado em um fluxo mais eficiente.",
     tagline: "Reduza o trabalho repetitivo da sua rotina.",
     icon: Layers,
     examples: [
