@@ -548,11 +548,59 @@ async function currentUserId(): Promise<string | null> {
   }
 }
 
-async function trackFirstValue(feature: string) {
+/** Assistentes conhecidos — usados apenas como rótulo de ferramenta, nunca conteúdo. */
+const KNOWN_AGENT_TYPES = new Set([
+  "examinus",
+  "clinicus",
+  "prescriptus",
+  "gasometrus",
+  "codexus",
+  "mediscuss",
+  "legalis",
+  "protocolus",
+  "atestus",
+  "orientus",
+  "numerus",
+  "scorius",
+]);
+
+/**
+ * Lê apenas o identificador da ferramenta no corpo da requisição.
+ * Nenhum outro campo do body é retornado ou enviado ao analytics.
+ */
+export function extractAgentTypeFromRequestBody(body: unknown): string | null {
+  if (typeof body !== "string" || !body) return null;
+  let parsed: any;
+  try {
+    parsed = JSON.parse(body);
+  } catch {
+    return null;
+  }
+  const raw = parsed?.agentType ?? parsed?.agent_type;
+  if (typeof raw !== "string") return null;
+  const normalized = raw.trim().toLowerCase().replace(/[^a-z0-9_]/g, "_").slice(0, 32);
+  return normalized || null;
+}
+
+export function featureForAgentType(agentType: string | null): string {
+  if (agentType && KNOWN_AGENT_TYPES.has(agentType)) return agentType;
+  if (agentType && /^[a-z][a-z0-9_]{2,31}$/.test(agentType)) return agentType;
+  return "clinical_assistant";
+}
+
+/**
+ * Toda saída útil entregue: evento recorrente + marco único por conta.
+ * Somente `feature` e `agent_type` saem do navegador.
+ */
+async function trackValueDelivered(feature: string, agentType?: string | null) {
   const userId = await currentUserId();
   if (!userId) return;
-  trackLifecycleEvent("first_value_action", { feature }, `user:${userId}`);
+  const props: Record<string, unknown> = { feature };
+  if (agentType) props.agent_type = agentType;
+  trackEvent("value_action_completed", props);
+  trackLifecycleEvent("first_value_action", props, `user:${userId}`);
 }
+
 
 function hasUsefulStructuredAnamnesis(data: any): boolean {
   const structure = data?.structure;
