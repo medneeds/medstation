@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractAgentTypeFromRequestBody, featureForAgentType } from "@/lib/analytics";
+import { extractAgentTypeFromRequestBody, featureForAgentType, hasUsefulAgentChatResponse } from "@/lib/analytics";
 
 describe("extractAgentTypeFromRequestBody", () => {
   it("extrai somente o agentType do corpo JSON", () => {
@@ -40,5 +40,45 @@ describe("featureForAgentType", () => {
   it("cai para clinical_assistant quando não há agentType", () => {
     expect(featureForAgentType(null)).toBe("clinical_assistant");
     expect(featureForAgentType("x")).toBe("clinical_assistant");
+  });
+});
+
+describe("hasUsefulAgentChatResponse", () => {
+  it("retorna true para SSE com delta.content útil", () => {
+    const sse = [
+      'data: {"choices":[{"delta":{"role":"assistant"}}]}',
+      'data: {"choices":[{"delta":{"content":"Resumo clínico"}}]}',
+      "data: [DONE]",
+    ].join("\n");
+    expect(hasUsefulAgentChatResponse(sse)).toBe(true);
+  });
+
+  it("retorna false para data: [DONE]", () => {
+    expect(hasUsefulAgentChatResponse("data: [DONE]\n")).toBe(false);
+  });
+
+  it("retorna false para keepalive + DONE", () => {
+    expect(hasUsefulAgentChatResponse(": keepalive\n\ndata: [DONE]\n")).toBe(false);
+  });
+
+  it("retorna false para delta role-only", () => {
+    const sse = 'data: {"choices":[{"delta":{"role":"assistant"}}]}\ndata: [DONE]';
+    expect(hasUsefulAgentChatResponse(sse)).toBe(false);
+  });
+
+  it("retorna false para finish_reason-only", () => {
+    const sse = 'data: {"choices":[{"delta":{},"finish_reason":"stop"}]}\ndata: [DONE]';
+    expect(hasUsefulAgentChatResponse(sse)).toBe(false);
+  });
+
+  it("retorna false para JSON inválido e corpo vazio", () => {
+    expect(hasUsefulAgentChatResponse("data: {invalid json}")).toBe(false);
+    expect(hasUsefulAgentChatResponse("")).toBe(false);
+    expect(hasUsefulAgentChatResponse("   \n  ")).toBe(false);
+  });
+
+  it("aceita formatos compatíveis message.content e content", () => {
+    expect(hasUsefulAgentChatResponse('data: {"choices":[{"message":{"content":"ok"}}]}')).toBe(true);
+    expect(hasUsefulAgentChatResponse('data: {"content":"texto"}')).toBe(true);
   });
 });
