@@ -617,13 +617,18 @@ export function hasUsefulAgentChatResponse(text: string): boolean {
     if (!line.startsWith("data:")) continue;
     const payload = line.slice(5).trim();
     if (!payload || payload === "[DONE]") continue;
-    let parsed: any;
+    let parsed: unknown;
     try {
       parsed = JSON.parse(payload);
     } catch {
       continue;
     }
-    const choice = parsed?.choices?.[0];
+    if (!parsed || typeof parsed !== "object") continue;
+    const event = parsed as {
+      choices?: Array<{ delta?: { content?: unknown }; message?: { content?: unknown } }>;
+      content?: unknown;
+    };
+    const choice = event.choices?.[0];
     const candidates: unknown[] = [
       choice?.delta?.content,
       choice?.message?.content,
