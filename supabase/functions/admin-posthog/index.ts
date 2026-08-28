@@ -323,7 +323,9 @@ serve(async (req) => {
             paywallEvents: tMap.get("paywall_viewed")?.total ?? 0,
           },
           quality,
-          bySection: bySection.map((r) => ({
+          activationByFeature,
+          timeToFirstValue,
+
             name: String(r[0]), clicks: num(r[1]), checkouts: num(r[2]), subs: num(r[3]),
           })),
           byCta: byCta.map((r) => ({ name: String(r[0]), clicks: num(r[1]), users: num(r[2]) })),
