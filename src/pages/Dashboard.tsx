@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { BrandIntro } from "@/components/auth/BrandIntro";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,7 +28,6 @@ import { Link } from "react-router-dom";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { MedStationDiscovery, AllToolsSection } from "@/components/MedStationDiscovery";
 import { FreeExaminusSpotlight } from "@/components/FreeExaminusSpotlight";
-import { hasSeenWelcomeTour } from "@/pages/WelcomeTour";
 
 interface Stats {
   totalPatients: number;
