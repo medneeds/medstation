@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, ChevronDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -7,6 +7,8 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import {
   DISCOVERY_BLOCKS,
   DISCOVERY_PATHS,
+  readStoredDiscoveryPath,
+  storeDiscoveryPath,
   type DiscoveryPathId,
 } from "@/lib/discoveryPaths";
 
@@ -16,30 +18,49 @@ import {
  * "Descubra a MedStation" é apenas a camada de explicação — não é um pilar.
  */
 export function MedStationDiscovery() {
-  const [selected, setSelected] = useState<DiscoveryPathId>("documentation");
+  const storedRef = useRef<DiscoveryPathId | null>(null);
+  const [selected, setSelected] = useState<DiscoveryPathId>(() => {
+    const stored = readStoredDiscoveryPath();
+    storedRef.current = stored;
+    return stored ?? "documentation";
+  });
   const [discoverOpen, setDiscoverOpen] = useState(false);
   const { isTrial } = useSubscription();
 
   const path = DISCOVERY_PATHS.find((p) => p.id === selected)!;
+  const hasPreviousChoice = storedRef.current !== null;
+
+  useEffect(() => {
+    storeDiscoveryPath(selected);
+  }, [selected]);
 
   const selectPath = (id: DiscoveryPathId) => {
     setSelected(id);
-    trackEvent("discovery_path_selected", { feature: id });
+    trackEvent("discovery_path_selected", {
+      feature: id,
+      source: hasPreviousChoice ? "returning_choice" : "first_access",
+    });
   };
+
+  const otherPaths = DISCOVERY_PATHS.filter((p) => p.id !== selected).map((p) => p.label);
 
   return (
     <section aria-labelledby="discovery-title" className="space-y-6 md:space-y-8">
       <header className="max-w-2xl">
+        <span className="font-mono text-2xs uppercase tracking-[0.28em] text-muted-foreground/70">
+          MedStation
+        </span>
         <h2
           id="discovery-title"
-          className="font-display text-2xl md:text-3xl font-semibold tracking-tight"
+          className="mt-2 font-display text-2xl md:text-3xl font-semibold tracking-tight"
         >
-          O que você quer resolver agora?
+          Comece pelo que mais pesa na sua rotina.
         </h2>
         <p className="mt-2 text-sm md:text-base text-muted-foreground leading-relaxed">
-          Escolha um caminho. A MedStation mostra as ferramentas certas para você.
+          Escolha um caminho. A MedStation organiza o resto.
         </p>
       </header>
+
 
       {/* 3 caminhos */}
       <div
