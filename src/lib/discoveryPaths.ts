@@ -30,8 +30,6 @@ export interface DiscoveryTool {
 export interface DiscoveryPath {
   id: DiscoveryPathId;
   label: string;
-  /** frase-intenção humana, em primeira pessoa */
-  intent: string;
   tagline: string;
   /** confirmação curta exibida ao selecionar o caminho */
   confirmation: string;
