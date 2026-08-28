@@ -52,6 +52,8 @@ project_id = "rwiovxyftfbkvzbepfqi"
     verify_jwt = false
   [functions.public-extract-text]
     verify_jwt = false
+  [functions.stripe-webhook]
+    verify_jwt = false
   [functions.structure-anamnesis]
     verify_jwt = true
   [functions.studius-chat]
