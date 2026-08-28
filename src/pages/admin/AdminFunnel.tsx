@@ -53,6 +53,16 @@ interface FunnelResponse {
   steps?: Step[];
   trialHealth?: { expiredUsers: number; paywallUsers: number; expiredEvents: number; paywallEvents: number };
   quality?: Quality[];
+  activationByFeature?: { feature: string; actions: number; users: number; percentOfActivated: number | null }[];
+  timeToFirstValue?: {
+    users: number;
+    medianMinutes: number | null;
+    p75Minutes: number | null;
+    p90Minutes: number | null;
+    under10Minutes: number;
+    under10Percent: number | null;
+  };
+
   bySection?: { name: string; clicks: number; checkouts: number; subs: number }[];
   byCta?: { name: string; clicks: number; users: number }[];
   byPlan?: { name: string; checkouts: number; subs: number }[];
