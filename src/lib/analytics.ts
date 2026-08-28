@@ -570,13 +570,15 @@ const KNOWN_AGENT_TYPES = new Set([
  */
 export function extractAgentTypeFromRequestBody(body: unknown): string | null {
   if (typeof body !== "string" || !body) return null;
-  let parsed: any;
+  let parsed: Record<string, unknown> | null = null;
   try {
-    parsed = JSON.parse(body);
+    const value = JSON.parse(body) as unknown;
+    if (value && typeof value === "object") parsed = value as Record<string, unknown>;
   } catch {
     return null;
   }
   const raw = parsed?.agentType ?? parsed?.agent_type;
+
   if (typeof raw !== "string") return null;
   const normalized = raw.trim().toLowerCase().replace(/[^a-z0-9_]/g, "_").slice(0, 32);
   return normalized || null;
