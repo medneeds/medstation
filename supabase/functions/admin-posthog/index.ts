@@ -285,6 +285,32 @@ serve(async (req) => {
         };
       });
 
+      const activatedUsers = tMap.get("first_value_action")?.users ?? 0;
+      const activationByFeature = activationRows.map((r) => {
+        const users = num(r[2]);
+        return {
+          feature: String(r[0]),
+          actions: num(r[1]),
+          users,
+          percentOfActivated: activatedUsers > 0 ? (users / activatedUsers) * 100 : null,
+        };
+      });
+
+      const ttfv = ttfvRows[0];
+      const ttfvUsers = num(ttfv?.[0]);
+      const under10 = num(ttfv?.[4]);
+      const round1 = (v: unknown) => (ttfvUsers > 0 ? Math.round(Number(v ?? 0) * 10) / 10 : null);
+      const timeToFirstValue = {
+        users: ttfvUsers,
+        medianMinutes: round1(ttfv?.[1]),
+        p75Minutes: round1(ttfv?.[2]),
+        p90Minutes: round1(ttfv?.[3]),
+        under10Minutes: under10,
+        under10Percent: ttfvUsers > 0 ? (under10 / ttfvUsers) * 100 : null,
+      };
+
+
+
       return new Response(
         JSON.stringify({
           configured: true,
