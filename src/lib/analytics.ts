@@ -632,7 +632,7 @@ export function hasUsefulAgentChatResponse(text: string): boolean {
     const candidates: unknown[] = [
       choice?.delta?.content,
       choice?.message?.content,
-      parsed?.content,
+      event.content,
     ];
     for (const candidate of candidates) {
       if (typeof candidate === "string" && candidate.trim().length > 0) return true;
