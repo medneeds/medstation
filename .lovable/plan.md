@@ -1,53 +1,35 @@
-# Auditoria de erros em produção — logs (somente leitura)
+# Diagnóstico PostHog — resultado e próximos passos
 
-Nada foi editado. Nenhum e-mail, nome, token ou ID de usuário é reproduzido abaixo.
+## O que foi verificado (somente leitura)
 
-## Conclusão principal: os logs NÃO permitem responder 7 dias nem 24h
+SDK instalado: `posthog-js@1.407.8`.
 
-Consultei diretamente as três fontes de log da plataforma e a janela retida é de **minutos**, não de dias:
+1. `sanitize_properties` existe no runtime do SDK 1.407.8 (opção legada, ainda suportada). Não é a causa.
+2. `advanced_disable_flags: true` apenas suprime a chamada `/flags/`. Não bloqueia captura.
+3. Não há opt-out por padrão; `has_opted_out_capturing()` = false e persistência normal.
+4. Filtro de bot: o SDK descarta silenciosamente TODAS as capturas quando `isLikelyBot` retorna true. A checagem usa `navigator.userAgentData.brands` (Chromium headless anuncia marca "HeadlessChrome") além de `navigator.webdriver`. Trocar a string de User-Agent e sobrescrever `navigator.webdriver` NÃO evita essa detecção.
+5. Harness isolado em /tmp (fora do repositório), com o mesmo token público:
+   - `posthog._is_bot()` retornou **true** em todos os cenários Playwright;
+   - config mínima: só houve request de `/array/<token>` (config), nenhum `/e/`;
+   - config completa do app: zero requests;
+   - portanto, nenhum dos testes de navegador anteriores conseguia provar envio de eventos.
+6. Região: `.env` define região `us`. O host EU respondeu `401` em `/flags/` e `404` em `/array/<token>` para esse token; o host US respondeu `200` em `/array/<token>`. O projeto é US.
+7. Ingestão direta (sem SDK) em `https://us.i.posthog.com/i/v0/e/` retornou **HTTP 200 `{"status":"Ok"}`** com o evento autorizado `medstation_telemetry_diagnostic` (sem PII). O pipeline de ingestão funciona.
 
-| Fonte | Registros retidos | Janela coberta |
-|---|---|---|
-| `function_edge_logs` (HTTP das Edge Functions) | 19 | 21:46 → 21:55 UTC de hoje (~9 minutos) |
-| `auth_logs` | 17 | 21:47 → 21:55 UTC de hoje (~8 minutos) |
-| `postgres_logs` | 5 | 21:46 → 21:52 UTC de hoje (~6 minutos) |
+## Conclusão
 
-Portanto: **não é possível produzir agregados de 7 dias nem de 24 horas**, nem buscar historicamente por `ACCESS_REQUIRED`, `UNAUTHENTICATED`, 429/rate limit, erros Stripe, `user_access`, "already registered", "create user" ou "payment". Qualquer número que eu apresentasse para esses períodos seria inventado.
+Não há prova de que o PostHog esteja quebrado em produção para usuários reais. Toda a "ausência de eventos" observada até agora é explicada pelo filtro de bot do SDK em navegador automatizado. Existe, porém, um risco real e separado: `src/lib/analytics.ts` usa fallback para EU quando `VITE_LOVABLE_CONNECTOR_POSTHOG_REGION` não está presente no ambiente de build, e o token é de um projeto US — nesse caso a ingestão falharia silenciosamente.
 
-Isso é, por si só, um achado operacional: hoje não existe retenção de log suficiente para investigar um incidente de pagamento ou de acesso relatado por um usuário algumas horas depois. Investigação de incidentes depende hoje da API da Stripe e do banco, não dos logs.
+## Plano proposto
 
-## O que a janela disponível mostra (≈9 minutos, não extrapolável)
+1. Confirmar com tráfego humano real: abrir o site em um navegador comum e verificar no PostHog se `$pageview` e `cta_click` chegam. Alternativa sem navegador humano: comparar a contagem de eventos do projeto antes/depois de uma visita real.
+2. Endurecer a região no código: derivar o host do próprio ambiente sem fallback silencioso — se a região não estiver definida, registrar aviso e não assumir EU. (mudança de 1 arquivo, `src/lib/analytics.ts`)
+3. Verificar que `VITE_LOVABLE_CONNECTOR_POSTHOG_REGION` e o token estão presentes no bundle publicado (o token já foi confirmado no bundle atual; validar a região).
+4. Opcional: adicionar um sinalizador de debug (`?ph_debug=1`) que loga no console o host efetivo e o resultado de `_is_bot()`, para diagnósticos futuros sem novas auditorias.
+5. Não alterar `sanitize_properties` nem `advanced_disable_flags` — ambos estão corretos para a versão instalada e para a política de privacidade do projeto.
 
-Edge Functions — respostas por função e código:
+## Detalhes técnicos
 
-| Função | 2xx | 4xx | 5xx | Top código |
-|---|---|---|---|---|
-| check-subscription | 17 | 0 | 0 | 200 |
-| agent-chat | 2 | 0 | 0 | 200 |
-
-Sem tráfego registrado no período para `create-checkout`, `guest-checkout`, `complete-checkout`, `examinus-chat`, `consultation-transcribe`, `structure-anamnesis` e `transcribe-audio` — ausência de tráfego, não ausência de erro.
-
-Auth — eventos por rota:
-
-| Rota | 200 | 400 |
-|---|---|---|
-| `/user` (validação de sessão) | 15 | 0 |
-| `/token` (login / refresh) | 1 | 1 |
-| sem rota registrada | 1 | — |
-
-Nenhum evento de logout, recovery ou confirmation-requested no período. Houve **1 resposta 400 em `/token`** — a granularidade do log não distingue credencial inválida de refresh token expirado.
-
-Postgres: 5 registros, **0** com severidade ERROR/FATAL/PANIC.
-
-Busca por padrões (`ACCESS_REQUIRED`, `UNAUTHENTICATED`, 429, Stripe, `user_access`, "already registered", "create user", "payment"): nenhuma ocorrência dentro da janela retida. Com ~9 minutos de dados isso não significa que não ocorram.
-
-## Dois achados colaterais relevantes
-
-1. **PII em log de aplicação.** `check-subscription` grava o e-mail do usuário em texto claro no log (`User authenticated - {userId, email}`). O mesmo padrão aparece em outras funções que usam `logStep`. Não reproduzo os valores aqui, mas isso expõe dado pessoal de paciente-usuário em logs de terceiros e conflita com o cuidado de LGPD esperado para uma plataforma médica.
-2. **Volume de chamadas de `check-subscription`.** 17 chamadas em ~9 minutos para um único usuário ativo. Cada chamada dispara uma consulta à Stripe. Com base maior isso vira custo, latência e risco de rate limit da Stripe — coerente com o problema de acoplamento já apontado na auditoria anterior.
-
-## Alternativas para obter o que você pediu (sem alterar nada agora)
-
-- Erros de pagamento em 7/30 dias: já são obteníveis pela API da Stripe (feito na auditoria comercial anterior — 9 dos 10 cancelamentos foram `payment_failed`).
-- Sinais de acesso bloqueado: a tabela `security_events` e `ai_usage_logs` no banco têm retenção real e podem ser agregadas sem PII, se você quiser que eu faça isso numa próxima leitura.
-- Para ter de fato histórico de erro por função, seria necessário passar a persistir eventos de erro em tabela própria — mudança de código, fora do escopo desta auditoria.
+- Arquivos envolvidos na correção mínima: `src/lib/analytics.ts` (host/região e log de debug).
+- Nada de migrations, Stripe, auth ou mudança visual.
+- Testes de navegador automatizado nunca servirão como prova de ingestão PostHog enquanto o filtro de bot estiver ativo; a validação deve ser feita por tráfego real ou pela API de leitura do PostHog.
