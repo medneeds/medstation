@@ -5,7 +5,7 @@ import { findUserByEmail } from "../_shared/admin-users.ts";
 import { resolveSubscriptionEnd, type MinimalSubscription } from "../_shared/stripe-access.ts";
 import { sendTemplateEmailWithLog } from "../_shared/transactional-email-templates/send-and-log.ts";
 
-const BILLING_RECOVERY_URL = "https://medstation-ai.com.br/settings?billing=recover";
+const BILLING_RECOVERY_URL = "https://medstation-ai.com.br/settings";
 
 function serviceClient() {
   return createClient(
