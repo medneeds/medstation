@@ -325,6 +325,7 @@ serve(async (req) => {
           quality,
           activationByFeature,
           timeToFirstValue,
+          bySection: bySection.map((r) => ({
 
             name: String(r[0]), clicks: num(r[1]), checkouts: num(r[2]), subs: num(r[3]),
           })),
