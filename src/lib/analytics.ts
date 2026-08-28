@@ -604,6 +604,38 @@ async function trackValueDelivered(feature: string, agentType?: string | null) {
 }
 
 
+/**
+ * Decide se um corpo SSE/JSON de `agent-chat` contém texto útil entregue.
+ * Percorre linhas, ignora keepalive (`:`), vazias e `[DONE]`, faz parse tolerante
+ * e retorna true apenas se houver conteúdo textual não vazio. Nunca devolve conteúdo.
+ */
+export function hasUsefulAgentChatResponse(text: string): boolean {
+  if (typeof text !== "string" || !text.trim()) return false;
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith(":")) continue;
+    if (!line.startsWith("data:")) continue;
+    const payload = line.slice(5).trim();
+    if (!payload || payload === "[DONE]") continue;
+    let parsed: any;
+    try {
+      parsed = JSON.parse(payload);
+    } catch {
+      continue;
+    }
+    const choice = parsed?.choices?.[0];
+    const candidates: unknown[] = [
+      choice?.delta?.content,
+      choice?.message?.content,
+      parsed?.content,
+    ];
+    for (const candidate of candidates) {
+      if (typeof candidate === "string" && candidate.trim().length > 0) return true;
+    }
+  }
+  return false;
+}
+
 function hasUsefulStructuredAnamnesis(data: any): boolean {
   const structure = data?.structure;
   if (!structure || typeof structure !== "object") return false;
