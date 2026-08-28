@@ -1455,6 +1455,90 @@ export type Database = {
         }
         Relationships: []
       }
+      stripe_subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean
+          created_at: string
+          current_period_end: string | null
+          last_event_id: string | null
+          last_payment_failed_at: string | null
+          last_payment_succeeded_at: string | null
+          past_due_since: string | null
+          price_id: string | null
+          product_id: string | null
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          last_event_id?: string | null
+          last_payment_failed_at?: string | null
+          last_payment_succeeded_at?: string | null
+          past_due_since?: string | null
+          price_id?: string | null
+          product_id?: string | null
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          last_event_id?: string | null
+          last_payment_failed_at?: string | null
+          last_payment_succeeded_at?: string | null
+          past_due_since?: string | null
+          price_id?: string | null
+          product_id?: string | null
+          status?: string
+          stripe_customer_id?: string
+          stripe_subscription_id?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      stripe_webhook_events: {
+        Row: {
+          attempts: number
+          created_at: string
+          event_type: string
+          last_error: string | null
+          processed_at: string | null
+          status: string
+          stripe_event_id: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          event_type: string
+          last_error?: string | null
+          processed_at?: string | null
+          status: string
+          stripe_event_id: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          event_type?: string
+          last_error?: string | null
+          processed_at?: string | null
+          status?: string
+          stripe_event_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       support_messages: {
         Row: {
           content: string
