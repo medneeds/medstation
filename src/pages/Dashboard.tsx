@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSubscription } from "@/contexts/SubscriptionContext";
-import { QuickActionsHero } from "@/components/QuickActionsHero";
+import { MedStationDiscovery, AllToolsSection } from "@/components/MedStationDiscovery";
 import { FreeExaminusSpotlight } from "@/components/FreeExaminusSpotlight";
 import { hasSeenWelcomeTour } from "@/pages/WelcomeTour";
 
@@ -344,7 +344,8 @@ export default function Dashboard() {
         </div>
       </div> */}
 
-      {/* AI Agents - Main Section */}
+      {/* Grade completa — colapsada, para usuários recorrentes */}
+      <AllToolsSection>
       <div>
         <div className="flex items-center gap-2 mb-4">
           <Activity className="h-5 w-5 md:h-6 md:w-6 text-primary" />
@@ -396,6 +397,7 @@ export default function Dashboard() {
           ))}
         </div>
       </div>
+      </AllToolsSection>
 
       {/* Quick stats - HIDDEN */}
       {/* <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
