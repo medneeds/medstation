@@ -53,6 +53,16 @@ interface FunnelResponse {
   steps?: Step[];
   trialHealth?: { expiredUsers: number; paywallUsers: number; expiredEvents: number; paywallEvents: number };
   quality?: Quality[];
+  activationByFeature?: { feature: string; actions: number; users: number; percentOfActivated: number | null }[];
+  timeToFirstValue?: {
+    users: number;
+    medianMinutes: number | null;
+    p75Minutes: number | null;
+    p90Minutes: number | null;
+    under10Minutes: number;
+    under10Percent: number | null;
+  };
+
   bySection?: { name: string; clicks: number; checkouts: number; subs: number }[];
   byCta?: { name: string; clicks: number; users: number }[];
   byPlan?: { name: string; checkouts: number; subs: number }[];
@@ -83,6 +93,31 @@ const META_LABEL: Record<string, string> = {
   plan: "plano",
   origin: "origem do checkout",
 };
+
+const FEATURE_LABEL: Record<string, string> = {
+  examinus: "Examinus",
+  clinicus: "Clínicus",
+  prescriptus: "Prescriptus",
+  gasometrus: "Gasometrus",
+  codexus: "Codexus",
+  mediscuss: "Mediscuss",
+  legalis: "Legalis",
+  protocolus: "Protocolus",
+  atestus: "Atestus",
+  orientus: "Orientus",
+  numerus: "Numerus",
+  scorius: "Scorius",
+  modo_escuta: "Modo Escuta",
+  modo_rotineiro: "Modo Rotineiro",
+  medical_document: "Documentos médicos",
+  clinical_assistant: "Assistente clínico",
+};
+
+const featureLabel = (f: string) => FEATURE_LABEL[f] ?? f;
+
+const minutes = (v: number | null | undefined) =>
+  v === null || v === undefined ? "—" : `${v.toLocaleString("pt-BR")} min`;
+
 
 const tooltipStyle = {
   background: "hsl(var(--card))",
@@ -345,6 +380,79 @@ export default function AdminFunnel() {
               )}
             </div>
           </Panel>
+
+          {/* Ativação: tempo até o primeiro valor e valor entregue por ferramenta */}
+          <Panel
+            title="Ativação"
+            subtitle="Quanto tempo o médico leva para receber a primeira saída útil e por qual ferramenta"
+          >
+            <div className="grid gap-3 sm:grid-cols-4">
+              <Card className="p-4">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">Mediana</p>
+                <p className="mt-1 text-2xl font-display font-semibold">
+                  {minutes(data?.timeToFirstValue?.medianMinutes)}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {nf(data?.timeToFirstValue?.users ?? 0)} usuário(s) com cadastro e primeiro valor no período.
+                </p>
+              </Card>
+              <Card className="p-4">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">P75</p>
+                <p className="mt-1 text-2xl font-display font-semibold">
+                  {minutes(data?.timeToFirstValue?.p75Minutes)}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">3 em cada 4 chegam ao valor até aqui.</p>
+              </Card>
+              <Card className="p-4">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">P90</p>
+                <p className="mt-1 text-2xl font-display font-semibold">
+                  {minutes(data?.timeToFirstValue?.p90Minutes)}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">Cauda lenta da ativação.</p>
+              </Card>
+              <Card className="p-4">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">Até 10 min</p>
+                <p className="mt-1 text-2xl font-display font-semibold">
+                  {data?.timeToFirstValue?.under10Percent === null ||
+                  data?.timeToFirstValue?.under10Percent === undefined
+                    ? "—"
+                    : `${data.timeToFirstValue.under10Percent.toFixed(0)}%`}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {nf(data?.timeToFirstValue?.under10Minutes ?? 0)} usuário(s) ativados em até 10 minutos.
+                </p>
+              </Card>
+            </div>
+
+            <div className="mt-5">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                Valor entregue por ferramenta
+              </p>
+              <div className="space-y-2">
+                {(data?.activationByFeature ?? []).map((f) => (
+                  <div key={f.feature} className="flex items-baseline justify-between gap-3">
+                    <span className="text-sm truncate">{featureLabel(f.feature)}</span>
+                    <div className="flex items-baseline gap-3 shrink-0 text-xs tabular-nums">
+                      <span className="text-sm font-semibold">{nf(f.users)}</span>
+                      <span className="text-muted-foreground w-20 text-right">
+                        {nf(f.actions)} ações
+                      </span>
+                      <span className="text-muted-foreground w-14 text-right">
+                        {f.percentOfActivated === null ? "—" : `${f.percentOfActivated.toFixed(0)}%`}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                {!(data?.activationByFeature ?? []).length && (
+                  <p className="text-sm text-muted-foreground">
+                    Nenhuma entrega de valor registrada no período.
+                  </p>
+                )}
+              </div>
+            </div>
+          </Panel>
+
+
 
           {/* Evolução diária */}
           <Panel title="Evolução diária" subtitle="Volume de eventos por dia">

@@ -176,6 +176,47 @@ serve(async (req) => {
           ),
         ]);
 
+      // Ativação: valor entregue por ferramenta e tempo até o primeiro valor.
+      // Consultas isoladas — falha aqui não derruba o funil principal.
+      let activationRows: Row[] = [];
+      let ttfvRows: Row[] = [];
+      try {
+        [activationRows, ttfvRows] = await Promise.all([
+          hogql(
+            `SELECT coalesce(nullIf(toString(properties.feature), ''), 'não informado') AS f,
+                    count() AS actions, count(DISTINCT person_id) AS users
+             FROM events WHERE ${win} AND event = 'value_action_completed'
+             GROUP BY f ORDER BY users DESC, actions DESC LIMIT 20`,
+            projectId, key,
+          ),
+          hogql(
+            `SELECT count() AS users,
+                    quantile(0.5)(m) AS p50,
+                    quantile(0.75)(m) AS p75,
+                    quantile(0.9)(m) AS p90,
+                    countIf(m <= 10) AS under10
+             FROM (
+               SELECT dateDiff('minute', s, v) AS m FROM (
+                 SELECT person_id,
+                        minIf(timestamp, event = 'signup_completed') AS s,
+                        minIf(timestamp, event = 'first_value_action') AS v
+                 FROM events
+                 WHERE ${win} AND event IN ('signup_completed','first_value_action')
+                 GROUP BY person_id
+                 HAVING countIf(event = 'signup_completed') > 0
+                    AND countIf(event = 'first_value_action') > 0
+                    AND v >= s
+               )
+             )`,
+            projectId, key,
+          ),
+        ]);
+      } catch (e) {
+        console.error("[admin-posthog] activation metrics failed:", e instanceof Error ? e.message : e);
+      }
+
+
+
       const num = (v: unknown) => Number(v ?? 0);
       const tMap = new Map<string, { total: number; users: number; sessions: number }>();
       for (const r of totals) {
@@ -244,6 +285,32 @@ serve(async (req) => {
         };
       });
 
+      const activatedUsers = tMap.get("first_value_action")?.users ?? 0;
+      const activationByFeature = activationRows.map((r) => {
+        const users = num(r[2]);
+        return {
+          feature: String(r[0]),
+          actions: num(r[1]),
+          users,
+          percentOfActivated: activatedUsers > 0 ? (users / activatedUsers) * 100 : null,
+        };
+      });
+
+      const ttfv = ttfvRows[0];
+      const ttfvUsers = num(ttfv?.[0]);
+      const under10 = num(ttfv?.[4]);
+      const round1 = (v: unknown) => (ttfvUsers > 0 ? Math.round(Number(v ?? 0) * 10) / 10 : null);
+      const timeToFirstValue = {
+        users: ttfvUsers,
+        medianMinutes: round1(ttfv?.[1]),
+        p75Minutes: round1(ttfv?.[2]),
+        p90Minutes: round1(ttfv?.[3]),
+        under10Minutes: under10,
+        under10Percent: ttfvUsers > 0 ? (under10 / ttfvUsers) * 100 : null,
+      };
+
+
+
       return new Response(
         JSON.stringify({
           configured: true,
@@ -256,7 +323,10 @@ serve(async (req) => {
             paywallEvents: tMap.get("paywall_viewed")?.total ?? 0,
           },
           quality,
+          activationByFeature,
+          timeToFirstValue,
           bySection: bySection.map((r) => ({
+
             name: String(r[0]), clicks: num(r[1]), checkouts: num(r[2]), subs: num(r[3]),
           })),
           byCta: byCta.map((r) => ({ name: String(r[0]), clicks: num(r[1]), users: num(r[2]) })),

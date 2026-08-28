@@ -548,11 +548,61 @@ async function currentUserId(): Promise<string | null> {
   }
 }
 
-async function trackFirstValue(feature: string) {
+/** Assistentes conhecidos — usados apenas como rótulo de ferramenta, nunca conteúdo. */
+const KNOWN_AGENT_TYPES = new Set([
+  "examinus",
+  "clinicus",
+  "prescriptus",
+  "gasometrus",
+  "codexus",
+  "mediscuss",
+  "legalis",
+  "protocolus",
+  "atestus",
+  "orientus",
+  "numerus",
+  "scorius",
+]);
+
+/**
+ * Lê apenas o identificador da ferramenta no corpo da requisição.
+ * Nenhum outro campo do body é retornado ou enviado ao analytics.
+ */
+export function extractAgentTypeFromRequestBody(body: unknown): string | null {
+  if (typeof body !== "string" || !body) return null;
+  let parsed: Record<string, unknown> | null = null;
+  try {
+    const value = JSON.parse(body) as unknown;
+    if (value && typeof value === "object") parsed = value as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+  const raw = parsed?.agentType ?? parsed?.agent_type;
+
+  if (typeof raw !== "string") return null;
+  const normalized = raw.trim().toLowerCase().replace(/[^a-z0-9_]/g, "_").slice(0, 32);
+  return normalized || null;
+}
+
+export function featureForAgentType(agentType: string | null): string {
+  if (agentType && KNOWN_AGENT_TYPES.has(agentType)) return agentType;
+  if (agentType && /^[a-z][a-z0-9_]{2,31}$/.test(agentType)) return agentType;
+  return "clinical_assistant";
+}
+
+/**
+ * Toda saída útil entregue: evento recorrente + marco único por conta.
+ * Somente `feature` e `agent_type` saem do navegador.
+ */
+async function trackValueDelivered(feature: string, agentType?: string | null) {
   const userId = await currentUserId();
   if (!userId) return;
-  trackLifecycleEvent("first_value_action", { feature }, `user:${userId}`);
+  const props: Record<string, unknown> = { feature };
+  if (agentType) props.agent_type = agentType;
+  trackEvent("value_action_completed", props);
+  trackLifecycleEvent("first_value_action", props, `user:${userId}`);
 }
+
 
 function hasUsefulStructuredAnamnesis(data: any): boolean {
   const structure = data?.structure;
@@ -606,7 +656,17 @@ export function installFirstValueResponseTracker(): () => void {
             : input.url;
       const pathname = new URL(rawUrl, window.location.origin).pathname;
       if (response.ok && pathname.endsWith("/functions/v1/agent-chat")) {
-        void trackFirstValue("clinical_assistant");
+        const init = args[1] as RequestInit | undefined;
+        const agentType = extractAgentTypeFromRequestBody(init?.body);
+        const feature = featureForAgentType(agentType);
+        // O corpo é lido apenas localmente para responder "houve saída útil?".
+        void response
+          .clone()
+          .text()
+          .then((text) => {
+            if (text.trim().length > 0) void trackValueDelivered(feature, agentType);
+          })
+          .catch(() => undefined);
       }
     } catch {
       /* tracking must never interfere with product traffic */
@@ -622,7 +682,8 @@ export function installFirstValueResponseTracker(): () => void {
     try {
       if (!result?.error && hasUsefulFunctionResult(functionName, result?.data)) {
         const feature = featureForFunction(functionName);
-        if (feature) void trackFirstValue(feature);
+        if (feature) void trackValueDelivered(feature);
+
       }
     } catch {
       /* tracking must never interfere with Edge Function calls */
