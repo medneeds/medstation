@@ -303,10 +303,11 @@ export default function Dashboard() {
         </Button> */}
       </div>
 
-      {/* Hero de ações rápidas — o que o médico quer fazer agora */}
+      {/* Descoberta orientada a 3 caminhos */}
+      <MedStationDiscovery />
+
       <FreeExaminusSpotlight />
 
-      <QuickActionsHero />
 
       {/* <div>
         <div className="flex items-center gap-2 mb-4">
