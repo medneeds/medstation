@@ -266,7 +266,7 @@ export default function MedicalDocuments() {
       case "cancelled":
         return "bg-red-500/10 text-red-700 dark:text-red-400";
       default:
-        return "bg-gray-500/10 text-gray-700 dark:text-gray-400";
+        return "bg-muted text-muted-foreground";
     }
   };
 
