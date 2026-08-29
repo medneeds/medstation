@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, useEffect, useState } from "react";
 import { Seo } from "@/components/Seo";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -9,11 +9,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { QuickCheckout } from "@/components/QuickCheckout";
 import { LeadForm } from "@/components/LeadForm";
-import { ConciergeFab } from "@/components/ConciergeFab";
-import { ClinicalFlowDemo } from "@/components/ClinicalFlowDemo";
-import { LandingToolExplorer } from "@/components/landing/LandingToolExplorer";
+import { DeferredSection, DeferredIdle } from "@/components/DeferredSection";
+
+// Blocos abaixo da dobra: carregados sob demanda para não pesar o primeiro paint.
+const QuickCheckout = lazy(() => import("@/components/QuickCheckout").then(m => ({ default: m.QuickCheckout })));
+const ConciergeFab = lazy(() => import("@/components/ConciergeFab").then(m => ({ default: m.ConciergeFab })));
+const ClinicalFlowDemo = lazy(() => import("@/components/ClinicalFlowDemo").then(m => ({ default: m.ClinicalFlowDemo })));
+const LandingToolExplorer = lazy(() => import("@/components/landing/LandingToolExplorer").then(m => ({ default: m.LandingToolExplorer })));
 
 import { trackCtaClick } from "@/lib/analytics";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
@@ -183,9 +186,9 @@ export default function Lp3() {
               Do áudio ou de uma informação solta até o texto pronto para o prontuário.
             </p>
 
-            <div className="mt-8">
+            <DeferredSection className="mt-8" minHeight={520}>
               <ClinicalFlowDemo onPrimary={() => goForm("flow_demo")} />
-            </div>
+            </DeferredSection>
           </div>
         </section>
 
@@ -198,7 +201,9 @@ export default function Lp3() {
             <p className="mt-3 text-center text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
               Escolha um caminho e toque em uma ferramenta para ver o que ela faz na prática.
             </p>
-            <LandingToolExplorer />
+            <DeferredSection minHeight={420}>
+              <LandingToolExplorer />
+            </DeferredSection>
           </div>
         </section>
 
@@ -306,9 +311,9 @@ export default function Lp3() {
               : `Equivale a ${brl(price.now / 12)} por mês — dois meses de cortesia em relação ao mensal.`}
           </p>
 
-          <div className="mt-6 max-w-xl mx-auto">
+          <DeferredSection className="mt-6 max-w-xl mx-auto" minHeight={180}>
             <QuickCheckout origin="lp3" product="pro_completo" billingPeriod={billing} showPricing={false} />
-          </div>
+          </DeferredSection>
 
           <div className="mt-14 max-w-2xl mx-auto">
             <h3 className="text-lg md:text-xl font-semibold tracking-tight text-center">Perguntas frequentes</h3>
@@ -345,7 +350,9 @@ export default function Lp3() {
         </div>
       </footer>
 
-      <ConciergeFab />
+      <DeferredIdle>
+        <ConciergeFab />
+      </DeferredIdle>
     </div>
   );
 }
