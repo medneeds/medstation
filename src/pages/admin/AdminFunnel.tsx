@@ -24,6 +24,7 @@ import {
   Legend,
 } from "recharts";
 import OnboardingInsightsPanel from "@/components/admin/OnboardingInsightsPanel";
+import ProductMetricsPanel from "@/components/admin/ProductMetricsPanel";
 
 
 /* -------------------------------------------------------------------------
@@ -282,12 +283,22 @@ export default function AdminFunnel() {
         </div>
       ) : (
         <>
+          <ProductMetricsPanel days={days} />
+
+          <Card className="p-4 border-border/70 bg-muted/20 text-xs text-muted-foreground">
+            As seções abaixo vêm de eventos do navegador (PostHog). Elas medem intenção e
+            navegação, não o registro oficial da plataforma: bloqueadores, abas fechadas e
+            redirecionamentos fazem esses números ficarem abaixo dos do banco. Para cadastros,
+            ativação e uso, considere o bloco “Produto — medido no banco”.
+          </Card>
+
           {/* Diagnóstico de qualidade dos dados */}
           <Card
             className={`p-4 flex items-start gap-3 ${
               healthy ? "border-primary/40 bg-primary/5" : "border-border"
             }`}
           >
+
             {healthy ? (
               <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 shrink-0" />
             ) : (
@@ -334,7 +345,7 @@ export default function AdminFunnel() {
           {/* Funil em barras proporcionais */}
           <Panel
             title="Etapas do funil"
-            subtitle="Usuários únicos por etapa e taxa de passagem"
+            subtitle="Eventos de navegador · usuários únicos por etapa e taxa de passagem (subestimado)"
           >
             <div className="space-y-3">
               {rows.map((r, i) => (
@@ -386,7 +397,7 @@ export default function AdminFunnel() {
           {/* Ativação: tempo até o primeiro valor e valor entregue por ferramenta */}
           <Panel
             title="Ativação"
-            subtitle="Quanto tempo o médico leva para receber a primeira saída útil e por qual ferramenta"
+            subtitle="Eventos de navegador · tempo até a primeira saída útil (versão oficial no bloco medido no banco)"
           >
             <div className="grid gap-3 sm:grid-cols-4">
               <Card className="p-4">
