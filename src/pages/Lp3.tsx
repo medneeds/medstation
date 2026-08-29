@@ -43,8 +43,9 @@ const testimonials = [
 const faq = [
   {
     q: "Como funciona o teste de 7 dias?",
-    a: "Você cria a conta com nome, telefone e e-mail e usa a plataforma inteira por 7 dias: Documentação, Copiloto e Fluxo. Não pedimos cartão de crédito em momento nenhum do teste.",
+    a: "Você informa apenas o e-mail e recebe um link seguro de acesso. Durante 7 dias a plataforma inteira fica liberada: Documentação, Copiloto e Fluxo. Não pedimos cartão de crédito em momento nenhum do teste.",
   },
+
   {
     q: "E depois dos 7 dias?",
     a: "Ao fim dos 7 dias, basta assinar o plano único para continuar com tudo liberado. Sem assinatura, os assistentes ficam bloqueados, mas sua conta e seus registros continuam salvos.",
