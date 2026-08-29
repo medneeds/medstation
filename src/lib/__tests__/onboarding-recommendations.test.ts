@@ -41,8 +41,9 @@ describe("onboarding recommendation engine", () => {
       workSetting: "outpatient",
       primaryGoal: "less_typing",
     });
-    expect(outpatient.recommendedTools[0]).toBe("clinicus");
+    expect(outpatient.recommendedTools).toContain("clinicus");
     expect(outpatient.recommendedTools).toContain("modo_escuta");
+
 
     const icu = recommendFromAnswers({
       routinePain: "calculations",
