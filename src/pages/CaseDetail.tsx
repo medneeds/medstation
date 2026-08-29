@@ -230,7 +230,7 @@ export default function CaseDetail() {
       case "active":
         return "bg-green-500/10 text-green-700 dark:text-green-400";
       case "closed":
-        return "bg-gray-500/10 text-gray-700 dark:text-gray-400";
+        return "bg-muted text-muted-foreground";
       default:
         return "bg-blue-500/10 text-blue-700 dark:text-blue-400";
     }
