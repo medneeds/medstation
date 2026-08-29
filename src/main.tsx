@@ -8,7 +8,7 @@ import "./index.css";
 createRoot(document.getElementById("root")!).render(
   <ErrorBoundary>
     <HelmetProvider>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem enableColorScheme>
         <App />
       </ThemeProvider>
     </HelmetProvider>

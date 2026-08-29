@@ -1,4 +1,4 @@
-import { lazy, useEffect, useState } from "react";
+import { lazy, useState } from "react";
 import { Seo } from "@/components/Seo";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -77,18 +77,8 @@ export default function Lp3() {
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
   useReferralCapture();
 
-  useEffect(() => {
-    const root = document.documentElement;
-    const wasDark = root.classList.contains("dark");
-    root.classList.remove("dark");
-    root.classList.add("light");
-    return () => {
-      if (wasDark) {
-        root.classList.remove("light");
-        root.classList.add("dark");
-      }
-    };
-  }, []);
+
+
 
   const goForm = (label: string) => {
     trackCtaClick({ cta: label, section: "lp3", destination: "#comecar" });
@@ -98,7 +88,7 @@ export default function Lp3() {
   const price = DISPLAY_PRICING.bundle[billing];
 
   return (
-    <div className="light min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground">
       <Seo
         path="/"
         title="MedStation — menos tempo no teclado, mais tempo na medicina"

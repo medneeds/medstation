@@ -3,8 +3,8 @@ import { Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function HeaderThemeToggle() {
-  const { theme, setTheme } = useTheme();
-  const isDark = theme === "dark";
+  const { resolvedTheme, setTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   return (
     <button
