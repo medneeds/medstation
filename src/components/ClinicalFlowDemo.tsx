@@ -256,8 +256,12 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
             </span>
             <p className="text-[0.8rem] md:text-sm text-foreground/90 leading-relaxed">{CASE_SUMMARY}</p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Button onClick={play} disabled={playing} className="whitespace-nowrap">
+          <div className="flex items-center gap-2 shrink-0 w-full md:w-auto">
+            <Button
+              onClick={play}
+              disabled={playing}
+              className="w-full md:w-auto min-h-[44px] whitespace-nowrap"
+            >
               {playing ? (
                 <>Rodando o fluxo…</>
               ) : done === stages.length - 1 ? (
@@ -267,12 +271,13 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
               )}
             </Button>
           </div>
+
         </div>
       </Card>
 
-      {/* Linha do tempo */}
-      <div className="-mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto scrollbar-none snap-x snap-mandatory scroll-px-4">
-        <div className="flex items-stretch gap-2 min-w-max md:min-w-0">
+      {/* Linha do tempo — grade de 2 colunas no mobile, linha única no desktop */}
+      <div className="md:overflow-x-auto md:scrollbar-none">
+        <div className="grid grid-cols-2 gap-2 md:flex md:items-stretch md:min-w-0">
           {stages.map((s, i) => {
             const Icon = s.icon;
             const isDone = done >= i;
@@ -284,10 +289,10 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
                 onClick={() => setActive(i)}
                 aria-pressed={isActive}
                 className={cn(
-                  "snap-start flex-1 min-w-[8.25rem] text-left rounded-xl border px-2.5 py-2 transition-all duration-300",
+                  "min-w-0 w-full md:flex-1 text-left rounded-xl border px-2.5 py-2 min-h-[44px] transition-colors duration-300",
                   isActive
                     ? "border-primary/50 bg-primary/10 shadow-[0_10px_28px_-20px_hsl(var(--primary)/0.9)]"
-                    : "border-border/60 bg-card/50 hover:border-primary/35 hover:-translate-y-0.5",
+                    : "border-border/60 bg-card/50 hover:border-primary/35",
                   playing && isActive && !isDone && "animate-pulse",
                 )}
               >
@@ -304,8 +309,8 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
                   </span>
                   <Icon className={cn("w-3.5 h-3.5", isActive ? "text-primary" : "text-muted-foreground")} />
                 </div>
-                <p className="text-xs font-medium mt-1.5 whitespace-nowrap">{s.label}</p>
-                <p className="text-[0.65rem] text-muted-foreground whitespace-nowrap">
+                <p className="text-xs font-medium mt-1.5 break-words md:whitespace-nowrap">{s.label}</p>
+                <p className="text-[0.65rem] text-muted-foreground break-words md:whitespace-nowrap">
                   {s.assistant} · {s.seconds}s
                 </p>
               </button>
@@ -314,9 +319,10 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
         </div>
       </div>
 
+
       {/* Painel do passo */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-        <Card className="md:col-span-2 p-3.5 md:p-4 border border-hairline bg-muted/30">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-3 min-w-0">
+        <Card className="md:col-span-2 min-w-0 p-3.5 md:p-4 border border-hairline bg-muted/30">
           <Badge variant="secondary" className="text-[0.65rem]">O que você entrega</Badge>
           <h4 className="font-display text-sm md:text-base tracking-tight mt-2">{stage.assistant}</h4>
           <p className="text-[0.8rem] text-muted-foreground mt-1.5 leading-relaxed">{stage.input}</p>
@@ -324,16 +330,16 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
 
         <Card
           className={cn(
-            "md:col-span-3 p-3.5 md:p-4 border transition-all duration-500",
+            "md:col-span-3 min-w-0 p-3.5 md:p-4 border transition-opacity duration-500",
             revealed
               ? "border-primary/40 bg-card shadow-[0_18px_40px_-24px_hsl(var(--primary)/0.55)]"
               : "border-dashed border-border/60 bg-card/40",
           )}
         >
           <div className="flex items-center justify-between gap-2 mb-3">
-            <Badge className="text-[0.65rem]">{stage.label}</Badge>
+            <Badge className="text-[0.65rem] min-w-0 break-words">{stage.label}</Badge>
             {revealed && (
-              <Button variant="ghost" size="sm" onClick={copyOutput} className="h-7 px-2 text-xs">
+              <Button variant="ghost" size="sm" onClick={copyOutput} className="h-9 px-2.5 text-xs shrink-0">
                 <Copy className="w-3.5 h-3.5 mr-1.5" />Copiar
               </Button>
             )}
@@ -341,9 +347,9 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
           <h4 className="font-display text-sm md:text-base tracking-tight mb-2">{stage.title}</h4>
           {revealed ? (
             <div className="space-y-3 animate-fade-in">
-              <div className="rounded-xl border border-border/50 bg-background/60 p-2.5 space-y-0.5 max-h-[19rem] overflow-y-auto no-scrollbar">
+              <div className="rounded-xl border border-border/50 bg-background/60 p-2.5 space-y-0.5 max-h-[15rem] md:max-h-[19rem] overflow-y-auto overscroll-contain no-scrollbar">
                 {stage.output.map((line, j) => (
-                  <p key={j} className="text-[0.7rem] md:text-xs font-mono leading-relaxed text-foreground/90">
+                  <p key={j} className="text-[0.7rem] md:text-xs font-mono leading-relaxed text-foreground/90 break-words">
                     {line || "\u00A0"}
                   </p>
                 ))}
@@ -370,7 +376,7 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
       </div>
 
       {/* Rodapé de tempo */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 text-center">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 text-center w-full">
         <div className="inline-flex items-center gap-2 rounded-full border border-hairline bg-card/60 px-3.5 py-1.5">
           <Clock className="w-3.5 h-3.5 text-primary" />
           <span className="text-xs text-muted-foreground">
@@ -380,7 +386,7 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
           </span>
         </div>
         {onPrimary && (
-          <Button variant="outline" onClick={onPrimary}>
+          <Button variant="outline" onClick={onPrimary} className="w-full sm:w-auto min-h-[44px]">
             Testar com o seu caso agora
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
