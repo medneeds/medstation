@@ -79,16 +79,43 @@ async function syncSubscription(
     : null;
 
   const firstItem = subscription.items?.data?.[0];
-  const product = firstItem?.price?.product;
+  const price = firstItem?.price;
+  const product = price?.product;
   const productId = typeof product === "string" ? product : product?.id ?? null;
+  const item = firstItem as unknown as { current_period_start?: number | null } | undefined;
+  const periodStart = (subscription as unknown as { current_period_start?: number | null }).current_period_start
+    ?? item?.current_period_start
+    ?? null;
+
+  // Keep the mirror columns filled incrementally so the admin backfill stays a
+  // recovery tool, not a dependency.
+  const monthlyAmountCents = (() => {
+    if (!price?.unit_amount || !price.recurring) return null;
+    const amount = price.unit_amount * (firstItem?.quantity ?? 1);
+    const { interval, interval_count = 1 } = price.recurring;
+    const monthly = interval === "year"
+      ? amount / (12 * interval_count)
+      : interval === "week"
+        ? (amount * 52) / (12 * interval_count)
+        : interval === "day"
+          ? (amount * 365) / (12 * interval_count)
+          : amount / interval_count;
+    return Math.round(monthly);
+  })();
 
   const { error } = await supabase.from("stripe_subscriptions").upsert({
     stripe_subscription_id: subscription.id,
     stripe_customer_id: customerId,
     user_id: userId,
     status,
-    price_id: firstItem?.price?.id ?? null,
+    price_id: price?.id ?? null,
     product_id: productId,
+    current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
+    canceled_at: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
+    billing_interval: price?.recurring?.interval ?? null,
+    currency: subscription.currency ?? price?.currency ?? null,
+    monthly_amount_cents: monthlyAmountCents,
+    synced_at: nowIso,
     current_period_end: resolveSubscriptionEnd(subscription as unknown as MinimalSubscription),
     cancel_at_period_end: subscription.cancel_at_period_end ?? false,
     past_due_since: pastDueSince,
