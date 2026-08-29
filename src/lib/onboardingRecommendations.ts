@@ -90,9 +90,15 @@ export function recommendFromAnswers(answers: OnboardingAnswers): OnboardingReco
   const pain = PAIN_RULES[answers.routinePain];
   const goal = GOAL_RULES[answers.primaryGoal];
 
-  // O caminho da dor principal prevalece; o objetivo só é usado como desempate
-  // quando ele não contradiz a resposta 1.
-  const primaryPath: DiscoveryPathId = goal.paths.includes(pain.path) ? pain.path : pain.path;
+  // Score transparente: a resposta 1 tem peso 2 e o objetivo peso 1,
+  // portanto a dor principal sempre prevalece e o objetivo só desempata.
+  const score: Record<DiscoveryPathId, number> = { documentation: 0, copilot: 0, workflow: 0 };
+  score[pain.path] += 2;
+  goal.paths.forEach((p) => { score[p] += 1; });
+  const primaryPath = (Object.keys(score) as DiscoveryPathId[]).reduce((best, p) =>
+    score[p] > score[best] ? p : best,
+  );
+
 
   const settingPriority = SETTING_PRIORITY[answers.workSetting];
   const base = dedupe([...pain.tools, ...goal.tools]);
