@@ -321,8 +321,8 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
 
 
       {/* Painel do passo */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-        <Card className="md:col-span-2 p-3.5 md:p-4 border border-hairline bg-muted/30">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-3 min-w-0">
+        <Card className="md:col-span-2 min-w-0 p-3.5 md:p-4 border border-hairline bg-muted/30">
           <Badge variant="secondary" className="text-[0.65rem]">O que você entrega</Badge>
           <h4 className="font-display text-sm md:text-base tracking-tight mt-2">{stage.assistant}</h4>
           <p className="text-[0.8rem] text-muted-foreground mt-1.5 leading-relaxed">{stage.input}</p>
@@ -330,16 +330,16 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
 
         <Card
           className={cn(
-            "md:col-span-3 p-3.5 md:p-4 border transition-all duration-500",
+            "md:col-span-3 min-w-0 p-3.5 md:p-4 border transition-opacity duration-500",
             revealed
               ? "border-primary/40 bg-card shadow-[0_18px_40px_-24px_hsl(var(--primary)/0.55)]"
               : "border-dashed border-border/60 bg-card/40",
           )}
         >
           <div className="flex items-center justify-between gap-2 mb-3">
-            <Badge className="text-[0.65rem]">{stage.label}</Badge>
+            <Badge className="text-[0.65rem] min-w-0 break-words">{stage.label}</Badge>
             {revealed && (
-              <Button variant="ghost" size="sm" onClick={copyOutput} className="h-7 px-2 text-xs">
+              <Button variant="ghost" size="sm" onClick={copyOutput} className="h-9 px-2.5 text-xs shrink-0">
                 <Copy className="w-3.5 h-3.5 mr-1.5" />Copiar
               </Button>
             )}
@@ -347,9 +347,9 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
           <h4 className="font-display text-sm md:text-base tracking-tight mb-2">{stage.title}</h4>
           {revealed ? (
             <div className="space-y-3 animate-fade-in">
-              <div className="rounded-xl border border-border/50 bg-background/60 p-2.5 space-y-0.5 max-h-[19rem] overflow-y-auto no-scrollbar">
+              <div className="rounded-xl border border-border/50 bg-background/60 p-2.5 space-y-0.5 max-h-[15rem] md:max-h-[19rem] overflow-y-auto overscroll-contain no-scrollbar">
                 {stage.output.map((line, j) => (
-                  <p key={j} className="text-[0.7rem] md:text-xs font-mono leading-relaxed text-foreground/90">
+                  <p key={j} className="text-[0.7rem] md:text-xs font-mono leading-relaxed text-foreground/90 break-words">
                     {line || "\u00A0"}
                   </p>
                 ))}
@@ -376,7 +376,7 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
       </div>
 
       {/* Rodapé de tempo */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 text-center">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 text-center w-full">
         <div className="inline-flex items-center gap-2 rounded-full border border-hairline bg-card/60 px-3.5 py-1.5">
           <Clock className="w-3.5 h-3.5 text-primary" />
           <span className="text-xs text-muted-foreground">
@@ -386,7 +386,7 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
           </span>
         </div>
         {onPrimary && (
-          <Button variant="outline" onClick={onPrimary}>
+          <Button variant="outline" onClick={onPrimary} className="w-full sm:w-auto min-h-[44px]">
             Testar com o seu caso agora
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
