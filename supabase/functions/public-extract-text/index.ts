@@ -43,11 +43,16 @@ serve(async (req) => {
     }
 
     // Rate limit por IP + fingerprint (janela curta para OCR de páginas)
-    const clientIp =
+    // Fingerprint sanitizado (formato rígido) para impedir injeção em filtros PostgREST.
+    const safeFingerprint = typeof fingerprint === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(fingerprint)
+      ? fingerprint
+      : null;
+    const rawIp =
       req.headers.get("x-forwarded-for") ||
       req.headers.get("x-real-ip") ||
       "unknown";
-    const identifier = fingerprint ? `${clientIp}_${fingerprint}` : clientIp;
+    const clientIp = (rawIp.split(",")[0].trim().replace(/[^0-9A-Za-z.:_-]/g, "").slice(0, 64)) || "unknown";
+    const identifier = safeFingerprint ? `${clientIp}_${safeFingerprint}` : clientIp;
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -58,7 +63,7 @@ serve(async (req) => {
       .from("rate_limits")
       .select("*")
       .eq("function_name", "public-extract-text")
-      .or(`user_id.eq.public_${identifier},fingerprint.eq.${fingerprint || "none"}`)
+      .or(`user_id.eq.public_${identifier},fingerprint.eq.${safeFingerprint || "none"}`)
       .gte("updated_at", windowStart);
 
     let total = 0;
@@ -69,7 +74,7 @@ serve(async (req) => {
         records.find(
           (r: any) =>
             r.user_id === `public_${identifier}` ||
-            (fingerprint && r.fingerprint === fingerprint),
+            (safeFingerprint && r.fingerprint === safeFingerprint),
         ) || null;
     }
 
@@ -87,7 +92,7 @@ serve(async (req) => {
         .update({
           request_count: existing.request_count + 1,
           updated_at: now,
-          fingerprint: fingerprint || existing.fingerprint,
+          fingerprint: safeFingerprint || existing.fingerprint,
         })
         .eq("id", existing.id);
     } else {
@@ -97,7 +102,7 @@ serve(async (req) => {
         window_start: now,
         request_count: 1,
         updated_at: now,
-        fingerprint: fingerprint || null,
+        fingerprint: safeFingerprint || null,
       });
     }
 

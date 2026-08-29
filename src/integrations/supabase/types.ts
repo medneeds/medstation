@@ -2046,6 +2046,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_feature_enabled: { Args: { _key: string }; Returns: boolean }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       search_cases: {
         Args: { search_query: string; user_uuid: string }

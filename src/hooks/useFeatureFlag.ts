@@ -9,22 +9,15 @@ export function useFeatureFlag(key: string, defaultValue = false) {
     let mounted = true;
     (async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        const { data, error } = await supabase
-          .from("feature_flags")
-          .select("*")
-          .eq("key", key)
-          .maybeSingle();
+        // Checagem via RPC segura — a tabela não expõe listas de usuários ao cliente.
+        const { data, error } = await supabase.rpc("is_feature_enabled", { _key: key });
         if (!mounted) return;
-        if (error || !data) { setEnabled(defaultValue); setLoading(false); return; }
-        const uid = user?.id;
-        if (uid && data.disabled_users?.includes(uid)) setEnabled(false);
-        else if (uid && data.enabled_users?.includes(uid)) setEnabled(true);
-        else if (data.enabled_global) setEnabled(true);
-        else if (data.rollout_pct > 0 && uid) {
-          const hash = [...uid].reduce((a, c) => a + c.charCodeAt(0), 0);
-          setEnabled((hash % 100) < data.rollout_pct);
-        } else setEnabled(defaultValue);
+        if (error || data === null || data === undefined) {
+          setEnabled(defaultValue);
+          setLoading(false);
+          return;
+        }
+        setEnabled(Boolean(data));
       } catch { if (mounted) setEnabled(defaultValue); }
       finally { if (mounted) setLoading(false); }
     })();

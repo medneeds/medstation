@@ -42,17 +42,24 @@ serve(async (req) => {
     // Parse request body first to get fingerprint
     const { messages, fileContent, usePipeSeparator, includeTime = true, fingerprint, onlyAltered, clinicalImpression, compactMode } = await req.json();
 
-    // Get client IP for rate limiting
-    const clientIp = req.headers.get("x-forwarded-for") || 
-                     req.headers.get("x-real-ip") || 
-                     "unknown";
+    // Sanitizar fingerprint: formato rígido (hash alfanumérico) para impedir
+    // injeção de cláusulas extras em filtros PostgREST (.or()).
+    const safeFingerprint = typeof fingerprint === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(fingerprint)
+      ? fingerprint
+      : null;
+
+    // Get client IP for rate limiting (sanitizado — header é controlável pelo cliente)
+    const rawIp = req.headers.get("x-forwarded-for") ||
+                  req.headers.get("x-real-ip") ||
+                  "unknown";
+    const clientIp = (rawIp.split(",")[0].trim().replace(/[^0-9A-Za-z.:_-]/g, "").slice(0, 64)) || "unknown";
 
     // Criar identificador composto: IP + fingerprint (mais difícil de burlar)
-    const identifier = fingerprint 
-      ? `${clientIp}_${fingerprint}` 
+    const identifier = safeFingerprint
+      ? `${clientIp}_${safeFingerprint}`
       : clientIp;
 
-    console.log(`Public Examinus request - IP: ${clientIp}, Fingerprint: ${fingerprint ? 'provided' : 'none'}`);
+    console.log(`Public Examinus request - IP: ${clientIp}, Fingerprint: ${safeFingerprint ? 'provided' : 'none'}`);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -64,7 +71,7 @@ serve(async (req) => {
       .from("rate_limits")
       .select("*")
       .eq("function_name", "public-examinus")
-      .or(`user_id.eq.public_${clientIp},fingerprint.eq.${fingerprint || 'none'}`);
+      .or(`user_id.eq.public_${clientIp},fingerprint.eq.${safeFingerprint || 'none'}`);
 
     // Calcular total de requisições considerando TODOS os registros relacionados
     let totalCount = 0;
@@ -77,7 +84,7 @@ serve(async (req) => {
       // Encontrar o registro que corresponde exatamente ao identificador atual
       existingRecord = rateLimitRecords.find(
         r => r.user_id === `public_${identifier}` || 
-             (fingerprint && r.fingerprint === fingerprint)
+             (safeFingerprint && r.fingerprint === safeFingerprint)
       );
     }
 
@@ -131,7 +138,7 @@ serve(async (req) => {
         .update({ 
           request_count: existingRecord.request_count + 1,
           updated_at: now.toISOString(),
-          fingerprint: fingerprint || existingRecord.fingerprint
+          fingerprint: safeFingerprint || existingRecord.fingerprint
         })
         .eq("id", existingRecord.id);
     } else {
@@ -143,7 +150,7 @@ serve(async (req) => {
           window_start: now.toISOString(),
           request_count: 1,
           updated_at: now.toISOString(),
-          fingerprint: fingerprint || null
+          fingerprint: safeFingerprint || null
         });
     }
 
@@ -361,7 +368,7 @@ VERSÃO DEMO: Esta é versão gratuita limitada. Crie conta para acesso completo
           function_name: "public-examinus",
           event_type: "prompt_extraction_attempt",
           ip_address: clientIp,
-          fingerprint: fingerprint || null,
+          fingerprint: safeFingerprint || null,
           pattern_matched: extractionMatch,
           excerpt: lastUserText.slice(0, 200),
         });

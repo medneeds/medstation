@@ -1,10 +1,40 @@
 // Gera a narração do anúncio (/ad-video) via ElevenLabs e devolve mp3 base64.
+// Acesso restrito a administradores autenticados — endpoint usa API paga.
 import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+const MAX_TEXT_LENGTH = 4000;
+
+async function requireAdmin(req: Request): Promise<boolean> {
+  try {
+    const h = req.headers.get("Authorization") || req.headers.get("authorization");
+    if (!h) return false;
+    const token = h.replace(/^Bearer\s+/i, "");
+    if (!token) return false;
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+    const { data } = await supabase.auth.getUser(token);
+    const userId = data?.user?.id;
+    if (!userId) return false;
+    const { data: role } = await supabase
+      .from("user_roles")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    return !!role;
+  } catch {
+    return false;
+  }
+}
 
 const DEFAULT_SCRIPT = `Médico: seu plantão acabou às sete.
 Você saiu às oito e quarenta. Escrevendo evolução.
@@ -26,6 +56,13 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    if (!(await requireAdmin(req))) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const apiKey = Deno.env.get("ELEVENLABS_API_KEY");
     if (!apiKey) {
       return new Response(JSON.stringify({ error: "ELEVENLABS_API_KEY não configurada" }), {
@@ -35,8 +72,16 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const text: string = body?.text || DEFAULT_SCRIPT;
-    const voiceId: string = body?.voiceId || DEFAULT_VOICE;
+    let text: string = body?.text || DEFAULT_SCRIPT;
+    if (typeof text !== "string") text = DEFAULT_SCRIPT;
+    if (text.length > MAX_TEXT_LENGTH) {
+      return new Response(JSON.stringify({ error: `Texto excede ${MAX_TEXT_LENGTH} caracteres` }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const voiceIdRaw: string = body?.voiceId || DEFAULT_VOICE;
+    const voiceId = /^[A-Za-z0-9]{10,64}$/.test(voiceIdRaw) ? voiceIdRaw : DEFAULT_VOICE;
 
     const response = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
