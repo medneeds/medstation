@@ -336,8 +336,13 @@ serve(async (req) => {
     const globalCourtesy = records.filter((r) => r.effective_status === "courtesy");
     const globalAdmin = records.filter((r) => r.is_admin);
     const globalNone = records.filter((r) => r.effective_status === "none");
-    const globalMrrCents = payingAll.reduce((sum, r) => sum + (r.monthly_amount_cents || 0), 0);
+    // MRR = receita recorrente que está sendo efetivamente cobrada hoje.
+    // Assinaturas em teste do Stripe ainda não pagam e as inadimplentes não
+    // estão sendo recebidas: entram em "em risco", nunca no MRR.
+    const globalMrrCents = globalActive.reduce((sum, r) => sum + (r.monthly_amount_cents || 0), 0);
+    const globalMrrAtRiskCents = globalPastDue.reduce((sum, r) => sum + (r.monthly_amount_cents || 0), 0);
     const globalCurrency = payingAll.find((r) => r.currency)?.currency || "brl";
+
 
     const stats = {
       total_users: allUsers.length,
