@@ -71,7 +71,7 @@ serve(async (req) => {
       .from("rate_limits")
       .select("*")
       .eq("function_name", "public-examinus")
-      .or(`user_id.eq.public_${clientIp},fingerprint.eq.${fingerprint || 'none'}`);
+      .or(`user_id.eq.public_${clientIp},fingerprint.eq.${safeFingerprint || 'none'}`);
 
     // Calcular total de requisições considerando TODOS os registros relacionados
     let totalCount = 0;
@@ -84,7 +84,7 @@ serve(async (req) => {
       // Encontrar o registro que corresponde exatamente ao identificador atual
       existingRecord = rateLimitRecords.find(
         r => r.user_id === `public_${identifier}` || 
-             (fingerprint && r.fingerprint === fingerprint)
+             (safeFingerprint && r.fingerprint === safeFingerprint)
       );
     }
 
@@ -138,7 +138,7 @@ serve(async (req) => {
         .update({ 
           request_count: existingRecord.request_count + 1,
           updated_at: now.toISOString(),
-          fingerprint: fingerprint || existingRecord.fingerprint
+          fingerprint: safeFingerprint || existingRecord.fingerprint
         })
         .eq("id", existingRecord.id);
     } else {
@@ -150,7 +150,7 @@ serve(async (req) => {
           window_start: now.toISOString(),
           request_count: 1,
           updated_at: now.toISOString(),
-          fingerprint: fingerprint || null
+          fingerprint: safeFingerprint || null
         });
     }
 
@@ -368,7 +368,7 @@ VERSÃO DEMO: Esta é versão gratuita limitada. Crie conta para acesso completo
           function_name: "public-examinus",
           event_type: "prompt_extraction_attempt",
           ip_address: clientIp,
-          fingerprint: fingerprint || null,
+          fingerprint: safeFingerprint || null,
           pattern_matched: extractionMatch,
           excerpt: lastUserText.slice(0, 200),
         });
