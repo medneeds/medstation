@@ -192,7 +192,12 @@ export default function Lp3() {
               Do áudio ou de uma informação solta até o texto pronto para o prontuário.
             </p>
 
-            <DeferredSection className="mt-8" minHeight={520}>
+            <DeferredSection
+              className="mt-8"
+              minHeight={520}
+              prefetch={importClinicalFlowDemo}
+              mountAfterMs={150}
+            >
               <ClinicalFlowDemo onPrimary={() => goForm("flow_demo")} />
             </DeferredSection>
           </div>
@@ -207,7 +212,7 @@ export default function Lp3() {
             <p className="mt-3 text-center text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
               Escolha um caminho e toque em uma ferramenta para ver o que ela faz na prática.
             </p>
-            <DeferredSection minHeight={420}>
+            <DeferredSection minHeight={420} prefetch={importLandingToolExplorer} mountAfterMs={400}>
               <LandingToolExplorer />
             </DeferredSection>
           </div>
@@ -317,7 +322,12 @@ export default function Lp3() {
               : `Equivale a ${brl(price.now / 12)} por mês — dois meses de cortesia em relação ao mensal.`}
           </p>
 
-          <DeferredSection className="mt-6 max-w-xl mx-auto" minHeight={180}>
+          <DeferredSection
+            className="mt-6 max-w-xl mx-auto"
+            minHeight={180}
+            prefetch={importQuickCheckout}
+            mountAfterMs={650}
+          >
             <QuickCheckout origin="lp3" product="pro_completo" billingPeriod={billing} showPricing={false} />
           </DeferredSection>
 
@@ -356,7 +366,7 @@ export default function Lp3() {
         </div>
       </footer>
 
-      <DeferredIdle>
+      <DeferredIdle delayMs={900}>
         <ConciergeFab />
       </DeferredIdle>
     </div>
