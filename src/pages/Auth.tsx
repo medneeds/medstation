@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { signUpSchema, signInSchema } from "@/lib/validations";
+import { signInSchema } from "@/lib/validations";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { Logo } from "@/components/Logo";
-import { Eye, EyeOff } from "lucide-react";
+import { trackLifecycleEvent } from "@/lib/analytics";
+import { Eye, EyeOff, MailCheck } from "lucide-react";
 
 
 
