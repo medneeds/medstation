@@ -383,7 +383,9 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
+          </OnboardingProvider>
         </ProfileProvider>
+
       </SubscriptionProvider>
     </TooltipProvider>
   </QueryClientProvider>
