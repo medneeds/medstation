@@ -3,7 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, CreditCard, MessageSquare, Activity,
   Star, Shield, ToggleLeft, Megaphone, ArrowLeft, LogOut, Gift, Users2,
-  PanelLeftClose, PanelLeftOpen, Sun, Moon, BarChart3, Mail,
+  PanelLeftClose, PanelLeftOpen, Sun, Moon, Monitor, BarChart3, Mail,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAdminRole } from "@/hooks/useAdminRole";
@@ -38,8 +38,9 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
   const { role, isAdmin } = useAdminRole();
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { theme, setTheme } = useTheme();
-  const isDark = theme !== "light";
+  const { theme, resolvedTheme, setTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+  const themeMode = (theme ?? "system") as "system" | "light" | "dark";
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem(STORAGE_KEY) === "1";
@@ -142,13 +143,23 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
                       variant="ghost"
                       size="icon"
                       className="w-full h-9"
-                      onClick={() => setTheme(isDark ? "light" : "dark")}
-                      aria-label={isDark ? "Ativar modo claro" : "Ativar modo escuro"}
+                      onClick={() =>
+                        setTheme(themeMode === "system" ? "light" : themeMode === "light" ? "dark" : "system")
+                      }
+                      aria-label="Alternar tema (sistema, claro, escuro)"
                     >
-                      {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                      {themeMode === "system" ? (
+                        <Monitor className="h-4 w-4" />
+                      ) : isDark ? (
+                        <Moon className="h-4 w-4" />
+                      ) : (
+                        <Sun className="h-4 w-4" />
+                      )}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="right">{isDark ? "Modo claro" : "Modo escuro"}</TooltipContent>
+                  <TooltipContent side="right">
+                    Tema: {themeMode === "system" ? "sistema" : themeMode === "light" ? "claro" : "escuro"}
+                  </TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -177,36 +188,31 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
                 <div
                   role="tablist"
                   aria-label="Tema do painel"
-                  className="grid grid-cols-2 gap-1 rounded-md border border-border/60 bg-muted/40 p-1"
+                  className="grid grid-cols-3 gap-1 rounded-md border border-border/60 bg-muted/40 p-1"
                 >
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={!isDark}
-                    onClick={() => setTheme("light")}
-                    className={cn(
-                      "inline-flex items-center justify-center gap-1.5 rounded-sm h-7 text-xs transition-colors",
-                      !isDark
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground",
-                    )}
-                  >
-                    <Sun className="h-3.5 w-3.5" /> Claro
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={isDark}
-                    onClick={() => setTheme("dark")}
-                    className={cn(
-                      "inline-flex items-center justify-center gap-1.5 rounded-sm h-7 text-xs transition-colors",
-                      isDark
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground",
-                    )}
-                  >
-                    <Moon className="h-3.5 w-3.5" /> Escuro
-                  </button>
+                  {([
+                    { key: "system", label: "Sistema", Icon: Monitor },
+                    { key: "light", label: "Claro", Icon: Sun },
+                    { key: "dark", label: "Escuro", Icon: Moon },
+                  ] as const).map(({ key, label, Icon }) => (
+                    <button
+                      key={key}
+                      type="button"
+                      role="tab"
+                      aria-selected={themeMode === key}
+                      onClick={() => setTheme(key)}
+                      title={label}
+                      className={cn(
+                        "inline-flex items-center justify-center gap-1 rounded-sm h-7 text-[11px] transition-colors",
+                        themeMode === key
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                      <span className="truncate">{label}</span>
+                    </button>
+                  ))}
                 </div>
                 <Button variant="ghost" size="sm" className="w-full justify-start" onClick={() => navigate("/dashboard")}>
                   <ArrowLeft className="h-4 w-4 mr-2" /> Voltar ao app
