@@ -1709,6 +1709,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_lifecycle_email_events: {
+        Row: {
+          attempts: number
+          claimed_at: string
+          created_at: string
+          event_type: string
+          id: string
+          last_error: string | null
+          sent_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          claimed_at?: string
+          created_at?: string
+          event_type: string
+          id?: string
+          last_error?: string | null
+          sent_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          claimed_at?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          last_error?: string | null
+          sent_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_onboarding: {
         Row: {
           answers: Json
