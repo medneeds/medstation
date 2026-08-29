@@ -13,6 +13,8 @@ import { QuickCheckout } from "@/components/QuickCheckout";
 import { LeadForm } from "@/components/LeadForm";
 import { ConciergeFab } from "@/components/ConciergeFab";
 import { ClinicalFlowDemo } from "@/components/ClinicalFlowDemo";
+import { LandingToolExplorer } from "@/components/landing/LandingToolExplorer";
+
 import { trackCtaClick } from "@/lib/analytics";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { DISPLAY_PRICING, brl } from "@/lib/subscription-tiers";
