@@ -4,7 +4,6 @@
 // - pageviews somente em rotas públicas explicitamente permitidas;
 // - propriedades enviadas passam por allowlist e normalização;
 // - nenhuma informação clínica, nome, e-mail, telefone, CRM ou conteúdo livre é enviado.
-import posthog from "posthog-js";
 import { supabase } from "@/integrations/supabase/client";
 
 const TOKEN = import.meta.env.VITE_LOVABLE_CONNECTOR_POSTHOG_API_KEY as string | undefined;
@@ -16,6 +15,66 @@ let initialized = false;
 let bootedSessionId: string | null = null;
 let identifiedUserId: string | null = null;
 let firstValueTrackingInstalled = false;
+
+// PostHog é carregado sob demanda (dynamic import) para não entrar no bundle
+// inicial da landing. Eventos disparados antes do carregamento ficam em fila,
+// então nenhum tracking é perdido.
+type PostHogClient = typeof import("posthog-js").default;
+let phClient: PostHogClient | null = null;
+let phLoading: Promise<PostHogClient | null> | null = null;
+const phQueue: Array<(p: PostHogClient) => void> = [];
+
+function loadPostHog(): Promise<PostHogClient | null> {
+  if (!TOKEN || typeof window === "undefined") return Promise.resolve(null);
+  if (phLoading) return phLoading;
+  phLoading = import("posthog-js")
+    .then((mod) => {
+      const client = mod.default;
+      client.init(TOKEN, {
+        api_host: HOST,
+        autocapture: false,
+        capture_pageview: false,
+        capture_pageleave: false,
+        disable_session_recording: true,
+        capture_exceptions: false,
+        capture_performance: false,
+        enable_recording_console_log: false,
+        advanced_disable_flags: true,
+        mask_all_text: true,
+        mask_all_element_attributes: true,
+        person_profiles: "identified_only",
+        sanitize_properties: (properties, eventName) => sanitizePostHogProperties(properties, eventName),
+      });
+      phClient = client;
+      phQueue.splice(0).forEach((fn) => {
+        try {
+          fn(client);
+        } catch {
+          /* noop */
+        }
+      });
+      return client;
+    })
+    .catch((e) => {
+      console.warn("[analytics] posthog load failed", e);
+      return null;
+    });
+  return phLoading;
+}
+
+function withPostHog(fn: (p: PostHogClient) => void) {
+  if (!TOKEN || typeof window === "undefined") return;
+  if (phClient) {
+    try {
+      fn(phClient);
+    } catch {
+      /* noop */
+    }
+    return;
+  }
+  phQueue.push(fn);
+  void loadPostHog();
+}
 
 const LANDING_PATHS = new Set(["/", "/pricing"]);
 const PUBLIC_ANALYTICS_PATHS = new Set([
@@ -259,26 +318,12 @@ export function initAnalytics() {
 
   if (!TOKEN) return;
 
-  try {
-    posthog.init(TOKEN, {
-      api_host: HOST,
-      autocapture: false,
-      capture_pageview: false,
-      capture_pageleave: false,
-      disable_session_recording: true,
-      capture_exceptions: false,
-      capture_performance: false,
-      enable_recording_console_log: false,
-      advanced_disable_flags: true,
-      mask_all_text: true,
-      mask_all_element_attributes: true,
-      person_profiles: "identified_only",
-      // Compatível com a versão do SDK instalada no projeto. Atua depois que
-      // propriedades automáticas são adicionadas pelo PostHog.
-      sanitize_properties: (properties, eventName) => sanitizePostHogProperties(properties, eventName),
-    });
-  } catch (e) {
-    console.warn("[analytics] posthog init failed", e);
+  // Carrega o SDK fora do caminho crítico do primeiro paint.
+  const w = window as Window & { requestIdleCallback?: (cb: () => void) => number };
+  if (typeof w.requestIdleCallback === "function") {
+    w.requestIdleCallback(() => void loadPostHog());
+  } else {
+    window.setTimeout(() => void loadPostHog(), 1200);
   }
 }
 
@@ -291,10 +336,12 @@ export async function trackPageView(path: string, referrer?: string) {
 
   if (TOKEN) {
     try {
-      posthog.capture("$pageview", {
-        $current_url: `${window.location.origin}${safePath}`,
-        $pathname: safePath,
-      });
+      withPostHog((p) =>
+        p.capture("$pageview", {
+          $current_url: `${window.location.origin}${safePath}`,
+          $pathname: safePath,
+        }),
+      );
     } catch {
       /* noop */
     }
@@ -326,7 +373,7 @@ export function trackEvent(name: string, props?: Record<string, unknown>) {
   initAnalytics();
   if (!TOKEN) return;
   try {
-    posthog.capture(name, sanitizeProperties(props));
+    withPostHog((p) => p.capture(name, sanitizeProperties(props)));
   } catch {
     /* noop */
   }
@@ -515,10 +562,10 @@ export function identifyUser(userId: string, traits?: Record<string, unknown>) {
   if (!TOKEN) return;
 
   try {
-    posthog.identify(userId, {
+    withPostHog((p) => p.identify(userId, {
       account_state: "authenticated",
       ...sanitizeProperties(traits),
-    });
+    }));
   } catch {
     /* noop */
   }
@@ -528,7 +575,7 @@ export function resetAnalyticsIdentity() {
   identifiedUserId = null;
   if (!TOKEN || !initialized) return;
   try {
-    posthog.reset();
+    withPostHog((p) => p.reset());
   } catch {
     /* noop */
   }

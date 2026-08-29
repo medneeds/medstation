@@ -1,80 +1,86 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { DashboardLayout } from "./components/DashboardLayout";
-import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AnalyticsTracker } from "./components/AnalyticsTracker";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 import { ProfileProvider } from "./contexts/ProfileContext";
 import { OnboardingProvider } from "./contexts/OnboardingContext";
 
-import Dashboard from "./pages/Dashboard";
-import Patients from "./pages/Patients";
-import PatientDetail from "./pages/PatientDetail";
-import Cases from "./pages/Cases";
-import CaseDetail from "./pages/CaseDetail";
-import Notes from "./pages/Notes";
-import NoteDetail from "./pages/NoteDetail";
-import Auth from "./pages/Auth";
-import ConfirmarEmail from "./pages/ConfirmarEmail";
-import Comecar from "./pages/Comecar";
+// Landing "/" permanece eager: é o primeiro paint público.
 import Lp3 from "./pages/Lp3";
-import Tour from "./pages/Tour";
-import Pricing from "./pages/Pricing";
-import Obrigado from "./pages/Obrigado";
-import Onboarding from "./pages/Onboarding";
-import WelcomeTour from "./pages/WelcomeTour";
-import Clinicus from "./pages/Clinicus";
-import Consultorio from "./pages/Consultorio";
-import ConsultorioHistorico from "./pages/ConsultorioHistorico";
-import Rotina from "./pages/Rotina";
-import RotinaArquivo from "./pages/RotinaArquivo";
 
-import Examinus from "./pages/Examinus";
-import Scorius from "./pages/Scorius";
-import Numerus from "./pages/Numerus";
-import Prescriptus from "@/pages/Prescriptus";
-import Codexus from "@/pages/Codexus";
-import Gasometrus from "@/pages/Gasometrus";
-import Atestus from "@/pages/Atestus";
-import Protocolus from "@/pages/Protocolus";
-import Orientus from "@/pages/Orientus";
-import Mediscuss from "@/pages/Mediscuss";
-import Legalis from "@/pages/Legalis";
+// Tudo que não é a landing entra por code splitting (React.lazy),
+// para manter o bundle inicial da "/" mínimo.
+const DashboardLayout = lazy(() => import("./components/DashboardLayout").then(m => ({ default: m.DashboardLayout })));
+const ProtectedRoute = lazy(() => import("./components/ProtectedRoute").then(m => ({ default: m.ProtectedRoute })));
+const AdminRoute = lazy(() => import("./components/AdminRoute").then(m => ({ default: m.AdminRoute })));
+const AdminLayout = lazy(() => import("./pages/admin/AdminLayout").then(m => ({ default: m.AdminLayout })));
 
-import Prescriptions from "@/pages/Prescriptions";
-import NewPrescription from "@/pages/NewPrescription";
-import PrescriptionDetail from "@/pages/PrescriptionDetail";
-import ExamRequests from "@/pages/ExamRequests";
-import NewExamRequest from "@/pages/NewExamRequest";
-import ExamRequestDetail from "@/pages/ExamRequestDetail";
-import MedicalDocuments from "@/pages/MedicalDocuments";
-import MedicalDocumentDetail from "@/pages/MedicalDocumentDetail";
-import Settings from "./pages/Settings";
-import AdminSubscribers from "./pages/AdminSubscribers";
-import { AdminRoute } from "./components/AdminRoute";
-import { AdminLayout } from "./pages/admin/AdminLayout";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminUsers from "./pages/admin/AdminUsers";
-import AdminBilling from "./pages/admin/AdminBilling";
-import AdminSupport from "./pages/admin/AdminSupport";
-import AdminAIUsage from "./pages/admin/AdminAIUsage";
-import AdminFeedback from "./pages/admin/AdminFeedback";
-import AdminAudit from "./pages/admin/AdminAudit";
-import AdminFlags from "./pages/admin/AdminFlags";
-import AdminBroadcast from "./pages/admin/AdminBroadcast";
-import AdminReferrals from "./pages/admin/AdminReferrals";
-import AdminLogin from "./pages/admin/AdminLogin";
-import AdminAnalytics from "./pages/admin/AdminAnalytics";
-import AdminFunnel from "./pages/admin/AdminFunnel";
-import AdminAudience from "./pages/admin/AdminAudience";
-import AdminEmails from "./pages/admin/AdminEmails";
-import Indicar from "./pages/Indicar";
-import ReferralRedirect from "./pages/ReferralRedirect";
-import NotFound from "./pages/NotFound";
-import AdVideo from "./pages/AdVideo";
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Patients = lazy(() => import("./pages/Patients"));
+const PatientDetail = lazy(() => import("./pages/PatientDetail"));
+const Cases = lazy(() => import("./pages/Cases"));
+const CaseDetail = lazy(() => import("./pages/CaseDetail"));
+const Notes = lazy(() => import("./pages/Notes"));
+const NoteDetail = lazy(() => import("./pages/NoteDetail"));
+const Auth = lazy(() => import("./pages/Auth"));
+const ConfirmarEmail = lazy(() => import("./pages/ConfirmarEmail"));
+const Comecar = lazy(() => import("./pages/Comecar"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Obrigado = lazy(() => import("./pages/Obrigado"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const WelcomeTour = lazy(() => import("./pages/WelcomeTour"));
+const Clinicus = lazy(() => import("./pages/Clinicus"));
+const Consultorio = lazy(() => import("./pages/Consultorio"));
+const ConsultorioHistorico = lazy(() => import("./pages/ConsultorioHistorico"));
+const Rotina = lazy(() => import("./pages/Rotina"));
+const RotinaArquivo = lazy(() => import("./pages/RotinaArquivo"));
+
+const Examinus = lazy(() => import("./pages/Examinus"));
+const Scorius = lazy(() => import("./pages/Scorius"));
+const Numerus = lazy(() => import("./pages/Numerus"));
+const Prescriptus = lazy(() => import("@/pages/Prescriptus"));
+const Codexus = lazy(() => import("@/pages/Codexus"));
+const Gasometrus = lazy(() => import("@/pages/Gasometrus"));
+const Atestus = lazy(() => import("@/pages/Atestus"));
+const Protocolus = lazy(() => import("@/pages/Protocolus"));
+const Orientus = lazy(() => import("@/pages/Orientus"));
+const Mediscuss = lazy(() => import("@/pages/Mediscuss"));
+const Legalis = lazy(() => import("@/pages/Legalis"));
+
+const Prescriptions = lazy(() => import("@/pages/Prescriptions"));
+const NewPrescription = lazy(() => import("@/pages/NewPrescription"));
+const PrescriptionDetail = lazy(() => import("@/pages/PrescriptionDetail"));
+const ExamRequests = lazy(() => import("@/pages/ExamRequests"));
+const NewExamRequest = lazy(() => import("@/pages/NewExamRequest"));
+const ExamRequestDetail = lazy(() => import("@/pages/ExamRequestDetail"));
+const MedicalDocuments = lazy(() => import("@/pages/MedicalDocuments"));
+const MedicalDocumentDetail = lazy(() => import("@/pages/MedicalDocumentDetail"));
+const Settings = lazy(() => import("./pages/Settings"));
+const AdminSubscribers = lazy(() => import("./pages/AdminSubscribers"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminBilling = lazy(() => import("./pages/admin/AdminBilling"));
+const AdminSupport = lazy(() => import("./pages/admin/AdminSupport"));
+const AdminAIUsage = lazy(() => import("./pages/admin/AdminAIUsage"));
+const AdminFeedback = lazy(() => import("./pages/admin/AdminFeedback"));
+const AdminAudit = lazy(() => import("./pages/admin/AdminAudit"));
+const AdminFlags = lazy(() => import("./pages/admin/AdminFlags"));
+const AdminBroadcast = lazy(() => import("./pages/admin/AdminBroadcast"));
+const AdminReferrals = lazy(() => import("./pages/admin/AdminReferrals"));
+const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
+const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
+const AdminFunnel = lazy(() => import("./pages/admin/AdminFunnel"));
+const AdminAudience = lazy(() => import("./pages/admin/AdminAudience"));
+const AdminEmails = lazy(() => import("./pages/admin/AdminEmails"));
+const Indicar = lazy(() => import("./pages/Indicar"));
+const ReferralRedirect = lazy(() => import("./pages/ReferralRedirect"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const AdVideo = lazy(() => import("./pages/AdVideo"));
+
 
 const queryClient = new QueryClient();
 
@@ -88,6 +94,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
           <AnalyticsTracker />
+          <Suspense fallback={<div className="min-h-screen" aria-hidden="true" />}>
           <Routes>
 
             <Route path="/" element={<Lp3 />} />
@@ -382,6 +389,7 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </Suspense>
         </BrowserRouter>
           </OnboardingProvider>
         </ProfileProvider>
