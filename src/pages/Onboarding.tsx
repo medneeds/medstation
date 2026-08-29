@@ -285,11 +285,14 @@ export default function Onboarding() {
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="M">Masculino (Dr.)</SelectItem>
-                      <SelectItem value="F">Feminino (Dra.)</SelectItem>
-                      <SelectItem value="Outro">Outro</SelectItem>
+                      <SelectItem value="M">Masculino</SelectItem>
+                      <SelectItem value="F">Feminino</SelectItem>
+                      <SelectItem value="Outro">Prefiro não informar</SelectItem>
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Usado apenas para o tratamento dentro da plataforma.
+                  </p>
                   {showErrors && !gender && (
                     <p className="text-xs text-destructive">Selecione uma opção.</p>
                   )}

@@ -72,7 +72,7 @@ export function MedStationDiscovery() {
   
 
   return (
-    <section aria-labelledby="discovery-title" className="space-y-6 md:space-y-8">
+    <section id="caminhos" aria-labelledby="discovery-title" className="scroll-mt-24 space-y-6 md:space-y-8">
       <header className="max-w-2xl">
         <h2
           id="discovery-title"
