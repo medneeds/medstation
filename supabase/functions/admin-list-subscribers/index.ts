@@ -410,8 +410,13 @@ serve(async (req) => {
     const paginated = filtered.slice(start, start + perPage);
 
     const filteredPaying = filtered.filter((r) => payingStatuses.has(r.stripe_status));
-    const filteredMrr = filteredPaying.reduce((s, r) => s + (r.monthly_amount_cents || 0), 0);
+    const filteredActive = filtered.filter((r) => r.stripe_status === "active");
+    const filteredMrr = filteredActive.reduce((s, r) => s + (r.monthly_amount_cents || 0), 0);
+    const filteredMrrAtRisk = filtered
+      .filter((r) => r.stripe_status === "past_due")
+      .reduce((s, r) => s + (r.monthly_amount_cents || 0), 0);
     const filteredCurrency = filteredPaying.find((r) => r.currency)?.currency || stats.currency;
+
     const filteredStats = {
       total_users: filtered.filter((r) => !r.auth_missing).length,
       total_records: filtered.length,
