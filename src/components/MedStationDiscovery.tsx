@@ -149,9 +149,15 @@ export function MedStationDiscovery() {
                 />
               </div>
               <div className="relative mt-4">
+                {recommendedPath === p.id && (
+                  <span className="mb-1.5 inline-block rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 font-mono text-2xs uppercase tracking-[0.18em] text-primary">
+                    Recomendado para você
+                  </span>
+                )}
                 <h3 className="font-display text-base md:text-lg font-semibold tracking-tight">
                   {p.label}
                 </h3>
+
                 <p
                   className={cn(
                     "mt-1.5 text-sm md:text-base leading-snug",
