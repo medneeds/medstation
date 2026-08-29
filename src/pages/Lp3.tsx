@@ -161,12 +161,12 @@ export default function Lp3() {
           </div>
         </section>
 
-        {/* 2. Prova de autoridade */}
+        {/* 2. Os três tipos de trabalho */}
         <section className="border-b border-border/50 bg-background">
-          <div className="container mx-auto px-4 md:px-8 py-8 md:py-10 grid grid-cols-3 gap-4 text-center">
+          <div className="container mx-auto px-4 md:px-8 py-8 md:py-10 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
             {proof.map((p) => (
               <div key={p.label}>
-                <div className="text-2xl md:text-4xl font-semibold text-primary tracking-tight">{p.value}</div>
+                <div className="text-lg md:text-2xl font-semibold text-primary tracking-tight">{p.value}</div>
                 <div className="mt-1 text-[0.72rem] md:text-sm text-muted-foreground">{p.label}</div>
               </div>
             ))}
@@ -180,8 +180,9 @@ export default function Lp3() {
               Você fala ou cola. Ele escreve.
             </h2>
             <p className="mt-3 text-center text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
-              O mesmo caso, do áudio ao texto pronto para o prontuário.
+              Do áudio ou de uma informação solta até o texto pronto para o prontuário.
             </p>
+
             <div className="mt-8">
               <ClinicalFlowDemo onPrimary={() => goForm("flow_demo")} />
             </div>
