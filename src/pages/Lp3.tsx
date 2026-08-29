@@ -12,11 +12,17 @@ import {
 import { LeadForm } from "@/components/LeadForm";
 import { DeferredSection, DeferredIdle } from "@/components/DeferredSection";
 
-// Blocos abaixo da dobra: carregados sob demanda para não pesar o primeiro paint.
-const QuickCheckout = lazy(() => import("@/components/QuickCheckout").then(m => ({ default: m.QuickCheckout })));
-const ConciergeFab = lazy(() => import("@/components/ConciergeFab").then(m => ({ default: m.ConciergeFab })));
-const ClinicalFlowDemo = lazy(() => import("@/components/ClinicalFlowDemo").then(m => ({ default: m.ClinicalFlowDemo })));
-const LandingToolExplorer = lazy(() => import("@/components/landing/LandingToolExplorer").then(m => ({ default: m.LandingToolExplorer })));
+// Blocos abaixo da dobra: fora do bundle inicial, mas pré-carregados em idle
+// logo após o first paint para que o scroll nunca espere download/mount.
+const importQuickCheckout = () => import("@/components/QuickCheckout");
+const importConciergeFab = () => import("@/components/ConciergeFab");
+const importClinicalFlowDemo = () => import("@/components/ClinicalFlowDemo");
+const importLandingToolExplorer = () => import("@/components/landing/LandingToolExplorer");
+
+const QuickCheckout = lazy(() => importQuickCheckout().then(m => ({ default: m.QuickCheckout })));
+const ConciergeFab = lazy(() => importConciergeFab().then(m => ({ default: m.ConciergeFab })));
+const ClinicalFlowDemo = lazy(() => importClinicalFlowDemo().then(m => ({ default: m.ClinicalFlowDemo })));
+const LandingToolExplorer = lazy(() => importLandingToolExplorer().then(m => ({ default: m.LandingToolExplorer })));
 
 import { trackCtaClick } from "@/lib/analytics";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
