@@ -36,6 +36,7 @@ interface KPIs {
   feedbackTotal: number;
   referrals: number;
   referralConversion: number | null;
+  duplicateActiveCustomers: number | null;
   securityEvents24h: number;
 }
 
@@ -97,6 +98,8 @@ export default function AdminDashboard() {
         feedbackTotal: metrics.feedback.total,
         referrals: metrics.referrals.total,
         referralConversion: metrics.referrals.conversion_rate,
+        duplicateActiveCustomers:
+          metrics.subscriptions_mirror?.customers_with_multiple_active ?? null,
         securityEvents24h: metrics.audit.security_events_24h,
       });
       setActiveUsers(activeList.records);
@@ -183,6 +186,13 @@ export default function AdminDashboard() {
           : `${kpis.referrals} (${kpis.referralConversion ?? 0}%)`,
       icon: Gift,
       color: "text-pink-500",
+    },
+    {
+      label: "Clientes com 2+ assinaturas ativas",
+      value: kpis?.duplicateActiveCustomers ?? "—",
+      icon: ShieldAlert,
+      color:
+        kpis && (kpis.duplicateActiveCustomers ?? 0) > 0 ? "text-amber-500" : "text-muted-foreground",
     },
     {
       label: "Segurança 24h",

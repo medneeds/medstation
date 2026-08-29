@@ -1457,50 +1457,68 @@ export type Database = {
       }
       stripe_subscriptions: {
         Row: {
+          billing_interval: string | null
           cancel_at_period_end: boolean
+          canceled_at: string | null
           created_at: string
+          currency: string | null
           current_period_end: string | null
+          current_period_start: string | null
           last_event_id: string | null
           last_payment_failed_at: string | null
           last_payment_succeeded_at: string | null
+          monthly_amount_cents: number | null
           past_due_since: string | null
           price_id: string | null
           product_id: string | null
           status: string
           stripe_customer_id: string
           stripe_subscription_id: string
+          synced_at: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
+          billing_interval?: string | null
           cancel_at_period_end?: boolean
+          canceled_at?: string | null
           created_at?: string
+          currency?: string | null
           current_period_end?: string | null
+          current_period_start?: string | null
           last_event_id?: string | null
           last_payment_failed_at?: string | null
           last_payment_succeeded_at?: string | null
+          monthly_amount_cents?: number | null
           past_due_since?: string | null
           price_id?: string | null
           product_id?: string | null
           status: string
           stripe_customer_id: string
           stripe_subscription_id: string
+          synced_at?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
+          billing_interval?: string | null
           cancel_at_period_end?: boolean
+          canceled_at?: string | null
           created_at?: string
+          currency?: string | null
           current_period_end?: string | null
+          current_period_start?: string | null
           last_event_id?: string | null
           last_payment_failed_at?: string | null
           last_payment_succeeded_at?: string | null
+          monthly_amount_cents?: number | null
           past_due_since?: string | null
           price_id?: string | null
           product_id?: string | null
           status?: string
           stripe_customer_id?: string
           stripe_subscription_id?: string
+          synced_at?: string | null
           updated_at?: string
           user_id?: string | null
         }
