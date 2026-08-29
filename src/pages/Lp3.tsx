@@ -259,8 +259,8 @@ export default function Lp3() {
               Um plantão de burocracia custa mais caro
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Um único plano com a plataforma inteira: Documentação, Copiloto, Fluxo e o
-              Modo Rotineiro. Sem módulos separados, sem upgrade escondido.
+              Um único plano com a plataforma inteira: Documentação, Copiloto e Fluxo.
+              Sem módulos separados, sem upgrade escondido.
             </p>
           </div>
 
