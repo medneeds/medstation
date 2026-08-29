@@ -508,7 +508,7 @@ export default function PublicExaminusChat() {
       if (data.error || data.limitReached) {
         setMessages(prev => [...prev, {
           role: "assistant",
-          content: "🎯 Você usou suas extrações gratuitas!\n\n✨ Crie sua conta grátis agora e continue sem limites — é rápido e sem cartão de crédito.\n\nAlém disso, você desbloqueia os outros 9 assistentes médicos especializados."
+          content: "🎯 Você usou suas extrações gratuitas!\n\n✨ Crie sua conta grátis agora e continue sem limites — é rápido e sem cartão de crédito.\n\nAlém disso, você desbloqueia o restante das ferramentas da MedStation."
         }]);
         window.dispatchEvent(new CustomEvent("demo:limit-reached"));
         return;

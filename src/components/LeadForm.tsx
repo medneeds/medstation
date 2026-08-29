@@ -168,7 +168,7 @@ export function LeadForm({ source = "lp3", ctaLabel = "Quero testar 7 dias grát
         <span className="text-[11px] text-muted-foreground">Passo {step} de 2</span>
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
-        Acesso completo aos 12 assistentes. Sem cartão de crédito.
+        Acesso completo à MedStation. Sem cartão de crédito.
       </p>
 
       <div className="mt-4 space-y-3">

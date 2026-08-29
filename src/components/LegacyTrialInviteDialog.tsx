@@ -11,7 +11,7 @@ const DISMISS_KEY = "legacy_trial_invite_dismissed_at";
 const BENEFITS = [
   {
     icon: Stethoscope,
-    title: "12 assistentes clínicos",
+    title: "Ferramentas clínicas",
     desc: "Anamnese, exames, gasometria, prescrição, parecer, alta e mais.",
   },
   {

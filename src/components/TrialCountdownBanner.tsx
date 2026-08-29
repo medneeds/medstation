@@ -49,7 +49,7 @@ export function TrialCountdownBanner() {
                 : `Seu acesso completo termina em ${timeLabel}`}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-            12 assistentes, Modo Escuta e Modo Rotineiro liberados. Assine por {brl(price.now)} por mês e
+            Documentação, Copiloto e Fluxo liberados. Assine por {brl(price.now)} por mês e
             mantenha esse valor por pelo menos 12 meses.
           </p>
         </div>

@@ -41,7 +41,7 @@ function defaultJsonLd(path: string): Record<string, unknown>[] {
       operatingSystem: "Web",
       inLanguage: "pt-BR",
       description:
-        "Plataforma web com 12 assistentes clínicos de IA, Modo Escuta e Modo Rotineiro para apoiar a produtividade médica.",
+        "Plataforma web de apoio à produtividade médica: documentação clínica, apoio à decisão e organização da rotina.",
       url: `${SITE}/`,
       offers: [
         {

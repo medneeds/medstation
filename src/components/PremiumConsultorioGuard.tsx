@@ -112,7 +112,7 @@ export function PremiumConsultorioGuard({ children }: PremiumConsultorioGuardPro
                   <span className="text-muted-foreground">/mês</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Tudo incluso: 12 assistentes, Modo Escuta e Modo Rotineiro. Ou R$ 499,90/ano.
+                  Tudo incluso: Documentação, Copiloto e Fluxo. Ou R$ 499,90/ano.
                 </p>
               </div>
               <Button

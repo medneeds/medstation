@@ -44,7 +44,7 @@ const LegacyTrialInviteEmail = ({
         </Text>
 
         <Text style={kicker}>O QUE ABRE PARA VOCÊ</Text>
-        <Text style={item}>• 12 assistentes clínicos: anamnese, exames, gasometria, prescrição, parecer, alta, ética e mais.</Text>
+        <Text style={item}>• Ferramentas clínicas: anamnese, exames, gasometria, prescrição, parecer, alta, ética e mais.</Text>
         <Text style={item}>• Modo Escuta: a consulta acontece, a anamnese sai pronta para copiar.</Text>
         <Text style={item}>• Modo Rotineiro: a visita de enfermaria e UTI evoluída leito a leito.</Text>
 
