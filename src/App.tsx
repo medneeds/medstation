@@ -29,7 +29,6 @@ const NoteDetail = lazy(() => import("./pages/NoteDetail"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ConfirmarEmail = lazy(() => import("./pages/ConfirmarEmail"));
 const Comecar = lazy(() => import("./pages/Comecar"));
-const Tour = lazy(() => import("./pages/Tour"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Obrigado = lazy(() => import("./pages/Obrigado"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
