@@ -259,8 +259,9 @@ export function MedStationDiscovery() {
         </ul>
 
         <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {path.tools.map((tool) => {
+          {orderedTools.map((tool) => {
             const Icon = tool.icon;
+            const isRecommended = highlighted.has(tool.slug);
             return (
               <Link
                 key={`${path.id}-${tool.slug}`}
@@ -271,14 +272,22 @@ export function MedStationDiscovery() {
                   "p-4 min-h-[76px] transition-all duration-300 ease-out motion-reduce:transition-none",
                   "md:hover:border-primary/40 md:hover:-translate-y-0.5 md:hover:shadow-elevated motion-reduce:md:hover:translate-y-0 active:scale-[0.99] motion-reduce:active:scale-100",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                  isRecommended && "border-primary/40",
                 )}
               >
                 <span className="rounded-lg p-2 bg-primary/10 text-primary border border-primary/20 shrink-0 transition-colors duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
                   <Icon className="h-5 w-5" strokeWidth={1.75} />
                 </span>
                 <span className="min-w-0">
-                  <span className="block font-display text-base font-semibold tracking-tight">
-                    {tool.title}
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span className="font-display text-base font-semibold tracking-tight">
+                      {tool.title}
+                    </span>
+                    {isRecommended && (
+                      <span className="rounded-full border border-primary/30 px-1.5 py-0.5 font-mono text-2xs uppercase tracking-[0.16em] text-primary">
+                        Recomendado
+                      </span>
+                    )}
                   </span>
                   <span className="block text-sm text-muted-foreground leading-snug">
                     {tool.description}
@@ -287,6 +296,7 @@ export function MedStationDiscovery() {
               </Link>
             );
           })}
+
         </div>
 
         <p className="text-sm text-muted-foreground">
