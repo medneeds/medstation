@@ -256,8 +256,12 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
             </span>
             <p className="text-[0.8rem] md:text-sm text-foreground/90 leading-relaxed">{CASE_SUMMARY}</p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Button onClick={play} disabled={playing} className="whitespace-nowrap">
+          <div className="flex items-center gap-2 shrink-0 w-full md:w-auto">
+            <Button
+              onClick={play}
+              disabled={playing}
+              className="w-full md:w-auto min-h-[44px] whitespace-nowrap"
+            >
               {playing ? (
                 <>Rodando o fluxo…</>
               ) : done === stages.length - 1 ? (
@@ -267,6 +271,7 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
               )}
             </Button>
           </div>
+
         </div>
       </Card>
 
