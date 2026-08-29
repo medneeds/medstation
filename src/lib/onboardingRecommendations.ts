@@ -18,9 +18,9 @@ export type PrimaryGoal =
   | "less_rework";
 
 export interface OnboardingAnswers {
-  routinePain: RoutinePain;
-  workSetting: WorkSetting;
-  primaryGoal: PrimaryGoal;
+  routinePains: RoutinePain[];
+  workSettings: WorkSetting[];
+  primaryGoals: PrimaryGoal[];
 }
 
 export interface OnboardingRecommendation {
@@ -29,6 +29,19 @@ export interface OnboardingRecommendation {
 }
 
 const MAX_TOOLS = 5;
+
+/** Pesos determinísticos e documentados do motor de recomendação. */
+export const SCORE_WEIGHTS = {
+  pathPerPain: 3,
+  pathPerGoal: 2,
+  toolPerPain: 5,
+  toolPerGoal: 3,
+  toolPerSetting: 2,
+} as const;
+
+/** Fallback técnico de desempate final. */
+const PATH_FALLBACK_ORDER: DiscoveryPathId[] = ["documentation", "copilot", "workflow"];
+
 
 const PAIN_RULES: Record<RoutinePain, { path: DiscoveryPathId; tools: string[] }> = {
   documentation: { path: "documentation", tools: ["clinicus", "examinus", "mediscuss"] },
@@ -82,40 +95,66 @@ function dedupe(list: string[]): string[] {
 }
 
 /**
- * Motor determinístico de recomendação. Sem IA, sem chamadas externas:
- * a resposta 1 define o caminho base, o contexto reordena e o objetivo
- * apenas reforça o que já foi indicado.
+ * Motor determinístico de recomendação (sem IA, sem chamadas externas).
+ *
+ * Caminho: cada dor selecionada soma +3 ao caminho correspondente e cada
+ * objetivo soma +2 aos caminhos associados. O local de atuação não altera o
+ * caminho, apenas a prioridade das ferramentas.
+ *
+ * Ferramentas: +5 por dor, +3 por objetivo, +2 por local de atuação.
+ * Empates de caminho são resolvidos pela primeira dor selecionada e, se ainda
+ * houver empate, pela ordem técnica documentação > copiloto > fluxo.
  */
 export function recommendFromAnswers(answers: OnboardingAnswers): OnboardingRecommendation {
-  const pain = PAIN_RULES[answers.routinePain];
-  const goal = GOAL_RULES[answers.primaryGoal];
+  const pains = dedupe(answers.routinePains ?? []) as RoutinePain[];
+  const settings = dedupe(answers.workSettings ?? []) as WorkSetting[];
+  const goals = dedupe(answers.primaryGoals ?? []) as PrimaryGoal[];
 
-  // Score transparente: a resposta 1 tem peso 2 e o objetivo peso 1,
-  // portanto a dor principal sempre prevalece e o objetivo só desempata.
-  const score: Record<DiscoveryPathId, number> = { documentation: 0, copilot: 0, workflow: 0 };
-  score[pain.path] += 2;
-  goal.paths.forEach((p) => { score[p] += 1; });
-  const primaryPath = (Object.keys(score) as DiscoveryPathId[]).reduce((best, p) =>
-    score[p] > score[best] ? p : best,
-  );
+  const pathScore: Record<DiscoveryPathId, number> = { documentation: 0, copilot: 0, workflow: 0 };
+  const toolScore = new Map<string, number>();
+  const order: string[] = [];
 
+  const addTool = (slug: string, weight: number) => {
+    if (!toolScore.has(slug)) order.push(slug);
+    toolScore.set(slug, (toolScore.get(slug) ?? 0) + weight);
+  };
 
-  const settingPriority = SETTING_PRIORITY[answers.workSetting];
-  const base = dedupe([...pain.tools, ...goal.tools]);
+  for (const pain of pains) {
+    const rule = PAIN_RULES[pain];
+    if (!rule) continue;
+    pathScore[rule.path] += SCORE_WEIGHTS.pathPerPain;
+    rule.tools.forEach((t) => addTool(t, SCORE_WEIGHTS.toolPerPain));
+  }
 
-  // Reordena colocando primeiro as ferramentas já sugeridas que combinam com
-  // o local de atuação, sem remover nenhuma sugestão original.
-  const promoted = base
-    .filter((t) => settingPriority.includes(t))
-    .sort((a, b) => settingPriority.indexOf(a) - settingPriority.indexOf(b));
+  for (const goal of goals) {
+    const rule = GOAL_RULES[goal];
+    if (!rule) continue;
+    rule.paths.forEach((p) => { pathScore[p] += SCORE_WEIGHTS.pathPerGoal; });
+    rule.tools.forEach((t) => addTool(t, SCORE_WEIGHTS.toolPerGoal));
+  }
 
-  const rest = base.filter((t) => !settingPriority.includes(t));
-  const contextExtras = settingPriority.filter((t) => !base.includes(t));
+  for (const setting of settings) {
+    (SETTING_PRIORITY[setting] ?? []).forEach((t) => addTool(t, SCORE_WEIGHTS.toolPerSetting));
+  }
 
-  const ordered = dedupe([...promoted, ...rest, ...contextExtras]);
+  const best = Math.max(pathScore.documentation, pathScore.copilot, pathScore.workflow);
+  const tied = PATH_FALLBACK_ORDER.filter((p) => pathScore[p] === best);
 
-  return { primaryPath, recommendedTools: ordered.slice(0, MAX_TOOLS) };
+  let primaryPath: DiscoveryPathId = tied[0];
+  if (tied.length > 1) {
+    const firstPainPath = pains.length ? PAIN_RULES[pains[0]]?.path : undefined;
+    if (firstPainPath && tied.includes(firstPainPath)) primaryPath = firstPainPath;
+  }
+
+  const recommendedTools = order
+    .map((slug, index) => ({ slug, index, score: toolScore.get(slug) ?? 0 }))
+    .sort((a, b) => (b.score - a.score) || (a.index - b.index))
+    .slice(0, MAX_TOOLS)
+    .map((t) => t.slug);
+
+  return { primaryPath, recommendedTools };
 }
+
 
 export const ROUTINE_PAIN_OPTIONS: { value: RoutinePain; label: string }[] = [
   { value: "documentation", label: "Documentar atendimentos, evoluções e altas" },
@@ -151,6 +190,11 @@ const PATH_REASON: Record<DiscoveryPathId, string> = {
     "Suas respostas indicam trabalho repetitivo ao longo da rotina. O caminho Fluxo integra voz, evolução de leitos e continuidade entre os dias.",
 };
 
-export function explainRecommendation(path: DiscoveryPathId): string {
-  return PATH_REASON[path];
+export function explainRecommendation(path: DiscoveryPathId, selectionCount = 1): string {
+  const base = PATH_REASON[path];
+  if (selectionCount > 1) {
+    return `${base} As demais respostas foram consideradas na ordem das ferramentas sugeridas.`;
+  }
+  return base;
 }
+

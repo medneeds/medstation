@@ -23,6 +23,8 @@ import {
   CartesianGrid,
   Legend,
 } from "recharts";
+import OnboardingInsightsPanel from "@/components/admin/OnboardingInsightsPanel";
+
 
 /* -------------------------------------------------------------------------
  * Aba dedicada ao ciclo de aquisição e conversão:
@@ -693,8 +695,11 @@ export default function AdminFunnel() {
               </table>
             </div>
           </Panel>
+
+          <OnboardingInsightsPanel />
         </>
       )}
     </div>
+
   );
 }

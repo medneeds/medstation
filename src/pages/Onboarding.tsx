@@ -82,9 +82,9 @@ export default function Onboarding() {
   const [crmState, setCrmState] = useState("");
   const [showErrors, setShowErrors] = useState(false);
 
-  const [routinePain, setRoutinePain] = useState<RoutinePain | "">("");
-  const [workSetting, setWorkSetting] = useState<WorkSetting | "">("");
-  const [primaryGoal, setPrimaryGoal] = useState<PrimaryGoal | "">("");
+  const [routinePains, setRoutinePains] = useState<RoutinePain[]>([]);
+  const [workSettings, setWorkSettings] = useState<WorkSetting[]>([]);
+  const [primaryGoals, setPrimaryGoals] = useState<PrimaryGoal[]>([]);
 
   useEffect(() => {
     let active = true;
@@ -115,10 +115,14 @@ export default function Onboarding() {
     return () => { active = false; };
   }, [navigate]);
 
+  const surveyValid =
+    routinePains.length > 0 && workSettings.length > 0 && primaryGoals.length > 0;
+
   const recommendation = useMemo(() => {
-    if (!routinePain || !workSetting || !primaryGoal) return null;
-    return recommendFromAnswers({ routinePain, workSetting, primaryGoal });
-  }, [routinePain, workSetting, primaryGoal]);
+    if (!surveyValid) return null;
+    return recommendFromAnswers({ routinePains, workSettings, primaryGoals });
+  }, [surveyValid, routinePains, workSettings, primaryGoals]);
+
 
   const profileValid =
     fullName.trim().length >= 3 &&
@@ -169,7 +173,7 @@ export default function Onboarding() {
   };
 
   const handleFinish = async (destination: "dashboard" | "explore") => {
-    if (!userId || !recommendation || !routinePain || !workSetting || !primaryGoal) return;
+    if (!userId || !recommendation || !surveyValid) return;
     setSaving(true);
     const { error } = await supabase.from("user_onboarding").upsert(
       {
@@ -177,17 +181,23 @@ export default function Onboarding() {
         completed_at: new Date().toISOString(),
         primary_path: recommendation.primaryPath,
         recommended_tools: recommendation.recommendedTools,
-        routine_pain: routinePain,
-        work_setting: workSetting,
-        primary_goal: primaryGoal,
+        routine_pains: routinePains,
+        work_settings: workSettings,
+        primary_goals: primaryGoals,
+        // Campos escalares mantidos apenas por compatibilidade histórica:
+        // guardam a primeira opção selecionada de cada pergunta.
+        routine_pain: routinePains[0],
+        work_setting: workSettings[0],
+        primary_goal: primaryGoals[0],
         answers: {
-          routine_pain: routinePain,
-          work_setting: workSetting,
-          primary_goal: primaryGoal,
+          routine_pains: routinePains,
+          work_settings: workSettings,
+          primary_goals: primaryGoals,
         },
       },
       { onConflict: "user_id" },
     );
+
     setSaving(false);
 
     if (error) {
@@ -349,32 +359,36 @@ export default function Onboarding() {
                 <p className="text-sm md:text-base text-muted-foreground">
                   As respostas definem o caminho e as ferramentas sugeridas na sua Home.
                 </p>
+                <p className="text-xs text-muted-foreground">
+                  Você pode selecionar mais de uma opção em cada pergunta.
+                </p>
               </header>
 
               <QuestionGroup
                 legend="O que mais pesa na sua rotina hoje?"
                 name="routine_pain"
                 options={ROUTINE_PAIN_OPTIONS}
-                value={routinePain}
-                onChange={(v) => setRoutinePain(v as RoutinePain)}
-                invalid={showErrors && !routinePain}
+                values={routinePains}
+                onToggle={(v) => setRoutinePains((prev) => toggleValue(prev, v as RoutinePain))}
+                invalid={showErrors && routinePains.length === 0}
               />
               <QuestionGroup
                 legend="Onde você atua com mais frequência?"
                 name="work_setting"
                 options={WORK_SETTING_OPTIONS}
-                value={workSetting}
-                onChange={(v) => setWorkSetting(v as WorkSetting)}
-                invalid={showErrors && !workSetting}
+                values={workSettings}
+                onToggle={(v) => setWorkSettings((prev) => toggleValue(prev, v as WorkSetting))}
+                invalid={showErrors && workSettings.length === 0}
               />
               <QuestionGroup
                 legend="O que você mais quer ganhar com a MedStation?"
                 name="primary_goal"
                 options={PRIMARY_GOAL_OPTIONS}
-                value={primaryGoal}
-                onChange={(v) => setPrimaryGoal(v as PrimaryGoal)}
-                invalid={showErrors && !primaryGoal}
+                values={primaryGoals}
+                onToggle={(v) => setPrimaryGoals((prev) => toggleValue(prev, v as PrimaryGoal))}
+                invalid={showErrors && primaryGoals.length === 0}
               />
+
 
               <div className="flex flex-col-reverse gap-3 sm:flex-row">
                 <Button variant="outline" onClick={() => setStep(0)} className="h-12 sm:w-auto">
@@ -396,7 +410,11 @@ export default function Onboarding() {
                   Sua MedStation está pronta.
                 </h1>
                 <p className="text-sm md:text-base text-muted-foreground">
-                  {explainRecommendation(recommendation.primaryPath)}
+                  {explainRecommendation(
+                    recommendation.primaryPath,
+                    routinePains.length + workSettings.length + primaryGoals.length,
+                  )}
+
                 </p>
               </header>
 
@@ -449,19 +467,24 @@ export default function Onboarding() {
   );
 }
 
+/** Alterna um valor dentro da lista de seleções, preservando a ordem de escolha. */
+export function toggleValue<T extends string>(list: T[], value: T): T[] {
+  return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
+}
+
 function QuestionGroup({
   legend,
   name,
   options,
-  value,
-  onChange,
+  values,
+  onToggle,
   invalid,
 }: {
   legend: string;
   name: string;
   options: { value: string; label: string }[];
-  value: string;
-  onChange: (value: string) => void;
+  values: string[];
+  onToggle: (value: string) => void;
   invalid: boolean;
 }) {
   return (
@@ -471,7 +494,7 @@ function QuestionGroup({
       </legend>
       <div className="grid gap-2">
         {options.map((opt) => {
-          const active = opt.value === value;
+          const active = values.includes(opt.value);
           return (
             <label
               key={opt.value}
@@ -482,19 +505,21 @@ function QuestionGroup({
               ].join(" ")}
             >
               <input
-                type="radio"
+                type="checkbox"
                 name={name}
                 value={opt.value}
                 checked={active}
-                onChange={() => onChange(opt.value)}
+                onChange={() => onToggle(opt.value)}
                 className="h-4 w-4 accent-[hsl(var(--primary))]"
               />
               <span>{opt.label}</span>
+              {active && <Check className="ml-auto h-4 w-4 shrink-0 text-primary" aria-hidden="true" />}
             </label>
           );
         })}
       </div>
-      {invalid && <p className="text-xs text-destructive">Selecione uma opção.</p>}
+      {invalid && <p className="text-xs text-destructive">Selecione ao menos uma opção.</p>}
     </fieldset>
   );
+
 }
