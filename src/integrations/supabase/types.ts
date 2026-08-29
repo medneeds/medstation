@@ -1709,6 +1709,45 @@ export type Database = {
         }
         Relationships: []
       }
+      user_onboarding: {
+        Row: {
+          answers: Json
+          completed_at: string | null
+          created_at: string
+          primary_goal: string | null
+          primary_path: string | null
+          recommended_tools: string[]
+          routine_pain: string | null
+          updated_at: string
+          user_id: string
+          work_setting: string | null
+        }
+        Insert: {
+          answers?: Json
+          completed_at?: string | null
+          created_at?: string
+          primary_goal?: string | null
+          primary_path?: string | null
+          recommended_tools?: string[]
+          routine_pain?: string | null
+          updated_at?: string
+          user_id: string
+          work_setting?: string | null
+        }
+        Update: {
+          answers?: Json
+          completed_at?: string | null
+          created_at?: string
+          primary_goal?: string | null
+          primary_path?: string | null
+          recommended_tools?: string[]
+          routine_pain?: string | null
+          updated_at?: string
+          user_id?: string
+          work_setting?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
