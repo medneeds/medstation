@@ -362,7 +362,9 @@ serve(async (req) => {
       pricing_review_due: records.filter((r) => r.pricing_review_due).length,
       mrr_cents: Math.round(globalMrrCents),
       arr_cents: Math.round(globalMrrCents * 12),
-      avg_ticket_cents: payingAll.length ? Math.round(globalMrrCents / payingAll.length) : 0,
+      mrr_at_risk_cents: Math.round(globalMrrAtRiskCents),
+      avg_ticket_cents: globalActive.length ? Math.round(globalMrrCents / globalActive.length) : 0,
+
       currency: globalCurrency,
       paying_total: payingAll.length,
     };
