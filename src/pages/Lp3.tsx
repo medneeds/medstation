@@ -13,31 +13,19 @@ import { QuickCheckout } from "@/components/QuickCheckout";
 import { LeadForm } from "@/components/LeadForm";
 import { ConciergeFab } from "@/components/ConciergeFab";
 import { ClinicalFlowDemo } from "@/components/ClinicalFlowDemo";
+import { LandingToolExplorer } from "@/components/landing/LandingToolExplorer";
+
 import { trackCtaClick } from "@/lib/analytics";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { DISPLAY_PRICING, brl } from "@/lib/subscription-tiers";
 import { ArrowRight, Check, Quote, Star } from "lucide-react";
 
 const proof = [
-  { value: "40h", label: "recuperadas por mês" },
-  { value: "3", label: "caminhos: documentação, copiloto e fluxo" },
-  { value: "7 dias", label: "grátis, sem cartão" },
+  { value: "Documentação", label: "texto clínico pronto para revisão" },
+  { value: "Copiloto", label: "apoio de raciocínio no plantão" },
+  { value: "Fluxo", label: "menos trabalho repetitivo na rotina" },
 ];
 
-const assistants = [
-  ["Examinus", "Exames e laudos resumidos"],
-  ["Clínicus", "Anamnese e evolução estruturadas"],
-  ["Prescriptus", "Conduta e prescrição com alertas"],
-  ["Gasometrus", "Gasometria interpretada"],
-  ["Protocolus", "Protocolos direto ao ponto"],
-  ["Orientus", "Orientação de alta ao paciente"],
-  ["Atestus", "Atestados prontos"],
-  ["Mediscuss", "Discussão de caso complexo"],
-  ["Legalis", "Proteção jurídica e ética"],
-  ["Codexus", "CID e codificação"],
-  ["Numerus", "Escores e cálculos"],
-  ["Scorius", "Estratificação de risco"],
-] as const;
 
 const testimonials = [
   {
@@ -55,8 +43,9 @@ const testimonials = [
 const faq = [
   {
     q: "Como funciona o teste de 7 dias?",
-    a: "Você cria a conta com nome, telefone e e-mail e usa a plataforma inteira por 7 dias: Documentação, Copiloto e Fluxo. Não pedimos cartão de crédito em momento nenhum do teste.",
+    a: "Você informa apenas o e-mail e recebe um link seguro de acesso. Durante 7 dias a plataforma inteira fica liberada: Documentação, Copiloto e Fluxo. Não pedimos cartão de crédito em momento nenhum do teste.",
   },
+
   {
     q: "E depois dos 7 dias?",
     a: "Ao fim dos 7 dias, basta assinar o plano único para continuar com tudo liberado. Sem assinatura, os assistentes ficam bloqueados, mas sua conta e seus registros continuam salvos.",
@@ -103,9 +92,10 @@ export default function Lp3() {
     <div className="light min-h-screen bg-background text-foreground">
       <Seo
         path="/"
-        title="MedStation — a IA que escreve a burocracia do seu plantão"
-        description="Anamnese, exame, conduta e alta prontos em segundos. Documentação, Copiloto e Fluxo em um só lugar. Teste 7 dias grátis, sem cartão."
+        title="MedStation — menos tempo no teclado, mais tempo na medicina"
+        description="Documentação clínica organizada, apoio à decisão no plantão e menos tarefas repetitivas na rotina. Teste 7 dias grátis, sem cartão."
       />
+
 
       <header className="sticky top-0 z-30 bg-background/85 backdrop-blur border-b border-border/50">
         <div className="container mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
@@ -134,7 +124,7 @@ export default function Lp3() {
       </header>
 
       <main>
-        {/* 1. Hero — 1 promessa + formulário completo */}
+        {/* 1. Hero — promessa + cadastro por e-mail */}
         <section
           id="comecar"
           className="relative overflow-hidden border-b border-border/50"
@@ -149,12 +139,14 @@ export default function Lp3() {
                 IA criada para a prática clínica
               </Badge>
               <h1 className="text-[2.1rem] leading-[1.06] md:text-6xl font-semibold tracking-tight">
-                A burocracia do plantão{" "}
-                <span className="text-primary">escrita por você, sem digitar.</span>
+                Menos tempo no teclado.{" "}
+                <span className="text-primary">Mais tempo na medicina.</span>
               </h1>
               <p className="mt-5 text-base md:text-xl text-muted-foreground leading-relaxed max-w-xl">
-                Anamnese, exame, conduta e alta prontos em segundos — no padrão do prontuário.
+                A MedStation organiza a documentação clínica, apoia decisões e reduz tarefas
+                repetitivas ao longo do plantão.
               </p>
+
               <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2.5">
                 {["Sem cartão de crédito", "Sem instalar nada", "Cancele quando quiser"].map((b) => (
                   <li key={b} className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -169,12 +161,12 @@ export default function Lp3() {
           </div>
         </section>
 
-        {/* 2. Prova de autoridade */}
+        {/* 2. Os três tipos de trabalho */}
         <section className="border-b border-border/50 bg-background">
-          <div className="container mx-auto px-4 md:px-8 py-8 md:py-10 grid grid-cols-3 gap-4 text-center">
+          <div className="container mx-auto px-4 md:px-8 py-8 md:py-10 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
             {proof.map((p) => (
               <div key={p.label}>
-                <div className="text-2xl md:text-4xl font-semibold text-primary tracking-tight">{p.value}</div>
+                <div className="text-lg md:text-2xl font-semibold text-primary tracking-tight">{p.value}</div>
                 <div className="mt-1 text-[0.72rem] md:text-sm text-muted-foreground">{p.label}</div>
               </div>
             ))}
@@ -188,36 +180,28 @@ export default function Lp3() {
               Você fala ou cola. Ele escreve.
             </h2>
             <p className="mt-3 text-center text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
-              O mesmo caso, do áudio ao texto pronto para o prontuário.
+              Do áudio ou de uma informação solta até o texto pronto para o prontuário.
             </p>
+
             <div className="mt-8">
               <ClinicalFlowDemo onPrimary={() => goForm("flow_demo")} />
             </div>
           </div>
         </section>
 
-        {/* 4. Assistentes */}
+        {/* 4. Ferramentas — exploração interativa */}
         <section className="border-b border-border/50">
           <div className="container mx-auto px-4 md:px-8 py-14 md:py-20">
             <h2 className="text-2xl md:text-4xl font-semibold tracking-tight text-center">
-              Uma ferramenta para cada tarefa
+              Uma ferramenta para cada etapa
             </h2>
-            <div className="mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
-              {assistants.map(([name, desc]) => (
-                <div
-                  key={name}
-                  className="rounded-xl border border-border/60 bg-card px-4 py-3.5 transition-colors hover:border-primary/45"
-                >
-                  <h3 className="text-sm font-semibold">{name}</h3>
-                  <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">{desc}</p>
-                </div>
-              ))}
-            </div>
-            <p className="mt-6 text-center text-xs text-muted-foreground">
-              Mais o Modo Escuta: grava, transcreve e estrutura a consulta em tempo real.
+            <p className="mt-3 text-center text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
+              Escolha um caminho e toque em uma ferramenta para ver o que ela faz na prática.
             </p>
+            <LandingToolExplorer />
           </div>
         </section>
+
 
         {/* 5. Prova social */}
         <section className="bg-muted/25 border-b border-border/50">
