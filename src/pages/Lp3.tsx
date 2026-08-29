@@ -124,7 +124,7 @@ export default function Lp3() {
       </header>
 
       <main>
-        {/* 1. Hero — 1 promessa + formulário completo */}
+        {/* 1. Hero — promessa + cadastro por e-mail */}
         <section
           id="comecar"
           className="relative overflow-hidden border-b border-border/50"
@@ -139,12 +139,14 @@ export default function Lp3() {
                 IA criada para a prática clínica
               </Badge>
               <h1 className="text-[2.1rem] leading-[1.06] md:text-6xl font-semibold tracking-tight">
-                A burocracia do plantão{" "}
-                <span className="text-primary">escrita por você, sem digitar.</span>
+                Menos tempo no teclado.{" "}
+                <span className="text-primary">Mais tempo na medicina.</span>
               </h1>
               <p className="mt-5 text-base md:text-xl text-muted-foreground leading-relaxed max-w-xl">
-                Anamnese, exame, conduta e alta prontos em segundos — no padrão do prontuário.
+                A MedStation organiza a documentação clínica, apoia decisões e reduz tarefas
+                repetitivas ao longo do plantão.
               </p>
+
               <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2.5">
                 {["Sem cartão de crédito", "Sem instalar nada", "Cancele quando quiser"].map((b) => (
                   <li key={b} className="flex items-center gap-2 text-sm text-muted-foreground">
