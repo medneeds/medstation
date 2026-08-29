@@ -84,20 +84,20 @@ export default function AdminLogin() {
 
   if (checking) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[hsl(220_18%_6%)]">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-5 w-5 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-[1.05fr_1fr] bg-[hsl(220_18%_6%)] text-foreground">
+    <div className="min-h-screen grid lg:grid-cols-[1.05fr_1fr] bg-background text-foreground">
       {/* ============ Painel esquerdo — brand / narrativa ============ */}
       <aside className="relative hidden lg:flex flex-col justify-between p-12 overflow-hidden">
         {/* ambient */}
         <div className="absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-[radial-gradient(1200px_600px_at_20%_10%,hsl(var(--primary)/0.18),transparent_60%),radial-gradient(900px_500px_at_80%_90%,hsl(var(--primary)/0.10),transparent_60%)]" />
-          <div className="absolute inset-0 opacity-[0.06] [background-image:linear-gradient(hsl(0_0%_100%/0.5)_1px,transparent_1px),linear-gradient(90deg,hsl(0_0%_100%/0.5)_1px,transparent_1px)] [background-size:44px_44px]" />
+          <div className="absolute inset-0 opacity-[0.06] [background-image:linear-gradient(hsl(var(--foreground)/0.5)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--foreground)/0.5)_1px,transparent_1px)] [background-size:44px_44px]" />
           <div className="absolute -top-40 -left-40 h-[560px] w-[560px] rounded-full bg-primary/10 blur-3xl" />
         </div>
 
@@ -112,7 +112,7 @@ export default function AdminLogin() {
         </header>
 
         <div className="max-w-lg">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
             Acesso restrito · Equipe MedStation
           </div>
           <h1 className="mt-6 font-display text-4xl xl:text-5xl leading-[1.05] tracking-tight">
@@ -176,7 +176,7 @@ export default function AdminLogin() {
             </p>
           </div>
 
-          <Card className="p-6 bg-white/[0.02] border-white/10 backdrop-blur-xl shadow-[0_20px_60px_-30px_hsl(var(--primary)/0.35)]">
+          <Card className="p-6 bg-card/80 border-border backdrop-blur-xl shadow-[0_20px_60px_-30px_hsl(var(--primary)/0.35)]">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
                 <Label htmlFor="admin-email" className="text-xs uppercase tracking-wider text-muted-foreground">
@@ -190,7 +190,7 @@ export default function AdminLogin() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="voce@medstation.ai"
-                  className="h-11 bg-background/60 border-white/10 focus-visible:ring-primary/40"
+                  className="h-11 bg-background/60 border-border focus-visible:ring-primary/40"
                 />
               </div>
 
@@ -207,7 +207,7 @@ export default function AdminLogin() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="h-11 bg-background/60 border-white/10 focus-visible:ring-primary/40 pr-10"
+                    className="h-11 bg-background/60 border-border focus-visible:ring-primary/40 pr-10"
                   />
                   <button
                     type="button"
