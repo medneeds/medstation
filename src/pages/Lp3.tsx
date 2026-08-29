@@ -92,9 +92,10 @@ export default function Lp3() {
     <div className="light min-h-screen bg-background text-foreground">
       <Seo
         path="/"
-        title="MedStation — a IA que escreve a burocracia do seu plantão"
-        description="Anamnese, exame, conduta e alta prontos em segundos. Documentação, Copiloto e Fluxo em um só lugar. Teste 7 dias grátis, sem cartão."
+        title="MedStation — menos tempo no teclado, mais tempo na medicina"
+        description="Documentação clínica organizada, apoio à decisão no plantão e menos tarefas repetitivas na rotina. Teste 7 dias grátis, sem cartão."
       />
+
 
       <header className="sticky top-0 z-30 bg-background/85 backdrop-blur border-b border-border/50">
         <div className="container mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
