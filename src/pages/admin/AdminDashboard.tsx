@@ -35,7 +35,7 @@ interface KPIs {
   avgFeedback: number;
   feedbackTotal: number;
   referrals: number;
-  referralConversion: number;
+  referralConversion: number | null;
   securityEvents24h: number;
 }
 
@@ -60,11 +60,13 @@ export default function AdminDashboard() {
   const [lastSync, setLastSync] = useState<Date | null>(null);
   const [activeUsers, setActiveUsers] = useState<SubscriberRecord[]>([]);
   const [activeTotal, setActiveTotal] = useState(0);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
 
   const load = useCallback(async (forceStripeReload = false) => {
     if (forceStripeReload) setRefreshing(true);
     else setLoading(true);
+    setLoadError(null);
     try {
       const [subs, metrics, activeList] = await Promise.all([
         invokeAdmin<SubscribersResponse>(
@@ -102,6 +104,9 @@ export default function AdminDashboard() {
       setLastSync(new Date());
     } catch (e) {
       console.error("[admin-dashboard]", e);
+      setLoadError(
+        e instanceof Error ? e.message : "Nao foi possivel carregar os indicadores.",
+      );
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -171,7 +176,11 @@ export default function AdminDashboard() {
     },
     {
       label: "Indicações",
-      value: kpis ? `${kpis.referrals} (${kpis.referralConversion}%)` : "—",
+      value: !kpis
+        ? "—"
+        : kpis.referrals === 0
+          ? "Sem indicações"
+          : `${kpis.referrals} (${kpis.referralConversion ?? 0}%)`,
       icon: Gift,
       color: "text-pink-500",
     },
@@ -185,6 +194,12 @@ export default function AdminDashboard() {
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
+      {loadError && (
+        <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          Não foi possível carregar os indicadores agora. Os números exibidos podem
+          estar desatualizados ou incompletos. Detalhe técnico: {loadError}
+        </div>
+      )}
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-sm text-muted-foreground mt-1">

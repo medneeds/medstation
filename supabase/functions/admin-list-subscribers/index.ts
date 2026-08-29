@@ -336,8 +336,13 @@ serve(async (req) => {
     const globalCourtesy = records.filter((r) => r.effective_status === "courtesy");
     const globalAdmin = records.filter((r) => r.is_admin);
     const globalNone = records.filter((r) => r.effective_status === "none");
-    const globalMrrCents = payingAll.reduce((sum, r) => sum + (r.monthly_amount_cents || 0), 0);
+    // MRR = receita recorrente que está sendo efetivamente cobrada hoje.
+    // Assinaturas em teste do Stripe ainda não pagam e as inadimplentes não
+    // estão sendo recebidas: entram em "em risco", nunca no MRR.
+    const globalMrrCents = globalActive.reduce((sum, r) => sum + (r.monthly_amount_cents || 0), 0);
+    const globalMrrAtRiskCents = globalPastDue.reduce((sum, r) => sum + (r.monthly_amount_cents || 0), 0);
     const globalCurrency = payingAll.find((r) => r.currency)?.currency || "brl";
+
 
     const stats = {
       total_users: allUsers.length,
@@ -357,7 +362,9 @@ serve(async (req) => {
       pricing_review_due: records.filter((r) => r.pricing_review_due).length,
       mrr_cents: Math.round(globalMrrCents),
       arr_cents: Math.round(globalMrrCents * 12),
-      avg_ticket_cents: payingAll.length ? Math.round(globalMrrCents / payingAll.length) : 0,
+      mrr_at_risk_cents: Math.round(globalMrrAtRiskCents),
+      avg_ticket_cents: globalActive.length ? Math.round(globalMrrCents / globalActive.length) : 0,
+
       currency: globalCurrency,
       paying_total: payingAll.length,
     };
@@ -403,8 +410,13 @@ serve(async (req) => {
     const paginated = filtered.slice(start, start + perPage);
 
     const filteredPaying = filtered.filter((r) => payingStatuses.has(r.stripe_status));
-    const filteredMrr = filteredPaying.reduce((s, r) => s + (r.monthly_amount_cents || 0), 0);
+    const filteredActive = filtered.filter((r) => r.stripe_status === "active");
+    const filteredMrr = filteredActive.reduce((s, r) => s + (r.monthly_amount_cents || 0), 0);
+    const filteredMrrAtRisk = filtered
+      .filter((r) => r.stripe_status === "past_due")
+      .reduce((s, r) => s + (r.monthly_amount_cents || 0), 0);
     const filteredCurrency = filteredPaying.find((r) => r.currency)?.currency || stats.currency;
+
     const filteredStats = {
       total_users: filtered.filter((r) => !r.auth_missing).length,
       total_records: filtered.length,
@@ -421,7 +433,9 @@ serve(async (req) => {
       access_active: filtered.filter((r) => r.access_active).length,
       mrr_cents: Math.round(filteredMrr),
       arr_cents: Math.round(filteredMrr * 12),
-      avg_ticket_cents: filteredPaying.length ? Math.round(filteredMrr / filteredPaying.length) : 0,
+      mrr_at_risk_cents: Math.round(filteredMrrAtRisk),
+      avg_ticket_cents: filteredActive.length ? Math.round(filteredMrr / filteredActive.length) : 0,
+
       currency: filteredCurrency,
       paying_total: filteredPaying.length,
     };
