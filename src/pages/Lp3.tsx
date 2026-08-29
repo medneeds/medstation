@@ -77,18 +77,8 @@ export default function Lp3() {
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
   useReferralCapture();
 
-  useEffect(() => {
-    const root = document.documentElement;
-    const wasDark = root.classList.contains("dark");
-    root.classList.remove("dark");
-    root.classList.add("light");
-    return () => {
-      if (wasDark) {
-        root.classList.remove("light");
-        root.classList.add("dark");
-      }
-    };
-  }, []);
+
+
 
   const goForm = (label: string) => {
     trackCtaClick({ cta: label, section: "lp3", destination: "#comecar" });
