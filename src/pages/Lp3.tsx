@@ -88,7 +88,7 @@ export default function Lp3() {
   const price = DISPLAY_PRICING.bundle[billing];
 
   return (
-    <div className="light min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground">
       <Seo
         path="/"
         title="MedStation — menos tempo no teclado, mais tempo na medicina"
