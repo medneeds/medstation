@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { signUpSchema, signInSchema } from "@/lib/validations";
+import { signInSchema } from "@/lib/validations";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { Logo } from "@/components/Logo";
-import { Eye, EyeOff } from "lucide-react";
+import { trackLifecycleEvent } from "@/lib/analytics";
+import { Eye, EyeOff, MailCheck } from "lucide-react";
 
 
 
@@ -26,21 +26,13 @@ export default function Auth() {
 
   const [resetLoading, setResetLoading] = useState(false);
   const [showSignInPassword, setShowSignInPassword] = useState(false);
-  const [showSignUpPassword, setShowSignUpPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [signInEmail, setSignInEmail] = useState("");
   const [signInPassword, setSignInPassword] = useState("");
 
   const [signUpEmail, setSignUpEmail] = useState("");
-  const [signUpPassword, setSignUpPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [fullName, setFullName] = useState("");
+  const [signUpSent, setSignUpSent] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
-  const [gender, setGender] = useState<"M" | "F" | "Outro" | "">("");
-  const [crm, setCrm] = useState("");
-  const [crmState, setCrmState] = useState("");
-  const [specialty, setSpecialty] = useState("");
 
   // Destino pós-login: respeita rota pretendida (vinda de ProtectedRoute) ou /dashboard
   const fromPath = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
@@ -78,78 +70,35 @@ export default function Auth() {
   }, [navigate, destination, confirmHandled]);
 
 
+  // Cadastro passwordless: apenas e-mail. O link cria a conta se não existir
+  // ou entra na conta existente (sem criar novo trial).
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
+    const email = signUpEmail.trim().toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      toast({ variant: "destructive", title: "E-mail inválido" });
+      return;
+    }
     setLoading(true);
+    trackLifecycleEvent("signup_started", { source: "auth", auth_method: "email_magic_link" });
     try {
-      if (signUpPassword !== confirmPassword) {
-        toast({ variant: "destructive", title: "Senhas não coincidem", description: "Verifique as senhas digitadas." });
-        setLoading(false);
-        return;
-      }
-      const validated = signUpSchema.parse({ email: signUpEmail, password: signUpPassword, fullName });
-      const { data, error } = await supabase.auth.signUp({
-        email: validated.email,
-        password: validated.password,
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
         options: {
-          data: { full_name: validated.fullName },
+          shouldCreateUser: true,
           emailRedirectTo: `${window.location.origin}/auth?confirmed=1`,
         },
       });
       if (error) {
-        const msg = /already registered|already been registered|User already/i.test(error.message)
-          ? "Este e-mail já possui cadastro. Tente entrar ou recuperar a senha."
-          : error.message;
-        toast({ variant: "destructive", title: "Erro no cadastro", description: msg });
-        setLoading(false);
+        toast({
+          variant: "destructive",
+          title: "Não conseguimos enviar o link",
+          description: error.message,
+        });
         return;
       }
-      if (data.user) {
-        await supabase.from("profiles").update({
-          gender: gender || null,
-          crm: crm || null,
-          crm_state: crmState || null,
-          specialty: specialty || null,
-        }).eq("id", data.user.id);
-
-        // Track referral if a code was captured before signup
-        try {
-          const refCode = localStorage.getItem("medstation_ref_code");
-          if (refCode) {
-            await supabase.functions.invoke("referral-track", { body: { code: refCode } });
-            localStorage.removeItem("medstation_ref_code");
-            localStorage.removeItem("medstation_ref_expiry");
-          }
-        } catch (e) {
-          console.error("Referral tracking failed", e);
-        }
-
-        // Welcome email for the new lead (non-blocking)
-        try {
-          await supabase.functions.invoke("send-welcome-lead", {
-            body: { userId: data.user.id },
-          });
-        } catch (e) {
-          console.error("Welcome email failed", e);
-        }
-      }
-      const createdEmail = validated.email;
-      setFullName(""); setSignUpEmail(""); setSignUpPassword(""); setConfirmPassword("");
-      setGender(""); setCrm(""); setCrmState(""); setSpecialty("");
-
-      if (data.session) {
-        // Confirmação automática ativa: já entra direto.
-        armBrandIntro();
-        navigate(destination, { replace: true });
-        return;
-      }
-
-      navigate(`/confirmar-email?email=${encodeURIComponent(createdEmail)}`, {
-        replace: true,
-        state: { email: createdEmail },
-      });
-    } catch (error: any) {
-      toast({ variant: "destructive", title: "Dados inválidos", description: error.errors?.[0]?.message || error.message });
+      setSignUpSent(true);
     } finally {
       setLoading(false);
     }
@@ -311,7 +260,7 @@ export default function Auth() {
               </div>
 
               <p className="text-sm text-muted-foreground">
-                Entre com sua conta ou crie uma em segundos.
+                Entre na sua conta ou comece seu teste em segundos.
               </p>
             </div>
 
@@ -426,165 +375,74 @@ export default function Auth() {
                     transition={{ duration: 0.4 }}
                     className="mt-6 lg:mt-8 space-y-4 lg:space-y-5"
                   >
-                    <GoogleAuthButton label="Cadastrar com Google" />
-
-                    <form onSubmit={handleSignUp} className="space-y-4">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="signup-name" className="text-xs uppercase tracking-wider text-muted-foreground">Nome completo *</Label>
-                        <Input
-                          id="signup-name"
-                          type="text"
-                          autoComplete="name"
-                          autoCapitalize="words"
-                          placeholder="Dr. João Silva"
-                          value={fullName}
-                          onChange={(e) => setFullName(e.target.value)}
-                          className="h-12 rounded-xl border-hairline bg-transparent text-base focus-visible:ring-1 focus-visible:ring-primary"
-                          required
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs uppercase tracking-wider text-muted-foreground">Sexo</Label>
-                          <Select value={gender} onValueChange={(v: "M" | "F" | "Outro") => setGender(v)}>
-                            <SelectTrigger className="h-12 rounded-xl border-hairline bg-transparent text-base">
-                              <SelectValue placeholder="—" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="M">Dr.</SelectItem>
-                              <SelectItem value="F">Dra.</SelectItem>
-                              <SelectItem value="Outro">Outro</SelectItem>
-                            </SelectContent>
-                          </Select>
+                    {signUpSent ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                          <MailCheck className="h-5 w-5 text-primary shrink-0" aria-hidden />
+                          <p className="text-sm font-semibold text-foreground">Confira seu e-mail</p>
                         </div>
-                        <div className="space-y-1.5">
-                          <Label htmlFor="signup-crm" className="text-xs uppercase tracking-wider text-muted-foreground">CRM</Label>
-                          <Input
-                            id="signup-crm"
-                            type="text"
-                            inputMode="numeric"
-                            placeholder="123456"
-                            value={crm}
-                            onChange={(e) => setCrm(e.target.value)}
-                            className="h-12 rounded-xl border-hairline bg-transparent text-base"
-                          />
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          Enviamos um link seguro para criar sua conta ou entrar. Ele foi enviado para{" "}
+                          <span className="text-foreground">{signUpEmail.trim().toLowerCase()}</span>.
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="h-11 rounded-xl"
+                            onClick={() => setSignUpSent(false)}
+                          >
+                            Alterar e-mail
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            className="h-11 rounded-xl"
+                            disabled={loading}
+                            onClick={(e) => handleSignUp(e as unknown as React.FormEvent)}
+                          >
+                            {loading ? "Enviando..." : "Reenviar link"}
+                          </Button>
                         </div>
                       </div>
+                    ) : (
+                      <>
+                        <GoogleAuthButton label="Cadastrar com Google" trackAsSignup source="auth" />
+                        <p className="text-xs text-muted-foreground text-center">
+                          7 dias de acesso completo. Sem cartão de crédito.
+                        </p>
 
-                      <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs uppercase tracking-wider text-muted-foreground">UF</Label>
-                          <Select value={crmState} onValueChange={setCrmState}>
-                            <SelectTrigger className="h-12 rounded-xl border-hairline bg-transparent text-base">
-                              <SelectValue placeholder="—" />
-                            </SelectTrigger>
-                            <SelectContent className="max-h-[200px]">
-                              {["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"].map((s) => (
-                                <SelectItem key={s} value={s}>{s}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs uppercase tracking-wider text-muted-foreground">Especialidade</Label>
-                          <Select value={specialty} onValueChange={setSpecialty}>
-                            <SelectTrigger className="h-12 rounded-xl border-hairline bg-transparent text-base">
-                              <SelectValue placeholder="—" />
-                            </SelectTrigger>
-                            <SelectContent className="max-h-[200px]">
-                              {["Generalista","Clínica Geral","Cardiologia","Dermatologia","Endocrinologia","Gastroenterologia","Geriatria","Ginecologia","Neurologia","Pediatria","Psiquiatria","Outra"].map((sp) => (
-                                <SelectItem key={sp} value={sp}>{sp}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <Label htmlFor="signup-email" className="text-xs uppercase tracking-wider text-muted-foreground">Email *</Label>
-                        <Input
-                          id="signup-email"
-                          type="email"
-                          inputMode="email"
-                          autoComplete="email"
-                          autoCapitalize="none"
-                          autoCorrect="off"
-                          spellCheck={false}
-                          placeholder="seu@email.com"
-                          value={signUpEmail}
-                          onChange={(e) => setSignUpEmail(e.target.value)}
-                          className="h-12 rounded-xl border-hairline bg-transparent text-base"
-                          required
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
-                        <div className="space-y-1.5">
-                          <Label htmlFor="signup-password" className="text-xs uppercase tracking-wider text-muted-foreground">Senha *</Label>
-                          <div className="relative">
+                        <form onSubmit={handleSignUp} className="space-y-4">
+                          <div className="space-y-1.5">
+                            <Label htmlFor="signup-email" className="text-xs uppercase tracking-wider text-muted-foreground">E-mail</Label>
                             <Input
-                              id="signup-password"
-                              type={showSignUpPassword ? "text" : "password"}
-                              autoComplete="new-password"
-                              placeholder="Mínimo 8 caracteres"
-                              value={signUpPassword}
-                              onChange={(e) => setSignUpPassword(e.target.value)}
-                              className="h-12 pr-12 rounded-xl border-hairline bg-transparent text-base"
+                              id="signup-email"
+                              type="email"
+                              inputMode="email"
+                              autoComplete="email"
+                              autoCapitalize="none"
+                              autoCorrect="off"
+                              spellCheck={false}
+                              placeholder="seu@email.com"
+                              value={signUpEmail}
+                              onChange={(e) => setSignUpEmail(e.target.value)}
+                              className="h-12 rounded-xl border-hairline bg-transparent text-base focus-visible:ring-1 focus-visible:ring-primary transition-all"
                               required
-                              minLength={8}
                             />
-                            <button
-                              type="button"
-                              onClick={() => setShowSignUpPassword((v) => !v)}
-                              aria-label={showSignUpPassword ? "Ocultar senha" : "Mostrar senha"}
-                              aria-pressed={showSignUpPassword}
-                              className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 inline-flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
-                            >
-                              {showSignUpPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            </button>
                           </div>
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label htmlFor="signup-confirm" className="text-xs uppercase tracking-wider text-muted-foreground">Confirmar *</Label>
-                          <div className="relative">
-                            <Input
-                              id="signup-confirm"
-                              type={showConfirmPassword ? "text" : "password"}
-                              autoComplete="new-password"
-                              placeholder="Repita a senha"
-                              value={confirmPassword}
-                              onChange={(e) => setConfirmPassword(e.target.value)}
-                              className="h-12 pr-12 rounded-xl border-hairline bg-transparent text-base"
-                              required
-                              minLength={8}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowConfirmPassword((v) => !v)}
-                              aria-label={showConfirmPassword ? "Ocultar confirmação de senha" : "Mostrar confirmação de senha"}
-                              aria-pressed={showConfirmPassword}
-                              className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 inline-flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
-                            >
-                              {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                      {confirmPassword && signUpPassword !== confirmPassword && (
-                        <p className="text-xs text-destructive">As senhas não coincidem</p>
-                      )}
-
-                      <Button
-                        type="submit"
-                        className="w-full h-12 rounded-xl text-base font-medium transition-all hover:translate-y-[-1px]"
-                        disabled={loading}
-                      >
-                        {loading ? "Cadastrando..." : "Criar conta"}
-                      </Button>
-                      <p className="text-[11px] text-muted-foreground text-center">
-                        * Obrigatórios. Você pode completar o perfil depois.
-                      </p>
-                    </form>
+                          <Button
+                            type="submit"
+                            className="w-full h-12 rounded-xl text-base font-medium transition-all hover:translate-y-[-1px] active:translate-y-0"
+                            disabled={loading}
+                          >
+                            {loading ? "Enviando link..." : "Enviar link de acesso"}
+                          </Button>
+                          <p className="text-[11px] text-muted-foreground text-center">
+                            Sem senha. Enviaremos um link seguro para o seu e-mail.
+                          </p>
+                        </form>
+                      </>
+                    )}
                   </motion.div>
                 </TabsContent>
               </AnimatePresence>
