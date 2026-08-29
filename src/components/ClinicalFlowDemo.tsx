@@ -275,9 +275,9 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
         </div>
       </Card>
 
-      {/* Linha do tempo */}
-      <div className="-mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto scrollbar-none snap-x snap-mandatory scroll-px-4">
-        <div className="flex items-stretch gap-2 min-w-max md:min-w-0">
+      {/* Linha do tempo — grade de 2 colunas no mobile, linha única no desktop */}
+      <div className="md:overflow-x-auto md:scrollbar-none">
+        <div className="grid grid-cols-2 gap-2 md:flex md:items-stretch md:min-w-0">
           {stages.map((s, i) => {
             const Icon = s.icon;
             const isDone = done >= i;
@@ -289,10 +289,10 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
                 onClick={() => setActive(i)}
                 aria-pressed={isActive}
                 className={cn(
-                  "snap-start flex-1 min-w-[8.25rem] text-left rounded-xl border px-2.5 py-2 transition-all duration-300",
+                  "min-w-0 w-full md:flex-1 text-left rounded-xl border px-2.5 py-2 min-h-[44px] transition-colors duration-300",
                   isActive
                     ? "border-primary/50 bg-primary/10 shadow-[0_10px_28px_-20px_hsl(var(--primary)/0.9)]"
-                    : "border-border/60 bg-card/50 hover:border-primary/35 hover:-translate-y-0.5",
+                    : "border-border/60 bg-card/50 hover:border-primary/35",
                   playing && isActive && !isDone && "animate-pulse",
                 )}
               >
@@ -309,8 +309,8 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
                   </span>
                   <Icon className={cn("w-3.5 h-3.5", isActive ? "text-primary" : "text-muted-foreground")} />
                 </div>
-                <p className="text-xs font-medium mt-1.5 whitespace-nowrap">{s.label}</p>
-                <p className="text-[0.65rem] text-muted-foreground whitespace-nowrap">
+                <p className="text-xs font-medium mt-1.5 break-words md:whitespace-nowrap">{s.label}</p>
+                <p className="text-[0.65rem] text-muted-foreground break-words md:whitespace-nowrap">
                   {s.assistant} · {s.seconds}s
                 </p>
               </button>
@@ -318,6 +318,7 @@ export function ClinicalFlowDemo({ onPrimary }: { onPrimary?: () => void }) {
           })}
         </div>
       </div>
+
 
       {/* Painel do passo */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
