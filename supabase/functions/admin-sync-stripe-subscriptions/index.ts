@@ -71,9 +71,7 @@ serve(async (req) => {
 
     // 1. Pull every subscription from Stripe (read-only, never mutates Stripe).
     const subscriptions: Stripe.Subscription[] = [];
-    for await (const sub of stripe.subscriptions.list({ status: "all", limit: 100 }).autoPagingEach
-      ? stripe.subscriptions.list({ status: "all", limit: 100 })
-      : []) {
+    for await (const sub of stripe.subscriptions.list({ status: "all", limit: 100 })) {
       subscriptions.push(sub as Stripe.Subscription);
     }
     log("stripe subscriptions fetched", { count: subscriptions.length });
