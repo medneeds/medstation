@@ -94,6 +94,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
           <AnalyticsTracker />
+          <Suspense fallback={<div className="min-h-screen" aria-hidden="true" />}>
           <Routes>
 
             <Route path="/" element={<Lp3 />} />
@@ -388,6 +389,7 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </Suspense>
         </BrowserRouter>
           </OnboardingProvider>
         </ProfileProvider>
