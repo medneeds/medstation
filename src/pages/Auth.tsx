@@ -246,13 +246,13 @@ export default function Auth() {
               <span className="italic text-primary">Digite menos.</span>
             </h1>
             <p className="text-base text-muted-foreground leading-relaxed max-w-md">
-              Dez assistentes clínicos especializados em IA. Anamnese, exames, prescrição,
+              Documentação, Copiloto e Fluxo em uma só plataforma. Anamnese, exames, prescrição,
               gasometria, scores — em segundos, no seu fluxo.
             </p>
 
             <ul className="space-y-2.5 pt-2">
               {[
-                "Examinus, Clínicus, Gasometrus e mais 7",
+                "Examinus, Clínicus, Gasometrus e todo o restante da plataforma",
                 "Documentação automatizada com rigor clínico",
                 "Sem treinamento. Funciona como você pensa.",
               ].map((line, i) => (

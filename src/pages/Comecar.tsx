@@ -344,7 +344,7 @@ export default function Comecar() {
                     </p>
                   </div>
                   <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
-                    11 assistentes + Modo Escuta
+                    Documentação, Copiloto e Fluxo
                   </span>
                 </div>
 
@@ -393,7 +393,7 @@ export default function Comecar() {
 
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/50 bg-card/50 backdrop-blur-xl px-5 py-4">
                   <p className="text-sm text-muted-foreground">
-                    Já sabe o que quer? Assine e libere os 10 assistentes pagos + Modo Escuta.
+                    Já sabe o que quer? Assine e libere o acesso completo à MedStation.
                   </p>
                   <Button
                     className="bg-gradient-primary hover:opacity-90"

@@ -20,7 +20,7 @@ import { ArrowRight, Check, Quote, Star } from "lucide-react";
 
 const proof = [
   { value: "40h", label: "recuperadas por mês" },
-  { value: "12", label: "assistentes clínicos" },
+  { value: "3", label: "caminhos: documentação, copiloto e fluxo" },
   { value: "7 dias", label: "grátis, sem cartão" },
 ];
 
@@ -55,7 +55,7 @@ const testimonials = [
 const faq = [
   {
     q: "Como funciona o teste de 7 dias?",
-    a: "Você cria a conta com nome, telefone e e-mail e usa a plataforma inteira por 7 dias: os 12 assistentes, o Modo Escuta e o Modo Rotineiro. Não pedimos cartão de crédito em momento nenhum do teste.",
+    a: "Você cria a conta com nome, telefone e e-mail e usa a plataforma inteira por 7 dias: Documentação, Copiloto e Fluxo. Não pedimos cartão de crédito em momento nenhum do teste.",
   },
   {
     q: "E depois dos 7 dias?",
@@ -63,7 +63,7 @@ const faq = [
   },
   {
     q: "Existe diferença entre planos?",
-    a: "Não. Existe um único plano com a plataforma inteira: assistentes, Modo Escuta e Modo Rotineiro, por R$ 49,90 por mês ou R$ 499,90 por ano.",
+    a: "Não. Existe um único plano com a plataforma inteira: Documentação, Copiloto e Fluxo, por R$ 49,90 por mês ou R$ 499,90 por ano.",
   },
   {
     q: "Serve para qualquer especialidade?",
@@ -104,7 +104,7 @@ export default function Lp3() {
       <Seo
         path="/"
         title="MedStation — a IA que escreve a burocracia do seu plantão"
-        description="Anamnese, exame, conduta e alta prontos em segundos. 12 assistentes clínicos e Modo Escuta. Teste 7 dias grátis, sem cartão."
+        description="Anamnese, exame, conduta e alta prontos em segundos. Documentação, Copiloto e Fluxo em um só lugar. Teste 7 dias grátis, sem cartão."
       />
 
       <header className="sticky top-0 z-30 bg-background/85 backdrop-blur border-b border-border/50">
@@ -200,7 +200,7 @@ export default function Lp3() {
         <section className="border-b border-border/50">
           <div className="container mx-auto px-4 md:px-8 py-14 md:py-20">
             <h2 className="text-2xl md:text-4xl font-semibold tracking-tight text-center">
-              12 assistentes, um para cada tarefa
+              Uma ferramenta para cada tarefa
             </h2>
             <div className="mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
               {assistants.map(([name, desc]) => (
@@ -259,7 +259,7 @@ export default function Lp3() {
               Um plantão de burocracia custa mais caro
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Um único plano com a plataforma inteira: os 12 assistentes clínicos, o Modo Escuta e o
+              Um único plano com a plataforma inteira: Documentação, Copiloto, Fluxo e o
               Modo Rotineiro. Sem módulos separados, sem upgrade escondido.
             </p>
           </div>

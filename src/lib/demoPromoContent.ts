@@ -103,7 +103,7 @@ export const PRODUCTIVITY_PROMOS: PromoItem[] = [
     id: "p-no-repeat",
     category: "productivity",
     title: "Pare de redigitar a mesma coisa",
-    description: "11 assistentes que padronizam tudo o que você escreve no plantão.",
+    description: "Ferramentas que padronizam tudo o que você escreve no plantão.",
     cta: "Conhecer assinatura",
   },
   {
@@ -120,7 +120,7 @@ export const OFFER_PROMOS: PromoItem[] = [
     id: "o-price",
     category: "offer",
     title: "Plano único de R$ 49,90/mês",
-    description: "A plataforma inteira: 12 assistentes, Modo Escuta e Modo Rotineiro. Cancele quando quiser.",
+    description: "A plataforma inteira: Documentação, Copiloto e Fluxo. Cancele quando quiser.",
     cta: "Assinar agora",
   },
   {
@@ -134,7 +134,7 @@ export const OFFER_PROMOS: PromoItem[] = [
     id: "o-no-card",
     category: "offer",
     title: "Crie sua conta sem cartão",
-    description: "Examinus grátis para experimentar (com limite de uso, espera entre mensagens e pop-ups). Pro libera os outros 10 assistentes sem restrições.",
+    description: "Examinus grátis para experimentar (com limite de uso, espera entre mensagens e pop-ups). O plano completo libera toda a MedStation, sem restrições.",
     cta: "Criar conta grátis",
   },
   {

@@ -32,7 +32,7 @@ const NEXT_STEPS = [
   },
   {
     icon: Stethoscope,
-    title: "12 assistentes clínicos",
+    title: "Ferramentas clínicas",
     desc: "Clínicus, Examinus, Prescriptus, Gasometrus e mais — liberados agora.",
     to: "/dashboard",
   },

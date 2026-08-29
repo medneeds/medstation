@@ -85,7 +85,7 @@ export function AssistantPromoEngine() {
           cancelButton: "whitespace-nowrap",
         },
         action: {
-          label: "Assinar e liberar +10 assistentes",
+          label: "Assinar e liberar a MedStation completa",
           onClick: () => navigate("/pricing"),
         },
         cancel: {

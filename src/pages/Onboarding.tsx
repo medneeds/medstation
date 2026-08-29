@@ -373,7 +373,7 @@ export default function Onboarding() {
                     <p className="text-sm font-medium">O que você pode fazer agora:</p>
                     <ul className="text-sm text-muted-foreground space-y-1">
                       <li>• Usar o Examinus para interpretar exames</li>
-                      <li>• Explorar os 10 assistentes médicos</li>
+                      <li>• Explorar as ferramentas da MedStation</li>
                       <li>• Gerenciar seus casos e pacientes</li>
                     </ul>
                   </div>

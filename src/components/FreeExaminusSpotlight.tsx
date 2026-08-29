@@ -47,8 +47,8 @@ export function FreeExaminusSpotlight() {
             <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
               {isTrial
                 ? trialSource === "legacy"
-                  ? "Como você já fazia parte da plataforma, liberamos tudo por 7 dias: os 12 assistentes, o Modo Escuta e o Modo Rotineiro. Sem cartão de crédito."
-                  : "Você está com a plataforma inteira liberada: os 12 assistentes, o Modo Escuta e o Modo Rotineiro. Sem cartão de crédito até aqui."
+                  ? "Como você já fazia parte da plataforma, liberamos tudo por 7 dias: Documentação, Copiloto e Fluxo. Sem cartão de crédito."
+                  : "Você está com a plataforma inteira liberada: Documentação, Copiloto e Fluxo. Sem cartão de crédito até aqui."
                 : `Seu período de teste terminou. Libere tudo de novo por ${brl(price.now)} por mês — em breve o plano passa a ${brl(99.9)}.`}
             </p>
           </div>

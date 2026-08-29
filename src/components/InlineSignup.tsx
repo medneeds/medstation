@@ -110,7 +110,7 @@ export function InlineSignup() {
         </h3>
         <p className="text-sm text-muted-foreground">
           Você não paga nada para se cadastrar e não precisa informar cartão em momento nenhum. A assinatura é
-          opcional e só entra se você quiser os outros 10 assistentes.
+          opcional e só entra se você quiser o acesso completo à MedStation.
         </p>
         <ul className="space-y-2">
           {benefits.map((b) => (

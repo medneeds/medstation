@@ -316,7 +316,7 @@ COMPORTAMENTO:
 
 SE NÃO FOR EXAME: "Envie um laudo de exame."
 
-VERSÃO DEMO: Esta é versão gratuita limitada. Crie conta para acesso completo aos 10 assistentes médicos.`;
+VERSÃO DEMO: Esta é versão gratuita limitada. Crie conta para acesso completo à MedStation.`;
 
     // Se houver arquivo PDF/imagem, processa com visão
     let userMessages = messages;
