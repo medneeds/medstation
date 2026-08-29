@@ -433,7 +433,9 @@ serve(async (req) => {
       access_active: filtered.filter((r) => r.access_active).length,
       mrr_cents: Math.round(filteredMrr),
       arr_cents: Math.round(filteredMrr * 12),
-      avg_ticket_cents: filteredPaying.length ? Math.round(filteredMrr / filteredPaying.length) : 0,
+      mrr_at_risk_cents: Math.round(filteredMrrAtRisk),
+      avg_ticket_cents: filteredActive.length ? Math.round(filteredMrr / filteredActive.length) : 0,
+
       currency: filteredCurrency,
       paying_total: filteredPaying.length,
     };
