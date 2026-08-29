@@ -3,8 +3,7 @@ import { Monitor, Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function HeaderThemeToggle() {
-  const { theme, resolvedTheme, setTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
+  const { theme, setTheme } = useTheme();
   const mode = (theme ?? "system") as "system" | "light" | "dark";
   const label =
     mode === "system" ? "Tema do sistema" : mode === "light" ? "Modo claro" : "Modo escuro";
