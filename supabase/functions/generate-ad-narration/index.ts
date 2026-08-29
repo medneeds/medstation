@@ -1,10 +1,40 @@
 // Gera a narração do anúncio (/ad-video) via ElevenLabs e devolve mp3 base64.
+// Acesso restrito a administradores autenticados — endpoint usa API paga.
 import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+const MAX_TEXT_LENGTH = 4000;
+
+async function requireAdmin(req: Request): Promise<boolean> {
+  try {
+    const h = req.headers.get("Authorization") || req.headers.get("authorization");
+    if (!h) return false;
+    const token = h.replace(/^Bearer\s+/i, "");
+    if (!token) return false;
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+    const { data } = await supabase.auth.getUser(token);
+    const userId = data?.user?.id;
+    if (!userId) return false;
+    const { data: role } = await supabase
+      .from("user_roles")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    return !!role;
+  } catch {
+    return false;
+  }
+}
 
 const DEFAULT_SCRIPT = `Médico: seu plantão acabou às sete.
 Você saiu às oito e quarenta. Escrevendo evolução.

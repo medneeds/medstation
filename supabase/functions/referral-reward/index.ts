@@ -34,15 +34,29 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    // Endpoint interno: só aceita chamadas autenticadas com a service role key
+    // (enviada pelo check-subscription). Bloqueia invocação direta por clientes.
+    const authHeader = req.headers.get("Authorization") || req.headers.get("authorization") || "";
+    const token = authHeader.replace(/^Bearer\s+/i, "");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    if (!serviceKey || token !== serviceKey) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      serviceKey,
       { auth: { persistSession: false } }
     );
 
     const body = await req.json().catch(() => ({}));
     const referredUserId: string | undefined = body.referred_user_id;
-    if (!referredUserId) throw new Error("referred_user_id required");
+    if (!referredUserId || !/^[0-9a-fA-F-]{36}$/.test(referredUserId)) {
+      throw new Error("referred_user_id required");
+    }
 
     // Load configurable settings
     const { data: settings } = await supabase
