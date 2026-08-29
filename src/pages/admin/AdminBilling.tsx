@@ -81,10 +81,20 @@ export default function AdminBilling() {
         { headers: { Authorization: `Bearer ${session?.access_token}` } },
       );
       const data = await res.json();
+      if (!res.ok || data?.error) {
+        throw new Error(data?.error || `Falha ao carregar faturamento (${res.status})`);
+      }
+      setLoadError(null);
       setStats(data.stats);
       setFilteredStats(data.filteredStats ?? null);
       setRecords(data.records || []);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setLoadError(e instanceof Error ? e.message : "Falha ao carregar faturamento.");
+      setStats(null);
+      setFilteredStats(null);
+      setRecords([]);
+    }
     finally { setLoading(false); setRefreshing(false); }
   };
 

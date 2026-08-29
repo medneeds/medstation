@@ -66,6 +66,7 @@ export default function AdminDashboard() {
   const load = useCallback(async (forceStripeReload = false) => {
     if (forceStripeReload) setRefreshing(true);
     else setLoading(true);
+    setLoadError(null);
     try {
       const [subs, metrics, activeList] = await Promise.all([
         invokeAdmin<SubscribersResponse>(
@@ -193,6 +194,12 @@ export default function AdminDashboard() {
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
+      {loadError && (
+        <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          Não foi possível carregar os indicadores agora. Os números exibidos podem
+          estar desatualizados ou incompletos. Detalhe técnico: {loadError}
+        </div>
+      )}
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-sm text-muted-foreground mt-1">
