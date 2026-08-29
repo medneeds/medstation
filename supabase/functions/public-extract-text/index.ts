@@ -43,11 +43,16 @@ serve(async (req) => {
     }
 
     // Rate limit por IP + fingerprint (janela curta para OCR de páginas)
-    const clientIp =
+    // Fingerprint sanitizado (formato rígido) para impedir injeção em filtros PostgREST.
+    const safeFingerprint = typeof fingerprint === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(fingerprint)
+      ? fingerprint
+      : null;
+    const rawIp =
       req.headers.get("x-forwarded-for") ||
       req.headers.get("x-real-ip") ||
       "unknown";
-    const identifier = fingerprint ? `${clientIp}_${fingerprint}` : clientIp;
+    const clientIp = (rawIp.split(",")[0].trim().replace(/[^0-9A-Za-z.:_-]/g, "").slice(0, 64)) || "unknown";
+    const identifier = safeFingerprint ? `${clientIp}_${safeFingerprint}` : clientIp;
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
