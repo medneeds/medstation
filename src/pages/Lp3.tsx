@@ -19,25 +19,11 @@ import { DISPLAY_PRICING, brl } from "@/lib/subscription-tiers";
 import { ArrowRight, Check, Quote, Star } from "lucide-react";
 
 const proof = [
-  { value: "40h", label: "recuperadas por mês" },
-  { value: "3", label: "caminhos: documentação, copiloto e fluxo" },
-  { value: "7 dias", label: "grátis, sem cartão" },
+  { value: "Documentação", label: "texto clínico pronto para revisão" },
+  { value: "Copiloto", label: "apoio de raciocínio no plantão" },
+  { value: "Fluxo", label: "menos trabalho repetitivo na rotina" },
 ];
 
-const assistants = [
-  ["Examinus", "Exames e laudos resumidos"],
-  ["Clínicus", "Anamnese e evolução estruturadas"],
-  ["Prescriptus", "Conduta e prescrição com alertas"],
-  ["Gasometrus", "Gasometria interpretada"],
-  ["Protocolus", "Protocolos direto ao ponto"],
-  ["Orientus", "Orientação de alta ao paciente"],
-  ["Atestus", "Atestados prontos"],
-  ["Mediscuss", "Discussão de caso complexo"],
-  ["Legalis", "Proteção jurídica e ética"],
-  ["Codexus", "CID e codificação"],
-  ["Numerus", "Escores e cálculos"],
-  ["Scorius", "Estratificação de risco"],
-] as const;
 
 const testimonials = [
   {
