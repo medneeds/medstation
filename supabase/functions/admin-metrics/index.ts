@@ -62,6 +62,7 @@ serve(async (req) => {
       auditEvents7d,
       secEvents24h,
       secEvents7d,
+      mirrorSubs,
     ] = await Promise.all([
       supabase.from("courtesy_access").select("id", { count: "exact", head: true }),
       supabase.from("courtesy_access").select("id", { count: "exact", head: true })
@@ -85,7 +86,22 @@ serve(async (req) => {
       supabase.from("audit_log").select("id", { count: "exact", head: true }).gte("created_at", weekAgo),
       supabase.from("security_events").select("id", { count: "exact", head: true }).gte("created_at", dayAgo),
       supabase.from("security_events").select("id", { count: "exact", head: true }).gte("created_at", weekAgo),
+      supabase.from("stripe_subscriptions").select("stripe_customer_id, status, synced_at"),
     ]);
+
+    // Espelho de assinaturas: só agregados, nunca identificadores de cliente.
+    const mirrorRows = (mirrorSubs.data || []) as any[];
+    const activeByCustomer = new Map<string, number>();
+    for (const r of mirrorRows) {
+      if (r.status !== "active") continue;
+      activeByCustomer.set(r.stripe_customer_id, (activeByCustomer.get(r.stripe_customer_id) ?? 0) + 1);
+    }
+    const duplicateActiveCustomers = [...activeByCustomer.values()].filter((n) => n > 1).length;
+    const lastSyncedAt = mirrorRows
+      .map((r) => r.synced_at)
+      .filter(Boolean)
+      .sort()
+      .pop() ?? null;
 
     // Feedback aggregations
     const fbRows = feedbackAll.data || [];
@@ -158,6 +174,12 @@ serve(async (req) => {
         codes_generated: referralCodes.count ?? 0,
         reward_days_total: refDays,
         conversion_rate: refConversion,
+      },
+      subscriptions_mirror: {
+        total: mirrorRows.length,
+        active: mirrorRows.filter((r) => r.status === "active").length,
+        customers_with_multiple_active: duplicateActiveCustomers,
+        last_synced_at: lastSyncedAt,
       },
       support: {
         open: ticketsOpen.count ?? 0,
