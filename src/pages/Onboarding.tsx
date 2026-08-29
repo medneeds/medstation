@@ -308,6 +308,9 @@ export default function Onboarding() {
                       onChange={(e) => setCrm(e.target.value)}
                       className="h-12"
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Se preencher, informe também a UF ao lado.
+                    </p>
                   </div>
                   {crm.trim() && (
                     <div className="space-y-2">
