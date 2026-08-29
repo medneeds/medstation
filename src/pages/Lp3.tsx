@@ -182,28 +182,19 @@ export default function Lp3() {
           </div>
         </section>
 
-        {/* 4. Assistentes */}
+        {/* 4. Ferramentas — exploração interativa */}
         <section className="border-b border-border/50">
           <div className="container mx-auto px-4 md:px-8 py-14 md:py-20">
             <h2 className="text-2xl md:text-4xl font-semibold tracking-tight text-center">
-              Uma ferramenta para cada tarefa
+              Uma ferramenta para cada etapa
             </h2>
-            <div className="mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
-              {assistants.map(([name, desc]) => (
-                <div
-                  key={name}
-                  className="rounded-xl border border-border/60 bg-card px-4 py-3.5 transition-colors hover:border-primary/45"
-                >
-                  <h3 className="text-sm font-semibold">{name}</h3>
-                  <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">{desc}</p>
-                </div>
-              ))}
-            </div>
-            <p className="mt-6 text-center text-xs text-muted-foreground">
-              Mais o Modo Escuta: grava, transcreve e estrutura a consulta em tempo real.
+            <p className="mt-3 text-center text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
+              Escolha um caminho e toque em uma ferramenta para ver o que ela faz na prática.
             </p>
+            <LandingToolExplorer />
           </div>
         </section>
+
 
         {/* 5. Prova social */}
         <section className="bg-muted/25 border-b border-border/50">
