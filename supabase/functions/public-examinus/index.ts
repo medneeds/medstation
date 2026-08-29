@@ -42,17 +42,24 @@ serve(async (req) => {
     // Parse request body first to get fingerprint
     const { messages, fileContent, usePipeSeparator, includeTime = true, fingerprint, onlyAltered, clinicalImpression, compactMode } = await req.json();
 
-    // Get client IP for rate limiting
-    const clientIp = req.headers.get("x-forwarded-for") || 
-                     req.headers.get("x-real-ip") || 
-                     "unknown";
+    // Sanitizar fingerprint: formato rígido (hash alfanumérico) para impedir
+    // injeção de cláusulas extras em filtros PostgREST (.or()).
+    const safeFingerprint = typeof fingerprint === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(fingerprint)
+      ? fingerprint
+      : null;
+
+    // Get client IP for rate limiting (sanitizado — header é controlável pelo cliente)
+    const rawIp = req.headers.get("x-forwarded-for") ||
+                  req.headers.get("x-real-ip") ||
+                  "unknown";
+    const clientIp = (rawIp.split(",")[0].trim().replace(/[^0-9A-Za-z.:_-]/g, "").slice(0, 64)) || "unknown";
 
     // Criar identificador composto: IP + fingerprint (mais difícil de burlar)
-    const identifier = fingerprint 
-      ? `${clientIp}_${fingerprint}` 
+    const identifier = safeFingerprint
+      ? `${clientIp}_${safeFingerprint}`
       : clientIp;
 
-    console.log(`Public Examinus request - IP: ${clientIp}, Fingerprint: ${fingerprint ? 'provided' : 'none'}`);
+    console.log(`Public Examinus request - IP: ${clientIp}, Fingerprint: ${safeFingerprint ? 'provided' : 'none'}`);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
