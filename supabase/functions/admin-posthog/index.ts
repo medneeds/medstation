@@ -56,7 +56,78 @@ serve(async (req) => {
       });
     }
 
+    // ------------------------------------------------------------------
+    // View "onboarding": distribuição agregada das respostas do onboarding.
+    // Lê apenas colunas não pessoais de public.user_onboarding com service role
+    // e devolve somente contagens. Nenhum dado vai para o PostHog.
+    // Espelha a lógica de src/lib/onboardingInsights.ts (fonte testada).
+    // ------------------------------------------------------------------
+    if (new URL(req.url).searchParams.get("view") === "onboarding") {
+      const { data: rows, error: obError } = await supabase
+        .from("user_onboarding")
+        .select("completed_at, routine_pains, work_settings, primary_goals, primary_path, recommended_tools");
+      if (obError) throw obError;
+
+      type OB = {
+        completed_at: string | null;
+        routine_pains: string[] | null;
+        work_settings: string[] | null;
+        primary_goals: string[] | null;
+        primary_path: string | null;
+        recommended_tools: string[] | null;
+      };
+      const all = (rows ?? []) as OB[];
+      const completed = all.filter((r) => !!r.completed_at);
+      const respondentsRows = completed.filter(
+        (r) =>
+          (r.routine_pains?.length ?? 0) > 0 ||
+          (r.work_settings?.length ?? 0) > 0 ||
+          (r.primary_goals?.length ?? 0) > 0,
+      );
+      const respondents = respondentsRows.length;
+
+      const distribution = (lists: (string[] | null)[], limit?: number) => {
+        const counts = new Map<string, number>();
+        for (const list of lists) {
+          if (!list) continue;
+          for (const k of new Set(list.filter((v) => typeof v === "string" && v.length > 0))) {
+            counts.set(k, (counts.get(k) ?? 0) + 1);
+          }
+        }
+        const items = [...counts.entries()]
+          .map(([k, count]) => ({
+            key: k,
+            count,
+            percent: respondents ? Math.round((count / respondents) * 1000) / 10 : 0,
+          }))
+          .sort((a, b) => b.count - a.count || a.key.localeCompare(b.key));
+        return limit ? items.slice(0, limit) : items;
+      };
+
+      return new Response(
+        JSON.stringify({
+          configured: true,
+          completedTotal: completed.length,
+          pendingTotal: all.length - completed.length,
+          completionPercent: all.length
+            ? Math.round((completed.length / all.length) * 1000) / 10
+            : null,
+          surveyRespondents: respondents,
+          legacyCompletedWithoutSurvey: completed.length - respondents,
+          routinePains: distribution(respondentsRows.map((r) => r.routine_pains)),
+          workSettings: distribution(respondentsRows.map((r) => r.work_settings)),
+          primaryGoals: distribution(respondentsRows.map((r) => r.primary_goals)),
+          primaryPaths: distribution(
+            respondentsRows.map((r) => (r.primary_path ? [r.primary_path] : [])),
+          ),
+          recommendedTools: distribution(respondentsRows.map((r) => r.recommended_tools), 5),
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const key = Deno.env.get("POSTHOG_PERSONAL_API_KEY");
+
     const projectId = Deno.env.get("POSTHOG_PROJECT_ID");
     if (!key || !projectId) {
       return new Response(

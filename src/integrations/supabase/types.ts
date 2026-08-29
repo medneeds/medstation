@@ -1715,36 +1715,45 @@ export type Database = {
           completed_at: string | null
           created_at: string
           primary_goal: string | null
+          primary_goals: string[]
           primary_path: string | null
           recommended_tools: string[]
           routine_pain: string | null
+          routine_pains: string[]
           updated_at: string
           user_id: string
           work_setting: string | null
+          work_settings: string[]
         }
         Insert: {
           answers?: Json
           completed_at?: string | null
           created_at?: string
           primary_goal?: string | null
+          primary_goals?: string[]
           primary_path?: string | null
           recommended_tools?: string[]
           routine_pain?: string | null
+          routine_pains?: string[]
           updated_at?: string
           user_id: string
           work_setting?: string | null
+          work_settings?: string[]
         }
         Update: {
           answers?: Json
           completed_at?: string | null
           created_at?: string
           primary_goal?: string | null
+          primary_goals?: string[]
           primary_path?: string | null
           recommended_tools?: string[]
           routine_pain?: string | null
+          routine_pains?: string[]
           updated_at?: string
           user_id?: string
           work_setting?: string | null
+          work_settings?: string[]
         }
         Relationships: []
       }
