@@ -105,7 +105,10 @@ export function recommendFromAnswers(answers: OnboardingAnswers): OnboardingReco
 
   // Reordena colocando primeiro as ferramentas já sugeridas que combinam com
   // o local de atuação, sem remover nenhuma sugestão original.
-  const promoted = base.filter((t) => settingPriority.includes(t));
+  const promoted = base
+    .filter((t) => settingPriority.includes(t))
+    .sort((a, b) => settingPriority.indexOf(a) - settingPriority.indexOf(b));
+
   const rest = base.filter((t) => !settingPriority.includes(t));
   const contextExtras = settingPriority.filter((t) => !base.includes(t));
 
