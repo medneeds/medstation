@@ -51,6 +51,7 @@ export default function AdminBilling() {
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
   const [kpiScope, setKpiScope] = useState<"global" | "filter">("global");
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const { from, to } = useMemo(() => {
     const now = new Date();
@@ -134,6 +135,12 @@ export default function AdminBilling() {
 
   return (
     <div className="p-4 sm:p-6 space-y-5">
+      {loadError && (
+        <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          Não foi possível carregar os dados de faturamento. Nenhum número é exibido
+          para evitar leitura incorreta. Detalhe técnico: {loadError}
+        </div>
+      )}
       <header className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <p className="text-sm text-muted-foreground">Assinaturas, MRR e cortesias — dados ao vivo do Stripe</p>
