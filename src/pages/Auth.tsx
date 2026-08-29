@@ -26,21 +26,13 @@ export default function Auth() {
 
   const [resetLoading, setResetLoading] = useState(false);
   const [showSignInPassword, setShowSignInPassword] = useState(false);
-  const [showSignUpPassword, setShowSignUpPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [signInEmail, setSignInEmail] = useState("");
   const [signInPassword, setSignInPassword] = useState("");
 
   const [signUpEmail, setSignUpEmail] = useState("");
-  const [signUpPassword, setSignUpPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [fullName, setFullName] = useState("");
+  const [signUpSent, setSignUpSent] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
-  const [gender, setGender] = useState<"M" | "F" | "Outro" | "">("");
-  const [crm, setCrm] = useState("");
-  const [crmState, setCrmState] = useState("");
-  const [specialty, setSpecialty] = useState("");
 
   // Destino pós-login: respeita rota pretendida (vinda de ProtectedRoute) ou /dashboard
   const fromPath = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
@@ -78,78 +70,35 @@ export default function Auth() {
   }, [navigate, destination, confirmHandled]);
 
 
+  // Cadastro passwordless: apenas e-mail. O link cria a conta se não existir
+  // ou entra na conta existente (sem criar novo trial).
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
+    const email = signUpEmail.trim().toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      toast({ variant: "destructive", title: "E-mail inválido" });
+      return;
+    }
     setLoading(true);
+    trackLifecycleEvent("signup_started", { source: "auth", auth_method: "email_magic_link" });
     try {
-      if (signUpPassword !== confirmPassword) {
-        toast({ variant: "destructive", title: "Senhas não coincidem", description: "Verifique as senhas digitadas." });
-        setLoading(false);
-        return;
-      }
-      const validated = signUpSchema.parse({ email: signUpEmail, password: signUpPassword, fullName });
-      const { data, error } = await supabase.auth.signUp({
-        email: validated.email,
-        password: validated.password,
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
         options: {
-          data: { full_name: validated.fullName },
+          shouldCreateUser: true,
           emailRedirectTo: `${window.location.origin}/auth?confirmed=1`,
         },
       });
       if (error) {
-        const msg = /already registered|already been registered|User already/i.test(error.message)
-          ? "Este e-mail já possui cadastro. Tente entrar ou recuperar a senha."
-          : error.message;
-        toast({ variant: "destructive", title: "Erro no cadastro", description: msg });
-        setLoading(false);
+        toast({
+          variant: "destructive",
+          title: "Não conseguimos enviar o link",
+          description: error.message,
+        });
         return;
       }
-      if (data.user) {
-        await supabase.from("profiles").update({
-          gender: gender || null,
-          crm: crm || null,
-          crm_state: crmState || null,
-          specialty: specialty || null,
-        }).eq("id", data.user.id);
-
-        // Track referral if a code was captured before signup
-        try {
-          const refCode = localStorage.getItem("medstation_ref_code");
-          if (refCode) {
-            await supabase.functions.invoke("referral-track", { body: { code: refCode } });
-            localStorage.removeItem("medstation_ref_code");
-            localStorage.removeItem("medstation_ref_expiry");
-          }
-        } catch (e) {
-          console.error("Referral tracking failed", e);
-        }
-
-        // Welcome email for the new lead (non-blocking)
-        try {
-          await supabase.functions.invoke("send-welcome-lead", {
-            body: { userId: data.user.id },
-          });
-        } catch (e) {
-          console.error("Welcome email failed", e);
-        }
-      }
-      const createdEmail = validated.email;
-      setFullName(""); setSignUpEmail(""); setSignUpPassword(""); setConfirmPassword("");
-      setGender(""); setCrm(""); setCrmState(""); setSpecialty("");
-
-      if (data.session) {
-        // Confirmação automática ativa: já entra direto.
-        armBrandIntro();
-        navigate(destination, { replace: true });
-        return;
-      }
-
-      navigate(`/confirmar-email?email=${encodeURIComponent(createdEmail)}`, {
-        replace: true,
-        state: { email: createdEmail },
-      });
-    } catch (error: any) {
-      toast({ variant: "destructive", title: "Dados inválidos", description: error.errors?.[0]?.message || error.message });
+      setSignUpSent(true);
     } finally {
       setLoading(false);
     }
