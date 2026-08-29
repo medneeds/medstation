@@ -112,7 +112,10 @@ serve(async (req) => {
     const refBlocked = refRows.filter((r: any) => r.status === "blocked").length;
     const refDays = refRows.reduce((s: number, r: any) => s + (r.reward_credit_days || 0), 0);
     const refConverted = refQualified + refRewarded;
-    const refConversion = refTotal > 0 ? Math.round((refConverted / refTotal) * 1000) / 10 : 0;
+    // Sem indicações registradas não existe taxa: 0% daria a impressão falsa de
+    // um programa ativo com desempenho ruim.
+    const refConversion = refTotal > 0 ? Math.round((refConverted / refTotal) * 1000) / 10 : null;
+
 
     // AI
     const tokens24h = (aiTokens24h.data || []).reduce((a: number, r: any) => a + (r.total_tokens || 0), 0);
