@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { lovable } from "@/integrations/lovable/index";
 import { trackLifecycleEvent } from "@/lib/analytics";
 
 interface GoogleAuthButtonProps {
@@ -57,6 +56,9 @@ export function GoogleAuthButton({
     }
 
     try {
+      // O broker OAuth (Lovable Cloud Auth) só é baixado no primeiro clique,
+      // mantendo o botão fora do caminho crítico da landing.
+      const { lovable } = await import("@/integrations/lovable/index");
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: redirectUri,
         extraParams: {
