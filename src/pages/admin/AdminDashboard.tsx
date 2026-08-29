@@ -35,7 +35,7 @@ interface KPIs {
   avgFeedback: number;
   feedbackTotal: number;
   referrals: number;
-  referralConversion: number;
+  referralConversion: number | null;
   securityEvents24h: number;
 }
 
@@ -60,6 +60,7 @@ export default function AdminDashboard() {
   const [lastSync, setLastSync] = useState<Date | null>(null);
   const [activeUsers, setActiveUsers] = useState<SubscriberRecord[]>([]);
   const [activeTotal, setActiveTotal] = useState(0);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
 
   const load = useCallback(async (forceStripeReload = false) => {
@@ -102,6 +103,9 @@ export default function AdminDashboard() {
       setLastSync(new Date());
     } catch (e) {
       console.error("[admin-dashboard]", e);
+      setLoadError(
+        e instanceof Error ? e.message : "Nao foi possivel carregar os indicadores.",
+      );
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -171,7 +175,11 @@ export default function AdminDashboard() {
     },
     {
       label: "Indicações",
-      value: kpis ? `${kpis.referrals} (${kpis.referralConversion}%)` : "—",
+      value: !kpis
+        ? "—"
+        : kpis.referrals === 0
+          ? "Sem indicações"
+          : `${kpis.referrals} (${kpis.referralConversion ?? 0}%)`,
       icon: Gift,
       color: "text-pink-500",
     },
