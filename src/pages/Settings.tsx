@@ -467,7 +467,7 @@ export default function Settings() {
                 </Button>
               </div>
               <div className="text-xs text-muted-foreground">
-                Plano único com tudo incluso — 12 assistentes, Modo Escuta e Modo Rotineiro — por R$ 49,90/mês ou R$ 499,90/ano. Em breve o valor passa a R$ 99,90/mês.
+                Plano único com tudo incluso — Documentação, Copiloto e Fluxo — por R$ 49,90/mês ou R$ 499,90/ano. Em breve o valor passa a R$ 99,90/mês.
               </div>
             </div>
           )}

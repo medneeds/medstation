@@ -21,14 +21,14 @@ export function UpgradeModal({ open, onOpenChange, reason = "engagement", contex
       ? "Você usou suas extrações gratuitas"
       : reason === "cooldown"
         ? "Cansou de esperar 30 segundos?"
-        : "Conheça os outros 10 assistentes";
+        : "Conheça o resto da MedStation";
 
   const subline =
     reason === "limit-reached"
-      ? "No Pro o Examinus fica liberado, sem restrições de uso, sem espera e sem pop-ups — e você ainda libera os outros 10 assistentes."
+      ? "No Pro o Examinus fica liberado, sem restrições de uso, sem espera e sem pop-ups — e você ainda libera o restante da plataforma."
       : reason === "cooldown"
-        ? "No Pro acabam a espera entre mensagens e os pop-ups. Use os 11 assistentes sem interrupção."
-        : "Examinus é só o começo (e no plano grátis tem limite de uso, espera entre mensagens e pop-ups). O Pro libera os outros 10 assistentes sem restrições.";
+        ? "No Pro acabam a espera entre mensagens e os pop-ups. Use a plataforma inteira sem interrupção."
+        : "Examinus é só o começo (e no plano grátis tem limite de uso, espera entre mensagens e pop-ups). O Pro libera o restante da plataforma sem restrições.";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -68,7 +68,7 @@ export function UpgradeModal({ open, onOpenChange, reason = "engagement", contex
         <div className="space-y-2 my-2">
           <div className="flex items-center gap-2 text-sm">
             <Check className="w-4 h-4 text-primary shrink-0" />
-            <span>Acesso aos 11 assistentes, sem espera entre mensagens</span>
+            <span>Acesso completo à MedStation, sem espera entre mensagens</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <Shield className="w-4 h-4 text-primary shrink-0" />
@@ -89,7 +89,7 @@ export function UpgradeModal({ open, onOpenChange, reason = "engagement", contex
             className="flex-1 bg-gradient-primary hover:opacity-90"
             size="lg"
           >
-            {context === "app" ? "Assinar e liberar +10 assistentes" : "Criar conta grátis"}
+            {context === "app" ? "Assinar e liberar a MedStation completa" : "Criar conta grátis"}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
           <Button

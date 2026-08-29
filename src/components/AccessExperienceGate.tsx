@@ -102,7 +102,7 @@ export function TrialWelcomeDialog() {
           </div>
           <DialogTitle className="font-display text-2xl">Seus 7 dias começaram.</DialogTitle>
           <DialogDescription className="text-sm leading-relaxed">
-            Toda a MedStation está liberada durante o teste: assistentes clínicos, Modo Escuta e Modo Rotineiro. Sem cartão de crédito.
+            Toda a MedStation está liberada durante o teste: Documentação, Copiloto e Fluxo. Sem cartão de crédito.
           </DialogDescription>
         </DialogHeader>
 

@@ -205,7 +205,7 @@ const SLIDES: Slide[] = [
   },
   {
     badge: "03 — Sua estação clínica",
-    title: "10 assistentes, 1 clique.",
+    title: "Toda a estação, 1 clique.",
     subtitle: "Anamnese, exames, prescrição, gasometria, scores, atestados, protocolos e mais — sempre à mão, no celular ou no computador.",
     illustration: <AssistantsGridIllustration />,
   },

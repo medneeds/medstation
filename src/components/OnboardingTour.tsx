@@ -33,7 +33,7 @@ const slides: Slide[] = [
   },
   {
     eyebrow: "3 · Ecossistema completo",
-    title: "10 assistentes clínicos sempre à mão.",
+    title: "Suas ferramentas clínicas sempre à mão.",
     subtitle:
       "Anamnese, exames, prescrições, gasometria, atestados e protocolos — tudo num só lugar.",
     visual: "assistentes",
