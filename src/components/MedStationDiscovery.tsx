@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, ChevronDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
 import { useSubscription } from "@/contexts/SubscriptionContext";
+import { useOnboarding } from "@/contexts/OnboardingContext";
+
 import {
   DISCOVERY_BLOCKS,
   DISCOVERY_PATHS,
@@ -26,21 +28,45 @@ export function MedStationDiscovery() {
   });
   const [discoverOpen, setDiscoverOpen] = useState(false);
   const { isTrial } = useSubscription();
+  const { primaryPath: recommendedPath, recommendedTools } = useOnboarding();
+  const manualChoice = useRef(false);
+
+  // A recomendação do onboarding prevalece sobre a preferência local antiga,
+  // até que o usuário escolha manualmente outro caminho.
+  useEffect(() => {
+    if (!recommendedPath || manualChoice.current) return;
+    setSelected(recommendedPath);
+  }, [recommendedPath]);
 
   const path = DISCOVERY_PATHS.find((p) => p.id === selected)!;
   const hasPreviousChoice = storedRef.current !== null;
+
+  const orderedTools = useMemo(() => {
+    if (!recommendedTools.length) return path.tools;
+    const rank = new Map(recommendedTools.map((slug, i) => [slug, i]));
+    return [...path.tools].sort(
+      (a, b) => (rank.get(a.slug) ?? 99) - (rank.get(b.slug) ?? 99),
+    );
+  }, [path, recommendedTools]);
+
+  const highlighted = useMemo(
+    () => new Set(recommendedTools.filter((s) => path.tools.some((t) => t.slug === s)).slice(0, 3)),
+    [path, recommendedTools],
+  );
 
   useEffect(() => {
     storeDiscoveryPath(selected);
   }, [selected]);
 
   const selectPath = (id: DiscoveryPathId) => {
+    manualChoice.current = true;
     setSelected(id);
     trackEvent("discovery_path_selected", {
       feature: id,
       source: hasPreviousChoice ? "returning_choice" : "first_access",
     });
   };
+
 
 
   
