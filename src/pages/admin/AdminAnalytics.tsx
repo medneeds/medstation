@@ -29,6 +29,7 @@ interface PostHogResponse {
   countries?: { name: string; uniques: number }[];
   funnel?: { step: string; users: number }[];
   daily?: { date: string; views: number; uniques: number }[];
+  totals?: { views: number; uniqueVisitors: number };
 }
 
 const RANGES = [
@@ -130,7 +131,10 @@ export default function AdminAnalytics() {
   }, [funnel, topUsers]);
 
   const totalViews = (data?.daily ?? []).reduce((a, b) => a + b.views, 0);
-  const totalUniques = (data?.daily ?? []).reduce((a, b) => a + b.uniques, 0);
+  // Visitante único precisa ser distinto na janela inteira. Somar os únicos de
+  // cada dia conta a mesma pessoa várias vezes e infla o número.
+  const totalUniques = data?.totals?.uniqueVisitors ?? null;
+
 
   return (
     <div className="p-4 sm:p-6 space-y-5">
@@ -191,7 +195,11 @@ export default function AdminAnalytics() {
           <div className="grid gap-4 sm:grid-cols-3">
             {[
               { label: "Pageviews", value: totalViews.toLocaleString("pt-BR") },
-              { label: "Visitantes únicos", value: totalUniques.toLocaleString("pt-BR") },
+              {
+                label: "Visitantes únicos",
+                value: totalUniques === null ? "Sem dados" : totalUniques.toLocaleString("pt-BR"),
+              },
+
               { label: "Conversão visitante → assinante", value: conversion },
             ].map((k) => (
               <Card key={k.label} className="p-4">
