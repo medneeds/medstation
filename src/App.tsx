@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AnalyticsTracker } from "./components/AnalyticsTracker";
+import { WelcomeEmailTrigger } from "./components/WelcomeEmailTrigger";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 import { ProfileProvider } from "./contexts/ProfileContext";
 import { OnboardingProvider } from "./contexts/OnboardingContext";
@@ -94,6 +95,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
           <AnalyticsTracker />
+          <WelcomeEmailTrigger />
           <Suspense fallback={<div className="min-h-screen" aria-hidden="true" />}>
           <Routes>
 

@@ -77,13 +77,8 @@ export function Lp2SignupDialog({ open, onOpenChange }: Lp2SignupDialogProps) {
           console.error("Referral tracking failed", err);
         }
 
-        try {
-          await supabase.functions.invoke("send-welcome-lead", {
-            body: { userId: data.user.id },
-          });
-        } catch (err) {
-          console.error("Welcome email failed", err);
-        }
+        // O e-mail de boas-vindas/teste de 7 dias é disparado uma única vez
+        // pelo WelcomeEmailTrigger, com idempotência no servidor.
       }
 
       if (data.session) {
