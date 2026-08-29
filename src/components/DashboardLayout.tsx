@@ -17,6 +17,8 @@ import { NpsWidget } from "@/components/NpsWidget";
 import { AssistantPromoEngine } from "@/components/AssistantPromoEngine";
 import { ConciergeInternal } from "@/components/ConciergeInternal";
 import { AccessContentGate, TrialWelcomeDialog } from "@/components/AccessExperienceGate";
+import { FirstAccessGate } from "@/components/FirstAccessGate";
+
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -52,8 +54,17 @@ function getCrumb(pathname: string) {
   return ROUTE_LABELS[seg] || seg.charAt(0).toUpperCase() + seg.slice(1);
 }
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
+export function DashboardLayout(props: DashboardLayoutProps) {
+  return (
+    <FirstAccessGate>
+      <DashboardLayoutInner {...props} />
+    </FirstAccessGate>
+  );
+}
+
+function DashboardLayoutInner({ children }: DashboardLayoutProps) {
   const { pathname, search } = useLocation();
+
   const crumb = getCrumb(pathname);
   const [searchOpen, setSearchOpen] = useState(false);
   const [conciergeOpen, setConciergeOpen] = useState(false);

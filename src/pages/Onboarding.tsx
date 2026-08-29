@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,393 +7,488 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowRight, ArrowLeft, CheckCircle2, Sparkles, Stethoscope, User } from "lucide-react";
-import { LogoMark } from "@/components/LogoMark";
+import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { motion, AnimatePresence } from "framer-motion";
-
-const STEPS = [
-  { id: "welcome", title: "Bem-vindo!", icon: Sparkles },
-  { id: "profile", title: "Seu Perfil", icon: User },
-  { id: "professional", title: "Dados Profissionais", icon: Stethoscope },
-  { id: "complete", title: "Pronto!", icon: CheckCircle2 },
-];
-
-const SPECIALTIES = [
-  "Clínico Geral", "Cardiologia", "Dermatologia", "Endocrinologia", 
-  "Gastroenterologia", "Geriatria", "Ginecologia", "Hematologia",
-  "Infectologia", "Medicina de Família", "Medicina do Trabalho",
-  "Medicina Intensiva", "Nefrologia", "Neurologia", "Oftalmologia",
-  "Oncologia", "Ortopedia", "Otorrinolaringologia", "Pediatria",
-  "Pneumologia", "Psiquiatria", "Radiologia", "Reumatologia",
-  "Urologia", "Outra"
-];
+import { trackEvent } from "@/lib/analytics";
+import { useOnboarding } from "@/contexts/OnboardingContext";
+import { DISCOVERY_PATHS, ALL_ASSISTANTS, storeDiscoveryPath, type DiscoveryPathId } from "@/lib/discoveryPaths";
+import {
+  PRIMARY_GOAL_OPTIONS,
+  ROUTINE_PAIN_OPTIONS,
+  WORK_SETTING_OPTIONS,
+  explainRecommendation,
+  recommendFromAnswers,
+  type PrimaryGoal,
+  type RoutinePain,
+  type WorkSetting,
+} from "@/lib/onboardingRecommendations";
 
 const BRAZILIAN_STATES = [
   "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
   "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
-  "RS", "RO", "RR", "SC", "SP", "SE", "TO"
+  "RS", "RO", "RR", "SC", "SP", "SE", "TO",
 ];
+
+/** Máscara BR simples: (00) 00000-0000 — mesmo padrão já usado no projeto. */
+export function maskPhoneBr(value: string): string {
+  const d = value.replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 2) return d.length ? `(${d}` : "";
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+}
+
+export function isValidPhoneBr(value: string): boolean {
+  return /^\(\d{2}\) \d{4,5}-\d{4}$/.test(value);
+}
+
+export function isValidBirthDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const d = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return false;
+  const year = d.getFullYear();
+  return year >= 1900 && d.getTime() < Date.now();
+}
+
+const TOOL_LABELS: Record<string, { title: string; description: string; url: string }> = (() => {
+  const map: Record<string, { title: string; description: string; url: string }> = {};
+  for (const tool of ALL_ASSISTANTS) {
+    map[tool.slug] = { title: tool.title, description: tool.description, url: tool.url };
+  }
+  for (const path of DISCOVERY_PATHS) {
+    for (const tool of path.tools) {
+      if (!map[tool.slug]) {
+        map[tool.slug] = { title: tool.title, description: tool.description, url: tool.url };
+      }
+    }
+  }
+  return map;
+})();
 
 export default function Onboarding() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  
-  const [currentStep, setCurrentStep] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  
-  // Profile fields
+  const { markCompleted } = useOnboarding();
+
+  const [step, setStep] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
   const [fullName, setFullName] = useState("");
-  const [gender, setGender] = useState<string>("");
+  const [phone, setPhone] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [gender, setGender] = useState("");
   const [crm, setCrm] = useState("");
   const [crmState, setCrmState] = useState("");
-  const [specialty, setSpecialty] = useState("");
+  const [showErrors, setShowErrors] = useState(false);
+
+  const [routinePain, setRoutinePain] = useState<RoutinePain | "">("");
+  const [workSetting, setWorkSetting] = useState<WorkSetting | "">("");
+  const [primaryGoal, setPrimaryGoal] = useState<PrimaryGoal | "">("");
 
   useEffect(() => {
-    checkAuth();
-  }, []);
+    let active = true;
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/auth", { replace: true });
+        return;
+      }
+      if (!active) return;
+      setUserId(session.user.id);
 
-  const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/auth");
-      return;
-    }
-    setUser(session.user);
-    
-    // Load existing profile data
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", session.user.id)
-      .single();
-    
-    if (profile) {
-      setFullName(profile.full_name || "");
-      setGender(profile.gender || "");
-      setCrm(profile.crm || "");
-      setCrmState(profile.crm_state || "");
-      setSpecialty(profile.specialty || "");
-    }
-  };
-
-  const progress = ((currentStep + 1) / STEPS.length) * 100;
-
-  const handleNext = () => {
-    if (currentStep < STEPS.length - 1) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const handleSaveProfile = async () => {
-    if (!user) return;
-    
-    setLoading(true);
-    try {
-      const { error } = await supabase
+      const { data: profile } = await supabase
         .from("profiles")
-        .update({
-          full_name: fullName || null,
-          gender: gender || null,
-          crm: crm || null,
-          crm_state: crmState || null,
-          specialty: specialty || null,
-        })
-        .eq("id", user.id);
+        .select("full_name, phone, date_of_birth, gender, crm, crm_state")
+        .eq("id", session.user.id)
+        .maybeSingle();
 
-      if (error) throw error;
-      
-      handleNext();
-    } catch (error: any) {
+      if (!active || !profile) return;
+      setFullName(profile.full_name ?? "");
+      setPhone(profile.phone ? maskPhoneBr(profile.phone) : "");
+      setBirthDate(profile.date_of_birth ?? "");
+      setGender(profile.gender ?? "");
+      setCrm(profile.crm ?? "");
+      setCrmState(profile.crm_state ?? "");
+    })();
+    trackEvent("onboarding_started", { source: "first_access" });
+    return () => { active = false; };
+  }, [navigate]);
+
+  const recommendation = useMemo(() => {
+    if (!routinePain || !workSetting || !primaryGoal) return null;
+    return recommendFromAnswers({ routinePain, workSetting, primaryGoal });
+  }, [routinePain, workSetting, primaryGoal]);
+
+  const profileValid =
+    fullName.trim().length >= 3 &&
+    isValidPhoneBr(phone) &&
+    isValidBirthDate(birthDate) &&
+    !!gender &&
+    (!crm.trim() || !!crmState);
+
+  const saveProfile = async () => {
+    if (!userId) return false;
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        full_name: fullName.trim(),
+        phone: phone.replace(/\D/g, ""),
+        date_of_birth: birthDate,
+        gender,
+        crm: crm.trim() || null,
+        crm_state: crm.trim() ? crmState || null : null,
+      })
+      .eq("id", userId);
+
+    if (error) {
+      toast({ variant: "destructive", title: "Não foi possível salvar", description: "Tente novamente." });
+      return false;
+    }
+    return true;
+  };
+
+  const handleProfileNext = async () => {
+    setShowErrors(true);
+    if (!profileValid) return;
+    setSaving(true);
+    const ok = await saveProfile();
+    setSaving(false);
+    if (!ok) return;
+    trackEvent("onboarding_step_completed", { source: "first_access", feature: "profile" });
+    setShowErrors(false);
+    setStep(1);
+  };
+
+  const handleSurveyNext = () => {
+    setShowErrors(true);
+    if (!recommendation) return;
+    trackEvent("onboarding_step_completed", { source: "first_access", feature: "survey" });
+    setShowErrors(false);
+    setStep(2);
+  };
+
+  const handleFinish = async (destination: "dashboard" | "explore") => {
+    if (!userId || !recommendation || !routinePain || !workSetting || !primaryGoal) return;
+    setSaving(true);
+    const { error } = await supabase.from("user_onboarding").upsert(
+      {
+        user_id: userId,
+        completed_at: new Date().toISOString(),
+        primary_path: recommendation.primaryPath,
+        recommended_tools: recommendation.recommendedTools,
+        routine_pain: routinePain,
+        work_setting: workSetting,
+        primary_goal: primaryGoal,
+        answers: {
+          routine_pain: routinePain,
+          work_setting: workSetting,
+          primary_goal: primaryGoal,
+        },
+      },
+      { onConflict: "user_id" },
+    );
+    setSaving(false);
+
+    if (error) {
       toast({
         variant: "destructive",
-        title: "Erro ao salvar",
-        description: error.message,
+        title: "Não foi possível concluir",
+        description: "Verifique sua conexão e tente novamente.",
       });
-    } finally {
-      setLoading(false);
+      return;
     }
+
+    trackEvent("onboarding_completed", { source: "first_access", feature: recommendation.primaryPath });
+    markCompleted(recommendation.primaryPath as DiscoveryPathId, recommendation.recommendedTools);
+    storeDiscoveryPath(recommendation.primaryPath);
+    navigate(destination === "dashboard" ? "/dashboard" : "/dashboard#caminhos", { replace: true });
   };
 
-  const handleComplete = () => {
-    toast({
-      title: "Configuração completa",
-      description: "Você está pronto para usar o MedStation.",
-    });
-    navigate("/dashboard");
-  };
-
-  const handleSkip = () => {
-    navigate("/dashboard");
-  };
-
-  const CurrentIcon = STEPS[currentStep].icon;
+  const pathLabel = recommendation
+    ? DISCOVERY_PATHS.find((p) => p.id === recommendation.primaryPath)?.label ?? ""
+    : "";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
-      {/* Subtle brand glows */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-[28rem] h-[28rem] bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-[28rem] h-[28rem] bg-accent/30 rounded-full blur-3xl" />
-      </div>
-
-      <div className="w-full max-w-lg relative z-10">
-        {/* Progress */}
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm text-muted-foreground">
-              Passo {currentStep + 1} de {STEPS.length}
-            </span>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleSkip}
-              className="text-xs text-muted-foreground hover:text-foreground"
-            >
-              Pular configuração
-            </Button>
-          </div>
-          <Progress value={progress} className="h-2" />
+    <div className="min-h-screen bg-background px-4 py-8 md:py-12">
+      <div className="mx-auto w-full max-w-2xl space-y-6">
+        <div className="space-y-2">
+          <p className="font-mono text-2xs uppercase tracking-[0.22em] text-muted-foreground">
+            {step + 1} de 3
+          </p>
+          <Progress value={((step + 1) / 3) * 100} className="h-1.5" />
         </div>
 
-        {/* Step indicators */}
-        <div className="flex justify-center gap-3 mb-6">
-          {STEPS.map((step, index) => {
-            const Icon = step.icon;
-            return (
-              <div
-                key={step.id}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all border ${
-                  index === currentStep
-                    ? "bg-primary text-primary-foreground border-primary scale-110"
-                    : index < currentStep
-                    ? "bg-primary/15 text-primary border-primary/40"
-                    : "bg-muted text-muted-foreground border-hairline"
-                }`}
-              >
-                {index < currentStep ? (
-                  <CheckCircle2 className="w-5 h-5" />
-                ) : (
-                  <Icon className="w-5 h-5" />
-                )}
-              </div>
-            );
-          })}
-        </div>
+        <Card className="border border-border/60 bg-card/90 p-5 md:p-8">
+          {step === 0 && (
+            <div className="space-y-6">
+              <header className="space-y-2">
+                <h1 className="font-display text-2xl md:text-3xl font-semibold tracking-tight">
+                  Vamos configurar sua MedStation.
+                </h1>
+                <p className="text-sm md:text-base text-muted-foreground">
+                  Leva menos de 2 minutos e ajuda a adaptar a experiência à sua rotina.
+                </p>
+              </header>
 
-        <Card className="p-8 border border-hairline bg-card/80 backdrop-blur-sm relative overflow-hidden">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentStep}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              {/* Step 0: Welcome */}
-              {currentStep === 0 && (
-                <div className="text-center space-y-6">
-                  <div className="flex justify-center">
-                    <LogoMark className="w-16 h-16" />
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <h1 className="text-3xl font-semibold tracking-tight">
-                      Bem-vindo ao{" "}
-                      <span className="text-primary">MedStation</span>
-                    </h1>
-                    <p className="text-muted-foreground">
-                      Vamos configurar sua conta em poucos passos.
-                      <br />
-                      <span className="text-xs text-muted-foreground/70">Todos os campos são opcionais.</span>
-                    </p>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="ob-name">Nome completo</Label>
+                  <Input
+                    id="ob-name"
+                    autoComplete="name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="h-12"
+                  />
+                  {showErrors && fullName.trim().length < 3 && (
+                    <p className="text-xs text-destructive">Informe seu nome completo.</p>
+                  )}
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="ob-phone">WhatsApp</Label>
+                    <Input
+                      id="ob-phone"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      placeholder="(00) 00000-0000"
+                      value={phone}
+                      onChange={(e) => setPhone(maskPhoneBr(e.target.value))}
+                      className="h-12"
+                    />
+                    {showErrors && !isValidPhoneBr(phone) && (
+                      <p className="text-xs text-destructive">Informe um número válido.</p>
+                    )}
                   </div>
 
-                  <div className="pt-4">
-                    <Button 
-                      size="lg" 
-                      onClick={handleNext}
-                      className="shadow-medical hover:shadow-elevated transition-all hover:scale-105"
-                    >
-                      Começar configuração
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
+                  <div className="space-y-2">
+                    <Label htmlFor="ob-birth">Data de nascimento</Label>
+                    <Input
+                      id="ob-birth"
+                      type="date"
+                      value={birthDate}
+                      onChange={(e) => setBirthDate(e.target.value)}
+                      className="h-12"
+                    />
+                    {showErrors && !isValidBirthDate(birthDate) && (
+                      <p className="text-xs text-destructive">Informe uma data válida.</p>
+                    )}
                   </div>
                 </div>
-              )}
 
-              {/* Step 1: Profile */}
-              {currentStep === 1 && (
-                <div className="space-y-6">
-                  <div className="text-center">
-                    <User className="w-12 h-12 mx-auto text-primary mb-3" />
-                    <h2 className="text-2xl font-bold">Seu Perfil</h2>
-                    <p className="text-muted-foreground mt-1">
-                      Como devemos te chamar?
-                    </p>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Nome completo</Label>
-                      <Input
-                        placeholder="Dr. João Silva"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        className="h-12"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Sexo</Label>
-                      <Select value={gender} onValueChange={setGender}>
-                        <SelectTrigger className="h-12">
-                          <SelectValue placeholder="Selecione" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="M">Masculino (Dr.)</SelectItem>
-                          <SelectItem value="F">Feminino (Dra.)</SelectItem>
-                          <SelectItem value="Outro">Outro</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3 pt-4">
-                    <Button variant="outline" onClick={handleBack} className="flex-1">
-                      <ArrowLeft className="w-4 h-4 mr-2" />
-                      Voltar
-                    </Button>
-                    <Button onClick={handleNext} className="flex-1">
-                      Continuar
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </div>
+                <div className="space-y-2">
+                  <Label>Sexo</Label>
+                  <Select value={gender} onValueChange={setGender}>
+                    <SelectTrigger className="h-12">
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="M">Masculino (Dr.)</SelectItem>
+                      <SelectItem value="F">Feminino (Dra.)</SelectItem>
+                      <SelectItem value="Outro">Outro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {showErrors && !gender && (
+                    <p className="text-xs text-destructive">Selecione uma opção.</p>
+                  )}
                 </div>
-              )}
 
-              {/* Step 2: Professional */}
-              {currentStep === 2 && (
-                <div className="space-y-6">
-                  <div className="text-center">
-                    <Stethoscope className="w-12 h-12 mx-auto text-primary mb-3" />
-                    <h2 className="text-2xl font-bold">Dados Profissionais</h2>
-                    <p className="text-muted-foreground mt-1">
-                      Opcional - ajuda a personalizar sua experiência
-                    </p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="ob-crm">CRM (opcional)</Label>
+                    <Input
+                      id="ob-crm"
+                      inputMode="numeric"
+                      value={crm}
+                      onChange={(e) => setCrm(e.target.value)}
+                      className="h-12"
+                    />
                   </div>
-
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label>CRM</Label>
-                        <Input
-                          placeholder="123456"
-                          value={crm}
-                          onChange={(e) => setCrm(e.target.value)}
-                          className="h-12"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>UF do CRM</Label>
-                        <Select value={crmState} onValueChange={setCrmState}>
-                          <SelectTrigger className="h-12">
-                            <SelectValue placeholder="UF" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {BRAZILIAN_STATES.map(state => (
-                              <SelectItem key={state} value={state}>{state}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
+                  {crm.trim() && (
                     <div className="space-y-2">
-                      <Label>Especialidade</Label>
-                      <Select value={specialty} onValueChange={setSpecialty}>
+                      <Label>UF do CRM</Label>
+                      <Select value={crmState} onValueChange={setCrmState}>
                         <SelectTrigger className="h-12">
-                          <SelectValue placeholder="Selecione sua especialidade" />
+                          <SelectValue placeholder="UF" />
                         </SelectTrigger>
                         <SelectContent>
-                          {SPECIALTIES.map(spec => (
-                            <SelectItem key={spec} value={spec}>{spec}</SelectItem>
+                          {BRAZILIAN_STATES.map((uf) => (
+                            <SelectItem key={uf} value={uf}>{uf}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
+                      {showErrors && !crmState && (
+                        <p className="text-xs text-destructive">Selecione a UF do CRM.</p>
+                      )}
                     </div>
-                  </div>
-
-                  <div className="flex gap-3 pt-4">
-                    <Button variant="outline" onClick={handleBack} className="flex-1">
-                      <ArrowLeft className="w-4 h-4 mr-2" />
-                      Voltar
-                    </Button>
-                    <Button onClick={handleSaveProfile} disabled={loading} className="flex-1">
-                      {loading ? "Salvando..." : "Continuar"}
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </div>
+                  )}
                 </div>
-              )}
+              </div>
 
-              {/* Step 3: Complete */}
-              {currentStep === 3 && (
-                <div className="text-center space-y-6">
-                  <motion.div
-                    initial={{ scale: 0.6, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: "spring", stiffness: 200, damping: 18 }}
-                  >
-                    <div className="relative inline-block">
-                      <div className="absolute inset-0 bg-primary/25 rounded-full blur-2xl" />
-                      <div className="relative w-20 h-20 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center">
-                        <CheckCircle2 className="w-10 h-10 text-primary" strokeWidth={1.75} />
-                      </div>
-                    </div>
-                  </motion.div>
-                  
-                  <div className="space-y-3">
-                    <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-                      Tudo pronto
-                    </h1>
-                    <p className="text-muted-foreground">
-                      Sua conta está configurada e pronta para usar.
-                    </p>
-                  </div>
+              <Button onClick={handleProfileNext} disabled={saving} className="h-12 w-full sm:w-auto">
+                {saving ? "Salvando..." : "Continuar"}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          )}
 
-                  <div className="p-4 bg-muted/50 rounded-xl space-y-2">
-                    <p className="text-sm font-medium">O que você pode fazer agora:</p>
-                    <ul className="text-sm text-muted-foreground space-y-1">
-                      <li>• Usar o Examinus para interpretar exames</li>
-                      <li>• Explorar as ferramentas da MedStation</li>
-                      <li>• Gerenciar seus casos e pacientes</li>
-                    </ul>
-                  </div>
+          {step === 1 && (
+            <div className="space-y-8">
+              <header className="space-y-2">
+                <h1 className="font-display text-2xl md:text-3xl font-semibold tracking-tight">
+                  Três perguntas rápidas.
+                </h1>
+                <p className="text-sm md:text-base text-muted-foreground">
+                  As respostas definem o caminho e as ferramentas sugeridas na sua Home.
+                </p>
+              </header>
 
-                  <div className="pt-4">
-                    <Button 
-                      size="lg" 
-                      onClick={handleComplete}
-                      className="shadow-medical hover:shadow-elevated transition-all hover:scale-105 w-full"
-                    >
-                      Ir para o Dashboard
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          </AnimatePresence>
+              <QuestionGroup
+                legend="O que mais pesa na sua rotina hoje?"
+                name="routine_pain"
+                options={ROUTINE_PAIN_OPTIONS}
+                value={routinePain}
+                onChange={(v) => setRoutinePain(v as RoutinePain)}
+                invalid={showErrors && !routinePain}
+              />
+              <QuestionGroup
+                legend="Onde você atua com mais frequência?"
+                name="work_setting"
+                options={WORK_SETTING_OPTIONS}
+                value={workSetting}
+                onChange={(v) => setWorkSetting(v as WorkSetting)}
+                invalid={showErrors && !workSetting}
+              />
+              <QuestionGroup
+                legend="O que você mais quer ganhar com a MedStation?"
+                name="primary_goal"
+                options={PRIMARY_GOAL_OPTIONS}
+                value={primaryGoal}
+                onChange={(v) => setPrimaryGoal(v as PrimaryGoal)}
+                invalid={showErrors && !primaryGoal}
+              />
+
+              <div className="flex flex-col-reverse gap-3 sm:flex-row">
+                <Button variant="outline" onClick={() => setStep(0)} className="h-12 sm:w-auto">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Voltar
+                </Button>
+                <Button onClick={handleSurveyNext} className="h-12 sm:w-auto">
+                  Ver recomendação
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {step === 2 && recommendation && (
+            <div className="space-y-6">
+              <header className="space-y-2">
+                <h1 className="font-display text-2xl md:text-3xl font-semibold tracking-tight">
+                  Sua MedStation está pronta.
+                </h1>
+                <p className="text-sm md:text-base text-muted-foreground">
+                  {explainRecommendation(recommendation.primaryPath)}
+                </p>
+              </header>
+
+              <div className="rounded-xl border border-primary/40 bg-primary/5 p-4">
+                <p className="font-mono text-2xs uppercase tracking-[0.22em] text-muted-foreground">
+                  Caminho principal
+                </p>
+                <p className="mt-1 font-display text-xl font-semibold tracking-tight">{pathLabel}</p>
+              </div>
+
+              <ul className="space-y-3">
+                {recommendation.recommendedTools.slice(0, 3).map((slug) => {
+                  const tool = TOOL_LABELS[slug];
+                  if (!tool) return null;
+                  return (
+                    <li key={slug} className="flex items-start gap-3 rounded-xl border border-border/60 p-4">
+                      <span className="mt-0.5 rounded-lg border border-primary/20 bg-primary/10 p-1.5 text-primary">
+                        <Check className="h-4 w-4" />
+                      </span>
+                      <span>
+                        <span className="block font-display text-base font-semibold tracking-tight">
+                          {tool.title}
+                        </span>
+                        <span className="block text-sm text-muted-foreground">{tool.description}</span>
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button onClick={() => handleFinish("dashboard")} disabled={saving} className="h-12">
+                  {saving ? "Concluindo..." : "Ir para minha MedStation"}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleFinish("explore")}
+                  disabled={saving}
+                  className="h-12"
+                >
+                  Explorar todos os caminhos
+                </Button>
+              </div>
+            </div>
+          )}
         </Card>
       </div>
     </div>
+  );
+}
+
+function QuestionGroup({
+  legend,
+  name,
+  options,
+  value,
+  onChange,
+  invalid,
+}: {
+  legend: string;
+  name: string;
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (value: string) => void;
+  invalid: boolean;
+}) {
+  return (
+    <fieldset className="space-y-3">
+      <legend className="font-display text-base md:text-lg font-semibold tracking-tight">
+        {legend}
+      </legend>
+      <div className="grid gap-2">
+        {options.map((opt) => {
+          const active = opt.value === value;
+          return (
+            <label
+              key={opt.value}
+              className={[
+                "flex min-h-[48px] cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm transition-colors",
+                "focus-within:ring-2 focus-within:ring-ring motion-reduce:transition-none",
+                active ? "border-primary/60 bg-primary/5" : "border-border/60 hover:border-primary/40",
+              ].join(" ")}
+            >
+              <input
+                type="radio"
+                name={name}
+                value={opt.value}
+                checked={active}
+                onChange={() => onChange(opt.value)}
+                className="h-4 w-4 accent-[hsl(var(--primary))]"
+              />
+              <span>{opt.label}</span>
+            </label>
+          );
+        })}
+      </div>
+      {invalid && <p className="text-xs text-destructive">Selecione uma opção.</p>}
+    </fieldset>
   );
 }

@@ -8,6 +8,8 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AnalyticsTracker } from "./components/AnalyticsTracker";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 import { ProfileProvider } from "./contexts/ProfileContext";
+import { OnboardingProvider } from "./contexts/OnboardingContext";
+
 import Dashboard from "./pages/Dashboard";
 import Patients from "./pages/Patients";
 import PatientDetail from "./pages/PatientDetail";
@@ -81,11 +83,13 @@ const App = () => (
     <TooltipProvider>
       <SubscriptionProvider>
         <ProfileProvider>
+          <OnboardingProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
           <AnalyticsTracker />
           <Routes>
+
             <Route path="/" element={<Lp3 />} />
             <Route path="/landing" element={<Navigate to="/" replace />} />
             <Route path="/tour" element={<Navigate to="/" replace />} />
@@ -141,7 +145,7 @@ const App = () => (
 
             <Route path="/obrigado" element={<Obrigado />} />
             <Route path="/welcome" element={<Obrigado />} />
-            <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             <Route path="/welcome-tour" element={<ProtectedRoute><WelcomeTour /></ProtectedRoute>} />
             <Route
               path="/dashboard"
@@ -379,7 +383,9 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
+          </OnboardingProvider>
         </ProfileProvider>
+
       </SubscriptionProvider>
     </TooltipProvider>
   </QueryClientProvider>
