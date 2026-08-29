@@ -100,7 +100,13 @@ export interface AdminMetrics {
     blocked: number;
     codes_generated: number;
     reward_days_total: number;
-    conversion_rate: number;
+    conversion_rate: number | null;
+  };
+  subscriptions_mirror?: {
+    total: number;
+    active: number;
+    customers_with_multiple_active: number;
+    last_synced_at: string | null;
   };
   support: {
     open: number;
