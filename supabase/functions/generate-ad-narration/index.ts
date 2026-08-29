@@ -56,6 +56,13 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    if (!(await requireAdmin(req))) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const apiKey = Deno.env.get("ELEVENLABS_API_KEY");
     if (!apiKey) {
       return new Response(JSON.stringify({ error: "ELEVENLABS_API_KEY não configurada" }), {
@@ -65,8 +72,16 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const text: string = body?.text || DEFAULT_SCRIPT;
-    const voiceId: string = body?.voiceId || DEFAULT_VOICE;
+    let text: string = body?.text || DEFAULT_SCRIPT;
+    if (typeof text !== "string") text = DEFAULT_SCRIPT;
+    if (text.length > MAX_TEXT_LENGTH) {
+      return new Response(JSON.stringify({ error: `Texto excede ${MAX_TEXT_LENGTH} caracteres` }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const voiceIdRaw: string = body?.voiceId || DEFAULT_VOICE;
+    const voiceId = /^[A-Za-z0-9]{10,64}$/.test(voiceIdRaw) ? voiceIdRaw : DEFAULT_VOICE;
 
     const response = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
