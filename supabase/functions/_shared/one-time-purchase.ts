@@ -57,7 +57,7 @@ export const ONE_TIME_PLANS: Record<string, OneTimePlan> = {
   [MONTHLY_PIX_PLAN_SLUG]: {
     slug: MONTHLY_PIX_PLAN_SLUG,
     purpose: MONTHLY_PIX_PURPOSE,
-    amountCents: 4990,
+    amountCents: 5990,
     currency: ONE_TIME_CURRENCY,
     productId: ANNUAL_PRODUCT_ID,
     category: "pix_monthly_one_time",
@@ -65,7 +65,10 @@ export const ONE_TIME_PLANS: Record<string, OneTimePlan> = {
     accessDays: 30,
     allowCardFallback: false,
     paymentMethodTypes: ["pix"],
-    priceEnvVar: "STRIPE_MONTHLY_PIX_PRICE_ID",
+    // Decisão: Pix mensal usa SEMPRE price_data (5990 BRL). Um Price dedicado
+    // legado de 4990 causaria divergência silenciosa de valor, então nenhum
+    // price por env é aceito para este plano.
+    priceEnvVar: "",
     label: "MedStation Completo — 30 dias via Pix",
   },
 };
