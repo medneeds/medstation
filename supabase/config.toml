@@ -75,3 +75,6 @@ verify_jwt = false
 
 [functions.send-welcome-lead]
 verify_jwt = false
+
+[functions.admin-purchase-recovery]
+verify_jwt = false
