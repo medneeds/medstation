@@ -22,12 +22,22 @@ describe("catálogo de compras avulsas", () => {
     expect(createCheckout).toContain("pro_completo: \"price_1U4Zo7ACiwQRloW4cJIn0jYn\"");
   });
 
-  it("Pix mensal é one-time de 4990 BRL, 30 dias, categorizado", () => {
+  it("Pix mensal é one-time de 5990 BRL, 30 dias, categorizado", () => {
     expect(oneTime).toContain('MONTHLY_PIX_PLAN_SLUG = "pix_monthly_30d"');
-    expect(oneTime).toContain("amountCents: 4990");
+    expect(oneTime).toContain("amountCents: 5990");
+    expect(oneTime).not.toContain("amountCents: 4990");
     expect(oneTime).toContain('category: "pix_monthly_one_time"');
     expect(oneTime).toContain('accessPeriod: "monthly_30d"');
     expect(oneTime).toContain("accessDays: 30");
+  });
+
+  it("Pix mensal nunca usa Price dedicado por env (evita divergência de valor)", () => {
+    expect(oneTime).not.toContain('priceEnvVar: "STRIPE_MONTHLY_PIX_PRICE_ID"');
+  });
+
+  it("anual continua 49990 e mensal cartão continua assinatura recorrente", () => {
+    expect(oneTime).toContain("amountCents: 49990");
+    expect(createCheckout).toContain('mode: "subscription"');
   });
 
   it("Pix mensal é Pix-first e não cai para cartão silenciosamente", () => {
