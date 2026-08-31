@@ -133,11 +133,11 @@ async function syncSubscription(
 }
 
 /**
- * Compra anual one-time (cartão ou Pix). Idempotente: a unicidade de
- * `checkout_session_id` garante que a reentrega do mesmo evento nunca conceda
- * 12 meses duas vezes.
+ * Compra avulsa (Pix mensal 30 dias ou anual 12 meses, cartão ou Pix).
+ * Idempotente: a unicidade de `checkout_session_id` garante que a reentrega do
+ * mesmo evento nunca conceda o período duas vezes.
  */
-async function grantAnnualAccess(
+async function grantOneTimeAccess(
   supabase: ReturnType<typeof serviceClient>,
   stripe: Stripe,
   session: Stripe.Checkout.Session,
@@ -145,10 +145,16 @@ async function grantAnnualAccess(
 ) {
   const { data: already } = await supabase
     .from("stripe_one_time_purchases")
-    .select("id")
+    .select("id, status")
     .eq("checkout_session_id", session.id)
     .maybeSingle();
-  if (already) return { granted: false, reason: "already_processed" };
+  if (already?.status === "paid") return { granted: false, reason: "already_processed" };
+
+  const plan = planFromSession(session as unknown as MinimalCheckoutSession);
+  const accessPeriod = plan?.accessPeriod
+    ?? (session.metadata?.access_period === "monthly_30d" ? "monthly_30d" : "annual_12m");
+  const category = plan?.category
+    ?? (accessPeriod === "monthly_30d" ? "pix_monthly_one_time" : "annual_one_time");
 
   const customerId = objectId(session.customer);
   const email = session.customer_details?.email
@@ -172,6 +178,7 @@ async function grantAnnualAccess(
       .select("access_end")
       .eq("user_id", userId)
       .eq("status", "paid")
+      .neq("checkout_session_id", session.id)
       .order("access_end", { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -179,56 +186,119 @@ async function grantAnnualAccess(
   }
 
   const paidAt = new Date();
-  const { accessStart, accessEnd } = computeAnnualAccessWindow(paidAt, currentAccessEnd);
+  const { accessStart, accessEnd } = computeAccessWindow(paidAt, currentAccessEnd, accessPeriod);
+  const paymentMethod = await resolvePaymentMethod(stripe, session);
 
-  const { error } = await supabase.from("stripe_one_time_purchases").insert({
+  const row = {
     checkout_session_id: session.id,
     payment_intent_id: objectId(session.payment_intent),
     stripe_customer_id: customerId,
     user_id: userId,
     email: email ?? null,
-    plan: session.metadata?.plan ?? "pro_completo_yearly",
-    amount_cents: session.amount_total ?? null,
+    plan: session.metadata?.plan ?? plan?.slug ?? "pro_completo_yearly",
+    amount_cents: session.amount_total ?? plan?.amountCents ?? null,
     currency: session.currency ?? null,
     status: "paid",
+    checkout_status: "completed",
+    payment_category: category,
+    access_period: accessPeriod,
+    payment_method: paymentMethod,
+    recovery_status: "not_needed",
     paid_at: paidAt.toISOString(),
     access_start: accessStart,
     access_end: accessEnd,
     last_event_id: eventId,
-  });
+    ...utmFromMetadata(session.metadata as Record<string, string> | null),
+  };
 
-  if (error) {
-    // Violação de unicidade = evento concorrente/reentregue: nada a fazer.
-    if (error.code === "23505") return { granted: false, reason: "duplicate" };
-    throw new Error(`Failed to persist annual purchase: ${error.message}`);
+  if (already?.id) {
+    const { error } = await supabase.from("stripe_one_time_purchases")
+      .update(row)
+      .eq("id", already.id);
+    if (error) throw new Error(`Failed to update one-time purchase: ${error.message}`);
+  } else {
+    const { error } = await supabase.from("stripe_one_time_purchases").insert(row);
+    if (error) {
+      // Violação de unicidade = evento concorrente/reentregue: nada a fazer.
+      if (error.code === "23505") return { granted: false, reason: "duplicate" };
+      throw new Error(`Failed to persist one-time purchase: ${error.message}`);
+    }
   }
 
   if (userId) {
     await supabase.from("user_access")
       .update({ paid_access_until: accessEnd })
       .eq("user_id", userId);
+
+    // Compra válida posterior fecha automaticamente oportunidades de recuperação.
+    await supabase.from("stripe_one_time_purchases")
+      .update({ recovery_status: "recovered", recovery_updated_at: new Date().toISOString() })
+      .eq("user_id", userId)
+      .neq("checkout_session_id", session.id)
+      .in("recovery_status", ["eligible", "contacted"]);
   }
 
-  return { granted: true, accessEnd };
+  return { granted: true, accessEnd, accessPeriod, paymentMethod };
 }
 
-async function recordAnnualFailure(
+async function resolvePaymentMethod(
+  stripe: Stripe,
+  session: Stripe.Checkout.Session,
+): Promise<"card" | "pix" | "unknown"> {
+  const direct = normalizePaymentMethod(session.payment_method_types);
+  if (direct !== "unknown") return direct;
+  const intentId = objectId(session.payment_intent);
+  if (!intentId) return "unknown";
+  try {
+    const intent = await stripe.paymentIntents.retrieve(intentId);
+    return normalizePaymentMethod(intent.payment_method_types);
+  } catch {
+    return "unknown";
+  }
+}
+
+async function recordOneTimeFailure(
   supabase: ReturnType<typeof serviceClient>,
   session: Stripe.Checkout.Session,
   eventId: string,
+  outcome: "failed" | "expired",
 ) {
-  await supabase.from("stripe_one_time_purchases").upsert({
-    checkout_session_id: session.id,
+  const plan = planFromSession(session as unknown as MinimalCheckoutSession);
+  const accessPeriod = plan?.accessPeriod
+    ?? (session.metadata?.access_period === "monthly_30d" ? "monthly_30d" : "annual_12m");
+  const patch = {
     payment_intent_id: objectId(session.payment_intent),
     stripe_customer_id: objectId(session.customer),
     email: session.customer_details?.email ?? session.customer_email ?? null,
-    plan: session.metadata?.plan ?? "pro_completo_yearly",
-    amount_cents: session.amount_total ?? null,
+    plan: session.metadata?.plan ?? plan?.slug ?? "pro_completo_yearly",
+    amount_cents: session.amount_total ?? plan?.amountCents ?? null,
     currency: session.currency ?? null,
-    status: "failed",
+    status: outcome,
+    checkout_status: outcome === "expired" ? "expired" : "completed",
+    payment_category: plan?.category
+      ?? (accessPeriod === "monthly_30d" ? "pix_monthly_one_time" : "annual_one_time"),
+    access_period: accessPeriod,
+    recovery_status: recoveryStatusForOutcome(outcome),
     last_event_id: eventId,
-  }, { onConflict: "checkout_session_id", ignoreDuplicates: true });
+  };
+
+  const { data: existing } = await supabase
+    .from("stripe_one_time_purchases")
+    .select("id, status")
+    .eq("checkout_session_id", session.id)
+    .maybeSingle();
+
+  // Pagamento já confirmado nunca é rebaixado por evento tardio.
+  if (existing?.status === "paid") return;
+
+  if (existing?.id) {
+    await supabase.from("stripe_one_time_purchases").update(patch).eq("id", existing.id);
+  } else {
+    await supabase.from("stripe_one_time_purchases")
+      .insert({ checkout_session_id: session.id, ...patch });
+  }
 }
+
 
 async function getCustomerEmail(stripe: Stripe, customerId: string | null): Promise<string | null> {
   if (!customerId) return null;
