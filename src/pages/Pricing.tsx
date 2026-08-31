@@ -222,6 +222,23 @@ export default function Pricing() {
                 )}
               </Button>
 
+              {!isYearly && (
+                <div className="mt-3 text-center">
+                  <button
+                    type="button"
+                    onClick={() => startCheckout("pix_monthly_30d")}
+                    disabled={loading || (subscribed && !isTrial && !subLoading)}
+                    className="text-xs text-primary hover:underline font-mono uppercase tracking-[0.14em] disabled:opacity-50"
+                  >
+                    Pagar 1 mês via Pix
+                  </button>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    Pix: 30 dias de acesso, sem renovação automática.
+                  </p>
+                </div>
+              )}
+
+
               <div className="mt-4">
                 {!showCoupon ? (
                   <button
