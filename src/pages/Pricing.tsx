@@ -13,6 +13,8 @@ import { GuestEmailDialog } from "@/components/GuestEmailDialog";
 import { DISPLAY_PRICING, brl, type PlanSlug } from "@/lib/subscription-tiers";
 import { TimeSavingsComparison } from "@/components/TimeSavingsComparison";
 import { trackCtaClick, trackCheckoutStarted } from "@/lib/analytics";
+import { describeCheckoutError } from "@/lib/checkoutErrors";
+
 
 const included = [
   "Examinus — exames e laudos resumidos",
@@ -74,9 +76,10 @@ export default function Pricing() {
       if (data?.url) window.location.href = data.url;
     } catch (error: any) {
       console.error("Checkout error:", error);
-      toast({ title: "Erro no checkout", description: error.message || "Não foi possível iniciar o checkout.", variant: "destructive" });
+      toast({ title: "Erro no checkout", description: await describeCheckoutError(error), variant: "destructive" });
       setLoadingPlan(null);
     }
+
   };
 
   const startCheckout = async (p: PlanSlug) => {
@@ -112,9 +115,10 @@ export default function Pricing() {
       setLoadingPlan(null);
     } catch (error: any) {
       console.error("Checkout error:", error);
-      toast({ title: "Erro no checkout", description: error.message || "Não foi possível iniciar o checkout.", variant: "destructive" });
+      toast({ title: "Erro no checkout", description: await describeCheckoutError(error), variant: "destructive" });
       setLoadingPlan(null);
     }
+
   };
 
   const loading = loadingPlan !== null;
