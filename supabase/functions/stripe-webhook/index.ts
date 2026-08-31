@@ -5,10 +5,14 @@ import { findUserByEmail } from "../_shared/admin-users.ts";
 import { resolveSubscriptionEnd, type MinimalSubscription } from "../_shared/stripe-access.ts";
 import { sendTemplateEmailWithLog } from "../_shared/transactional-email-templates/send-and-log.ts";
 import {
-  computeAnnualAccessWindow,
-  shouldGrantAnnualAccess,
+  computeAccessWindow,
+  normalizePaymentMethod,
+  planFromSession,
+  recoveryStatusForOutcome,
+  shouldGrantOneTimeAccess,
+  utmFromMetadata,
   type MinimalCheckoutSession,
-} from "../_shared/annual-purchase.ts";
+} from "../_shared/one-time-purchase.ts";
 
 const BILLING_RECOVERY_URL = "https://medstation-ai.com.br/settings";
 const STALE_PROCESSING_MS = 5 * 60 * 1000;
@@ -432,11 +436,11 @@ serve(async (req) => {
           await syncSubscription(supabase, stripe, subscription, event.id);
           break;
         }
-        if (shouldGrantAnnualAccess(event.type, session as unknown as MinimalCheckoutSession)) {
-          const result = await grantAnnualAccess(supabase, stripe, session, event.id);
-          console.log("[stripe-webhook] annual access", { type: event.type, ...result });
+        if (shouldGrantOneTimeAccess(event.type, session as unknown as MinimalCheckoutSession)) {
+          const result = await grantOneTimeAccess(supabase, stripe, session, event.id);
+          console.log("[stripe-webhook] one-time access", { type: event.type, ...result });
         } else {
-          console.log("[stripe-webhook] annual payment not confirmed yet", {
+          console.log("[stripe-webhook] one-time payment not confirmed yet", {
             type: event.type,
             payment_status: session.payment_status,
           });
@@ -446,7 +450,14 @@ serve(async (req) => {
       case "checkout.session.async_payment_failed":
       case "checkout.session.expired": {
         const session = event.data.object as Stripe.Checkout.Session;
-        if (session.mode === "payment") await recordAnnualFailure(supabase, session, event.id);
+        if (session.mode === "payment") {
+          await recordOneTimeFailure(
+            supabase,
+            session,
+            event.id,
+            event.type === "checkout.session.expired" ? "expired" : "failed",
+          );
+        }
         break;
       }
       case "invoice.payment_failed":
