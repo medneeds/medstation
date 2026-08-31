@@ -120,8 +120,12 @@ async function stripeAccess(email: string): Promise<AccessResolution | null> {
 }
 
 
-/** Acesso anual comprado à vista (cartão ou Pix), fora do modelo de assinatura. */
+/**
+ * Acesso comprado à vista fora do modelo de assinatura (Pix mensal de 30 dias
+ * ou anual de 12 meses). Vale sempre o MAIOR access_end pago.
+ */
 async function annualPurchaseAccess(
+
   supabase: ReturnType<typeof serviceClient>,
   userId: string,
   email: string | undefined,

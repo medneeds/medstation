@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import PurchaseRecoveryPanel from "@/components/admin/PurchaseRecoveryPanel";
 import type { SubscriberRecord, SubscriberStats, FilteredSubscriberStats } from "./types";
 
 type Record = SubscriberRecord;
@@ -334,6 +335,8 @@ export default function AdminBilling() {
           </table>
         </div>
       </Card>
+
+      <PurchaseRecoveryPanel days={30} />
     </div>
   );
 }

@@ -49,7 +49,8 @@ describe("plano anual one-time com Pix", () => {
       expect(src).toContain('mode: "subscription"');
       expect(src).toContain('mode: "payment"');
       expect(src).toContain("isAnnualPlan(plan)");
-      expect(src).toContain('currency: "brl"');
+      // A moeda agora vem do catálogo one-time (brl para todos os planos avulsos).
+      expect(src).toContain("currency: oneTimePlan.currency");
     }
   });
 });

@@ -1,13 +1,14 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import {
-  ANNUAL_ACCESS_DAYS,
-  ANNUAL_PURPOSE,
-  annualPaymentMethodTypes,
-  buildAnnualLineItem,
+  buildOneTimeLineItem,
+  getOneTimePlan,
   isAnnualPlan,
   isPixUnavailableError,
-} from "../_shared/annual-purchase.ts";
+  MONTHLY_PIX_PLAN_SLUG,
+  oneTimePaymentMethodTypes,
+} from "../_shared/one-time-purchase.ts";
+import { recordPurchaseAttempt } from "../_shared/purchase-attempts.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -22,7 +23,9 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
 const CURRENT_PRICES: Record<string, string> = {
   pro_completo: "price_1U4Zo7ACiwQRloW4cJIn0jYn",
   pro_completo_yearly: "price_1U4ZoTACiwQRloW4f30FmEPb",
+  [MONTHLY_PIX_PLAN_SLUG]: "one_time",
 };
+
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -81,6 +84,7 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://medstation-ai.com.br";
     const annual = isAnnualPlan(plan);
+    const oneTimePlan = getOneTimePlan(plan);
 
     const baseMetadata: Record<string, string> = {
       plan,
@@ -89,27 +93,31 @@ serve(async (req) => {
       acquisition: "guest_checkout",
     };
 
-    const annualMetadata: Record<string, string> = {
-      ...baseMetadata,
-      purpose: ANNUAL_PURPOSE,
-      access_days: String(ANNUAL_ACCESS_DAYS),
-    };
+    const oneTimeMetadata: Record<string, string> = oneTimePlan
+      ? {
+        ...baseMetadata,
+        purpose: oneTimePlan.purpose,
+        payment_category: oneTimePlan.category,
+        access_period: oneTimePlan.accessPeriod,
+        access_days: String(oneTimePlan.accessDays),
+      }
+      : baseMetadata;
 
-    const sessionConfig: Stripe.Checkout.SessionCreateParams = annual
+    const sessionConfig: Stripe.Checkout.SessionCreateParams = oneTimePlan
       ? {
         customer: reusableCustomerId,
         customer_email: reusableCustomerId ? undefined : email,
-        line_items: [buildAnnualLineItem(Deno.env.get("STRIPE_ANNUAL_ONETIME_PRICE_ID"))] as
+        line_items: [buildOneTimeLineItem(oneTimePlan, Deno.env.get(oneTimePlan.priceEnvVar))] as
           Stripe.Checkout.SessionCreateParams.LineItem[],
         mode: "payment",
-        currency: "brl",
-        payment_method_types: annualPaymentMethodTypes(true) as
+        currency: oneTimePlan.currency,
+        payment_method_types: oneTimePaymentMethodTypes(oneTimePlan, true) as
           Stripe.Checkout.SessionCreateParams.PaymentMethodType[],
         success_url: `${origin}/obrigado?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/?canceled=true`,
         billing_address_collection: "auto",
-        metadata: annualMetadata,
-        payment_intent_data: { metadata: annualMetadata },
+        metadata: oneTimeMetadata,
+        payment_intent_data: { metadata: oneTimeMetadata },
       }
       : {
         customer: reusableCustomerId,
@@ -133,16 +141,39 @@ serve(async (req) => {
       session = await stripe.checkout.sessions.create(sessionConfig);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      if (annual && isPixUnavailableError(message)) {
+      if (oneTimePlan && isPixUnavailableError(message)) {
+        if (!oneTimePlan.allowCardFallback) {
+          logStep("PIX_UNAVAILABLE_NO_FALLBACK", { plan });
+          return new Response(
+            JSON.stringify({
+              error: "O pagamento via Pix ainda não está disponível. Use a assinatura mensal no cartão.",
+              code: "PIX_UNAVAILABLE",
+            }),
+            { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
         logStep("PIX_UNAVAILABLE_FALLBACK_CARD", { plan });
-        sessionConfig.payment_method_types = annualPaymentMethodTypes(false) as
+        sessionConfig.payment_method_types = oneTimePaymentMethodTypes(oneTimePlan, false) as
           Stripe.Checkout.SessionCreateParams.PaymentMethodType[];
         session = await stripe.checkout.sessions.create(sessionConfig);
       } else {
         throw error;
       }
     }
-    logStep("Checkout session created", { sessionId: session.id, plan, mode: sessionConfig.mode });
+    logStep("Checkout session created", { sessionId: session.id, plan, mode: sessionConfig.mode, annual });
+
+    if (oneTimePlan) {
+      await recordPurchaseAttempt({
+        checkoutSessionId: session.id,
+        plan: oneTimePlan,
+        paymentMethodTypes: (sessionConfig.payment_method_types as string[]) ?? [],
+        email,
+        stripeCustomerId: reusableCustomerId ?? null,
+        metadata: oneTimeMetadata,
+      });
+    }
+
+
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

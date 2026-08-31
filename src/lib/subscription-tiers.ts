@@ -106,7 +106,9 @@ export type PlanSlug =
   | "pro2_bundle"
   | "pro2_bundle_yearly"
   | "pro_completo"
-  | "pro_completo_yearly";
+  | "pro_completo_yearly"
+  // Compra avulsa de 30 dias via Pix, sem renovação automática.
+  | "pix_monthly_30d";
 
 /**
  * Preços de exibição nas landing pages.

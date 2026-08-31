@@ -1458,59 +1458,103 @@ export type Database = {
       stripe_one_time_purchases: {
         Row: {
           access_end: string | null
+          access_period: string | null
           access_start: string | null
+          acquisition_source: string | null
           amount_cents: number | null
+          campaign: string | null
           checkout_session_id: string
+          checkout_status: string
           created_at: string
           currency: string | null
           email: string | null
           id: string
           last_event_id: string | null
           paid_at: string | null
+          payment_category: string
           payment_intent_id: string | null
+          payment_method: string
           plan: string
+          recovered_from_purchase_id: string | null
+          recovery_status: string
+          recovery_updated_at: string | null
+          recovery_updated_by: string | null
           status: string
           stripe_customer_id: string | null
           updated_at: string
           user_id: string | null
+          utm_campaign: string | null
+          utm_source: string | null
         }
         Insert: {
           access_end?: string | null
+          access_period?: string | null
           access_start?: string | null
+          acquisition_source?: string | null
           amount_cents?: number | null
+          campaign?: string | null
           checkout_session_id: string
+          checkout_status?: string
           created_at?: string
           currency?: string | null
           email?: string | null
           id?: string
           last_event_id?: string | null
           paid_at?: string | null
+          payment_category?: string
           payment_intent_id?: string | null
+          payment_method?: string
           plan?: string
+          recovered_from_purchase_id?: string | null
+          recovery_status?: string
+          recovery_updated_at?: string | null
+          recovery_updated_by?: string | null
           status?: string
           stripe_customer_id?: string | null
           updated_at?: string
           user_id?: string | null
+          utm_campaign?: string | null
+          utm_source?: string | null
         }
         Update: {
           access_end?: string | null
+          access_period?: string | null
           access_start?: string | null
+          acquisition_source?: string | null
           amount_cents?: number | null
+          campaign?: string | null
           checkout_session_id?: string
+          checkout_status?: string
           created_at?: string
           currency?: string | null
           email?: string | null
           id?: string
           last_event_id?: string | null
           paid_at?: string | null
+          payment_category?: string
           payment_intent_id?: string | null
+          payment_method?: string
           plan?: string
+          recovered_from_purchase_id?: string | null
+          recovery_status?: string
+          recovery_updated_at?: string | null
+          recovery_updated_by?: string | null
           status?: string
           stripe_customer_id?: string | null
           updated_at?: string
           user_id?: string | null
+          utm_campaign?: string | null
+          utm_source?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "stripe_one_time_purchases_recovered_from_purchase_id_fkey"
+            columns: ["recovered_from_purchase_id"]
+            isOneToOne: false
+            referencedRelation: "stripe_one_time_purchases"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stripe_subscriptions: {
         Row: {
