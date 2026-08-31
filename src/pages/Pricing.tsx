@@ -195,6 +195,12 @@ export default function Pricing() {
                   ? `Equivale a ${brl(price.now / 12)} por mês.`
                   : `Menos de ${brl(price.now / 30)} por dia.`}
               </p>
+              {isYearly && (
+                <p className="text-[11px] md:text-xs text-primary mt-1">
+                  Cartão ou Pix à vista.
+                </p>
+              )}
+
 
               <div className="mt-4 rounded-md border border-primary/25 bg-primary/5 p-3 text-[11px] md:text-xs leading-relaxed">
                 <strong className="text-primary">Preço vigente:</strong> este é o valor atual do plano único MedStation.

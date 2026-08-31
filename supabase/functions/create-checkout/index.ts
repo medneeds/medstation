@@ -1,6 +1,14 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import {
+  ANNUAL_ACCESS_DAYS,
+  ANNUAL_PURPOSE,
+  annualPaymentMethodTypes,
+  buildAnnualLineItem,
+  isAnnualPlan,
+  isPixUnavailableError,
+} from "../_shared/annual-purchase.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,6 +24,7 @@ const CURRENT_PRICES: Record<string, string> = {
   pro_completo: "price_1U4Zo7ACiwQRloW4cJIn0jYn",
   pro_completo_yearly: "price_1U4ZoTACiwQRloW4f30FmEPb",
 };
+
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -115,31 +124,71 @@ serve(async (req) => {
     const origin = req.headers.get("origin");
     if (!origin) throw new Error("Request origin is required");
 
-    const subscriptionMetadata = {
+    const annual = isAnnualPlan(plan);
+
+    const baseMetadata: Record<string, string> = {
       user_id: user.id,
       plan,
       pricing_cohort: "current_unified",
       acquisition: "authenticated_checkout",
     };
 
-    const sessionConfig: Stripe.Checkout.SessionCreateParams = {
-      customer: reusableCustomerId,
-      customer_email: reusableCustomerId ? undefined : user.email,
-      line_items: [{ price: CURRENT_PRICES[plan], quantity: 1 }],
-      mode: "subscription",
-      success_url: `${origin}/obrigado?success=true&plan=${plan}&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/pricing?canceled=true`,
-      payment_method_collection: "always",
-      phone_number_collection: { enabled: false },
-      billing_address_collection: "auto",
-      metadata: subscriptionMetadata,
-      subscription_data: { metadata: subscriptionMetadata },
+    const annualMetadata: Record<string, string> = {
+      ...baseMetadata,
+      purpose: ANNUAL_PURPOSE,
+      access_days: String(ANNUAL_ACCESS_DAYS),
     };
+
+    const sessionConfig: Stripe.Checkout.SessionCreateParams = annual
+      ? {
+        customer: reusableCustomerId,
+        customer_email: reusableCustomerId ? undefined : user.email,
+        line_items: [buildAnnualLineItem(Deno.env.get("STRIPE_ANNUAL_ONETIME_PRICE_ID"))] as
+          Stripe.Checkout.SessionCreateParams.LineItem[],
+        mode: "payment",
+        currency: "brl",
+        payment_method_types: annualPaymentMethodTypes(true) as
+          Stripe.Checkout.SessionCreateParams.PaymentMethodType[],
+        success_url: `${origin}/obrigado?success=true&plan=${plan}&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/pricing?canceled=true`,
+        billing_address_collection: "auto",
+        metadata: annualMetadata,
+        payment_intent_data: { metadata: annualMetadata },
+      }
+      : {
+        customer: reusableCustomerId,
+        customer_email: reusableCustomerId ? undefined : user.email,
+        line_items: [{ price: CURRENT_PRICES[plan], quantity: 1 }],
+        mode: "subscription",
+        success_url: `${origin}/obrigado?success=true&plan=${plan}&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/pricing?canceled=true`,
+        payment_method_collection: "always",
+        phone_number_collection: { enabled: false },
+        billing_address_collection: "auto",
+        metadata: baseMetadata,
+        subscription_data: { metadata: baseMetadata },
+      };
 
     if (couponCode) sessionConfig.discounts = [{ coupon: couponCode }];
 
-    const session = await stripe.checkout.sessions.create(sessionConfig);
-    logStep("Checkout session created", { sessionId: session.id, plan });
+    let session: Stripe.Checkout.Session;
+    try {
+      session = await stripe.checkout.sessions.create(sessionConfig);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (annual && isPixUnavailableError(message)) {
+        // Pix ainda não habilitado nesta conta Stripe: não derrubamos o checkout,
+        // seguimos só com cartão e registramos a pendência de conta.
+        logStep("PIX_UNAVAILABLE_FALLBACK_CARD", { plan });
+        sessionConfig.payment_method_types = annualPaymentMethodTypes(false) as
+          Stripe.Checkout.SessionCreateParams.PaymentMethodType[];
+        session = await stripe.checkout.sessions.create(sessionConfig);
+      } else {
+        throw error;
+      }
+    }
+    logStep("Checkout session created", { sessionId: session.id, plan, mode: sessionConfig.mode });
+
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

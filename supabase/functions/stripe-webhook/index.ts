@@ -4,6 +4,11 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { findUserByEmail } from "../_shared/admin-users.ts";
 import { resolveSubscriptionEnd, type MinimalSubscription } from "../_shared/stripe-access.ts";
 import { sendTemplateEmailWithLog } from "../_shared/transactional-email-templates/send-and-log.ts";
+import {
+  computeAnnualAccessWindow,
+  shouldGrantAnnualAccess,
+  type MinimalCheckoutSession,
+} from "../_shared/annual-purchase.ts";
 
 const BILLING_RECOVERY_URL = "https://medstation-ai.com.br/settings";
 const STALE_PROCESSING_MS = 5 * 60 * 1000;
@@ -125,6 +130,104 @@ async function syncSubscription(
 
   if (error) throw new Error(`Failed to persist subscription: ${error.message}`);
   return { userId, customerId };
+}
+
+/**
+ * Compra anual one-time (cartão ou Pix). Idempotente: a unicidade de
+ * `checkout_session_id` garante que a reentrega do mesmo evento nunca conceda
+ * 12 meses duas vezes.
+ */
+async function grantAnnualAccess(
+  supabase: ReturnType<typeof serviceClient>,
+  stripe: Stripe,
+  session: Stripe.Checkout.Session,
+  eventId: string,
+) {
+  const { data: already } = await supabase
+    .from("stripe_one_time_purchases")
+    .select("id")
+    .eq("checkout_session_id", session.id)
+    .maybeSingle();
+  if (already) return { granted: false, reason: "already_processed" };
+
+  const customerId = objectId(session.customer);
+  const email = session.customer_details?.email
+    ?? session.customer_email
+    ?? await getCustomerEmail(stripe, customerId);
+
+  let userId = session.metadata?.user_id?.trim() || null;
+  if (!userId && email) {
+    const existing = await findUserByEmail(
+      (params) => supabase.auth.admin.listUsers(params) as any,
+      email,
+    );
+    userId = existing?.id ?? null;
+  }
+
+  // Extensão determinística: nova compra começa em max(agora, fim do acesso atual).
+  let currentAccessEnd: string | null = null;
+  if (userId) {
+    const { data: latest } = await supabase
+      .from("stripe_one_time_purchases")
+      .select("access_end")
+      .eq("user_id", userId)
+      .eq("status", "paid")
+      .order("access_end", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    currentAccessEnd = latest?.access_end ?? null;
+  }
+
+  const paidAt = new Date();
+  const { accessStart, accessEnd } = computeAnnualAccessWindow(paidAt, currentAccessEnd);
+
+  const { error } = await supabase.from("stripe_one_time_purchases").insert({
+    checkout_session_id: session.id,
+    payment_intent_id: objectId(session.payment_intent),
+    stripe_customer_id: customerId,
+    user_id: userId,
+    email: email ?? null,
+    plan: session.metadata?.plan ?? "pro_completo_yearly",
+    amount_cents: session.amount_total ?? null,
+    currency: session.currency ?? null,
+    status: "paid",
+    paid_at: paidAt.toISOString(),
+    access_start: accessStart,
+    access_end: accessEnd,
+    last_event_id: eventId,
+  });
+
+  if (error) {
+    // Violação de unicidade = evento concorrente/reentregue: nada a fazer.
+    if (error.code === "23505") return { granted: false, reason: "duplicate" };
+    throw new Error(`Failed to persist annual purchase: ${error.message}`);
+  }
+
+  if (userId) {
+    await supabase.from("user_access")
+      .update({ paid_access_until: accessEnd })
+      .eq("user_id", userId);
+  }
+
+  return { granted: true, accessEnd };
+}
+
+async function recordAnnualFailure(
+  supabase: ReturnType<typeof serviceClient>,
+  session: Stripe.Checkout.Session,
+  eventId: string,
+) {
+  await supabase.from("stripe_one_time_purchases").upsert({
+    checkout_session_id: session.id,
+    payment_intent_id: objectId(session.payment_intent),
+    stripe_customer_id: objectId(session.customer),
+    email: session.customer_details?.email ?? session.customer_email ?? null,
+    plan: session.metadata?.plan ?? "pro_completo_yearly",
+    amount_cents: session.amount_total ?? null,
+    currency: session.currency ?? null,
+    status: "failed",
+    last_event_id: eventId,
+  }, { onConflict: "checkout_session_id", ignoreDuplicates: true });
 }
 
 async function getCustomerEmail(stripe: Stripe, customerId: string | null): Promise<string | null> {
@@ -250,13 +353,30 @@ serve(async (req) => {
         await syncSubscription(supabase, stripe, event.data.object as Stripe.Subscription, event.id);
         break;
       }
-      case "checkout.session.completed": {
+      case "checkout.session.completed":
+      case "checkout.session.async_payment_succeeded": {
         const session = event.data.object as Stripe.Checkout.Session;
         const subscriptionId = objectId(session.subscription);
         if (subscriptionId) {
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
           await syncSubscription(supabase, stripe, subscription, event.id);
+          break;
         }
+        if (shouldGrantAnnualAccess(event.type, session as unknown as MinimalCheckoutSession)) {
+          const result = await grantAnnualAccess(supabase, stripe, session, event.id);
+          console.log("[stripe-webhook] annual access", { type: event.type, ...result });
+        } else {
+          console.log("[stripe-webhook] annual payment not confirmed yet", {
+            type: event.type,
+            payment_status: session.payment_status,
+          });
+        }
+        break;
+      }
+      case "checkout.session.async_payment_failed":
+      case "checkout.session.expired": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        if (session.mode === "payment") await recordAnnualFailure(supabase, session, event.id);
         break;
       }
       case "invoice.payment_failed":

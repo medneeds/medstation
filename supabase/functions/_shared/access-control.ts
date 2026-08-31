@@ -120,6 +120,41 @@ async function stripeAccess(email: string): Promise<AccessResolution | null> {
 }
 
 
+/** Acesso anual comprado à vista (cartão ou Pix), fora do modelo de assinatura. */
+async function annualPurchaseAccess(
+  supabase: ReturnType<typeof serviceClient>,
+  userId: string,
+  email: string | undefined,
+): Promise<AccessResolution | null> {
+  try {
+    const filters = [`user_id.eq.${userId}`];
+    if (email && /^[^,()]+$/.test(email)) filters.push(`email.eq.${email}`);
+    const { data } = await supabase
+      .from("stripe_one_time_purchases")
+      .select("access_end")
+      .eq("status", "paid")
+      .or(filters.join(","))
+      .order("access_end", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const accessEnd = data?.access_end ?? null;
+    if (!accessEnd || new Date(accessEnd).getTime() <= Date.now()) return null;
+
+    const result = base("paid_active");
+    result.canUsePlatform = true;
+    result.isPaidSubscriber = true;
+    result.subscriptionEnd = accessEnd;
+    result.productIds = [CURRENT_UNIFIED_PRODUCT_ID];
+    result.hasAgents = true;
+    result.hasConsultorio = true;
+    result.pricingCohort = "current_unified";
+    return result;
+  } catch {
+    return null;
+  }
+}
+
 async function applyCommercialPolicy(
   supabase: ReturnType<typeof serviceClient>,
   paid: AccessResolution,
@@ -168,6 +203,9 @@ export async function resolveUserAccess(user: Pick<User, "id" | "email" | "creat
     result.hasConsultorio = true;
     return result;
   }
+
+  const annual = await annualPurchaseAccess(supabase, user.id, user.email ?? undefined);
+  if (annual) return annual;
 
   let billingDegraded = false;
   if (user.email) {

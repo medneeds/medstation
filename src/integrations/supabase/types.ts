@@ -1455,6 +1455,63 @@ export type Database = {
         }
         Relationships: []
       }
+      stripe_one_time_purchases: {
+        Row: {
+          access_end: string | null
+          access_start: string | null
+          amount_cents: number | null
+          checkout_session_id: string
+          created_at: string
+          currency: string | null
+          email: string | null
+          id: string
+          last_event_id: string | null
+          paid_at: string | null
+          payment_intent_id: string | null
+          plan: string
+          status: string
+          stripe_customer_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          access_end?: string | null
+          access_start?: string | null
+          amount_cents?: number | null
+          checkout_session_id: string
+          created_at?: string
+          currency?: string | null
+          email?: string | null
+          id?: string
+          last_event_id?: string | null
+          paid_at?: string | null
+          payment_intent_id?: string | null
+          plan?: string
+          status?: string
+          stripe_customer_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          access_end?: string | null
+          access_start?: string | null
+          amount_cents?: number | null
+          checkout_session_id?: string
+          created_at?: string
+          currency?: string | null
+          email?: string | null
+          id?: string
+          last_event_id?: string | null
+          paid_at?: string | null
+          payment_intent_id?: string | null
+          plan?: string
+          status?: string
+          stripe_customer_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       stripe_subscriptions: {
         Row: {
           billing_interval: string | null
@@ -1670,6 +1727,7 @@ export type Database = {
       user_access: {
         Row: {
           created_at: string
+          paid_access_until: string | null
           trial_consumed_at: string
           trial_ends_at: string
           trial_source: string
@@ -1679,6 +1737,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          paid_access_until?: string | null
           trial_consumed_at: string
           trial_ends_at: string
           trial_source?: string
@@ -1688,6 +1747,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          paid_access_until?: string | null
           trial_consumed_at?: string
           trial_ends_at?: string
           trial_source?: string
