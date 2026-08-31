@@ -2,13 +2,14 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import {
-  ANNUAL_ACCESS_DAYS,
-  ANNUAL_PURPOSE,
-  annualPaymentMethodTypes,
-  buildAnnualLineItem,
+  buildOneTimeLineItem,
+  getOneTimePlan,
   isAnnualPlan,
   isPixUnavailableError,
-} from "../_shared/annual-purchase.ts";
+  MONTHLY_PIX_PLAN_SLUG,
+  oneTimePaymentMethodTypes,
+} from "../_shared/one-time-purchase.ts";
+import { recordPurchaseAttempt } from "../_shared/purchase-attempts.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,7 +24,9 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
 const CURRENT_PRICES: Record<string, string> = {
   pro_completo: "price_1U4Zo7ACiwQRloW4cJIn0jYn",
   pro_completo_yearly: "price_1U4ZoTACiwQRloW4f30FmEPb",
+  [MONTHLY_PIX_PLAN_SLUG]: "one_time",
 };
+
 
 
 serve(async (req) => {
