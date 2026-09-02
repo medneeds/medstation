@@ -1429,7 +1429,9 @@ export function AgentChat({
                       ? "bg-primary text-primary-foreground py-2 md:py-3"
                       : isThinking
                         ? "bg-muted/60 py-2 md:py-2.5"
-                        : "bg-muted pt-2 md:pt-3 pb-8 md:pb-10"
+                        : agentType === "clinicus"
+                          ? "bg-muted/25 border border-border/50 pt-4 md:pt-5 px-4 md:px-6 pb-9 md:pb-11"
+                          : "bg-muted pt-2 md:pt-3 pb-8 md:pb-10"
                   }`}
                 >
                   {msg.audioBlob && msg.audioUrl ? (
@@ -1447,26 +1449,19 @@ export function AgentChat({
                     />
                   ) : isThinking ? (
                     <ThinkingIndicator />
+                  ) : msg.role === "assistant" && agentType === "clinicus" ? (
+                    <StructuredResponse
+                      content={msg.content}
+                      size={focusMode ? "focus" : "chat"}
+                      trailing={isStreaming ? <StreamCursor /> : undefined}
+                    />
                   ) : (
                     <p className={`whitespace-pre-wrap leading-relaxed ${focusMode ? "text-base md:text-lg" : "text-sm"}`}>
-                      {msg.role === "assistant" && agentType === "clinicus" ? msg.content.replace(/\*\*/g, "") : msg.content}
-                      {isStreaming && (
-                        <>
-                          <span className="inline-block w-[2px] h-3.5 ml-0.5 align-[-2px] bg-primary animate-stream-cursor" />
-                          <span
-                            className="inline-flex items-baseline gap-0.5 ml-2 align-baseline text-primary/80"
-                            aria-label="digitando"
-                            role="status"
-                          >
-                            <span className="sr-only">digitando</span>
-                            <span className="animate-thinking-dot text-base leading-none">•</span>
-                            <span className="animate-thinking-dot [animation-delay:0.18s] text-base leading-none">•</span>
-                            <span className="animate-thinking-dot [animation-delay:0.36s] text-base leading-none">•</span>
-                          </span>
-                        </>
-                      )}
+                      {msg.content}
+                      {isStreaming && <StreamCursor />}
                     </p>
                   )}
+
                   <p className="text-xs opacity-70 mt-1 flex items-center gap-1">
                     <span>
                       {new Date(msg.created_at).toLocaleTimeString([], {
