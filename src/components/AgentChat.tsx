@@ -253,6 +253,37 @@ function StreamCursor() {
   );
 }
 
+/**
+ * Card compacto de resposta do assistente no Modo Workflow.
+ * Evita duplicar o documento exibido no painel principal: mostra apenas
+ * um indicador + prévia da primeira linha, apontando para o documento.
+ */
+function WorkflowAnswerChip({ content, streaming }: { content: string; streaming?: boolean }) {
+  const trimmed = (content || "").replace(/\*\*/g, "").trim();
+  const firstLine = trimmed.split("\n").find((l) => l.trim().length > 0)?.trim() ?? "";
+  const preview = firstLine.length > 96 ? firstLine.slice(0, 96) + "…" : firstLine;
+  return (
+    <div className="w-full">
+      <div className="flex items-center gap-2 text-xs">
+        <FileText className="h-3.5 w-3.5 text-primary shrink-0" />
+        <span className="font-medium text-foreground/80">
+          {streaming ? "Gerando documento…" : "Documento gerado"}
+        </span>
+        <span className="ml-auto text-[10px] uppercase tracking-wider text-muted-foreground/70 shrink-0">
+          Ver no documento →
+        </span>
+      </div>
+      {!streaming && preview && (
+        <p className="mt-1 text-xs text-muted-foreground/80 line-clamp-2 leading-relaxed break-words">
+          {preview}
+        </p>
+      )}
+    </div>
+  );
+}
+
+
+
 
 export function AgentChat({ 
   agentName, 
