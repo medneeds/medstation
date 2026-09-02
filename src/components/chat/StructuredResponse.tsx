@@ -17,11 +17,7 @@ const SIZE_TEXT: Record<Size, string> = {
   reading: "text-base md:text-xl leading-[1.8]",
 };
 
-const SIZE_TITLE: Record<Size, string> = {
-  chat: "text-[11px]",
-  focus: "text-xs",
-  reading: "text-xs md:text-sm",
-};
+const SIZE_TITLE: Record<Size, string> = SIZE_TEXT;
 
 function CopySectionButton({ text, label }: { text: string; label: string }) {
   const { toast } = useToast();
