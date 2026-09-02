@@ -2261,10 +2261,15 @@ export function AgentChat({
           {readingMessage && (
             <>
               <div className="flex-1 min-h-0 overflow-y-auto pr-2 rounded-lg bg-muted/30 p-4 md:p-6">
-                <p className="text-base md:text-xl leading-[1.7] whitespace-pre-wrap max-w-[80ch] mx-auto">
-                  {agentType === "clinicus" ? readingMessage.content.replace(/\*\*/g, "") : readingMessage.content}
-                </p>
+                {agentType === "clinicus" ? (
+                  <StructuredResponse content={readingMessage.content} size="reading" className="mx-auto" />
+                ) : (
+                  <p className="text-base md:text-xl leading-[1.7] whitespace-pre-wrap max-w-[80ch] mx-auto">
+                    {readingMessage.content}
+                  </p>
+                )}
               </div>
+
               <div className="flex justify-end gap-2 pt-2 border-t">
                 <Button
                   variant="outline"
