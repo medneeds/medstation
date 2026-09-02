@@ -540,6 +540,90 @@ export function AgentChat({
     }
   };
 
+  /**
+   * Sugestões para o caso (Clínicus): análise crítica em painel lateral.
+   * Não grava mensagem na conversa nem altera o documento gerado.
+   */
+  const runCaseSuggestions = async () => {
+    if (suggestionsLoading || isLoading) return;
+    const history = (currentConversation?.messages ?? []).filter(
+      (m) => m.id !== "streaming-temp" && !!m.content?.trim(),
+    );
+    if (history.length === 0) return;
+
+    setSuggestionsOpen(true);
+    setSuggestionsLoading(true);
+    setSuggestionsContent("");
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/agent-chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({
+          messages: [
+            ...history.map((m) => ({ role: m.role, content: m.content })),
+            {
+              role: "user",
+              content:
+                "Gere as SUGESTÕES PARA O CASO com base exclusivamente nas informações já enviadas nesta conversa.",
+            },
+          ],
+          agentType,
+          caseId: selectedCaseId,
+          caseSuggestMode: true,
+        }),
+      });
+
+      if (!response.ok || !response.body) throw new Error("Falha ao gerar sugestões");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = "";
+      let acc = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (line.startsWith(":") || line.trim() === "") continue;
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              acc += content;
+              setSuggestionsContent(acc);
+            }
+          } catch {
+            textBuffer = line + "\n" + textBuffer;
+            break;
+          }
+        }
+      }
+    } catch {
+      toast({
+        title: "Não foi possível gerar as sugestões",
+        description: "Tente novamente em instantes.",
+        variant: "destructive",
+      });
+    } finally {
+      setSuggestionsLoading(false);
+    }
+  };
+
+
   const sendMessage = async () => {
     if (isLoading) return;
     if (!message.trim()) {
