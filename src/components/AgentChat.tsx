@@ -1207,10 +1207,22 @@ export function AgentChat({
 
         {/* Desktop actions */}
         <div className="hidden md:flex gap-2">
+          {workflowAvailable && (
+            <Button
+              variant={workflowMode ? "default" : "outline"}
+              size="sm"
+              onClick={() => { setWorkflowMode(v => !v); setFocusMode(false); }}
+              title={workflowMode ? "Sair do Modo Workflow (Esc)" : "Modo Workflow — conversa e documento lado a lado"}
+            >
+              <LayoutPanelLeft className="h-4 w-4" />
+              <span className="ml-2">{workflowMode ? "Sair do Workflow" : "Workflow"}</span>
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={() => setFocusMode(v => !v)} title={focusMode ? "Sair do modo foco (Esc)" : "Modo foco — expandir área de leitura"}>
             {focusMode ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
             <span className="ml-2">{focusMode ? "Sair do foco" : "Foco"}</span>
           </Button>
+
           <Button variant="outline" size="sm" onClick={createNewConversation} title="Nova Conversa">
             <Plus className="h-4 w-4" />
             <span className="ml-2">Nova Conversa</span>
