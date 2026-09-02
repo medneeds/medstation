@@ -34,6 +34,7 @@ import {
   Copy,
   Check,
   FileDown,
+  FileText,
   FileUp,
   SeparatorVertical,
   Clock,
@@ -251,6 +252,37 @@ function StreamCursor() {
     </>
   );
 }
+
+/**
+ * Card compacto de resposta do assistente no Modo Workflow.
+ * Evita duplicar o documento exibido no painel principal: mostra apenas
+ * um indicador + prévia da primeira linha, apontando para o documento.
+ */
+function WorkflowAnswerChip({ content, streaming }: { content: string; streaming?: boolean }) {
+  const trimmed = (content || "").replace(/\*\*/g, "").trim();
+  const firstLine = trimmed.split("\n").find((l) => l.trim().length > 0)?.trim() ?? "";
+  const preview = firstLine.length > 96 ? firstLine.slice(0, 96) + "…" : firstLine;
+  return (
+    <div className="w-full">
+      <div className="flex items-center gap-2 text-xs">
+        <FileText className="h-3.5 w-3.5 text-primary shrink-0" />
+        <span className="font-medium text-foreground/80">
+          {streaming ? "Gerando documento…" : "Documento gerado"}
+        </span>
+        <span className="ml-auto text-[10px] uppercase tracking-wider text-muted-foreground/70 shrink-0">
+          Ver no documento →
+        </span>
+      </div>
+      {!streaming && preview && (
+        <p className="mt-1 text-xs text-muted-foreground/80 line-clamp-2 leading-relaxed break-words">
+          {preview}
+        </p>
+      )}
+    </div>
+  );
+}
+
+
 
 
 export function AgentChat({ 
@@ -1360,7 +1392,7 @@ export function AgentChat({
       <div
         className={
           workflowMode
-            ? "flex flex-col min-h-0 w-[40%] max-w-[560px] min-w-[340px] shrink-0 border-r border-border/40 pr-4"
+            ? "flex flex-col min-h-0 w-[33%] max-w-[440px] min-w-[300px] shrink-0 border-r border-border/40 pr-3"
             : "contents"
         }
       >
@@ -1483,17 +1515,21 @@ export function AgentChat({
                   className={`${
                     focusMode
                       ? "max-w-[97%] md:max-w-5xl"
-                      : msg.role === "assistant"
-                        ? "max-w-[96%] md:max-w-[92%]"
-                        : "max-w-[90%] md:max-w-[72%]"
+                      : workflowMode && msg.role === "assistant"
+                        ? "max-w-[96%] md:max-w-[96%]"
+                        : msg.role === "assistant"
+                          ? "max-w-[96%] md:max-w-[92%]"
+                          : "max-w-[90%] md:max-w-[72%]"
                   } rounded-2xl px-3 md:px-4 relative group ${
                     msg.role === "user"
                       ? "bg-primary text-primary-foreground py-2 md:py-3"
                       : isThinking
                         ? "bg-muted/60 py-2 md:py-2.5"
-                        : agentType === "clinicus"
-                          ? "bg-muted/25 border border-border/50 pt-4 md:pt-5 px-4 md:px-6 pb-9 md:pb-11"
-                          : "bg-muted pt-2 md:pt-3 pb-8 md:pb-10"
+                        : workflowMode && agentType === "clinicus"
+                          ? "bg-muted/15 border border-border/40 py-2 px-3"
+                          : agentType === "clinicus"
+                            ? "bg-muted/25 border border-border/50 pt-4 md:pt-5 px-4 md:px-6 pb-9 md:pb-11"
+                            : "bg-muted pt-2 md:pt-3 pb-8 md:pb-10"
                   }`}
                 >
                   {msg.audioBlob && msg.audioUrl ? (
@@ -1511,6 +1547,8 @@ export function AgentChat({
                     />
                   ) : isThinking ? (
                     <ThinkingIndicator />
+                  ) : workflowMode && msg.role === "assistant" && agentType === "clinicus" ? (
+                    <WorkflowAnswerChip content={msg.content} streaming={isStreaming} />
                   ) : msg.role === "assistant" && agentType === "clinicus" ? (
                     <StructuredResponse
                       content={msg.content}
@@ -1539,7 +1577,7 @@ export function AgentChat({
                       </span>
                     )}
                   </p>
-                  {msg.role === "assistant" && (
+                  {msg.role === "assistant" && !workflowMode && (
                     <div className="absolute bottom-2 right-2 flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                       <Button
                         variant="ghost"
@@ -1859,7 +1897,7 @@ export function AgentChat({
 
         {/* Barra de ajustes de saída (desktop) */}
         {!isMobile && AGENTS_WITH_CONTROLS.has(agentType) && (
-          <div className="flex flex-nowrap gap-2 items-center mb-3 px-3 py-2.5 rounded-2xl bg-muted/35 border border-border/50 overflow-x-auto scrollbar-none">
+          <div className={`flex flex-nowrap gap-2 items-center mb-3 px-3 py-2.5 rounded-2xl bg-muted/35 border border-border/50 overflow-x-auto scrollbar-none ${workflowMode ? "mb-2 py-1.5" : ""}`}>
             <span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground/70 mr-1 shrink-0">
               Ajustes de saída
             </span>
@@ -2197,7 +2235,11 @@ export function AgentChat({
               maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
               aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
               className={`w-full resize-none rounded-2xl text-base leading-relaxed p-5 pb-16 bg-muted/25 border-2 transition-colors duration-200 ${
-                inputExpanded ? "min-h-[240px] max-h-[45vh]" : "min-h-[132px] max-h-64"
+                workflowMode
+                  ? "min-h-[72px] max-h-44 p-3.5 pb-12 text-sm"
+                  : inputExpanded
+                    ? "min-h-[240px] max-h-[45vh]"
+                    : "min-h-[132px] max-h-64"
               } ${
                 (message.length > 0 && !message.trim()) || overLimit
                   ? "border-destructive focus:border-destructive"
@@ -2298,15 +2340,19 @@ export function AgentChat({
         const lastAnswer = [...(currentConversation?.messages ?? [])]
           .reverse()
           .find((m) => m.role === "assistant" && !!m.content?.trim());
+        const isLive = lastAnswer?.id === "streaming-temp" && lastAnswer.content !== "Pensando...";
         return (
           <>
-            <div className="flex-1 min-w-0 min-h-0 flex flex-col rounded-2xl border border-border/50 bg-muted/20 overflow-hidden animate-fade-in">
-              <div className="shrink-0 flex items-center justify-between gap-3 px-5 py-3 border-b border-border/40 bg-background/60">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">Documento em edição</p>
-                  <p className="text-[11px] text-muted-foreground truncate">
-                    {currentConversation?.name || "Resposta mais recente do assistente"}
-                  </p>
+            <div className="flex-1 min-w-0 min-h-0 flex flex-col rounded-2xl border border-border/50 bg-background shadow-sm overflow-hidden animate-fade-in">
+              <div className="shrink-0 flex items-center justify-between gap-3 px-5 py-2.5 border-b border-border/40 bg-muted/30">
+                <div className="min-w-0 flex items-center gap-2.5">
+                  <span className={`h-2 w-2 rounded-full shrink-0 ${isLive ? "bg-primary animate-pulse" : "bg-muted-foreground/40"}`} />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">Documento</p>
+                    <p className="text-[11px] text-muted-foreground truncate">
+                      {currentConversation?.name || "Resposta mais recente do assistente"}
+                    </p>
+                  </div>
                 </div>
                 {lastAnswer && (
                   <Button
