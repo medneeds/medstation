@@ -2546,6 +2546,18 @@ export function AgentChat({
 
 
 
+      {/* Painel lateral de sugestões para o caso (Clínicus) */}
+      <CaseSuggestionsPanel
+        open={suggestionsOpen}
+        onOpenChange={setSuggestionsOpen}
+        content={suggestionsContent}
+        loading={suggestionsLoading}
+        onAsk={(question) => {
+          setMessage(question);
+          setTimeout(() => textareaRef.current?.focus(), 60);
+        }}
+      />
+
       {/* Reading dialog: per-message expanded view */}
       <Dialog open={!!readingMessage} onOpenChange={(o) => !o && setReadingMessage(null)}>
         <DialogContent className="max-w-[min(1200px,96vw)] w-[96vw] h-[92vh] sm:h-[92vh] flex flex-col p-4 md:p-6 gap-3">
