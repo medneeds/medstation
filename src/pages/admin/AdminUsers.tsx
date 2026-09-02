@@ -237,7 +237,22 @@ export default function AdminUsers() {
                   <td className="px-4 py-2 font-mono text-xs">{r.email}</td>
                   <td className="px-4 py-2">{r.full_name || "—"}</td>
                   <td className="px-4 py-2 text-xs text-muted-foreground">
-                    <div>{r.phone || "—"}</div>
+                    <div className="flex items-center gap-1.5">
+                      <span>{r.phone || "—"}</span>
+                      {whatsappUrl(r.phone) && (
+                        <a
+                          href={whatsappUrl(r.phone)!}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          title="Conversar no WhatsApp"
+                          className="inline-flex items-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+                        >
+                          <MessageCircle className="h-3.5 w-3.5" />
+                          <span className="text-2xs font-medium">WhatsApp</span>
+                        </a>
+                      )}
+                    </div>
                     <div>{r.crm ? `CRM ${r.crm}${r.crm_state ? `/${r.crm_state}` : ""}` : "—"}</div>
                   </td>
                   <td className="px-4 py-2">
@@ -348,6 +363,20 @@ function UserDetailSheet({ user, onClose, onChanged }: { user: UserRow | null; o
               <div>
                 <div className="text-xs text-muted-foreground">Nome</div>
                 <div>{user.full_name || "—"}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">Contato</div>
+                <div className="flex items-center gap-2">
+                  <span>{user.phone || "—"}</span>
+                  {whatsappUrl(user.phone) && (
+                    <Button variant="outline" size="sm" asChild className="gap-1.5 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10">
+                      <a href={whatsappUrl(user.phone)!} target="_blank" rel="noopener noreferrer">
+                        <MessageCircle className="h-4 w-4" />
+                        Conversar no WhatsApp
+                      </a>
+                    </Button>
+                  )}
+                </div>
               </div>
               <div>
                 <div className="text-xs text-muted-foreground">Especialidade</div>
