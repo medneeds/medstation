@@ -47,6 +47,8 @@ import {
   ChevronDown,
   Expand,
   Shrink,
+  LayoutPanelLeft,
+
   BookOpen,
   ClipboardList
 } from "lucide-react";
@@ -312,7 +314,10 @@ export function AgentChat({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [inputExpanded, setInputExpanded] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
+  const [workflowMode, setWorkflowMode] = useState(false);
   const [readingMessage, setReadingMessage] = useState<Message | null>(null);
+  const workflowAvailable = agentType === "clinicus" && !isMobile;
+
 
   // Conteúdo enviado de outra tela (ex.: Modo Escuta)
   useEffect(() => {
@@ -331,6 +336,20 @@ export function AgentChat({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [focusMode]);
+
+  // Modo Workflow: só em telas grandes; sai com ESC
+  useEffect(() => {
+    if (!workflowAvailable && workflowMode) setWorkflowMode(false);
+  }, [workflowAvailable, workflowMode]);
+
+  useEffect(() => {
+    if (!workflowMode) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setWorkflowMode(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [workflowMode]);
+
+
 
   // Auto-resize textarea based on content
   useEffect(() => {
@@ -1033,10 +1052,11 @@ export function AgentChat({
   return (
     <div 
       className={
-        focusMode
-          ? "fixed inset-0 z-[60] bg-background flex flex-col p-4 md:p-8 overflow-hidden animate-fade-in"
+        focusMode || workflowMode
+          ? "fixed inset-0 z-[60] bg-background flex flex-col p-4 md:p-6 overflow-hidden animate-fade-in"
           : "flex flex-col h-full p-3 md:p-6"
       }
+
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -1189,10 +1209,22 @@ export function AgentChat({
 
         {/* Desktop actions */}
         <div className="hidden md:flex gap-2">
+          {workflowAvailable && (
+            <Button
+              variant={workflowMode ? "default" : "outline"}
+              size="sm"
+              onClick={() => { setWorkflowMode(v => !v); setFocusMode(false); }}
+              title={workflowMode ? "Sair do Modo Workflow (Esc)" : "Modo Workflow — conversa e documento lado a lado"}
+            >
+              <LayoutPanelLeft className="h-4 w-4" />
+              <span className="ml-2">{workflowMode ? "Sair do Workflow" : "Workflow"}</span>
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={() => setFocusMode(v => !v)} title={focusMode ? "Sair do modo foco (Esc)" : "Modo foco — expandir área de leitura"}>
             {focusMode ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
             <span className="ml-2">{focusMode ? "Sair do foco" : "Foco"}</span>
           </Button>
+
           <Button variant="outline" size="sm" onClick={createNewConversation} title="Nova Conversa">
             <Plus className="h-4 w-4" />
             <span className="ml-2">Nova Conversa</span>
@@ -1323,7 +1355,17 @@ export function AgentChat({
         </div>
       )}
 
+      {/* Área de trabalho: conversa (esquerda) + documento e ferramentas (Modo Workflow) */}
+      <div className={workflowMode ? "flex-1 min-h-0 flex gap-4" : "contents"}>
+      <div
+        className={
+          workflowMode
+            ? "flex flex-col min-h-0 w-[40%] max-w-[560px] min-w-[340px] shrink-0 border-r border-border/40 pr-4"
+            : "contents"
+        }
+      >
       {/* Chat messages */}
+
       <ScrollArea className="flex-1 py-4">
         {!currentConversation || currentConversation.messages.length === 0 ? (
           (() => {
@@ -2248,6 +2290,86 @@ export function AgentChat({
 
         </div>
       </div>
+      {/* Fim da coluna de conversa */}
+      </div>
+
+      {/* Modo Workflow: documento em destaque + trilha de ferramentas */}
+      {workflowMode && (() => {
+        const lastAnswer = [...(currentConversation?.messages ?? [])]
+          .reverse()
+          .find((m) => m.role === "assistant" && !!m.content?.trim());
+        return (
+          <>
+            <div className="flex-1 min-w-0 min-h-0 flex flex-col rounded-2xl border border-border/50 bg-muted/20 overflow-hidden animate-fade-in">
+              <div className="shrink-0 flex items-center justify-between gap-3 px-5 py-3 border-b border-border/40 bg-background/60">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">Documento em edição</p>
+                  <p className="text-[11px] text-muted-foreground truncate">
+                    {currentConversation?.name || "Resposta mais recente do assistente"}
+                  </p>
+                </div>
+                {lastAnswer && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText(lastAnswer.content.replace(/\*\*/g, ""));
+                      toast({ title: "Texto copiado", description: "Documento pronto para colar no prontuário." });
+                    }}
+                  >
+                    <Copy className="h-4 w-4" />
+                    <span className="ml-2">Copiar tudo</span>
+                  </Button>
+                )}
+              </div>
+              <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6">
+                {lastAnswer ? (
+                  <StructuredResponse content={lastAnswer.content} size="reading" className="mx-auto" />
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground gap-2">
+                    <LayoutPanelLeft className="h-8 w-8 opacity-30" />
+                    <p className="text-sm max-w-sm">
+                      Envie o caso na coluna ao lado. A resposta aparece aqui em formato documento, pronta para leitura e cópia.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <aside className="hidden xl:flex w-56 shrink-0 flex-col gap-2 rounded-2xl border border-border/50 bg-background/60 p-3">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground px-1">Estação de trabalho</p>
+              <Button variant="outline" size="sm" className="justify-start" onClick={createNewConversation}>
+                <Plus className="h-4 w-4" />
+                <span className="ml-2">Nova conversa</span>
+              </Button>
+              <Button variant="outline" size="sm" className="justify-start" onClick={() => setHistoryOpen(true)}>
+                <History className="h-4 w-4" />
+                <span className="ml-2">Histórico</span>
+              </Button>
+              {lastAnswer && (
+                <Button variant="outline" size="sm" className="justify-start" onClick={() => setReadingMessage(lastAnswer)}>
+                  <Expand className="h-4 w-4" />
+                  <span className="ml-2">Leitura ampliada</span>
+                </Button>
+              )}
+              <div className="mt-auto space-y-2">
+                {selectedCaseId && (
+                  <p className="text-[11px] text-muted-foreground px-1 leading-relaxed">
+                    Caso vinculado: {cases.find((c) => c.id === selectedCaseId)?.title || "selecionado"}
+                  </p>
+                )}
+                <Button variant="ghost" size="sm" className="w-full justify-start" onClick={() => setWorkflowMode(false)}>
+                  <Shrink className="h-4 w-4" />
+                  <span className="ml-2">Sair do Workflow</span>
+                </Button>
+              </div>
+            </aside>
+          </>
+        );
+      })()}
+      </div>
+
+
 
       {/* Reading dialog: per-message expanded view */}
       <Dialog open={!!readingMessage} onOpenChange={(o) => !o && setReadingMessage(null)}>
