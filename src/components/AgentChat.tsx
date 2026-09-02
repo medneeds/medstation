@@ -312,7 +312,10 @@ export function AgentChat({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [inputExpanded, setInputExpanded] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
+  const [workflowMode, setWorkflowMode] = useState(false);
   const [readingMessage, setReadingMessage] = useState<Message | null>(null);
+  const workflowAvailable = agentType === "clinicus" && !isMobile;
+
 
   // Conteúdo enviado de outra tela (ex.: Modo Escuta)
   useEffect(() => {
