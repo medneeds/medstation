@@ -1355,7 +1355,17 @@ export function AgentChat({
         </div>
       )}
 
+      {/* Área de trabalho: conversa (esquerda) + documento e ferramentas (Modo Workflow) */}
+      <div className={workflowMode ? "flex-1 min-h-0 flex gap-4" : "contents"}>
+      <div
+        className={
+          workflowMode
+            ? "flex flex-col min-h-0 w-[40%] max-w-[560px] min-w-[340px] shrink-0 border-r border-border/40 pr-4"
+            : "contents"
+        }
+      >
       {/* Chat messages */}
+
       <ScrollArea className="flex-1 py-4">
         {!currentConversation || currentConversation.messages.length === 0 ? (
           (() => {
