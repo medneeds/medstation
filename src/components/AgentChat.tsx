@@ -349,6 +349,9 @@ export function AgentChat({
   const [focusMode, setFocusMode] = useState(false);
   const [workflowMode, setWorkflowMode] = useState(false);
   const [readingMessage, setReadingMessage] = useState<Message | null>(null);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [suggestionsContent, setSuggestionsContent] = useState("");
   // Modo Workflow e leitura estruturada disponíveis para todos os assistentes (desktop)
   const workflowAvailable = !isMobile;
 
