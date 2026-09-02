@@ -47,6 +47,8 @@ import {
   ChevronDown,
   Expand,
   Shrink,
+  LayoutPanelLeft,
+
   BookOpen,
   ClipboardList
 } from "lucide-react";
