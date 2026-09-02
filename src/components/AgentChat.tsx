@@ -2235,7 +2235,11 @@ export function AgentChat({
               maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
               aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
               className={`w-full resize-none rounded-2xl text-base leading-relaxed p-5 pb-16 bg-muted/25 border-2 transition-colors duration-200 ${
-                inputExpanded ? "min-h-[240px] max-h-[45vh]" : "min-h-[132px] max-h-64"
+                workflowMode
+                  ? "min-h-[72px] max-h-44 p-3.5 pb-12 text-sm"
+                  : inputExpanded
+                    ? "min-h-[240px] max-h-[45vh]"
+                    : "min-h-[132px] max-h-64"
               } ${
                 (message.length > 0 && !message.trim()) || overLimit
                   ? "border-destructive focus:border-destructive"
