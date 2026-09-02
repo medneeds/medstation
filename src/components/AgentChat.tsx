@@ -34,6 +34,7 @@ import {
   Copy,
   Check,
   FileDown,
+  FileText,
   FileUp,
   SeparatorVertical,
   Clock,
