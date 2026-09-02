@@ -198,7 +198,8 @@ const CLINICUS_CONTEXTS = [
   { value: "enfermaria", label: "Enfermaria / Clínica Médica" },
   { value: "emergencia_inicial", label: "Emergência · Avaliação Inicial" },
   { value: "emergencia_completa", label: "Emergência · Admissão Completa" },
-  { value: "uti", label: "UTI · Paciente Crítico" },
+  { value: "uti_admissao", label: "UTI · Admissão (Paciente Crítico)" },
+  { value: "uti_evolucao", label: "UTI · Evolução / Plantão" },
 ] as const;
 
 type ClinicusContext = (typeof CLINICUS_CONTEXTS)[number]["value"];

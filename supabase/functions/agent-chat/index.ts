@@ -2464,7 +2464,9 @@ DECISÃO FINAL É DO MÉDICO ASSISTENTE — sugestões não substituem julgament
         systemPrompt = emergenciaInicialPrompt;
       } else if (aheTemplate === "emergencia_completa" || aheTemplate === "v2") {
         systemPrompt = aheV2EmergenciaPrompt;
-      } else if (aheTemplate === "uti" || aheTemplate === "v3") {
+      } else if (aheTemplate === "uti_evolucao") {
+        systemPrompt = utiEvolucaoPrompt;
+      } else if (aheTemplate === "uti_admissao" || aheTemplate === "uti" || aheTemplate === "v3") {
         systemPrompt = aheV3AdmissaoUTIPrompt;
       }
       // "enfermaria" (ou legado "v1") usa o prompt base do Clínicus em modo AHE
