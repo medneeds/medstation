@@ -348,7 +348,8 @@ export function AgentChat({
   const [focusMode, setFocusMode] = useState(false);
   const [workflowMode, setWorkflowMode] = useState(false);
   const [readingMessage, setReadingMessage] = useState<Message | null>(null);
-  const workflowAvailable = agentType === "clinicus" && !isMobile;
+  // Modo Workflow e leitura estruturada disponíveis para todos os assistentes (desktop)
+  const workflowAvailable = !isMobile;
 
 
   // Conteúdo enviado de outra tela (ex.: Modo Escuta)
@@ -1525,11 +1526,9 @@ export function AgentChat({
                       ? "bg-primary text-primary-foreground py-2 md:py-3"
                       : isThinking
                         ? "bg-muted/60 py-2 md:py-2.5"
-                        : workflowMode && agentType === "clinicus"
+                        : workflowMode
                           ? "bg-muted/15 border border-border/40 py-2 px-3"
-                          : agentType === "clinicus"
-                            ? "bg-muted/25 border border-border/50 pt-4 md:pt-5 px-4 md:px-6 pb-9 md:pb-11"
-                            : "bg-muted pt-2 md:pt-3 pb-8 md:pb-10"
+                          : "bg-muted/25 border border-border/50 pt-4 md:pt-5 px-4 md:px-6 pb-9 md:pb-11"
                   }`}
                 >
                   {msg.audioBlob && msg.audioUrl ? (
@@ -1547,9 +1546,9 @@ export function AgentChat({
                     />
                   ) : isThinking ? (
                     <ThinkingIndicator />
-                  ) : workflowMode && msg.role === "assistant" && agentType === "clinicus" ? (
+                  ) : workflowMode && msg.role === "assistant" ? (
                     <WorkflowAnswerChip content={msg.content} streaming={isStreaming} />
-                  ) : msg.role === "assistant" && agentType === "clinicus" ? (
+                  ) : msg.role === "assistant" ? (
                     <StructuredResponse
                       content={msg.content}
                       size={focusMode ? "focus" : "chat"}
@@ -2429,13 +2428,7 @@ export function AgentChat({
           {readingMessage && (
             <>
               <div className="flex-1 min-h-0 overflow-y-auto pr-2 rounded-lg bg-muted/30 p-4 md:p-6">
-                {agentType === "clinicus" ? (
-                  <StructuredResponse content={readingMessage.content} size="reading" className="mx-auto" />
-                ) : (
-                  <p className="text-base md:text-xl leading-[1.7] whitespace-pre-wrap max-w-[80ch] mx-auto">
-                    {readingMessage.content}
-                  </p>
-                )}
+                <StructuredResponse content={readingMessage.content} size="reading" className="mx-auto" />
               </div>
 
               <div className="flex justify-end gap-2 pt-2 border-t">
