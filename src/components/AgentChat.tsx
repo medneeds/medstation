@@ -2340,15 +2340,19 @@ export function AgentChat({
         const lastAnswer = [...(currentConversation?.messages ?? [])]
           .reverse()
           .find((m) => m.role === "assistant" && !!m.content?.trim());
+        const isLive = lastAnswer?.id === "streaming-temp" && lastAnswer.content !== "Pensando...";
         return (
           <>
-            <div className="flex-1 min-w-0 min-h-0 flex flex-col rounded-2xl border border-border/50 bg-muted/20 overflow-hidden animate-fade-in">
-              <div className="shrink-0 flex items-center justify-between gap-3 px-5 py-3 border-b border-border/40 bg-background/60">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">Documento em edição</p>
-                  <p className="text-[11px] text-muted-foreground truncate">
-                    {currentConversation?.name || "Resposta mais recente do assistente"}
-                  </p>
+            <div className="flex-1 min-w-0 min-h-0 flex flex-col rounded-2xl border border-border/50 bg-background shadow-sm overflow-hidden animate-fade-in">
+              <div className="shrink-0 flex items-center justify-between gap-3 px-5 py-2.5 border-b border-border/40 bg-muted/30">
+                <div className="min-w-0 flex items-center gap-2.5">
+                  <span className={`h-2 w-2 rounded-full shrink-0 ${isLive ? "bg-primary animate-pulse" : "bg-muted-foreground/40"}`} />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">Documento</p>
+                    <p className="text-[11px] text-muted-foreground truncate">
+                      {currentConversation?.name || "Resposta mais recente do assistente"}
+                    </p>
+                  </div>
                 </div>
                 {lastAnswer && (
                   <Button
