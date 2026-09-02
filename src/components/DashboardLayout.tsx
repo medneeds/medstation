@@ -91,6 +91,26 @@ function DashboardLayoutInner({ children }: DashboardLayoutProps) {
     );
   }
 
+  // Pré-carrega os chunks dos assistentes no tempo ocioso, para que a troca
+  // entre eles seja instantânea (sem espera de download).
+  useEffect(() => {
+    const prefetch = () => {
+      import("@/pages/Clinicus");
+      import("@/pages/Examinus");
+      import("@/pages/Prescriptus");
+      import("@/pages/Gasometrus");
+      import("@/pages/Protocolus");
+      import("@/pages/Orientus");
+      import("@/pages/Atestus");
+      import("@/pages/Mediscuss");
+      import("@/pages/Legalis");
+      import("@/pages/Codexus");
+    };
+    const w = window as Window & { requestIdleCallback?: (cb: () => void) => number };
+    if (w.requestIdleCallback) w.requestIdleCallback(prefetch);
+    else setTimeout(prefetch, 1500);
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
