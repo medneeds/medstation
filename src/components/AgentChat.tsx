@@ -1361,7 +1361,7 @@ export function AgentChat({
       <div
         className={
           workflowMode
-            ? "flex flex-col min-h-0 w-[40%] max-w-[560px] min-w-[340px] shrink-0 border-r border-border/40 pr-4"
+            ? "flex flex-col min-h-0 w-[33%] max-w-[440px] min-w-[300px] shrink-0 border-r border-border/40 pr-3"
             : "contents"
         }
       >
