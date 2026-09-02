@@ -2484,17 +2484,31 @@ export function AgentChat({
                   </div>
                 </div>
                 {lastAnswer && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      navigator.clipboard.writeText(lastAnswer.content.replace(/\*\*/g, ""));
-                      toast({ title: "Texto copiado", description: "Documento pronto para colar no prontuário." });
-                    }}
-                  >
-                    <Copy className="h-4 w-4" />
-                    <span className="ml-2">Copiar tudo</span>
-                  </Button>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(lastAnswer.content.replace(/\*\*/g, "").toUpperCase());
+                        toast({ title: "Texto em caixa alta copiado", description: "Documento pronto para colar no prontuário." });
+                      }}
+                      title="Copiar tudo em MAIÚSCULAS"
+                    >
+                      <FileUp className="h-4 w-4" />
+                      <span className="ml-2">Maiúscula</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(lastAnswer.content.replace(/\*\*/g, ""));
+                        toast({ title: "Texto copiado", description: "Documento pronto para colar no prontuário." });
+                      }}
+                    >
+                      <Copy className="h-4 w-4" />
+                      <span className="ml-2">Copiar tudo</span>
+                    </Button>
+                  </div>
                 )}
               </div>
               <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6">
