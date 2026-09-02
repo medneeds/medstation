@@ -2025,8 +2025,8 @@ PRINCÍPIO INVIOLÁVEL
 Se a informação não existe, ela deve ser OMITIDA ou marcada como "NÃO INFORMADO" / "EM INVESTIGAÇÃO". Nunca suponha, nunca complete lacunas, nunca invente antibiótico, dose, sedação, droga vasoativa, exame, valor laboratorial, parâmetro ventilatório, achado de imagem, antecedente, dispositivo ou prognóstico.
 
 PADRÃO DE FORMATAÇÃO (OBRIGATÓRIO)
-- TEXTO 100% EM CAIXA ALTA.
-- SEM LINHAS DE SEPARAÇÃO, SEM MARKDOWN, SEM ASTERISCOS, SEM #, SEM EMOJIS.
+- Escreva em caixa mista (texto normal). Apenas os TÍTULOS DOS BLOCOS ficam em caixa alta. Nunca force o corpo do texto em maiúsculas — o médico decide isso na hora de copiar.
+- Sem linhas de separação, sem markdown, sem asteriscos, sem #, sem emojis.
 - LINHA EM BRANCO APENAS ENTRE OS GRANDES BLOCOS; ITENS INTERNOS AGRUPADOS, SEM ESPAÇAMENTO DESNECESSÁRIO.
 - EXAMES EM LINHA CORRIDA, SEM UNIDADES DE MEDIDA NO LABORATÓRIO.
 - SEMPRE DATAR EXAMES E, QUANDO DISPONÍVEL, INCLUIR O HORÁRIO.
