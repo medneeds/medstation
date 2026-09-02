@@ -19,6 +19,8 @@ import { exportAgentConversationToPDF } from "@/utils/pdfExport";
 import { pdfToImages } from "@/utils/pdfToImages";
 import { AgentVoiceInput } from "@/components/AgentVoiceInput";
 import { ThinkingIndicator } from "@/components/ThinkingIndicator";
+import { StructuredResponse } from "@/components/chat/StructuredResponse";
+
 import { useSubscription } from "@/contexts/SubscriptionContext";
 
 import { 
@@ -229,6 +231,24 @@ const CLINICUS_HANDOFF_TARGETS = [
   { value: "plantao", label: "Plantão seguinte (mesmo setor)" },
 ] as const;
 
+/** Cursor de digitação exibido no fim do texto em streaming. */
+function StreamCursor() {
+  return (
+    <>
+      <span className="inline-block w-[2px] h-3.5 ml-0.5 align-[-2px] bg-primary animate-stream-cursor" />
+      <span
+        className="inline-flex items-baseline gap-0.5 ml-2 align-baseline text-primary/80"
+        aria-label="digitando"
+        role="status"
+      >
+        <span className="sr-only">digitando</span>
+        <span className="animate-thinking-dot text-base leading-none">•</span>
+        <span className="animate-thinking-dot [animation-delay:0.18s] text-base leading-none">•</span>
+        <span className="animate-thinking-dot [animation-delay:0.36s] text-base leading-none">•</span>
+      </span>
+    </>
+  );
+}
 
 
 export function AgentChat({ 
@@ -1429,7 +1449,9 @@ export function AgentChat({
                       ? "bg-primary text-primary-foreground py-2 md:py-3"
                       : isThinking
                         ? "bg-muted/60 py-2 md:py-2.5"
-                        : "bg-muted pt-2 md:pt-3 pb-8 md:pb-10"
+                        : agentType === "clinicus"
+                          ? "bg-muted/25 border border-border/50 pt-4 md:pt-5 px-4 md:px-6 pb-9 md:pb-11"
+                          : "bg-muted pt-2 md:pt-3 pb-8 md:pb-10"
                   }`}
                 >
                   {msg.audioBlob && msg.audioUrl ? (
@@ -1447,26 +1469,19 @@ export function AgentChat({
                     />
                   ) : isThinking ? (
                     <ThinkingIndicator />
+                  ) : msg.role === "assistant" && agentType === "clinicus" ? (
+                    <StructuredResponse
+                      content={msg.content}
+                      size={focusMode ? "focus" : "chat"}
+                      trailing={isStreaming ? <StreamCursor /> : undefined}
+                    />
                   ) : (
                     <p className={`whitespace-pre-wrap leading-relaxed ${focusMode ? "text-base md:text-lg" : "text-sm"}`}>
-                      {msg.role === "assistant" && agentType === "clinicus" ? msg.content.replace(/\*\*/g, "") : msg.content}
-                      {isStreaming && (
-                        <>
-                          <span className="inline-block w-[2px] h-3.5 ml-0.5 align-[-2px] bg-primary animate-stream-cursor" />
-                          <span
-                            className="inline-flex items-baseline gap-0.5 ml-2 align-baseline text-primary/80"
-                            aria-label="digitando"
-                            role="status"
-                          >
-                            <span className="sr-only">digitando</span>
-                            <span className="animate-thinking-dot text-base leading-none">•</span>
-                            <span className="animate-thinking-dot [animation-delay:0.18s] text-base leading-none">•</span>
-                            <span className="animate-thinking-dot [animation-delay:0.36s] text-base leading-none">•</span>
-                          </span>
-                        </>
-                      )}
+                      {msg.content}
+                      {isStreaming && <StreamCursor />}
                     </p>
                   )}
+
                   <p className="text-xs opacity-70 mt-1 flex items-center gap-1">
                     <span>
                       {new Date(msg.created_at).toLocaleTimeString([], {
@@ -2246,10 +2261,15 @@ export function AgentChat({
           {readingMessage && (
             <>
               <div className="flex-1 min-h-0 overflow-y-auto pr-2 rounded-lg bg-muted/30 p-4 md:p-6">
-                <p className="text-base md:text-xl leading-[1.7] whitespace-pre-wrap max-w-[80ch] mx-auto">
-                  {agentType === "clinicus" ? readingMessage.content.replace(/\*\*/g, "") : readingMessage.content}
-                </p>
+                {agentType === "clinicus" ? (
+                  <StructuredResponse content={readingMessage.content} size="reading" className="mx-auto" />
+                ) : (
+                  <p className="text-base md:text-xl leading-[1.7] whitespace-pre-wrap max-w-[80ch] mx-auto">
+                    {readingMessage.content}
+                  </p>
+                )}
               </div>
+
               <div className="flex justify-end gap-2 pt-2 border-t">
                 <Button
                   variant="outline"
