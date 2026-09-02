@@ -33,6 +33,7 @@ function isHeading(line: string): boolean {
   const t = line.trim().replace(/[:：]\s*$/, "");
   if (t.length < 3 || t.length > 60) return false;
   if (BULLET_RE.test(line)) return false;
+  if (KEY_VALUE_RE.test(t)) return false;
   const letters = t.replace(/[^A-Za-zÁ-Úá-ú]/g, "");
   if (letters.length < 3) return false;
   // Considera título quando não há letras minúsculas (permite números/símbolos).
