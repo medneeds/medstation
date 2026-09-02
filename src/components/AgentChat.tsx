@@ -335,6 +335,20 @@ export function AgentChat({
     return () => window.removeEventListener("keydown", onKey);
   }, [focusMode]);
 
+  // Modo Workflow: só em telas grandes; sai com ESC
+  useEffect(() => {
+    if (!workflowAvailable && workflowMode) setWorkflowMode(false);
+  }, [workflowAvailable, workflowMode]);
+
+  useEffect(() => {
+    if (!workflowMode) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setWorkflowMode(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [workflowMode]);
+
+
+
   // Auto-resize textarea based on content
   useEffect(() => {
     const ta = textareaRef.current;
