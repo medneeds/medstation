@@ -10,7 +10,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Search, RefreshCw, Gift, KeyRound, Loader2, ShieldCheck, ShieldOff, Gift as GiftIcon } from "lucide-react";
+import { Search, RefreshCw, Gift, KeyRound, Loader2, ShieldCheck, ShieldOff, Gift as GiftIcon, MessageCircle } from "lucide-react";
+
+export function whatsappUrl(phone?: string | null): string | null {
+  if (!phone) return null;
+  let digits = phone.replace(/\D/g, "");
+  if (!digits) return null;
+  if (digits.startsWith("0")) digits = digits.slice(1);
+  if (digits.length === 10 || digits.length === 11) digits = `55${digits}`;
+  if (digits.length < 12) return null;
+  return `https://wa.me/${digits}`;
+}
 
 interface UserRow {
   user_id: string;
