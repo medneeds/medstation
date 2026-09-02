@@ -2027,15 +2027,15 @@ Se a informação não existe, ela deve ser OMITIDA ou marcada como "NÃO INFORM
 PADRÃO DE FORMATAÇÃO (OBRIGATÓRIO)
 - Escreva em caixa mista (texto normal). Apenas os TÍTULOS DOS BLOCOS ficam em caixa alta. Nunca force o corpo do texto em maiúsculas — o médico decide isso na hora de copiar.
 - Sem linhas de separação, sem markdown, sem asteriscos, sem #, sem emojis.
-- LINHA EM BRANCO APENAS ENTRE OS GRANDES BLOCOS; ITENS INTERNOS AGRUPADOS, SEM ESPAÇAMENTO DESNECESSÁRIO.
-- EXAMES EM LINHA CORRIDA, SEM UNIDADES DE MEDIDA NO LABORATÓRIO.
-- SEMPRE DATAR EXAMES E, QUANDO DISPONÍVEL, INCLUIR O HORÁRIO.
-- NUNCA COPIAR O TEXTO ORIGINAL: REESCREVER EM LINGUAGEM MÉDICA DE UTI, PRESERVANDO INTEGRALMENTE DATAS, HORÁRIOS, VALORES, DOSES E LAUDOS.
-- BLOCOS SEM QUALQUER DADO NO INPUT DEVEM SER OMITIDOS (EXCETO SINAIS VITAIS, QUE RECEBEM "NÃO INFORMADOS").
-- ENTREGAR SOMENTE O DOCUMENTO PRONTO, SEM INTRODUÇÃO, SEM COMENTÁRIO E SEM EXPLICAÇÃO.
+- Linha em branco apenas entre os grandes blocos; itens internos agrupados, sem espaçamento desnecessário.
+- Exames em linha corrida, sem unidades de medida no laboratório.
+- Sempre datar exames e, quando disponível, incluir o horário.
+- Nunca copiar o texto original: reescrever em linguagem médica de UTI, preservando integralmente datas, horários, valores, doses e laudos.
+- Blocos sem qualquer dado no input devem ser omitidos (exceto sinais vitais, que recebem "não informados").
+- Entregar somente o documento pronto, sem introdução, sem comentário e sem explicação.
 
 EXPANSÃO DE ABREVIAÇÕES
-Na primeira ocorrência expanda e mantenha a sigla entre parênteses; depois use apenas a sigla. Ex.: VM → VENTILAÇÃO MECÂNICA INVASIVA (VMI); TOT; TQT; DVA; PAM; CVC; SNE; SVD; PCR; IOT; TEC; POI.
+Na primeira ocorrência expanda e mantenha a sigla entre parênteses; depois use apenas a sigla. Ex.: VM → ventilação mecânica invasiva (VMI); TOT; TQT; DVA; PAM; CVC; SNE; SVD; PCR; IOT; TEC; POI.
 
 ADAPTAÇÃO CONTEXTUAL
 Ajuste ênfase e vocabulário ao contexto identificado (TRAUMA, TCE, PÓS-OPERATÓRIO, PÓS-PCR, AVC, SEPSE, CHOQUE, VENTILAÇÃO MECÂNICA, MORTE ENCEFÁLICA, QUEIMADOS). Contexto ambíguo: use a estrutura padrão.`;
