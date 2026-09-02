@@ -2294,6 +2294,23 @@ export function AgentChat({
               disabled={isLoading}
               context={agentType}
             />
+            {caseSuggestionsAvailable && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={runCaseSuggestions}
+                disabled={isLoading || suggestionsLoading}
+                className="shrink-0 h-10 w-10 rounded-full"
+                title="Sugestões para o caso"
+                aria-label="Sugestões para o caso"
+              >
+                {suggestionsLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                ) : (
+                  <Lightbulb className="h-4 w-4 text-primary" />
+                )}
+              </Button>
+            )}
             <Button
               onClick={sendMessage}
               disabled={!message.trim() || isLoading || overLimit}
@@ -2364,6 +2381,24 @@ export function AgentChat({
                 disabled={isLoading}
                 context={agentType}
               />
+              {caseSuggestionsAvailable && (
+                <Button
+                  variant="outline"
+                  onClick={runCaseSuggestions}
+                  disabled={isLoading || suggestionsLoading}
+                  className="h-11 px-4 rounded-xl font-medium bg-background/90 hover:bg-primary/10 hover:border-primary/50"
+                  title="Analisar o caso: lacunas da história, hipóteses diagnósticas e sugestões de conduta"
+                >
+                  {suggestionsLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  ) : (
+                    <>
+                      <Lightbulb className="h-4 w-4 mr-1.5 text-primary" />
+                      Sugestões para o caso
+                    </>
+                  )}
+                </Button>
+              )}
               <Button
                 onClick={sendMessage}
                 disabled={!message.trim() || isLoading || overLimit}
