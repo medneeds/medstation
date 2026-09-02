@@ -1577,7 +1577,7 @@ export function AgentChat({
                       </span>
                     )}
                   </p>
-                  {msg.role === "assistant" && (
+                  {msg.role === "assistant" && !workflowMode && (
                     <div className="absolute bottom-2 right-2 flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                       <Button
                         variant="ghost"
