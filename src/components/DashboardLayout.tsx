@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, Suspense, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { HelpCircle } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -19,6 +19,17 @@ import { ConciergeInternal } from "@/components/ConciergeInternal";
 import { AccessContentGate, TrialWelcomeDialog } from "@/components/AccessExperienceGate";
 import { FirstAccessGate } from "@/components/FirstAccessGate";
 
+
+/** Placeholder discreto exibido enquanto o chunk da página carrega. */
+function PageFallback() {
+  return (
+    <div className="w-full animate-pulse space-y-4 py-2" aria-hidden="true">
+      <div className="h-8 w-56 rounded-lg bg-muted/60" />
+      <div className="h-4 w-80 max-w-full rounded bg-muted/40" />
+      <div className="h-64 w-full rounded-2xl bg-muted/30" />
+    </div>
+  );
+}
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -75,7 +86,7 @@ function DashboardLayoutInner({ children }: DashboardLayoutProps) {
   if (isEmbed) {
     return (
       <main className="min-h-screen w-full bg-background overflow-x-hidden p-3 md:p-4">
-        <AccessContentGate>{children}</AccessContentGate>
+        <AccessContentGate><Suspense fallback={<PageFallback />}>{children}</Suspense></AccessContentGate>
       </main>
     );
   }
@@ -148,7 +159,7 @@ function DashboardLayoutInner({ children }: DashboardLayoutProps) {
             <main className="flex-1 overflow-x-hidden bg-background p-4 md:p-6 lg:p-8">
               <AnnouncementsBanner />
               <TrialCountdownBanner />
-              <AccessContentGate>{children}</AccessContentGate>
+              <AccessContentGate><Suspense fallback={<PageFallback />}>{children}</Suspense></AccessContentGate>
             </main>
           </div>
         </div>
