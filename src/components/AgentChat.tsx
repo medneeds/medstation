@@ -20,6 +20,7 @@ import { pdfToImages } from "@/utils/pdfToImages";
 import { AgentVoiceInput } from "@/components/AgentVoiceInput";
 import { ThinkingIndicator } from "@/components/ThinkingIndicator";
 import { StructuredResponse } from "@/components/chat/StructuredResponse";
+import { CaseSuggestionsPanel } from "@/components/chat/CaseSuggestionsPanel";
 
 import { useSubscription } from "@/contexts/SubscriptionContext";
 
@@ -349,8 +350,17 @@ export function AgentChat({
   const [focusMode, setFocusMode] = useState(false);
   const [workflowMode, setWorkflowMode] = useState(false);
   const [readingMessage, setReadingMessage] = useState<Message | null>(null);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [suggestionsContent, setSuggestionsContent] = useState("");
   // Modo Workflow e leitura estruturada disponíveis para todos os assistentes (desktop)
   const workflowAvailable = !isMobile;
+  // Sugestões para o caso: só no Clínicus e apenas quando já existe caso analisável
+  const caseSuggestionsAvailable =
+    agentType === "clinicus" &&
+    (currentConversation?.messages ?? []).some(
+      (m) => m.id !== "streaming-temp" && !!m.content?.trim(),
+    );
 
 
   // Conteúdo enviado de outra tela (ex.: Modo Escuta)
@@ -539,6 +549,90 @@ export function AgentChat({
       setLastConversation(null);
     }
   };
+
+  /**
+   * Sugestões para o caso (Clínicus): análise crítica em painel lateral.
+   * Não grava mensagem na conversa nem altera o documento gerado.
+   */
+  const runCaseSuggestions = async () => {
+    if (suggestionsLoading || isLoading) return;
+    const history = (currentConversation?.messages ?? []).filter(
+      (m) => m.id !== "streaming-temp" && !!m.content?.trim(),
+    );
+    if (history.length === 0) return;
+
+    setSuggestionsOpen(true);
+    setSuggestionsLoading(true);
+    setSuggestionsContent("");
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/agent-chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({
+          messages: [
+            ...history.map((m) => ({ role: m.role, content: m.content })),
+            {
+              role: "user",
+              content:
+                "Gere as SUGESTÕES PARA O CASO com base exclusivamente nas informações já enviadas nesta conversa.",
+            },
+          ],
+          agentType,
+          caseId: selectedCaseId,
+          caseSuggestMode: true,
+        }),
+      });
+
+      if (!response.ok || !response.body) throw new Error("Falha ao gerar sugestões");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = "";
+      let acc = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (line.startsWith(":") || line.trim() === "") continue;
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              acc += content;
+              setSuggestionsContent(acc);
+            }
+          } catch {
+            textBuffer = line + "\n" + textBuffer;
+            break;
+          }
+        }
+      }
+    } catch {
+      toast({
+        title: "Não foi possível gerar as sugestões",
+        description: "Tente novamente em instantes.",
+        variant: "destructive",
+      });
+    } finally {
+      setSuggestionsLoading(false);
+    }
+  };
+
 
   const sendMessage = async () => {
     if (isLoading) return;
@@ -2206,6 +2300,23 @@ export function AgentChat({
               disabled={isLoading}
               context={agentType}
             />
+            {caseSuggestionsAvailable && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={runCaseSuggestions}
+                disabled={isLoading || suggestionsLoading}
+                className="shrink-0 h-10 w-10 rounded-full"
+                title="Sugestões para o caso"
+                aria-label="Sugestões para o caso"
+              >
+                {suggestionsLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                ) : (
+                  <Lightbulb className="h-4 w-4 text-primary" />
+                )}
+              </Button>
+            )}
             <Button
               onClick={sendMessage}
               disabled={!message.trim() || isLoading || overLimit}
@@ -2276,6 +2387,24 @@ export function AgentChat({
                 disabled={isLoading}
                 context={agentType}
               />
+              {caseSuggestionsAvailable && (
+                <Button
+                  variant="outline"
+                  onClick={runCaseSuggestions}
+                  disabled={isLoading || suggestionsLoading}
+                  className="h-11 px-4 rounded-xl font-medium bg-background/90 hover:bg-primary/10 hover:border-primary/50"
+                  title="Analisar o caso: lacunas da história, hipóteses diagnósticas e sugestões de conduta"
+                >
+                  {suggestionsLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  ) : (
+                    <>
+                      <Lightbulb className="h-4 w-4 mr-1.5 text-primary" />
+                      Sugestões para o caso
+                    </>
+                  )}
+                </Button>
+              )}
               <Button
                 onClick={sendMessage}
                 disabled={!message.trim() || isLoading || overLimit}
@@ -2416,6 +2545,18 @@ export function AgentChat({
       </div>
 
 
+
+      {/* Painel lateral de sugestões para o caso (Clínicus) */}
+      <CaseSuggestionsPanel
+        open={suggestionsOpen}
+        onOpenChange={setSuggestionsOpen}
+        content={suggestionsContent}
+        loading={suggestionsLoading}
+        onAsk={(question) => {
+          setMessage(question);
+          setTimeout(() => textareaRef.current?.focus(), 60);
+        }}
+      />
 
       {/* Reading dialog: per-message expanded view */}
       <Dialog open={!!readingMessage} onOpenChange={(o) => !o && setReadingMessage(null)}>

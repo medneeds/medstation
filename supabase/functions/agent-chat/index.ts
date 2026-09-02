@@ -237,7 +237,7 @@ serve(async (req) => {
 
     console.log(`Rate limit check passed for user ${user.id}`);
 
-    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, aheTemplate, bulaInteligenteMode, receitaMode, directLIMode, onlyAltered, clinicalImpression, examSuggestMode, quickCIDMode, compactMode, mediscussMode, mediscussSpecialty, reportMode, reportType, reportPurpose, reportSpecialty, legalisMode, legalisScenario, legalisTopic } = await req.json();
+    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, aheTemplate, bulaInteligenteMode, receitaMode, directLIMode, onlyAltered, clinicalImpression, examSuggestMode, quickCIDMode, compactMode, mediscussMode, mediscussSpecialty, reportMode, reportType, reportPurpose, reportSpecialty, legalisMode, legalisScenario, legalisTopic, caseSuggestMode } = await req.json();
 
     // Validate input
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -2470,6 +2470,58 @@ DECISÃO FINAL É DO MÉDICO ASSISTENTE — sugestões não substituem julgament
         systemPrompt = aheV3AdmissaoUTIPrompt;
       }
       // "enfermaria" (ou legado "v1") usa o prompt base do Clínicus em modo AHE
+
+      // Bloco comum a TODOS os modelos de anamnese: hipóteses diagnósticas explícitas,
+      // sem confundir com diagnósticos ativos nem com antecedentes prévios.
+      systemPrompt += `
+
+REGRA OBRIGATÓRIA — HIPÓTESES DIAGNÓSTICAS
+Todo documento deve conter um bloco próprio de HIPÓTESES DIAGNÓSTICAS, posicionado logo após os diagnósticos ativos (ou, quando o modelo não tiver esse campo, após a história/impressão).
+- HIPÓTESES DIAGNÓSTICAS: possibilidades ainda em investigação, listadas por ordem de probabilidade, cada uma com o dado do caso que a sustenta. Quando houver diferencial relevante a excluir, sinalize "A AFASTAR: ...".
+- DIAGNÓSTICOS ATIVOS: apenas o que já está sustentado por dado objetivo documentado no input. Nunca duplicar aqui o que é apenas hipótese.
+- ANTECEDENTES: comorbidade prévia do paciente. NUNCA listar antecedente como hipótese diagnóstica ou como diagnóstico ativo do episódio atual, salvo quando o input indicar descompensação atual dessa condição.
+- As hipóteses devem derivar exclusivamente dos dados informados. Não invente achado, exame ou valor para sustentar hipótese. Se o input não permitir formular nenhuma hipótese, escreva "HIPÓTESES DIAGNÓSTICAS: DADOS INSUFICIENTES PARA FORMULAÇÃO".
+- Mantenha a mesma formatação do restante do documento (caixa alta quando o modelo exigir, sem markdown, sem asteriscos).`;
+    }
+
+    // Clínicus — Sugestões para o caso (análise crítica, não gera anamnese)
+    if (agentType === "clinicus" && caseSuggestMode) {
+      systemPrompt = `Você é o Clínicus em MODO SUGESTÕES PARA O CASO. O médico já possui a história e/ou o documento clínico gerado. Sua função agora NÃO é reescrever a anamnese, e sim fazer uma análise crítica objetiva do caso, apontando o que falta e o que pode ser melhorado.
+
+PRINCÍPIO ANTIALUCINAÇÃO (INEGOCIÁVEL)
+- Use exclusivamente os dados presentes no caso. Nunca afirme achado, valor, exame, dose ou antecedente que não conste no input.
+- Toda inferência aparece como PERGUNTA ou como HIPÓTESE, jamais como fato do prontuário.
+- Se faltar dado para uma recomendação, diga que a recomendação é condicional e explicite o dado que falta.
+
+FORMATO OBRIGATÓRIO
+- Títulos em CAIXA ALTA, exatamente como abaixo, seguidos de linha em branco.
+- Itens curtos, um por linha, iniciados por hífen. Sem markdown, sem asteriscos, sem numeração longa, sem introdução e sem comentário final.
+- Máximo de 6 itens por bloco, priorizando o que muda conduta.
+- Omita um bloco inteiro apenas se ele for realmente inaplicável ao caso.
+
+LACUNAS DA HISTÓRIA
+- Perguntas prontas para o médico fazer ao paciente/acompanhante, cada uma com o motivo clínico entre parênteses.
+
+DADOS OBJETIVOS AUSENTES
+- Exame físico, sinais vitais, escores e exames não informados que são decisivos neste caso específico.
+
+HIPÓTESES DIAGNÓSTICAS
+- Diferenciais plausíveis em ordem de probabilidade, cada um com "SUSTENTA: ..." e "FALTA: ...".
+- Não repetir aqui diagnóstico já sustentado por dado objetivo (isso é diagnóstico ativo) nem comorbidade prévia (isso é antecedente).
+
+RED FLAGS A AFASTAR
+- Diagnósticos de risco imediato compatíveis com o quadro e o que os descartaria.
+
+SUGESTÕES DE CONDUTA E INVESTIGAÇÃO
+- Itens curtos e acionáveis, baseados em evidência, sinalizando "(CONDICIONAL)" quando dependerem de dado ainda ausente.
+
+COMO MELHORAR O REGISTRO
+- Ajustes de estrutura, precisão e defensabilidade do documento clínico já gerado.
+
+Encerre com a linha:
+SUGESTÕES DE APOIO — A DECISÃO FINAL É DO MÉDICO ASSISTENTE.
+
+${contextData}`;
     }
 
     if (agentType === "clinicus" && reportMode && !directAHEMode) {
