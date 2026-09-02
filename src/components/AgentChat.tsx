@@ -1484,17 +1484,21 @@ export function AgentChat({
                   className={`${
                     focusMode
                       ? "max-w-[97%] md:max-w-5xl"
-                      : msg.role === "assistant"
-                        ? "max-w-[96%] md:max-w-[92%]"
-                        : "max-w-[90%] md:max-w-[72%]"
+                      : workflowMode && msg.role === "assistant"
+                        ? "max-w-[96%] md:max-w-[96%]"
+                        : msg.role === "assistant"
+                          ? "max-w-[96%] md:max-w-[92%]"
+                          : "max-w-[90%] md:max-w-[72%]"
                   } rounded-2xl px-3 md:px-4 relative group ${
                     msg.role === "user"
                       ? "bg-primary text-primary-foreground py-2 md:py-3"
                       : isThinking
                         ? "bg-muted/60 py-2 md:py-2.5"
-                        : agentType === "clinicus"
-                          ? "bg-muted/25 border border-border/50 pt-4 md:pt-5 px-4 md:px-6 pb-9 md:pb-11"
-                          : "bg-muted pt-2 md:pt-3 pb-8 md:pb-10"
+                        : workflowMode && agentType === "clinicus"
+                          ? "bg-muted/15 border border-border/40 py-2 px-3"
+                          : agentType === "clinicus"
+                            ? "bg-muted/25 border border-border/50 pt-4 md:pt-5 px-4 md:px-6 pb-9 md:pb-11"
+                            : "bg-muted pt-2 md:pt-3 pb-8 md:pb-10"
                   }`}
                 >
                   {msg.audioBlob && msg.audioUrl ? (
@@ -1512,6 +1516,8 @@ export function AgentChat({
                     />
                   ) : isThinking ? (
                     <ThinkingIndicator />
+                  ) : workflowMode && msg.role === "assistant" && agentType === "clinicus" ? (
+                    <WorkflowAnswerChip content={msg.content} streaming={isStreaming} />
                   ) : msg.role === "assistant" && agentType === "clinicus" ? (
                     <StructuredResponse
                       content={msg.content}
