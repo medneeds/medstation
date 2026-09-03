@@ -15,7 +15,7 @@ const ACTIVITY_EVENTS = [
 ] as const;
 
 /**
- * Desloga automaticamente após 1 hora de inatividade.
+ * Desloga automaticamente após 30 minutos de inatividade.
  * Atividade = mouse, teclado, toque ou scroll.
  *
  * Implementação baseada em timestamp + verificação periódica (setInterval),
