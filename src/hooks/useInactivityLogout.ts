@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const INACTIVITY_MS = 60 * 60 * 1000; // 1 hora
+const INACTIVITY_MS = 30 * 60 * 1000; // 30 minutos
 const WARNING_MS = 5 * 60 * 1000; // aviso 5 min antes
 const CHECK_INTERVAL_MS = 30 * 1000; // verificação periódica (robusta a throttling)
 const ACTIVITY_EVENTS = [
