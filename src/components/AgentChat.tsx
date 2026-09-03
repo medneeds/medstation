@@ -2046,7 +2046,7 @@ export function AgentChat({
                         ))}
                       </SelectContent>
                     </Select>
-                    {reportType === "relatorio_medico" ? (
+                    {reportType === "relatorio_medico" && (
                       <Select value={reportPurpose} onValueChange={setReportPurpose}>
                         <SelectTrigger className="shrink-0 h-8 w-auto gap-1.5 rounded-full text-xs px-3">
                           <span className="text-muted-foreground">Finalidade:</span>
@@ -2058,7 +2058,8 @@ export function AgentChat({
                           ))}
                         </SelectContent>
                       </Select>
-                    ) : (
+                    )}
+                    {reportType === "passagem_caso" && (
                       <Select value={reportSpecialty} onValueChange={setReportSpecialty}>
                         <SelectTrigger className="shrink-0 h-8 w-auto gap-1.5 rounded-full text-xs px-3">
                           <span className="text-muted-foreground">Destino:</span>
