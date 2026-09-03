@@ -2566,7 +2566,9 @@ ${contextData}`;
     }
 
     if (agentType === "clinicus" && reportMode && !directAHEMode) {
-      const reportBody = reportType === "passagem_caso" ? passagemCasoPrompt : relatorioMedicoPrompt;
+      let reportBody = relatorioMedicoPrompt;
+      if (reportType === "passagem_caso") reportBody = passagemCasoPrompt;
+      else if (reportType === "relatorio_administrativo_internacao") reportBody = relatorioAdministrativoInternacaoPrompt;
       systemPrompt = `${reportBody}\n\n${contextData}`;
     }
 
