@@ -208,6 +208,7 @@ type ClinicusContext = (typeof CLINICUS_CONTEXTS)[number]["value"];
 const CLINICUS_REPORT_TYPES = [
   { value: "relatorio_medico", label: "Relatório médico" },
   { value: "passagem_caso", label: "Passagem de caso" },
+  { value: "relatorio_administrativo_internacao", label: "Relatório de internação" },
 ] as const;
 
 type ClinicusReportType = (typeof CLINICUS_REPORT_TYPES)[number]["value"];
