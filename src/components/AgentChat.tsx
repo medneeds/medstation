@@ -208,6 +208,7 @@ type ClinicusContext = (typeof CLINICUS_CONTEXTS)[number]["value"];
 const CLINICUS_REPORT_TYPES = [
   { value: "relatorio_medico", label: "Relatório médico" },
   { value: "passagem_caso", label: "Passagem de caso" },
+  { value: "relatorio_administrativo_internacao", label: "Relatório de internação" },
 ] as const;
 
 type ClinicusReportType = (typeof CLINICUS_REPORT_TYPES)[number]["value"];
@@ -1848,7 +1849,7 @@ export function AgentChat({
                     ))}
                   </SelectContent>
                 </Select>
-                {reportType === "relatorio_medico" ? (
+                {reportType === "relatorio_medico" && (
                   <Select value={reportPurpose} onValueChange={setReportPurpose}>
                     <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
                       <SelectValue />
@@ -1859,7 +1860,8 @@ export function AgentChat({
                       ))}
                     </SelectContent>
                   </Select>
-                ) : (
+                )}
+                {reportType === "passagem_caso" && (
                   <Select value={reportSpecialty} onValueChange={setReportSpecialty}>
                     <SelectTrigger className="h-7 w-auto gap-1 rounded-full text-xs px-2.5 shrink-0">
                       <SelectValue />
@@ -2044,7 +2046,7 @@ export function AgentChat({
                         ))}
                       </SelectContent>
                     </Select>
-                    {reportType === "relatorio_medico" ? (
+                    {reportType === "relatorio_medico" && (
                       <Select value={reportPurpose} onValueChange={setReportPurpose}>
                         <SelectTrigger className="shrink-0 h-8 w-auto gap-1.5 rounded-full text-xs px-3">
                           <span className="text-muted-foreground">Finalidade:</span>
@@ -2056,7 +2058,8 @@ export function AgentChat({
                           ))}
                         </SelectContent>
                       </Select>
-                    ) : (
+                    )}
+                    {reportType === "passagem_caso" && (
                       <Select value={reportSpecialty} onValueChange={setReportSpecialty}>
                         <SelectTrigger className="shrink-0 h-8 w-auto gap-1.5 rounded-full text-xs px-3">
                           <span className="text-muted-foreground">Destino:</span>
