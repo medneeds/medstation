@@ -285,7 +285,7 @@ export default function Auth() {
                   >
                     <GoogleAuthButton label="Continuar com Google" />
 
-                    <form onSubmit={handleSignIn} className="space-y-4">
+                    <form onSubmit={handleSignIn} className="space-y-4" autoComplete="off">
                       <div className="space-y-1.5">
                         <Label htmlFor="signin-email" className="text-xs uppercase tracking-wider text-muted-foreground">Email</Label>
                         <Input
