@@ -295,7 +295,7 @@ export default function PublicExaminusChat() {
           description: `Renderizando páginas de ${file.name}...`,
         });
 
-        const pages = await pdfToImages(file, { scale: 2, maxPages: 30 });
+        const pages = await pdfToImages(file, { scale: 2.5, quality: 0.92, maxPages: 30 });
 
         toast({
           title: "Lendo páginas",
