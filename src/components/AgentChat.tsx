@@ -14,7 +14,28 @@ import { AudioPlayer } from "@/components/AudioPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Loader2, AlertTriangle, Stethoscope } from "lucide-react";
+import { Loader2, AlertTriangle, Stethoscope, ScanLine, X } from "lucide-react";
+import {
+  MAX_RADIOLOGY_IMAGES,
+  RADIOLOGY_ACCEPT_ATTR,
+  appendRadiologyFiles,
+  buildRadiologyRequestBody,
+  canSendRadiologyMessage,
+  collectRadiologyEvidenceIds,
+  describeRadiologyMessage,
+  formatBytes,
+  normalizeRadiologyPrompt,
+  radiologyAssistantMessageMetadata,
+  radiologyChipLabel,
+  radiologyEvidenceMetadata,
+  radiologyStoragePath,
+  radiologyUserMessageMetadata,
+  resolveExaminusModes,
+  routeExaminusFiles,
+  selectEvidenceIdsForRequest,
+  type RadiologyMime,
+  type RadiologyOutputMode,
+} from "@/lib/radiologyInterpreter";
 import { exportAgentConversationToPDF } from "@/utils/pdfExport";
 import { pdfToImages } from "@/utils/pdfToImages";
 import { AgentVoiceInput } from "@/components/AgentVoiceInput";
@@ -108,6 +129,67 @@ interface Message {
   audioUrl?: string;
   transcription?: string;
   pending?: boolean;
+  /** Metadados persistidos (ex.: Interpretador — IDs das radiografias em contexto). Nunca contém base64. */
+  metadata?: unknown;
+  /** Pré-visualizações locais (object URLs) da mensagem otimista; não persistidas. */
+  attachments?: { previewUrl: string; name: string }[];
+}
+
+/** Radiografia pendente de envio no Interpretador (Examinus). */
+interface RadiologyAttachment {
+  id: string;
+  file: File;
+  mime: RadiologyMime;
+  previewUrl: string;
+  name: string;
+  size: number;
+}
+
+/**
+ * Consome um stream SSE no formato OpenAI (`data: {choices:[{delta:{content}}]}`),
+ * chamando `onContent` com o texto acumulado a cada delta. Retorna o texto final.
+ */
+async function readAssistantSSE(
+  body: ReadableStream<Uint8Array>,
+  onContent: (accumulated: string) => void,
+): Promise<string> {
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let textBuffer = "";
+  let accumulated = "";
+  let finished = false;
+
+  while (!finished) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    textBuffer += decoder.decode(value, { stream: true });
+
+    let newlineIndex: number;
+    while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+      let line = textBuffer.slice(0, newlineIndex);
+      textBuffer = textBuffer.slice(newlineIndex + 1);
+      if (line.endsWith("\r")) line = line.slice(0, -1);
+      if (line.startsWith(":") || line.trim() === "") continue;
+      if (!line.startsWith("data: ")) continue;
+
+      const jsonStr = line.slice(6).trim();
+      if (jsonStr === "[DONE]") { finished = true; break; }
+
+      try {
+        const parsed = JSON.parse(jsonStr);
+        const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+        if (content) {
+          accumulated += content;
+          onContent(accumulated);
+        }
+      } catch {
+        // JSON incompleto — devolve ao buffer e aguarda mais dados
+        textBuffer = line + "\n" + textBuffer;
+        break;
+      }
+    }
+  }
+  return accumulated;
 }
 
 interface Conversation {
@@ -328,6 +410,36 @@ export function AgentChat({
   const [clinicalImpression, setClinicalImpression] = useState(false);
   const [compactMode, setCompactMode] = useState(true);
   const [examSuggestMode, setExamSuggestMode] = useState(false);
+  // Interpretador (Examinus) — V1: radiografia de tórax. Exclusivo com o Consultor.
+  const [radiologyInterpretMode, setRadiologyInterpretMode] = useState(false);
+  const [radiologyAttachments, setRadiologyAttachments] = useState<RadiologyAttachment[]>([]);
+  const objectUrlsRef = useRef<string[]>([]);
+  const radiologyActive = agentType === "examinus" && radiologyInterpretMode;
+  const radiologyHistoricalIds = radiologyActive
+    ? collectRadiologyEvidenceIds(currentConversation?.messages ?? [])
+    : [];
+  const canSend = radiologyActive
+    ? canSendRadiologyMessage({ text: message, pendingCount: radiologyAttachments.length, historicalCount: radiologyHistoricalIds.length })
+    : message.trim().length > 0;
+
+  /** Liga/desliga Consultor e Interpretador mantendo a exclusividade mútua. */
+  const setExaminusModes = (change: { consultor?: boolean; interpretador?: boolean }) => {
+    const next = resolveExaminusModes({ examSuggestMode, radiologyInterpretMode }, change);
+    setExamSuggestMode(next.examSuggestMode);
+    setRadiologyInterpretMode(next.radiologyInterpretMode);
+    if (!next.radiologyInterpretMode && radiologyAttachments.length > 0) {
+      // Ao sair do Interpretador, descarta as imagens ainda não enviadas.
+      setRadiologyAttachments([]);
+    }
+  };
+
+  // Libera as object URLs das pré-visualizações ao desmontar.
+  useEffect(() => {
+    return () => {
+      for (const url of objectUrlsRef.current) URL.revokeObjectURL(url);
+      objectUrlsRef.current = [];
+    };
+  }, []);
   const [directAHEMode, setDirectAHEMode] = useState(false);
   const [aheTemplate, setAheTemplate] = useState<ClinicusContext>("enfermaria");
   const [reportMode, setReportMode] = useState(false);
@@ -635,8 +747,288 @@ export function AgentChat({
   };
 
 
+  /**
+   * Interpretador (Examinus): envia a(s) radiografia(s) ORIGINAL(is) ao motor multimodal
+   * `radiograph-interpret`. Fluxo: upload no bucket privado → registro em `evidences`
+   * → chamada com IDs (nunca base64) → streaming da leitura.
+   */
+  const sendRadiologyMessage = async () => {
+    if (isLoading) return;
+    const pendingFiles = radiologyAttachments;
+    const historicalIds = radiologyHistoricalIds;
+
+    if (!canSendRadiologyMessage({ text: message, pendingCount: pendingFiles.length, historicalCount: historicalIds.length })) {
+      const msg = "Anexe uma radiografia de tórax (JPEG, PNG ou WebP) para interpretar.";
+      setValidationAnnouncement("");
+      setTimeout(() => setValidationAnnouncement(msg), 50);
+      toast({ title: "Nenhuma radiografia anexada", description: msg, variant: "destructive" });
+      return;
+    }
+    setValidationAnnouncement("");
+
+    const typedText = message;
+    const messageContent = normalizeRadiologyPrompt(typedText);
+    const baseConversation = currentConversation;
+
+    // OPTIMISTIC UI
+    const optimisticUserId = `optimistic-user-${Date.now()}`;
+    const optimisticUserMessage: Message = {
+      id: optimisticUserId,
+      role: "user",
+      content: messageContent,
+      created_at: new Date().toISOString(),
+      pending: true,
+      attachments: pendingFiles.map((a) => ({ previewUrl: a.previewUrl, name: a.name })),
+      metadata: pendingFiles.length > 0 ? radiologyUserMessageMetadata([], pendingFiles.length) : undefined,
+    };
+    const thinkingMessage: Message = {
+      id: "streaming-temp",
+      role: "assistant",
+      content: pendingFiles.length > 0 ? "Analisando a radiografia..." : "Pensando...",
+      created_at: new Date().toISOString(),
+    };
+    const optimisticConversation: Conversation = baseConversation
+      ? { ...baseConversation, messages: [...baseConversation.messages, optimisticUserMessage, thinkingMessage] }
+      : {
+          id: `optimistic-conv-${Date.now()}`,
+          name: `Conversa ${conversations.length + 1}`,
+          last_message: messageContent,
+          updated_at: new Date().toISOString(),
+          agent_type: agentType,
+          case_id: selectedCaseId || null,
+          messages: [optimisticUserMessage, thinkingMessage],
+        };
+
+    flushSync(() => {
+      setMessage("");
+      setRadiologyAttachments([]);
+      setIsLoading(true);
+      setCurrentConversation(optimisticConversation);
+    });
+
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
+    if (!user || !session) {
+      setCurrentConversation(baseConversation);
+      setRadiologyAttachments(pendingFiles);
+      setIsLoading(false);
+      toast({ title: "Sessão expirada", description: "Faça login novamente para continuar a conversa.", variant: "destructive" });
+      navigate("/auth");
+      return;
+    }
+
+    let conversation = baseConversation;
+    const uploadedPaths: string[] = [];
+    let uploadsComplete = false;
+
+    try {
+      if (!conversation) {
+        const { data, error } = await supabase
+          .from("conversations")
+          .insert({
+            user_id: user.id,
+            agent_type: agentType,
+            name: `Conversa ${conversations.length + 1}`,
+            case_id: selectedCaseId || null,
+          })
+          .select()
+          .single();
+        if (error) throw new Error("Não foi possível criar a conversa.");
+        conversation = { ...data, messages: [] };
+        setConversations((prev) => [conversation!, ...prev]);
+        setCurrentConversation((prev) => ({
+          ...conversation!,
+          messages: prev?.messages ?? [optimisticUserMessage, thinkingMessage],
+        }));
+      }
+
+      // 1) Upload das imagens originais para o bucket privado + registro em `evidences`
+      const newIds: string[] = [];
+      const batchStamp = Date.now();
+      for (let i = 0; i < pendingFiles.length; i++) {
+        const att = pendingFiles[i];
+        const filePath = radiologyStoragePath(user.id, att.mime, i, batchStamp);
+        const { error: uploadError } = await supabase.storage
+          .from("evidences")
+          .upload(filePath, att.file, { contentType: att.mime, upsert: false });
+        if (uploadError) {
+          console.error("[interpretador] upload error:", uploadError.message);
+          throw new Error(`Não foi possível enviar "${att.name}". Verifique sua conexão e tente novamente.`);
+        }
+        uploadedPaths.push(filePath);
+
+        const { data: evidenceRow, error: evidenceError } = await supabase
+          .from("evidences")
+          .insert({
+            user_id: user.id,
+            case_id: selectedCaseId || null,
+            type: "image",
+            source_type: "upload",
+            title: att.name,
+            file_path: filePath,
+            file_size: att.size,
+            metadata: radiologyEvidenceMetadata(att.mime),
+            tags: ["radiografia", "torax", "interpretador"],
+            origin: "examinus_interpretador",
+            is_active: true,
+          })
+          .select("id")
+          .single();
+        if (evidenceError || !evidenceRow) {
+          console.error("[interpretador] evidence insert error:", evidenceError?.message);
+          throw new Error(`Não foi possível registrar "${att.name}". Tente novamente.`);
+        }
+        newIds.push(evidenceRow.id);
+      }
+      uploadsComplete = true;
+
+      const evidenceIds = selectEvidenceIdsForRequest(newIds, historicalIds);
+      const userMetadata = radiologyUserMessageMetadata(evidenceIds, newIds.length);
+
+      // 2) Persiste a mensagem do usuário (com IDs, sem base64) — em segundo plano
+      const userInsertPromise = supabase
+        .from("messages")
+        .insert({
+          conversation_id: conversation.id,
+          role: "user",
+          content: messageContent,
+          metadata: userMetadata,
+        })
+        .select()
+        .single();
+
+      userInsertPromise.then(({ data: userMsgData, error: userError }) => {
+        setCurrentConversation((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            messages: prev.messages.map((m) => {
+              if (m.id !== optimisticUserId) return m;
+              if (userError || !userMsgData) return { ...m, pending: false, metadata: userMetadata };
+              return {
+                ...userMsgData,
+                role: userMsgData.role as "user" | "assistant",
+                pending: false,
+                attachments: m.attachments,
+              };
+            }),
+          };
+        });
+      });
+
+      const userMessage: Message = { ...optimisticUserMessage, metadata: userMetadata };
+
+      // 3) Chamada ao motor multimodal (streaming)
+      const body = buildRadiologyRequestBody({
+        messages: [...conversation.messages, userMessage],
+        evidenceIds,
+        caseId: selectedCaseId,
+        outputMode: "auto",
+      });
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/radiograph-interpret`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok || !response.body) {
+        let detail = "Falha ao conectar com o Interpretador.";
+        try {
+          const err = await response.json();
+          if (typeof err?.error === "string" && err.error) detail = err.error;
+        } catch { /* corpo não-JSON */ }
+        throw new Error(detail);
+      }
+
+      const outputMode = (response.headers.get("X-Radiology-Output-Mode") as RadiologyOutputMode | null) ?? "auto";
+
+      const assistantContent = await readAssistantSSE(response.body, (accumulated) => {
+        setCurrentConversation((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            messages: prev.messages.map((m) => (m.id === "streaming-temp" ? { ...m, content: accumulated } : m)),
+          };
+        });
+      });
+
+      if (!assistantContent.trim()) {
+        throw new Error("O Interpretador não retornou uma leitura. Tente novamente.");
+      }
+
+      // 4) Persiste a resposta
+      const { data: assistantMsgData, error: assistantError } = await supabase
+        .from("messages")
+        .insert({
+          conversation_id: conversation.id,
+          role: "assistant",
+          content: assistantContent,
+          metadata: radiologyAssistantMessageMetadata(evidenceIds, outputMode),
+        })
+        .select()
+        .single();
+      if (assistantError) throw assistantError;
+
+      const assistantMessage: Message = { ...assistantMsgData, role: assistantMsgData.role as "user" | "assistant" };
+      const persistedUser = await userInsertPromise;
+      const finalUserMessage: Message = persistedUser.data
+        ? { ...persistedUser.data, role: "user", attachments: optimisticUserMessage.attachments }
+        : { ...userMessage, pending: false };
+      const finalMessages = [...conversation.messages, finalUserMessage, assistantMessage];
+
+      const lastPreview = pendingFiles.length > 0
+        ? `Radiografia (${pendingFiles.length}) · ${messageContent}`
+        : messageContent;
+      await supabase
+        .from("conversations")
+        .update({ last_message: lastPreview, updated_at: new Date().toISOString() })
+        .eq("id", conversation.id);
+
+      setCurrentConversation({ ...conversation, messages: finalMessages, last_message: lastPreview });
+      setConversations((prev) =>
+        prev.map((c) => (c.id === conversation!.id ? { ...c, last_message: lastPreview, updated_at: new Date().toISOString() } : c)),
+      );
+    } catch (error: unknown) {
+      console.error("[interpretador] error:", error);
+      const errorMessage = error instanceof Error ? error.message : typeof (error as { message?: unknown })?.message === "string" ? String((error as { message: string }).message) : "";
+
+      // Remove a resposta em andamento e a mensagem otimista quando nada foi persistido
+      setCurrentConversation((prev) => {
+        if (!prev) return prev;
+        const kept = prev.messages.filter((m) => m.id !== "streaming-temp" && (uploadsComplete || m.id !== optimisticUserId));
+        return { ...prev, messages: kept };
+      });
+
+      if (!uploadsComplete) {
+        // Devolve as imagens à fila para o médico tentar de novo sem reanexar
+        setRadiologyAttachments(pendingFiles);
+        setMessage((prev) => prev || typedText);
+        if (uploadedPaths.length > 0) {
+          void supabase.storage.from("evidences").remove(uploadedPaths);
+        }
+      }
+
+      toast({
+        title: "Não foi possível interpretar",
+        description: errorMessage || "Falha ao processar a radiografia.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const sendMessage = async () => {
     if (isLoading) return;
+    if (radiologyActive) {
+      await sendRadiologyMessage();
+      return;
+    }
     if (!message.trim()) {
       const msg = "Mensagem vazia. Digite algum texto antes de enviar.";
       setValidationAnnouncement("");
@@ -1006,10 +1398,59 @@ export function AgentChat({
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+    const input = e.target;
+    const files = Array.from(input.files || []);
+    // Permite reselecionar o mesmo arquivo (ex.: após remover uma radiografia da fila)
+    input.value = "";
     if (files.length > 0) {
       await processFiles(files);
     }
+  };
+
+  /**
+   * Interpretador (Examinus): enfileira radiografias originais para envio.
+   * Só JPEG/PNG/WebP até 10 MB, máximo 4. Não há OCR aqui.
+   */
+  const addRadiologyAttachments = (files: File[]) => {
+    if (files.length === 0) return;
+    const { accepted, rejected } = appendRadiologyFiles(radiologyAttachments.length, files);
+    if (accepted.length > 0) {
+      const stamp = Date.now();
+      const next: RadiologyAttachment[] = accepted.map(({ file, mime }, i) => {
+        const previewUrl = URL.createObjectURL(file);
+        objectUrlsRef.current.push(previewUrl);
+        return {
+          id: `rx-${stamp}-${i}-${Math.random().toString(36).slice(2, 8)}`,
+          file,
+          mime,
+          previewUrl,
+          name: file.name,
+          size: file.size,
+        };
+      });
+      setRadiologyAttachments((prev) => [...prev, ...next]);
+      toast({
+        description: `${accepted.length} ${accepted.length === 1 ? "radiografia pronta" : "radiografias prontas"} para interpretar. Clique em enviar.`,
+      });
+    }
+    if (rejected.length > 0) {
+      toast({
+        title: rejected.length === files.length ? "Imagem não aceita" : "Algumas imagens não foram aceitas",
+        description: rejected.map((r) => r.reason).join(" "),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const removeRadiologyAttachment = (id: string) => {
+    setRadiologyAttachments((prev) => {
+      const target = prev.find((a) => a.id === id);
+      if (target) {
+        URL.revokeObjectURL(target.previewUrl);
+        objectUrlsRef.current = objectUrlsRef.current.filter((u) => u !== target.previewUrl);
+      }
+      return prev.filter((a) => a.id !== id);
+    });
   };
 
   const ocrImage = async (
@@ -1049,7 +1490,16 @@ export function AgentChat({
     });
 
   const processFiles = async (files: File[]) => {
+    // Interpretador (Examinus): a imagem ORIGINAL vai para o bucket privado e para o modelo.
+    // Nunca passa por OCR (extract-file-text) — retorno antes de qualquer extração.
+    if (radiologyActive) {
+      const { radiology } = routeExaminusFiles(files, { radiologyInterpretMode });
+      addRadiologyAttachments(radiology);
+      return;
+    }
+
     setUploadingFile(true);
+
 
     try {
       const sections: string[] = [];
@@ -1207,9 +1657,15 @@ export function AgentChat({
       {isDragging && (
         <div className="absolute inset-0 bg-primary/10 border-4 border-dashed border-primary rounded-lg flex items-center justify-center z-50 backdrop-blur-sm">
           <div className="text-center">
-            <Paperclip className="h-16 w-16 mx-auto mb-4 text-primary" />
-            <p className="text-xl font-bold">Solte o arquivo aqui</p>
-            <p className="text-sm text-muted-foreground mt-2">Imagens, PDF, DOCX, PPTX, XLSX, TXT, MD</p>
+            {radiologyActive ? (
+              <ScanLine className="h-16 w-16 mx-auto mb-4 text-primary" />
+            ) : (
+              <Paperclip className="h-16 w-16 mx-auto mb-4 text-primary" />
+            )}
+            <p className="text-xl font-bold">{radiologyActive ? "Solte a radiografia aqui" : "Solte o arquivo aqui"}</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              {radiologyActive ? "JPEG, PNG ou WebP · até 4 imagens · sem PDF ou DICOM" : "Imagens, PDF, DOCX, PPTX, XLSX, TXT, MD"}
+            </p>
           </div>
         </div>
       )}
@@ -1217,7 +1673,7 @@ export function AgentChat({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*,application/pdf,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.md"
+        accept={radiologyActive ? RADIOLOGY_ACCEPT_ATTR : "image/*,application/pdf,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.md"}
         multiple
         onChange={handleFileSelect}
         className="hidden"
@@ -1665,10 +2121,35 @@ export function AgentChat({
                       trailing={isStreaming ? <StreamCursor /> : undefined}
                     />
                   ) : (
-                    <p className={`whitespace-pre-wrap leading-relaxed ${focusMode ? "text-base md:text-lg" : "text-sm"}`}>
-                      {msg.content}
-                      {isStreaming && <StreamCursor />}
-                    </p>
+                    <>
+                      {msg.role === "user" && (() => {
+                        const info = describeRadiologyMessage(msg.metadata);
+                        const previews = (msg.attachments ?? []).filter((a) => !!a.previewUrl);
+                        if (!info && previews.length === 0) return null;
+                        const label = info ? radiologyChipLabel(info) : `${previews.length} ${previews.length === 1 ? "radiografia anexada" : "radiografias anexadas"}`;
+                        return (
+                          <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                            {previews.map((a) => (
+                              <img
+                                key={a.previewUrl}
+                                src={a.previewUrl}
+                                alt={a.name}
+                                loading="lazy"
+                                className="h-14 w-14 md:h-16 md:w-16 rounded-lg object-cover border border-primary-foreground/30 bg-black/20"
+                              />
+                            ))}
+                            <span className="inline-flex items-center gap-1 rounded-full bg-primary-foreground/15 px-2 py-0.5 text-[11px] font-medium">
+                              <ScanLine className="h-3 w-3" />
+                              {label}
+                            </span>
+                          </div>
+                        );
+                      })()}
+                      <p className={`whitespace-pre-wrap leading-relaxed ${focusMode ? "text-base md:text-lg" : "text-sm"}`}>
+                        {msg.content}
+                        {isStreaming && <StreamCursor />}
+                      </p>
+                    </>
                   )}
 
                   <p className="text-xs opacity-70 mt-1 flex items-center gap-1">
@@ -1746,12 +2227,49 @@ export function AgentChat({
 
       {/* Input area */}
       <div className="border-t pt-3 md:pt-4 sticky bottom-0 bg-background z-10 pb-[env(safe-area-inset-bottom)] md:static md:pb-0">
+        {/* Interpretador (Examinus): radiografias pendentes antes do envio */}
+        {radiologyActive && radiologyAttachments.length > 0 && (
+          <div className="mb-2 flex items-start gap-2.5 overflow-x-auto pb-1 -mx-1 px-1 animate-fade-in" aria-label="Radiografias anexadas">
+            {radiologyAttachments.map((att) => (
+              <div key={att.id} className="relative shrink-0 w-16 md:w-20">
+                <img
+                  src={att.previewUrl}
+                  alt={att.name}
+                  className="h-16 w-16 md:h-20 md:w-20 rounded-xl object-cover border border-border/60 bg-muted"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeRadiologyAttachment(att.id)}
+                  disabled={isLoading}
+                  aria-label={`Remover ${att.name}`}
+                  title="Remover imagem"
+                  className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-background border border-border shadow-sm inline-flex items-center justify-center text-muted-foreground hover:text-destructive hover:border-destructive/60 transition-colors disabled:opacity-50"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+                <span className="mt-1 block truncate text-[10px] text-muted-foreground" title={att.name}>
+                  {att.name}
+                </span>
+              </div>
+            ))}
+            <p className="shrink-0 self-center pl-1 text-[11px] text-muted-foreground">
+              {radiologyAttachments.length}/{MAX_RADIOLOGY_IMAGES} · {formatBytes(radiologyAttachments.reduce((acc, a) => acc + a.size, 0))}
+            </p>
+          </div>
+        )}
+        {radiologyActive && radiologyAttachments.length === 0 && radiologyHistoricalIds.length > 0 && (
+          <p className="mb-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <ScanLine className="h-3 w-3 shrink-0 text-cyan-700 dark:text-cyan-300" />
+            Perguntas seguirão sobre {radiologyHistoricalIds.length === 1 ? "a radiografia já anexada" : `as ${radiologyHistoricalIds.length} radiografias já anexadas`} nesta conversa. Anexe outra imagem para trocar.
+          </p>
+        )}
+
         {/* Mobile: Examinus toggles row above input */}
         {isMobile && agentType === "examinus" && (
           <div className="flex items-center gap-1.5 mb-2 overflow-x-auto pb-1 -mx-1 px-1">
             <Toggle
               pressed={examSuggestMode}
-              onPressedChange={setExamSuggestMode}
+              onPressedChange={(v) => setExaminusModes({ consultor: v })}
               size="sm"
               className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-violet-500/20 data-[state=on]:text-violet-600 dark:data-[state=on]:text-violet-400"
               title="Consultor: sugestão de exames, contraindicações e explicações"
@@ -1759,7 +2277,17 @@ export function AgentChat({
               <Lightbulb className="w-3 h-3 mr-1" />
               <span>Consultor</span>
             </Toggle>
-            {!examSuggestMode && (<>
+            <Toggle
+              pressed={radiologyInterpretMode}
+              onPressedChange={(v) => setExaminusModes({ interpretador: v })}
+              size="sm"
+              className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-cyan-500/20 data-[state=on]:text-cyan-700 dark:data-[state=on]:text-cyan-300"
+              title="Interpretador: segunda leitura de radiografia de tórax a partir da imagem"
+            >
+              <ScanLine className="w-3 h-3 mr-1" />
+              <span>Interpretador</span>
+            </Toggle>
+            {!examSuggestMode && !radiologyInterpretMode && (<>
             <Toggle
               pressed={usePipeSeparator}
               onPressedChange={setUsePipeSeparator}
@@ -2211,9 +2739,17 @@ export function AgentChat({
                   label="Consultor"
                   info="Sugere exames complementares, aponta contraindicações e explica exames e procedimentos a partir do caso."
                   pressed={examSuggestMode}
-                  onPressedChange={setExamSuggestMode}
+                  onPressedChange={(v) => setExaminusModes({ consultor: v })}
                 />
-                {!examSuggestMode && (<>
+                <OutputControl
+                  icon={ScanLine}
+                  tone="cyan"
+                  label="Interpretador"
+                  info="Segunda leitura de radiografia de tórax: envie a imagem (JPEG, PNG ou WebP, até 4) e receba achados, impressão com grau de confiança e limitações. A imagem original vai direto ao modelo."
+                  pressed={radiologyInterpretMode}
+                  onPressedChange={(v) => setExaminusModes({ interpretador: v })}
+                />
+                {!examSuggestMode && !radiologyInterpretMode && (<>
                 <OutputControl
                   icon={SeparatorVertical}
                   tone="primary"
@@ -2290,7 +2826,7 @@ export function AgentChat({
                     sendMessage();
                   }
                 }}
-                placeholder="Mensagem... (Shift+Enter para nova linha)"
+                placeholder={radiologyActive ? "Envie a radiografia e, se quiser, o contexto clínico" : "Mensagem... (Shift+Enter para nova linha)"}
                 maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
                 rows={1}
                 aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
@@ -2336,10 +2872,10 @@ export function AgentChat({
             )}
             <Button
               onClick={sendMessage}
-              disabled={!message.trim() || isLoading || overLimit}
+              disabled={!canSend || isLoading || overLimit}
               size="icon"
               className="shrink-0 h-10 w-10 rounded-full"
-              title={!message.trim() ? "Digite uma mensagem para enviar" : "Enviar mensagem"}
+              title={!canSend ? (radiologyActive ? "Anexe uma radiografia para enviar" : "Digite uma mensagem para enviar") : radiologyActive ? "Interpretar radiografia" : "Enviar mensagem"}
             >
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
@@ -2357,9 +2893,11 @@ export function AgentChat({
                   sendMessage();
                 }
               }}
-              placeholder={agentType === "examinus" && examSuggestMode
-                ? "Peça um painel, cole um caso ou pergunte sobre um exame"
-                : placeholder}
+              placeholder={radiologyActive
+                ? "Envie uma radiografia de tórax (JPEG, PNG ou WebP) e, se quiser, descreva o contexto clínico. Peça \"avaliação rápida\" ou \"laudo completo\"."
+                : agentType === "examinus" && examSuggestMode
+                  ? "Peça um painel, cole um caso ou pergunte sobre um exame"
+                  : placeholder}
               maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
               aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
               className={`w-full resize-none rounded-2xl text-base leading-relaxed p-5 pb-16 bg-muted/25 border-2 transition-colors duration-200 ${
@@ -2424,9 +2962,9 @@ export function AgentChat({
               )}
               <Button
                 onClick={sendMessage}
-                disabled={!message.trim() || isLoading || overLimit}
+                disabled={!canSend || isLoading || overLimit}
                 className="h-11 px-7 rounded-xl font-semibold transition-[opacity,box-shadow] duration-200 hover:opacity-90 active:scale-95"
-                title={!message.trim() ? "Digite uma mensagem para enviar" : "Enviar mensagem"}
+                title={!canSend ? (radiologyActive ? "Anexe uma radiografia para enviar" : "Digite uma mensagem para enviar") : radiologyActive ? "Interpretar radiografia" : "Enviar mensagem"}
               >
                 {isLoading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />

@@ -861,6 +861,7 @@ export type Database = {
           conversation_id: string
           created_at: string
           id: string
+          metadata: Json
           role: string
           transcription: string | null
         }
@@ -870,6 +871,7 @@ export type Database = {
           conversation_id: string
           created_at?: string
           id?: string
+          metadata?: Json
           role: string
           transcription?: string | null
         }
@@ -879,6 +881,7 @@ export type Database = {
           conversation_id?: string
           created_at?: string
           id?: string
+          metadata?: Json
           role?: string
           transcription?: string | null
         }
