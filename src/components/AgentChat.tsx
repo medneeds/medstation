@@ -129,6 +129,67 @@ interface Message {
   audioUrl?: string;
   transcription?: string;
   pending?: boolean;
+  /** Metadados persistidos (ex.: Interpretador — IDs das radiografias em contexto). Nunca contém base64. */
+  metadata?: unknown;
+  /** Pré-visualizações locais (object URLs) da mensagem otimista; não persistidas. */
+  attachments?: { previewUrl: string; name: string }[];
+}
+
+/** Radiografia pendente de envio no Interpretador (Examinus). */
+interface RadiologyAttachment {
+  id: string;
+  file: File;
+  mime: RadiologyMime;
+  previewUrl: string;
+  name: string;
+  size: number;
+}
+
+/**
+ * Consome um stream SSE no formato OpenAI (`data: {choices:[{delta:{content}}]}`),
+ * chamando `onContent` com o texto acumulado a cada delta. Retorna o texto final.
+ */
+async function readAssistantSSE(
+  body: ReadableStream<Uint8Array>,
+  onContent: (accumulated: string) => void,
+): Promise<string> {
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let textBuffer = "";
+  let accumulated = "";
+  let finished = false;
+
+  while (!finished) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    textBuffer += decoder.decode(value, { stream: true });
+
+    let newlineIndex: number;
+    while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+      let line = textBuffer.slice(0, newlineIndex);
+      textBuffer = textBuffer.slice(newlineIndex + 1);
+      if (line.endsWith("\r")) line = line.slice(0, -1);
+      if (line.startsWith(":") || line.trim() === "") continue;
+      if (!line.startsWith("data: ")) continue;
+
+      const jsonStr = line.slice(6).trim();
+      if (jsonStr === "[DONE]") { finished = true; break; }
+
+      try {
+        const parsed = JSON.parse(jsonStr);
+        const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+        if (content) {
+          accumulated += content;
+          onContent(accumulated);
+        }
+      } catch {
+        // JSON incompleto — devolve ao buffer e aguarda mais dados
+        textBuffer = line + "\n" + textBuffer;
+        break;
+      }
+    }
+  }
+  return accumulated;
 }
 
 interface Conversation {
