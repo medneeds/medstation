@@ -53,3 +53,23 @@ export async function pdfToImages(
 
   return pages;
 }
+
+/**
+ * Converte um PDF em arquivos de imagem JPEG (uma imagem por página), preservando a
+ * imagem renderizada original para modelos multimodais — NUNCA passa por OCR.
+ * Usado pelos Interpretadores (radiografia e ECG) quando o médico anexa um PDF.
+ */
+export async function pdfToImageFiles(
+  file: File,
+  opts: { maxPages?: number; scale?: number; quality?: number } = {}
+): Promise<File[]> {
+  const { maxPages = 4, scale = 2.5, quality = 0.92 } = opts;
+  const pages = await pdfToImages(file, { scale, quality, maxPages });
+  const baseName = file.name.replace(/\.pdf$/i, "") || "documento";
+  return pages.map((page) => {
+    const binary = atob(page.base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new File([bytes], `${baseName}-p${page.pageNumber}.jpg`, { type: "image/jpeg" });
+  });
+}

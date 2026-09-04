@@ -29,3 +29,11 @@
 - [ ] Interpretador ECG: ao reabrir o Clínicus, oferecer atalho "Continuar última interpretação" (hoje a reabertura passa pelo Histórico)
 - [ ] Interpretador ECG: comparação seriada com 2+ traçados validada em E2E (suporte já existe no prompt/UI)
 - [ ] Interpretador RX: ampliar para outras modalidades (RX abdome, membros) após validação clínica
+
+## Em andamento — Examinus · ECG como modalidade de primeira classe do Interpretador
+- [ ] `src/lib/interpreterModality.ts`: modalidade (radiografia|ECG), detecção AUXILIAR e conservadora (somente pistas textuais explícitas — nunca proporção da imagem), aplicação que respeita escolha manual, cópia por modalidade
+- [ ] AgentChat/Examinus: seletor de modalidade sempre visível e corrigível antes do envio; roteamento de envio e de seguimento para `radiograph-interpret` ou `ecg-interpret`; metadados e origem por modalidade; reidratação após reload
+- [ ] PDF aceito nos dois interpretadores (páginas renderizadas como imagem original no cliente; nunca OCR)
+- [ ] Clínicus mantém o Interpretador de ECG existente, sem alteração de comportamento
+- [ ] Testes puros + vitest completo + tsgo + build + lint dos arquivos tocados + E2E autenticado com usuário QA descartável e limpeza total
+- [ ] NÃO publicar antes do relatório dos gates
