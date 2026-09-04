@@ -3740,6 +3740,36 @@ export function AgentChat({
                   )}
                 </Button>
               )}
+              {compressAvailable && (
+                <Popover open={compressOpen} onOpenChange={setCompressOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      disabled={isLoading}
+                      className="h-11 px-4 rounded-xl font-medium bg-background/90 hover:bg-primary/10 hover:border-primary/50"
+                      title="Comprimir a última resposta em resumo do caso com abreviações médicas"
+                    >
+                      <Shrink className="h-4 w-4 mr-1.5 text-primary" />
+                      Comprimir
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent side="top" align="end" className="w-60 p-2">
+                    <p className="px-2 pb-1.5 text-[11px] text-muted-foreground">
+                      Resumo do caso com abreviações médicas
+                    </p>
+                    {([75, 50, 25] as const).map((lvl) => (
+                      <button
+                        key={lvl}
+                        type="button"
+                        onClick={() => runCompression(lvl)}
+                        className="w-full rounded-md px-2 py-2 text-left text-sm hover:bg-muted transition-colors"
+                      >
+                        {lvl}% do tamanho original
+                      </button>
+                    ))}
+                  </PopoverContent>
+                </Popover>
+              )}
               <Button
                 onClick={sendMessage}
                 disabled={!canSend || isLoading || overLimit}
