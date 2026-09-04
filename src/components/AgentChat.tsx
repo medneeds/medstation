@@ -410,6 +410,36 @@ export function AgentChat({
   const [clinicalImpression, setClinicalImpression] = useState(false);
   const [compactMode, setCompactMode] = useState(true);
   const [examSuggestMode, setExamSuggestMode] = useState(false);
+  // Interpretador (Examinus) — V1: radiografia de tórax. Exclusivo com o Consultor.
+  const [radiologyInterpretMode, setRadiologyInterpretMode] = useState(false);
+  const [radiologyAttachments, setRadiologyAttachments] = useState<RadiologyAttachment[]>([]);
+  const objectUrlsRef = useRef<string[]>([]);
+  const radiologyActive = agentType === "examinus" && radiologyInterpretMode;
+  const radiologyHistoricalIds = radiologyActive
+    ? collectRadiologyEvidenceIds(currentConversation?.messages ?? [])
+    : [];
+  const canSend = radiologyActive
+    ? canSendRadiologyMessage({ text: message, pendingCount: radiologyAttachments.length, historicalCount: radiologyHistoricalIds.length })
+    : message.trim().length > 0;
+
+  /** Liga/desliga Consultor e Interpretador mantendo a exclusividade mútua. */
+  const setExaminusModes = (change: { consultor?: boolean; interpretador?: boolean }) => {
+    const next = resolveExaminusModes({ examSuggestMode, radiologyInterpretMode }, change);
+    setExamSuggestMode(next.examSuggestMode);
+    setRadiologyInterpretMode(next.radiologyInterpretMode);
+    if (!next.radiologyInterpretMode && radiologyAttachments.length > 0) {
+      // Ao sair do Interpretador, descarta as imagens ainda não enviadas.
+      setRadiologyAttachments([]);
+    }
+  };
+
+  // Libera as object URLs das pré-visualizações ao desmontar.
+  useEffect(() => {
+    return () => {
+      for (const url of objectUrlsRef.current) URL.revokeObjectURL(url);
+      objectUrlsRef.current = [];
+    };
+  }, []);
   const [directAHEMode, setDirectAHEMode] = useState(false);
   const [aheTemplate, setAheTemplate] = useState<ClinicusContext>("enfermaria");
   const [reportMode, setReportMode] = useState(false);
