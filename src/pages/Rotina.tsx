@@ -58,7 +58,10 @@ function RotinaInner() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button onClick={() => setQuickOpen(true)}>
+            <Sparkles className="h-4 w-4 mr-2" /> Evolução avulsa
+          </Button>
           <Button variant="outline" asChild>
             <Link to="/rotina/arquivo"><Archive className="h-4 w-4 mr-2" /> Arquivo de altas</Link>
           </Button>
