@@ -814,6 +814,31 @@ export function AgentChat({
   };
 
   /**
+   * Comprimir (Clínicus): gera uma nova mensagem no chat com a última resposta
+   * compactada para ~75%, ~50% ou ~25% do volume de caracteres original.
+   */
+  const runCompression = (level: 75 | 50 | 25) => {
+    if (isLoading || !lastAssistantAnswer) return;
+    setCompressOpen(false);
+    const original = lastAssistantAnswer.content.trim();
+    const target = Math.max(200, Math.round((original.length * level) / 100));
+    const prompt = [
+      `COMPRIMIR A ÚLTIMA RESPOSTA PARA APROXIMADAMENTE ${level}% DO VOLUME DE CARACTERES (alvo: ~${target} caracteres).`,
+      "",
+      "REGRAS OBRIGATÓRIAS",
+      "- Base exclusiva: a última resposta que você gerou nesta conversa. Não acrescente dados, hipóteses, condutas ou exames que não estejam nela.",
+      "- Foco em resumo do caso: preserve identificação, quadro atual, achados relevantes, hipóteses e conduta. Corte redundância, frases de ligação e detalhes descritivos secundários.",
+      "- Use abreviações amplamente aceitas na prática médica (HAS, DM2, DPOC, IAM, ICC, HDA, HPP, EF, HD, CD, PA, FC, FR, SatO2, MV, RCR, IOT, ATB, VO, EV, SN).",
+      "- Nunca abrevie de forma ambígua nem invente siglas.",
+      "- Mantenha os títulos em CAIXA ALTA, sem asteriscos e sem markdown; corpo em texto corrido ou tópicos curtos.",
+      "- Não escreva comentários sobre a compressão, apenas o texto final.",
+    ].join("\n");
+    void sendMessage(prompt);
+  };
+
+
+
+  /**
    * Sugestões para o caso (Clínicus): análise crítica em painel lateral.
    * Não grava mensagem na conversa nem altera o documento gerado.
    */
