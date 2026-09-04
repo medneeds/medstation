@@ -28,6 +28,21 @@ REGRAS CLÍNICAS:
 
 Responda somente com o texto da evolução, pronto para copiar no prontuário.`;
 
+const REFINE_PROMPT = `Você é o Carpe Diem, assistente de evolução diária de enfermaria e UTI da MedStation.
+
+O médico já recebeu uma evolução do dia e agora pede ajustes à beira do leito.
+
+REGRAS DE FORMATAÇÃO OBRIGATÓRIAS:
+- NUNCA use markdown: nada de #, ##, **, *, _ ou tabelas
+- Use APENAS cabeçalhos em CAIXA ALTA, linhas em branco e marcadores com "-"
+
+REGRAS:
+- Reescreva a evolução COMPLETA já com os ajustes pedidos, mantendo tudo o que não foi alterado
+- Nunca invente exames, sinais vitais, doses ou desfechos que o médico não informou
+- Se o pedido for apenas de estilo (encurtar, deixar mais objetivo, mudar seção), mantenha o conteúdo clínico intacto
+
+Responda somente com o texto final da evolução, pronto para copiar no prontuário.`;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -38,8 +53,16 @@ serve(async (req) => {
     const previous = typeof body?.previousRound === "string" ? body.previousRound.slice(0, 20000) : "";
     const changes = typeof body?.changes === "string" ? body.changes.slice(0, 10000).trim() : "";
     const roundDate = typeof body?.roundDate === "string" ? body.roundDate.slice(0, 20) : "";
+    const mode = body?.mode === "refine" ? "refine" : "generate";
+    const currentRound = typeof body?.currentRound === "string" ? body.currentRound.slice(0, 20000) : "";
+    const instruction = typeof body?.instruction === "string" ? body.instruction.slice(0, 5000).trim() : "";
 
-    if (!changes && !previous) throw new Error("Informe as mudanças do dia ou uma evolução anterior");
+    if (mode === "refine") {
+      if (!currentRound.trim()) throw new Error("Nenhuma evolução para ajustar");
+      if (!instruction) throw new Error("Descreva o ajuste desejado");
+    } else if (!changes && !previous) {
+      throw new Error("Informe as mudanças do dia ou uma evolução anterior");
+    }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY não configurada");
@@ -68,6 +91,17 @@ ${changes || "Sem mudanças relatadas; mantenha o quadro estável descrito acima
 
 Escreva a evolução de hoje.`;
 
+    const refinePrompt = `DADOS DO PACIENTE
+${patientBlock || "Não informados"}
+
+EVOLUÇÃO ATUAL
+${currentRound}
+
+AJUSTE PEDIDO PELO MÉDICO
+${instruction}
+
+Reescreva a evolução completa já com esse ajuste.`;
+
     const started = Date.now();
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -78,8 +112,8 @@ Escreva a evolução de hoje.`;
       body: JSON.stringify({
         model: MODEL,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: userPrompt },
+          { role: "system", content: mode === "refine" ? REFINE_PROMPT : SYSTEM_PROMPT },
+          { role: "user", content: mode === "refine" ? refinePrompt : userPrompt },
         ],
         stream: false,
       }),
