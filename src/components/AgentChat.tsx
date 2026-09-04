@@ -1479,17 +1479,19 @@ export function AgentChat({
     }
   };
 
-  const sendMessage = async () => {
+  const sendMessage = async (preset?: unknown) => {
     if (isLoading) return;
-    if (radiologyActive) {
+    // `preset` só é considerado quando chamado programaticamente (não em onClick).
+    const presetContent = typeof preset === "string" ? preset : undefined;
+    if (!presetContent && radiologyActive) {
       await sendRadiologyMessage();
       return;
     }
-    if (ecgActive) {
+    if (!presetContent && ecgActive) {
       await sendEcgMessage();
       return;
     }
-    if (!message.trim()) {
+    if (!presetContent && !message.trim()) {
       const msg = "Mensagem vazia. Digite algum texto antes de enviar.";
       setValidationAnnouncement("");
       // re-set on next tick so screen readers re-announce repeated attempts
@@ -1503,7 +1505,7 @@ export function AgentChat({
     }
     setValidationAnnouncement("");
 
-    const messageContent = message;
+    const messageContent = presetContent ?? message;
     const baseConversation = currentConversation;
 
     // OPTIMISTIC UI: clear input + show user bubble + thinking instantly
