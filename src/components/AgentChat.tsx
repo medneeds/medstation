@@ -1015,7 +1015,7 @@ export function AgentChat({
 
       toast({
         title: "Não foi possível interpretar",
-        description: error?.message || "Falha ao processar a radiografia.",
+        description: errorMessage || "Falha ao processar a radiografia.",
         variant: "destructive",
       });
     } finally {
