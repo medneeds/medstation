@@ -34,6 +34,7 @@ import {
   buildEcgMessages,
   buildEcgSystemPrompt,
   detectEcgOutputMode,
+  isDirectEcgFollowUp,
   sanitizeEcgHistory,
   selectOwnedEcgEvidences,
   validateEcgEvidenceIds,
