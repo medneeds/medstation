@@ -28,6 +28,7 @@ const FUNCTION_TO_TOOL: Record<string, string> = {
   "extract-file-text": "ocr",
   "public-extract-text": "ocr",
   "radiograph-interpret": "examinus",
+  "ecg-interpret": "clinicus",
   "process-document": "ocr",
   "extract-case-from-document": "ocr",
   "carpe-diem-round": "modo_rotineiro",
