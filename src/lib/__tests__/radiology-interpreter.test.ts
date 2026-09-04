@@ -65,7 +65,7 @@ describe("Interpretador — validação de arquivos", () => {
     ]) {
       const v = validateRadiologyFile(f);
       expect(v.ok).toBe(false);
-      if (!v.ok) expect(v.reason).toContain(f.name);
+      if (v.ok === false) expect(v.reason).toContain(f.name);
     }
   });
 
