@@ -577,10 +577,13 @@ describe("ECG — AgentChat preserva o fluxo legado e o RX", () => {
     expect(src.match(/setClinicusModes\(\{ interpretador: v \}\)/g)).toHaveLength(2);
   });
 
-  it("o Interpretador de RX do Examinus não foi alterado no roteamento", () => {
+  it("o Interpretador do Examinus mantém RX e ganha ECG como modalidade", () => {
     expect(src).toContain('const radiologyActive = agentType === "examinus" && radiologyInterpretMode;');
-    expect(src).toContain("/functions/v1/radiograph-interpret");
+    expect(src).toContain('fn: "radiograph-interpret"');
     expect(src).toContain("origin: RADIOLOGY_ORIGIN");
+    expect(src).toContain("fn: ECG_FUNCTION_NAME");
+    expect(src).toContain("origin: ECG_ORIGIN");
+    expect(src).toContain("/functions/v1/${cfg.fn}");
   });
 });
 
@@ -616,6 +619,6 @@ describe("ECG — layout do workspace", () => {
     const src = readSrc("src/components/AgentChat.tsx");
     expect(src).toContain("{ecgActive ? (");
     expect(src).toContain("<EcgInterpreterWorkspace");
-    expect(src).toContain('accept={radiologyActive ? RADIOLOGY_ACCEPT_ATTR : ecgActive ? ECG_ACCEPT_ATTR :');
+    expect(src).toContain("accept={radiologyActive ? `${RADIOLOGY_ACCEPT_ATTR},application/pdf,.pdf` : ecgActive ? `${ECG_ACCEPT_ATTR},application/pdf,.pdf`");
   });
 });

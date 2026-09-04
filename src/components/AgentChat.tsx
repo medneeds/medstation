@@ -26,7 +26,9 @@ import {
   buildEcgRequestBody,
   canSendEcgMessage,
   collectEcgEvidenceIds,
+  describeEcgMessage,
   ecgAssistantMessageMetadata,
+  ecgChipLabel,
   ecgEvidenceMetadata,
   ecgStoragePath,
   ecgUserMessageMetadata,
@@ -38,6 +40,16 @@ import {
   type EcgMime,
   type EcgOutputMode,
 } from "@/lib/ecgInterpreter";
+import {
+  INTERPRETER_MODALITIES,
+  INTERPRETER_MODALITY_HINT,
+  INTERPRETER_MODALITY_LABEL,
+  applyModalityDetection,
+  conversationInterpreterModality,
+  detectInterpreterModality,
+  interpreterCopy,
+  type InterpreterModality,
+} from "@/lib/interpreterModality";
 import {
   MAX_RADIOLOGY_IMAGES,
   RADIOLOGY_ACCEPT_ATTR,
@@ -61,7 +73,7 @@ import {
   type RadiologyOutputMode,
 } from "@/lib/radiologyInterpreter";
 import { exportAgentConversationToPDF } from "@/utils/pdfExport";
-import { pdfToImages } from "@/utils/pdfToImages";
+import { pdfToImages, pdfToImageFiles } from "@/utils/pdfToImages";
 import { AgentVoiceInput } from "@/components/AgentVoiceInput";
 import { ThinkingIndicator } from "@/components/ThinkingIndicator";
 import { StructuredResponse } from "@/components/chat/StructuredResponse";
@@ -427,14 +439,22 @@ export function AgentChat({
   const [clinicalImpression, setClinicalImpression] = useState(false);
   const [compactMode, setCompactMode] = useState(true);
   const [examSuggestMode, setExamSuggestMode] = useState(false);
-  // Interpretador (Examinus) — V1: radiografia de tórax. Exclusivo com o Consultor.
+  // Interpretador (Examinus) — modalidades de primeira classe: radiografia de tórax e ECG.
+  // Exclusivo com o Consultor. A modalidade é sempre visível e corrigível antes do envio.
   const [radiologyInterpretMode, setRadiologyInterpretMode] = useState(false);
   const [radiologyAttachments, setRadiologyAttachments] = useState<RadiologyAttachment[]>([]);
+  const [interpreterModality, setInterpreterModality] = useState<InterpreterModality>("radiografia");
+  /** Verdadeiro quando o médico escolheu a modalidade no seletor: a detecção automática nunca sobrepõe. */
+  const [modalityLocked, setModalityLocked] = useState(false);
   const objectUrlsRef = useRef<string[]>([]);
   const radiologyActive = agentType === "examinus" && radiologyInterpretMode;
-  const radiologyHistoricalIds = radiologyActive
-    ? collectRadiologyEvidenceIds(currentConversation?.messages ?? [])
-    : [];
+  const ecgInExaminus = radiologyActive && interpreterModality === "ecg";
+  const copy = interpreterCopy(interpreterModality);
+  const radiologyHistoricalIds = !radiologyActive
+    ? []
+    : ecgInExaminus
+      ? collectEcgEvidenceIds(currentConversation?.messages ?? [])
+      : collectRadiologyEvidenceIds(currentConversation?.messages ?? []);
 
   // Interpretador (Clínicus) — V1: eletrocardiograma. Exclusivo com Anamnese e Relatório.
   const [ecgInterpretMode, setEcgInterpretMode] = useState(false);
@@ -445,6 +465,32 @@ export function AgentChat({
   const ecgHistoricalIds = ecgActive
     ? collectEcgEvidenceIds(currentConversation?.messages ?? [])
     : [];
+
+  // Ao abrir/reabrir uma conversa que já usou o Interpretador, respeita a modalidade persistida.
+  const conversationModality = radiologyActive
+    ? conversationInterpreterModality(currentConversation?.messages ?? [])
+    : null;
+  useEffect(() => {
+    if (!conversationModality) return;
+    setInterpreterModality(conversationModality);
+    setModalityLocked(true);
+  }, [conversationModality, currentConversation?.id]);
+
+  /** Troca manual de modalidade: sempre permitida antes do envio; descarta a fila pendente. */
+  const chooseInterpreterModality = (next: InterpreterModality) => {
+    if (next === interpreterModality) {
+      setModalityLocked(true);
+      return;
+    }
+    setModalityLocked(true);
+    setInterpreterModality(next);
+    if (radiologyAttachments.length > 0) {
+      for (const att of radiologyAttachments) URL.revokeObjectURL(att.previewUrl);
+      objectUrlsRef.current = objectUrlsRef.current.filter((u) => !radiologyAttachments.some((a) => a.previewUrl === u));
+      setRadiologyAttachments([]);
+      toast({ description: `Modalidade alterada para ${INTERPRETER_MODALITY_LABEL[next]}. Anexe o exame novamente.` });
+    }
+  };
 
   const canSend = radiologyActive
     ? canSendRadiologyMessage({ text: message, pendingCount: radiologyAttachments.length, historicalCount: radiologyHistoricalIds.length })
@@ -844,26 +890,55 @@ export function AgentChat({
 
 
   /**
-   * Interpretador (Examinus): envia a(s) radiografia(s) ORIGINAL(is) ao motor multimodal
-   * `radiograph-interpret`. Fluxo: upload no bucket privado → registro em `evidences`
-   * → chamada com IDs (nunca base64) → streaming da leitura.
+   * Interpretador (Examinus): envia a(s) imagem(ns) ORIGINAL(is) ao motor multimodal da
+   * modalidade selecionada — `radiograph-interpret` (radiografia) ou `ecg-interpret` (ECG).
+   * Fluxo idêntico nas duas: upload no bucket privado → registro em `evidences`
+   * → chamada com IDs (nunca base64) → streaming da leitura. Nunca passa por OCR.
    */
   const sendRadiologyMessage = async () => {
     if (isLoading) return;
+    const isEcg = interpreterModality === "ecg";
+    const cfg = isEcg
+      ? {
+          fn: ECG_FUNCTION_NAME,
+          origin: ECG_ORIGIN,
+          tags: ["ecg", "eletrocardiograma", "interpretador"],
+          header: "X-Ecg-Output-Mode",
+          normalize: normalizeEcgPrompt,
+          storagePath: (userId: string, mime: string, i: number, stamp: number) => ecgStoragePath(userId, mime as EcgMime, i, stamp),
+          evidenceMetadata: (mime: string) => ecgEvidenceMetadata(mime as EcgMime),
+          userMetadata: ecgUserMessageMetadata,
+          assistantMetadata: (ids: string[], mode: string) => ecgAssistantMessageMetadata(ids, mode as EcgOutputMode),
+          selectIds: selectEcgEvidenceIdsForRequest,
+          buildBody: buildEcgRequestBody,
+        }
+      : {
+          fn: "radiograph-interpret",
+          origin: RADIOLOGY_ORIGIN,
+          tags: ["radiografia", "torax", "interpretador"],
+          header: "X-Radiology-Output-Mode",
+          normalize: normalizeRadiologyPrompt,
+          storagePath: (userId: string, mime: string, i: number, stamp: number) => radiologyStoragePath(userId, mime as RadiologyMime, i, stamp),
+          evidenceMetadata: (mime: string) => radiologyEvidenceMetadata(mime as RadiologyMime),
+          userMetadata: radiologyUserMessageMetadata,
+          assistantMetadata: (ids: string[], mode: string) => radiologyAssistantMessageMetadata(ids, mode as RadiologyOutputMode),
+          selectIds: selectEvidenceIdsForRequest,
+          buildBody: buildRadiologyRequestBody,
+        };
     const pendingFiles = radiologyAttachments;
     const historicalIds = radiologyHistoricalIds;
 
     if (!canSendRadiologyMessage({ text: message, pendingCount: pendingFiles.length, historicalCount: historicalIds.length })) {
-      const msg = "Anexe uma radiografia de tórax (JPEG, PNG ou WebP) para interpretar.";
+      const msg = copy.emptyError;
       setValidationAnnouncement("");
       setTimeout(() => setValidationAnnouncement(msg), 50);
-      toast({ title: "Nenhuma radiografia anexada", description: msg, variant: "destructive" });
+      toast({ title: "Nenhum exame anexado", description: msg, variant: "destructive" });
       return;
     }
     setValidationAnnouncement("");
 
     const typedText = message;
-    const messageContent = normalizeRadiologyPrompt(typedText);
+    const messageContent = cfg.normalize(typedText);
     const baseConversation = currentConversation;
 
     // OPTIMISTIC UI
@@ -875,12 +950,12 @@ export function AgentChat({
       created_at: new Date().toISOString(),
       pending: true,
       attachments: pendingFiles.map((a) => ({ previewUrl: a.previewUrl, name: a.name })),
-      metadata: pendingFiles.length > 0 ? radiologyUserMessageMetadata([], pendingFiles.length) : undefined,
+      metadata: pendingFiles.length > 0 ? cfg.userMetadata([], pendingFiles.length) : undefined,
     };
     const thinkingMessage: Message = {
       id: "streaming-temp",
       role: "assistant",
-      content: pendingFiles.length > 0 ? "Analisando a radiografia..." : "Pensando...",
+      content: pendingFiles.length > 0 ? copy.analyzing : "Pensando...",
       created_at: new Date().toISOString(),
     };
     const optimisticConversation: Conversation = baseConversation
@@ -943,7 +1018,7 @@ export function AgentChat({
       const batchStamp = Date.now();
       for (let i = 0; i < pendingFiles.length; i++) {
         const att = pendingFiles[i];
-        const filePath = radiologyStoragePath(user.id, att.mime, i, batchStamp);
+        const filePath = cfg.storagePath(user.id, att.mime, i, batchStamp);
         const { error: uploadError } = await supabase.storage
           .from("evidences")
           .upload(filePath, att.file, { contentType: att.mime, upsert: false });
@@ -963,9 +1038,9 @@ export function AgentChat({
             title: att.name,
             file_path: filePath,
             file_size: att.size,
-            metadata: radiologyEvidenceMetadata(att.mime),
-            tags: ["radiografia", "torax", "interpretador"],
-            origin: RADIOLOGY_ORIGIN,
+            metadata: cfg.evidenceMetadata(att.mime),
+            tags: cfg.tags,
+            origin: cfg.origin,
             is_active: true,
           })
           .select("id")
@@ -978,8 +1053,8 @@ export function AgentChat({
       }
       uploadsComplete = true;
 
-      const evidenceIds = selectEvidenceIdsForRequest(newIds, historicalIds);
-      const userMetadata = radiologyUserMessageMetadata(evidenceIds, newIds.length);
+      const evidenceIds = cfg.selectIds(newIds, historicalIds);
+      const userMetadata = cfg.userMetadata(evidenceIds, newIds.length);
 
       // 2) Persiste a mensagem do usuário (com IDs, sem base64) — em segundo plano.
       // Importante: o builder do PostgREST é "thenable" e dispara a query a cada await/then.
@@ -1019,14 +1094,14 @@ export function AgentChat({
       const userMessage: Message = { ...optimisticUserMessage, metadata: userMetadata };
 
       // 3) Chamada ao motor multimodal (streaming)
-      const body = buildRadiologyRequestBody({
+      const body = cfg.buildBody({
         messages: [...conversation.messages, userMessage],
         evidenceIds,
         caseId: selectedCaseId,
         outputMode: "auto",
       });
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/radiograph-interpret`, {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${cfg.fn}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1045,7 +1120,7 @@ export function AgentChat({
         throw new Error(detail);
       }
 
-      const outputMode = (response.headers.get("X-Radiology-Output-Mode") as RadiologyOutputMode | null) ?? "auto";
+      const outputMode = response.headers.get(cfg.header) ?? "auto";
 
       const assistantContent = await readAssistantSSE(response.body, (accumulated) => {
         setCurrentConversation((prev) => {
@@ -1068,7 +1143,7 @@ export function AgentChat({
           conversation_id: conversation.id,
           role: "assistant",
           content: assistantContent,
-          metadata: radiologyAssistantMessageMetadata(evidenceIds, outputMode),
+          metadata: cfg.assistantMetadata(evidenceIds, outputMode),
         })
         .select()
         .single();
@@ -1082,7 +1157,7 @@ export function AgentChat({
       const finalMessages = [...conversation.messages, finalUserMessage, assistantMessage];
 
       const lastPreview = pendingFiles.length > 0
-        ? `Radiografia (${pendingFiles.length}) · ${messageContent}`
+        ? `${copy.lastPreviewPrefix} (${pendingFiles.length}) · ${messageContent}`
         : messageContent;
       await supabase
         .from("conversations")
@@ -1115,7 +1190,7 @@ export function AgentChat({
 
       toast({
         title: "Não foi possível interpretar",
-        description: errorMessage || "Falha ao processar a radiografia.",
+        description: errorMessage || copy.failure,
         variant: "destructive",
       });
     } finally {
@@ -1793,21 +1868,70 @@ export function AgentChat({
   };
 
   /**
-   * Interpretador (Examinus): enfileira radiografias originais para envio.
-   * Só JPEG/PNG/WebP até 10 MB, máximo 4. Não há OCR aqui.
+   * PDF anexado a um Interpretador: as páginas são renderizadas como imagem ORIGINAL no
+   * navegador e seguem para o modelo multimodal. Nunca passa por OCR.
    */
-  const addRadiologyAttachments = (files: File[]) => {
+  const expandInterpreterFiles = async (files: File[], slots: number): Promise<File[]> => {
+    const out: File[] = [];
+    for (const file of files) {
+      const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+      if (!isPdf) {
+        out.push(file);
+        continue;
+      }
+      try {
+        const remaining = Math.max(1, slots - out.length);
+        const pages = await pdfToImageFiles(file, { maxPages: remaining });
+        if (pages.length === 0) throw new Error("PDF sem páginas legíveis");
+        out.push(...pages);
+      } catch (e) {
+        console.error("[interpretador] pdf render error:", e);
+        toast({
+          title: "PDF não pôde ser convertido",
+          description: `Não consegui renderizar "${file.name}". Envie o exame como JPEG, PNG ou WebP.`,
+          variant: "destructive",
+        });
+      }
+    }
+    return out;
+  };
+
+  /**
+   * Interpretador (Examinus): enfileira o exame ORIGINAL (radiografia ou ECG) para envio.
+   * JPEG/PNG/WebP ou PDF (renderizado em imagem), até 10 MB por imagem, máximo 4. Não há OCR aqui.
+   * A detecção automática de modalidade é auxiliar: só age com pista textual explícita e
+   * nunca sobrepõe uma escolha manual do médico.
+   */
+  const addRadiologyAttachments = async (files: File[]) => {
     if (files.length === 0) return;
-    const { accepted, rejected } = appendRadiologyFiles(radiologyAttachments.length, files);
+
+    const detection = detectInterpreterModality(files.map((f) => ({ name: f.name })), message);
+    const applied = applyModalityDetection({ current: interpreterModality, locked: modalityLocked, detection });
+    const modality = applied.modality;
+    if (applied.changed) {
+      setInterpreterModality(modality);
+      toast({
+        description: `Modalidade ajustada para ${INTERPRETER_MODALITY_LABEL[modality]} pelo nome do arquivo. Você pode corrigir no seletor antes de enviar.`,
+      });
+    }
+
+    const expanded = await expandInterpreterFiles(files, Math.max(0, MAX_RADIOLOGY_IMAGES - radiologyAttachments.length));
+    if (expanded.length === 0) return;
+
+    const { accepted, rejected } =
+      modality === "ecg"
+        ? appendEcgFiles(radiologyAttachments.length, expanded)
+        : appendRadiologyFiles(radiologyAttachments.length, expanded);
+    const labels = interpreterCopy(modality);
     if (accepted.length > 0) {
       const stamp = Date.now();
       const next: RadiologyAttachment[] = accepted.map(({ file, mime }, i) => {
         const previewUrl = URL.createObjectURL(file);
         objectUrlsRef.current.push(previewUrl);
         return {
-          id: `rx-${stamp}-${i}-${Math.random().toString(36).slice(2, 8)}`,
+          id: `ix-${stamp}-${i}-${Math.random().toString(36).slice(2, 8)}`,
           file,
-          mime,
+          mime: mime as RadiologyMime,
           previewUrl,
           name: file.name,
           size: file.size,
@@ -1815,12 +1939,12 @@ export function AgentChat({
       });
       setRadiologyAttachments((prev) => [...prev, ...next]);
       toast({
-        description: `${accepted.length} ${accepted.length === 1 ? "radiografia pronta" : "radiografias prontas"} para interpretar. Clique em enviar.`,
+        description: `${accepted.length} ${accepted.length === 1 ? labels.attachedOne : labels.attachedMany}. Confirme a modalidade (${labels.label}) e clique em enviar.`,
       });
     }
     if (rejected.length > 0) {
       toast({
-        title: rejected.length === files.length ? "Imagem não aceita" : "Algumas imagens não foram aceitas",
+        title: rejected.length === expanded.length ? "Arquivo não aceito" : "Alguns arquivos não foram aceitos",
         description: rejected.map((r) => r.reason).join(" "),
         variant: "destructive",
       });
@@ -1840,11 +1964,13 @@ export function AgentChat({
 
   /**
    * Interpretador (Clínicus): enfileira traçados de ECG originais para envio.
-   * Só JPEG/PNG/WebP até 10 MB, máximo 4. Não há OCR aqui.
+   * JPEG/PNG/WebP ou PDF (renderizado em imagem no navegador), até 10 MB, máximo 4. Não há OCR aqui.
    */
-  const addEcgAttachments = (files: File[]) => {
+  const addEcgAttachments = async (files: File[]) => {
     if (files.length === 0) return;
-    const { accepted, rejected } = appendEcgFiles(ecgAttachments.length, files);
+    const expandedFiles = await expandInterpreterFiles(files, Math.max(0, MAX_ECG_IMAGES - ecgAttachments.length));
+    if (expandedFiles.length === 0) return;
+    const { accepted, rejected } = appendEcgFiles(ecgAttachments.length, expandedFiles);
     if (accepted.length > 0) {
       const stamp = Date.now();
       const next: EcgAttachment[] = accepted.map(({ file, mime }, i) => {
@@ -1866,7 +1992,7 @@ export function AgentChat({
     }
     if (rejected.length > 0) {
       toast({
-        title: rejected.length === files.length ? "Arquivo não aceito" : "Alguns arquivos não foram aceitos",
+        title: rejected.length === expandedFiles.length ? "Arquivo não aceito" : "Alguns arquivos não foram aceitos",
         description: rejected.map((r) => r.reason).join(" "),
         variant: "destructive",
       });
@@ -1925,13 +2051,13 @@ export function AgentChat({
     // Nunca passa por OCR (extract-file-text) — retorno antes de qualquer extração.
     if (radiologyActive) {
       const { radiology } = routeExaminusFiles(files, { radiologyInterpretMode });
-      addRadiologyAttachments(radiology);
+      await addRadiologyAttachments(radiology);
       return;
     }
     // Interpretador (Clínicus/ECG): mesmo princípio — traçado original, sem OCR.
     if (ecgActive) {
       const { ecg } = routeClinicusFiles(files, { ecgInterpretMode });
-      addEcgAttachments(ecg);
+      await addEcgAttachments(ecg);
       return;
     }
 
@@ -2094,16 +2220,16 @@ export function AgentChat({
       {isDragging && (
         <div className="absolute inset-0 bg-primary/10 border-4 border-dashed border-primary rounded-lg flex items-center justify-center z-50 backdrop-blur-sm">
           <div className="text-center">
-            {radiologyActive ? (
+            {radiologyActive && !ecgInExaminus ? (
               <ScanLine className="h-16 w-16 mx-auto mb-4 text-primary" />
-            ) : ecgActive ? (
+            ) : ecgActive || ecgInExaminus ? (
               <Activity className="h-16 w-16 mx-auto mb-4 text-primary" />
             ) : (
               <Paperclip className="h-16 w-16 mx-auto mb-4 text-primary" />
             )}
-            <p className="text-xl font-bold">{radiologyActive ? "Solte a radiografia aqui" : ecgActive ? "Solte o ECG aqui" : "Solte o arquivo aqui"}</p>
+            <p className="text-xl font-bold">{radiologyActive ? copy.dropTitle : ecgActive ? "Solte o ECG aqui" : "Solte o arquivo aqui"}</p>
             <p className="text-sm text-muted-foreground mt-2">
-              {radiologyActive || ecgActive ? "JPEG, PNG ou WebP · até 4 imagens · sem PDF ou DICOM" : "Imagens, PDF, DOCX, PPTX, XLSX, TXT, MD"}
+              {radiologyActive || ecgActive ? "JPEG, PNG, WebP ou PDF · até 4 imagens · sem DICOM" : "Imagens, PDF, DOCX, PPTX, XLSX, TXT, MD"}
             </p>
           </div>
         </div>
@@ -2112,7 +2238,7 @@ export function AgentChat({
       <input
         ref={fileInputRef}
         type="file"
-        accept={radiologyActive ? RADIOLOGY_ACCEPT_ATTR : ecgActive ? ECG_ACCEPT_ATTR : "image/*,application/pdf,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.md"}
+        accept={radiologyActive ? `${RADIOLOGY_ACCEPT_ATTR},application/pdf,.pdf` : ecgActive ? `${ECG_ACCEPT_ATTR},application/pdf,.pdf` : "image/*,application/pdf,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.md"}
         multiple
         onChange={handleFileSelect}
         className="hidden"
@@ -2628,10 +2754,17 @@ export function AgentChat({
                   ) : (
                     <>
                       {msg.role === "user" && (() => {
-                        const info = describeRadiologyMessage(msg.metadata);
+                        const rxInfo = describeRadiologyMessage(msg.metadata);
+                        const ecgInfo = describeEcgMessage(msg.metadata);
                         const previews = (msg.attachments ?? []).filter((a) => !!a.previewUrl);
-                        if (!info && previews.length === 0) return null;
-                        const label = info ? radiologyChipLabel(info) : `${previews.length} ${previews.length === 1 ? "radiografia anexada" : "radiografias anexadas"}`;
+                        if (!rxInfo && !ecgInfo && previews.length === 0) return null;
+                        const isEcgMsg = !!ecgInfo;
+                        const label = ecgInfo
+                          ? ecgChipLabel(ecgInfo)
+                          : rxInfo
+                            ? radiologyChipLabel(rxInfo)
+                            : `${previews.length} ${previews.length === 1 ? "exame anexado" : "exames anexados"}`;
+                        const ChipIcon = isEcgMsg ? Activity : ScanLine;
                         return (
                           <div className="mb-2 flex flex-wrap items-center gap-1.5">
                             {previews.map((a) => (
@@ -2644,7 +2777,7 @@ export function AgentChat({
                               />
                             ))}
                             <span className="inline-flex items-center gap-1 rounded-full bg-primary-foreground/15 px-2 py-0.5 text-[11px] font-medium">
-                              <ScanLine className="h-3 w-3" />
+                              <ChipIcon className="h-3 w-3" />
                               {label}
                             </span>
                           </div>
@@ -2732,9 +2865,34 @@ export function AgentChat({
 
       {/* Input area */}
       <div className="border-t pt-3 md:pt-4 sticky bottom-0 bg-background z-10 pb-[env(safe-area-inset-bottom)] md:static md:pb-0">
-        {/* Interpretador (Examinus): radiografias pendentes antes do envio */}
+        {/* Interpretador (Examinus): modalidade sempre visível e corrigível antes do envio */}
+        {radiologyActive && (
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-medium text-muted-foreground">Modalidade:</span>
+            <div className="inline-flex rounded-full border border-border/70 bg-muted/40 p-0.5" role="group" aria-label="Modalidade do Interpretador">
+              {INTERPRETER_MODALITIES.map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => chooseInterpreterModality(m)}
+                  disabled={isLoading}
+                  aria-pressed={interpreterModality === m}
+                  className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors disabled:opacity-50 ${
+                    interpreterModality === m
+                      ? "bg-cyan-500/20 text-cyan-700 dark:text-cyan-300"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {INTERPRETER_MODALITY_LABEL[m]}
+                </button>
+              ))}
+            </div>
+            <span className="text-[11px] text-muted-foreground">{INTERPRETER_MODALITY_HINT[interpreterModality]}</span>
+          </div>
+        )}
+        {/* Interpretador (Examinus): exames pendentes antes do envio */}
         {radiologyActive && radiologyAttachments.length > 0 && (
-          <div className="mb-2 flex items-start gap-2.5 overflow-x-auto pb-1 -mx-1 px-1 animate-fade-in" aria-label="Radiografias anexadas">
+          <div className="mb-2 flex items-start gap-2.5 overflow-x-auto pb-1 -mx-1 px-1 animate-fade-in" aria-label={copy.pendingAria}>
             {radiologyAttachments.map((att) => (
               <div key={att.id} className="relative shrink-0 w-16 md:w-20">
                 <img
@@ -2764,8 +2922,12 @@ export function AgentChat({
         )}
         {radiologyActive && radiologyAttachments.length === 0 && radiologyHistoricalIds.length > 0 && (
           <p className="mb-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-            <ScanLine className="h-3 w-3 shrink-0 text-cyan-700 dark:text-cyan-300" />
-            Perguntas seguirão sobre {radiologyHistoricalIds.length === 1 ? "a radiografia já anexada" : `as ${radiologyHistoricalIds.length} radiografias já anexadas`} nesta conversa. Anexe outra imagem para trocar.
+            {ecgInExaminus ? (
+              <Activity className="h-3 w-3 shrink-0 text-cyan-700 dark:text-cyan-300" />
+            ) : (
+              <ScanLine className="h-3 w-3 shrink-0 text-cyan-700 dark:text-cyan-300" />
+            )}
+            Perguntas seguirão sobre {radiologyHistoricalIds.length === 1 ? copy.followUpNoticeOne : copy.followUpNoticeMany(radiologyHistoricalIds.length)} nesta conversa. Anexe outro exame para trocar.
           </p>
         )}
 
@@ -2787,7 +2949,7 @@ export function AgentChat({
               onPressedChange={(v) => setExaminusModes({ interpretador: v })}
               size="sm"
               className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-cyan-500/20 data-[state=on]:text-cyan-700 dark:data-[state=on]:text-cyan-300"
-              title="Interpretador: segunda leitura de radiografia de tórax a partir da imagem"
+              title="Interpretador: segunda leitura de radiografia de tórax ou ECG a partir da imagem original"
             >
               <ScanLine className="w-3 h-3 mr-1" />
               <span>Interpretador</span>
@@ -3272,7 +3434,7 @@ export function AgentChat({
                   icon={ScanLine}
                   tone="cyan"
                   label="Interpretador"
-                  info="Segunda leitura de radiografia de tórax: envie a imagem (JPEG, PNG ou WebP, até 4) e receba achados, impressão com grau de confiança e limitações. A imagem original vai direto ao modelo."
+                  info="Segunda leitura de radiografia de tórax ou de ECG: escolha a modalidade, envie o exame (JPEG, PNG, WebP ou PDF, até 4) e receba achados, impressão com grau de confiança e limitações. A imagem original vai direto ao modelo, sem OCR."
                   pressed={radiologyInterpretMode}
                   onPressedChange={(v) => setExaminusModes({ interpretador: v })}
                 />
@@ -3353,7 +3515,7 @@ export function AgentChat({
                     sendMessage();
                   }
                 }}
-                placeholder={radiologyActive ? "Envie a radiografia e, se quiser, o contexto clínico" : "Mensagem... (Shift+Enter para nova linha)"}
+                placeholder={radiologyActive ? copy.placeholder : "Mensagem... (Shift+Enter para nova linha)"}
                 maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
                 rows={1}
                 aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
@@ -3402,7 +3564,7 @@ export function AgentChat({
               disabled={!canSend || isLoading || overLimit}
               size="icon"
               className="shrink-0 h-10 w-10 rounded-full"
-              title={!canSend ? (radiologyActive ? "Anexe uma radiografia para enviar" : "Digite uma mensagem para enviar") : radiologyActive ? "Interpretar radiografia" : "Enviar mensagem"}
+              title={!canSend ? (radiologyActive ? copy.sendEmptyTitle : "Digite uma mensagem para enviar") : radiologyActive ? copy.sendTitle : "Enviar mensagem"}
             >
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
@@ -3491,7 +3653,7 @@ export function AgentChat({
                 onClick={sendMessage}
                 disabled={!canSend || isLoading || overLimit}
                 className="h-11 px-7 rounded-xl font-semibold transition-[opacity,box-shadow] duration-200 hover:opacity-90 active:scale-95"
-                title={!canSend ? (radiologyActive ? "Anexe uma radiografia para enviar" : "Digite uma mensagem para enviar") : radiologyActive ? "Interpretar radiografia" : "Enviar mensagem"}
+                title={!canSend ? (radiologyActive ? copy.sendEmptyTitle : "Digite uma mensagem para enviar") : radiologyActive ? copy.sendTitle : "Enviar mensagem"}
               >
                 {isLoading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
