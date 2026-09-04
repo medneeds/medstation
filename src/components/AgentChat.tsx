@@ -766,7 +766,8 @@ export function AgentChat({
     }
     setValidationAnnouncement("");
 
-    const messageContent = normalizeRadiologyPrompt(message);
+    const typedText = message;
+    const messageContent = normalizeRadiologyPrompt(typedText);
     const baseConversation = currentConversation;
 
     // OPTIMISTIC UI
