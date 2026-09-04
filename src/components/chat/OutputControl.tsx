@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Toggle } from "@/components/ui/toggle";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-export type ControlTone = "primary" | "amber" | "blue" | "green" | "violet";
+export type ControlTone = "primary" | "amber" | "blue" | "green" | "violet" | "cyan";
 
 const TONE_ON: Record<ControlTone, string> = {
   primary: "data-[state=on]:bg-primary/15 data-[state=on]:text-primary",
@@ -10,6 +10,7 @@ const TONE_ON: Record<ControlTone, string> = {
   blue: "data-[state=on]:bg-blue-500/15 data-[state=on]:text-blue-600 dark:data-[state=on]:text-blue-400",
   green: "data-[state=on]:bg-green-500/15 data-[state=on]:text-green-600 dark:data-[state=on]:text-green-400",
   violet: "data-[state=on]:bg-violet-500/15 data-[state=on]:text-violet-600 dark:data-[state=on]:text-violet-400",
+  cyan: "data-[state=on]:bg-cyan-500/15 data-[state=on]:text-cyan-700 dark:data-[state=on]:text-cyan-300",
 };
 
 export function InfoTip({ text, label }: { text: string; label: string }) {

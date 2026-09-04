@@ -1012,6 +1012,46 @@ export function AgentChat({
     }
   };
 
+  /**
+   * Interpretador (Examinus): enfileira radiografias originais para envio.
+   * Só JPEG/PNG/WebP até 10 MB, máximo 4. Não há OCR aqui.
+   */
+  const addRadiologyAttachments = (files: File[]) => {
+    if (files.length === 0) return;
+    const { accepted, rejected } = appendRadiologyFiles(radiologyAttachments.length, files);
+    if (accepted.length > 0) {
+      const stamp = Date.now();
+      const next: RadiologyAttachment[] = accepted.map(({ file, mime }, i) => {
+        const previewUrl = URL.createObjectURL(file);
+        objectUrlsRef.current.push(previewUrl);
+        return {
+          id: `rx-${stamp}-${i}-${Math.random().toString(36).slice(2, 8)}`,
+          file,
+          mime,
+          type: mime,
+          previewUrl,
+          name: file.name,
+          size: file.size,
+        };
+      });
+      setRadiologyAttachments((prev) => [...prev, ...next]);
+      toast({
+        description: `${accepted.length} ${accepted.length === 1 ? "radiografia pronta" : "radiografias prontas"} para interpretar. Clique em enviar.`,
+      });
+    }
+    if (rejected.length > 0) {
+      toast({
+        title: rejected.length === files.length ? "Imagem não aceita" : "Algumas imagens não foram aceitas",
+        description: rejected.map((r) => r.reason).join(" "),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const removeRadiologyAttachment = (id: string) => {
+    setRadiologyAttachments((prev) => prev.filter((a) => a.id !== id));
+  };
+
   const ocrImage = async (
     base64: string,
     mimeType: string,
@@ -1049,7 +1089,16 @@ export function AgentChat({
     });
 
   const processFiles = async (files: File[]) => {
+    // Interpretador (Examinus): a imagem ORIGINAL vai para o bucket privado e para o modelo.
+    // Nunca passa por OCR (extract-file-text) — retorno antes de qualquer extração.
+    if (radiologyActive) {
+      const { radiology } = routeExaminusFiles(files, { radiologyInterpretMode });
+      addRadiologyAttachments(radiology);
+      return;
+    }
+
     setUploadingFile(true);
+
 
     try {
       const sections: string[] = [];
@@ -1207,9 +1256,15 @@ export function AgentChat({
       {isDragging && (
         <div className="absolute inset-0 bg-primary/10 border-4 border-dashed border-primary rounded-lg flex items-center justify-center z-50 backdrop-blur-sm">
           <div className="text-center">
-            <Paperclip className="h-16 w-16 mx-auto mb-4 text-primary" />
-            <p className="text-xl font-bold">Solte o arquivo aqui</p>
-            <p className="text-sm text-muted-foreground mt-2">Imagens, PDF, DOCX, PPTX, XLSX, TXT, MD</p>
+            {radiologyActive ? (
+              <ScanLine className="h-16 w-16 mx-auto mb-4 text-primary" />
+            ) : (
+              <Paperclip className="h-16 w-16 mx-auto mb-4 text-primary" />
+            )}
+            <p className="text-xl font-bold">{radiologyActive ? "Solte a radiografia aqui" : "Solte o arquivo aqui"}</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              {radiologyActive ? "JPEG, PNG ou WebP · até 4 imagens · sem PDF ou DICOM" : "Imagens, PDF, DOCX, PPTX, XLSX, TXT, MD"}
+            </p>
           </div>
         </div>
       )}
@@ -1217,7 +1272,7 @@ export function AgentChat({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*,application/pdf,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.md"
+        accept={radiologyActive ? RADIOLOGY_ACCEPT_ATTR : "image/*,application/pdf,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.md"}
         multiple
         onChange={handleFileSelect}
         className="hidden"
@@ -1665,10 +1720,35 @@ export function AgentChat({
                       trailing={isStreaming ? <StreamCursor /> : undefined}
                     />
                   ) : (
-                    <p className={`whitespace-pre-wrap leading-relaxed ${focusMode ? "text-base md:text-lg" : "text-sm"}`}>
-                      {msg.content}
-                      {isStreaming && <StreamCursor />}
-                    </p>
+                    <>
+                      {msg.role === "user" && (() => {
+                        const info = describeRadiologyMessage(msg.metadata);
+                        const previews = (msg.attachments ?? []).filter((a) => !!a.previewUrl);
+                        if (!info && previews.length === 0) return null;
+                        const label = info ? radiologyChipLabel(info) : `${previews.length} ${previews.length === 1 ? "radiografia anexada" : "radiografias anexadas"}`;
+                        return (
+                          <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                            {previews.map((a) => (
+                              <img
+                                key={a.previewUrl}
+                                src={a.previewUrl}
+                                alt={a.name}
+                                loading="lazy"
+                                className="h-14 w-14 md:h-16 md:w-16 rounded-lg object-cover border border-primary-foreground/30 bg-black/20"
+                              />
+                            ))}
+                            <span className="inline-flex items-center gap-1 rounded-full bg-primary-foreground/15 px-2 py-0.5 text-[11px] font-medium">
+                              <ScanLine className="h-3 w-3" />
+                              {label}
+                            </span>
+                          </div>
+                        );
+                      })()}
+                      <p className={`whitespace-pre-wrap leading-relaxed ${focusMode ? "text-base md:text-lg" : "text-sm"}`}>
+                        {msg.content}
+                        {isStreaming && <StreamCursor />}
+                      </p>
+                    </>
                   )}
 
                   <p className="text-xs opacity-70 mt-1 flex items-center gap-1">
@@ -1746,12 +1826,49 @@ export function AgentChat({
 
       {/* Input area */}
       <div className="border-t pt-3 md:pt-4 sticky bottom-0 bg-background z-10 pb-[env(safe-area-inset-bottom)] md:static md:pb-0">
+        {/* Interpretador (Examinus): radiografias pendentes antes do envio */}
+        {radiologyActive && radiologyAttachments.length > 0 && (
+          <div className="mb-2 flex items-start gap-2.5 overflow-x-auto pb-1 -mx-1 px-1 animate-fade-in" aria-label="Radiografias anexadas">
+            {radiologyAttachments.map((att) => (
+              <div key={att.id} className="relative shrink-0 w-16 md:w-20">
+                <img
+                  src={att.previewUrl}
+                  alt={att.name}
+                  className="h-16 w-16 md:h-20 md:w-20 rounded-xl object-cover border border-border/60 bg-muted"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeRadiologyAttachment(att.id)}
+                  disabled={isLoading}
+                  aria-label={`Remover ${att.name}`}
+                  title="Remover imagem"
+                  className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-background border border-border shadow-sm inline-flex items-center justify-center text-muted-foreground hover:text-destructive hover:border-destructive/60 transition-colors disabled:opacity-50"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+                <span className="mt-1 block truncate text-[10px] text-muted-foreground" title={att.name}>
+                  {att.name}
+                </span>
+              </div>
+            ))}
+            <p className="shrink-0 self-center pl-1 text-[11px] text-muted-foreground">
+              {radiologyAttachments.length}/{MAX_RADIOLOGY_IMAGES} · {formatBytes(radiologyAttachments.reduce((acc, a) => acc + a.size, 0))}
+            </p>
+          </div>
+        )}
+        {radiologyActive && radiologyAttachments.length === 0 && radiologyHistoricalIds.length > 0 && (
+          <p className="mb-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <ScanLine className="h-3 w-3 shrink-0 text-cyan-700 dark:text-cyan-300" />
+            Perguntas seguirão sobre {radiologyHistoricalIds.length === 1 ? "a radiografia já anexada" : `as ${radiologyHistoricalIds.length} radiografias já anexadas`} nesta conversa. Anexe outra imagem para trocar.
+          </p>
+        )}
+
         {/* Mobile: Examinus toggles row above input */}
         {isMobile && agentType === "examinus" && (
           <div className="flex items-center gap-1.5 mb-2 overflow-x-auto pb-1 -mx-1 px-1">
             <Toggle
               pressed={examSuggestMode}
-              onPressedChange={setExamSuggestMode}
+              onPressedChange={(v) => setExaminusModes({ consultor: v })}
               size="sm"
               className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-violet-500/20 data-[state=on]:text-violet-600 dark:data-[state=on]:text-violet-400"
               title="Consultor: sugestão de exames, contraindicações e explicações"
@@ -1759,7 +1876,17 @@ export function AgentChat({
               <Lightbulb className="w-3 h-3 mr-1" />
               <span>Consultor</span>
             </Toggle>
-            {!examSuggestMode && (<>
+            <Toggle
+              pressed={radiologyInterpretMode}
+              onPressedChange={(v) => setExaminusModes({ interpretador: v })}
+              size="sm"
+              className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-cyan-500/20 data-[state=on]:text-cyan-700 dark:data-[state=on]:text-cyan-300"
+              title="Interpretador: segunda leitura de radiografia de tórax a partir da imagem"
+            >
+              <ScanLine className="w-3 h-3 mr-1" />
+              <span>Interpretador</span>
+            </Toggle>
+            {!examSuggestMode && !radiologyInterpretMode && (<>
             <Toggle
               pressed={usePipeSeparator}
               onPressedChange={setUsePipeSeparator}
@@ -2211,9 +2338,17 @@ export function AgentChat({
                   label="Consultor"
                   info="Sugere exames complementares, aponta contraindicações e explica exames e procedimentos a partir do caso."
                   pressed={examSuggestMode}
-                  onPressedChange={setExamSuggestMode}
+                  onPressedChange={(v) => setExaminusModes({ consultor: v })}
                 />
-                {!examSuggestMode && (<>
+                <OutputControl
+                  icon={ScanLine}
+                  tone="cyan"
+                  label="Interpretador"
+                  info="Segunda leitura de radiografia de tórax: envie a imagem (JPEG, PNG ou WebP, até 4) e receba achados, impressão com grau de confiança e limitações. A imagem original vai direto ao modelo."
+                  pressed={radiologyInterpretMode}
+                  onPressedChange={(v) => setExaminusModes({ interpretador: v })}
+                />
+                {!examSuggestMode && !radiologyInterpretMode && (<>
                 <OutputControl
                   icon={SeparatorVertical}
                   tone="primary"
@@ -2290,7 +2425,7 @@ export function AgentChat({
                     sendMessage();
                   }
                 }}
-                placeholder="Mensagem... (Shift+Enter para nova linha)"
+                placeholder={radiologyActive ? "Envie a radiografia e, se quiser, o contexto clínico" : "Mensagem... (Shift+Enter para nova linha)"}
                 maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
                 rows={1}
                 aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
@@ -2336,10 +2471,10 @@ export function AgentChat({
             )}
             <Button
               onClick={sendMessage}
-              disabled={!message.trim() || isLoading || overLimit}
+              disabled={!canSend || isLoading || overLimit}
               size="icon"
               className="shrink-0 h-10 w-10 rounded-full"
-              title={!message.trim() ? "Digite uma mensagem para enviar" : "Enviar mensagem"}
+              title={!canSend ? (radiologyActive ? "Anexe uma radiografia para enviar" : "Digite uma mensagem para enviar") : radiologyActive ? "Interpretar radiografia" : "Enviar mensagem"}
             >
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
@@ -2357,9 +2492,11 @@ export function AgentChat({
                   sendMessage();
                 }
               }}
-              placeholder={agentType === "examinus" && examSuggestMode
-                ? "Peça um painel, cole um caso ou pergunte sobre um exame"
-                : placeholder}
+              placeholder={radiologyActive
+                ? "Envie uma radiografia de tórax (JPEG, PNG ou WebP) e, se quiser, descreva o contexto clínico. Peça \"avaliação rápida\" ou \"laudo completo\"."
+                : agentType === "examinus" && examSuggestMode
+                  ? "Peça um painel, cole um caso ou pergunte sobre um exame"
+                  : placeholder}
               maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
               aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
               className={`w-full resize-none rounded-2xl text-base leading-relaxed p-5 pb-16 bg-muted/25 border-2 transition-colors duration-200 ${
@@ -2424,9 +2561,9 @@ export function AgentChat({
               )}
               <Button
                 onClick={sendMessage}
-                disabled={!message.trim() || isLoading || overLimit}
+                disabled={!canSend || isLoading || overLimit}
                 className="h-11 px-7 rounded-xl font-semibold transition-[opacity,box-shadow] duration-200 hover:opacity-90 active:scale-95"
-                title={!message.trim() ? "Digite uma mensagem para enviar" : "Enviar mensagem"}
+                title={!canSend ? (radiologyActive ? "Anexe uma radiografia para enviar" : "Digite uma mensagem para enviar") : radiologyActive ? "Interpretar radiografia" : "Enviar mensagem"}
               >
                 {isLoading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />

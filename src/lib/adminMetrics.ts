@@ -27,6 +27,7 @@ const FUNCTION_TO_TOOL: Record<string, string> = {
   "generate-medical-document": "medical_document",
   "extract-file-text": "ocr",
   "public-extract-text": "ocr",
+  "radiograph-interpret": "examinus",
   "process-document": "ocr",
   "extract-case-from-document": "ocr",
   "carpe-diem-round": "modo_rotineiro",
