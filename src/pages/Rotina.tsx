@@ -8,14 +8,16 @@ import { UnitsManagerDialog } from "@/components/rotina/UnitsManagerDialog";
 import { AdmitPatientDialog } from "@/components/rotina/AdmitPatientDialog";
 import { EditPatientDialog } from "@/components/rotina/EditPatientDialog";
 import { RoundSheet } from "@/components/rotina/RoundSheet";
+import { QuickRoundDialog } from "@/components/rotina/QuickRoundDialog";
 import { daysOfStay, useWard, type WardAdmission, type WardBed } from "@/hooks/useWard";
-import { BedDouble, Settings2, Sun, Plus, CheckCircle2, CircleDashed, Clock, Archive, Loader2 } from "lucide-react";
+import { BedDouble, Settings2, Sun, Plus, CheckCircle2, CircleDashed, Clock, Archive, Loader2, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 function RotinaInner() {
   const ward = useWard();
   const [unitsOpen, setUnitsOpen] = useState(false);
+  const [quickOpen, setQuickOpen] = useState(false);
   const [admitBed, setAdmitBed] = useState<WardBed | null>(null);
   const [openAdmissionId, setOpenAdmissionId] = useState<string | null>(null);
   const [editAdmission, setEditAdmission] = useState<WardAdmission | null>(null);
@@ -58,7 +60,10 @@ function RotinaInner() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button onClick={() => setQuickOpen(true)}>
+            <Sparkles className="h-4 w-4 mr-2" /> Evolução avulsa
+          </Button>
           <Button variant="outline" asChild>
             <Link to="/rotina/arquivo"><Archive className="h-4 w-4 mr-2" /> Arquivo de altas</Link>
           </Button>
@@ -210,6 +215,8 @@ function RotinaInner() {
         onChanged={ward.reload}
         onEdit={(adm) => setEditAdmission(adm)}
       />
+
+      <QuickRoundDialog open={quickOpen} onOpenChange={setQuickOpen} />
 
       <EditPatientDialog
         admission={editAdmission}
