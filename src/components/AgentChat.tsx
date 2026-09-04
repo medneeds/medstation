@@ -14,7 +14,28 @@ import { AudioPlayer } from "@/components/AudioPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Loader2, AlertTriangle, Stethoscope } from "lucide-react";
+import { Loader2, AlertTriangle, Stethoscope, ScanLine, X } from "lucide-react";
+import {
+  MAX_RADIOLOGY_IMAGES,
+  RADIOLOGY_ACCEPT_ATTR,
+  appendRadiologyFiles,
+  buildRadiologyRequestBody,
+  canSendRadiologyMessage,
+  collectRadiologyEvidenceIds,
+  describeRadiologyMessage,
+  formatBytes,
+  normalizeRadiologyPrompt,
+  radiologyAssistantMessageMetadata,
+  radiologyChipLabel,
+  radiologyEvidenceMetadata,
+  radiologyStoragePath,
+  radiologyUserMessageMetadata,
+  resolveExaminusModes,
+  routeExaminusFiles,
+  selectEvidenceIdsForRequest,
+  type RadiologyMime,
+  type RadiologyOutputMode,
+} from "@/lib/radiologyInterpreter";
 import { exportAgentConversationToPDF } from "@/utils/pdfExport";
 import { pdfToImages } from "@/utils/pdfToImages";
 import { AgentVoiceInput } from "@/components/AgentVoiceInput";
