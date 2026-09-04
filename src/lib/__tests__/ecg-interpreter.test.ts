@@ -619,6 +619,6 @@ describe("ECG — layout do workspace", () => {
     const src = readSrc("src/components/AgentChat.tsx");
     expect(src).toContain("{ecgActive ? (");
     expect(src).toContain("<EcgInterpreterWorkspace");
-    expect(src).toContain('accept={radiologyActive ? RADIOLOGY_ACCEPT_ATTR : ecgActive ? ECG_ACCEPT_ATTR :');
+    expect(src).toContain("accept={radiologyActive ? `${RADIOLOGY_ACCEPT_ATTR},application/pdf,.pdf` : ecgActive ? `${ECG_ACCEPT_ATTR},application/pdf,.pdf`");
   });
 });
