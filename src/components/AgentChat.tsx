@@ -1006,7 +1006,7 @@ export function AgentChat({
       if (!uploadsComplete) {
         // Devolve as imagens à fila para o médico tentar de novo sem reanexar
         setRadiologyAttachments(pendingFiles);
-        setMessage((prev) => prev || (messageContent === normalizeRadiologyPrompt("") ? "" : messageContent));
+        setMessage((prev) => prev || typedText);
         if (uploadedPaths.length > 0) {
           void supabase.storage.from("evidences").remove(uploadedPaths);
         }
