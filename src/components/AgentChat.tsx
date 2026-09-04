@@ -2237,7 +2237,8 @@ export function AgentChat({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-    >
+      onPaste={handlePaste}
+
       {isDragging && (
         <div className="absolute inset-0 bg-primary/10 border-4 border-dashed border-primary rounded-lg flex items-center justify-center z-50 backdrop-blur-sm">
           <div className="text-center">
