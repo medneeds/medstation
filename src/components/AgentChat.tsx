@@ -1396,7 +1396,10 @@ export function AgentChat({
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+    const input = e.target;
+    const files = Array.from(input.files || []);
+    // Permite reselecionar o mesmo arquivo (ex.: após remover uma radiografia da fila)
+    input.value = "";
     if (files.length > 0) {
       await processFiles(files);
     }
