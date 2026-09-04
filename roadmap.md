@@ -12,6 +12,17 @@
 - [x] Vitest 179/179 · tsgo OK · lint sem novos erros
 - [x] NÃO publicado em produção (apenas função implantada no backend)
 
+## Em andamento — Clínicus · Interpretador de ECG (V1)
+- [ ] Núcleo `_shared/ecg-interpreter.ts` (constantes isoladas `ECG_MODEL`, validação, multimodal `image_url`, prompt ECG com checklist interno)
+- [ ] Edge Function `ecg-interpret` (auth + requirePlatformAccess + shield + rate limit + SSE + ai-logger assistant=clinicus)
+- [ ] `supabase/config.toml` (verify_jwt = true) · mapping `ecg-interpret -> clinicus` (adminMetrics + admin-posthog)
+- [ ] Cliente `src/lib/ecgInterpreter.ts` (exclusividade Anamnese/Relatório/Interpretador, fila, metadata, executeOnce)
+- [ ] Workspace `EcgInterpreterWorkspace.tsx` (dropzone, 2 painéis desktop 42/58, card mobile, follow-ups)
+- [ ] AgentChat: toggle "Interpretador" no Clínicus, envio sem OCR, persistência `ecg_evidence_ids`, signed URLs para reabertura
+- [ ] Testes de contrato (12 itens) · vitest · tsgo · build · eslint
+- [ ] Deploy só de `ecg-interpret` + `admin-posthog` · E2E autenticado (preview) · screenshots desktop/mobile · cleanup QA
+- [ ] NÃO publicar frontend até validação do usuário
+
 ## Pendente de validação com sessão
 - [ ] E2E autenticado no preview: ligar Interpretador → anexar RX tórax (JPEG/PNG) → enviar → conferir leitura em streaming e metadata gravada (requer login no preview; `LOVABLE_BROWSER_AUTH_STATUS=signed_out` nesta sessão)
 
