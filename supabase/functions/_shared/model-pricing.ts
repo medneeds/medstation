@@ -14,6 +14,8 @@ export interface ModelPrice {
 export const MODEL_PRICING: Record<string, ModelPrice> = {
   // Google Gemini via Lovable Gateway
   "google/gemini-3.6-flash":         { input: 0.075, output: 0.30, provider: "lovable_ai" },
+  "google/gemini-3.7-flash":         { input: 0.075, output: 0.30, provider: "lovable_ai" },
+  "google/gemini-3.1-pro-preview":   { input: 1.25,  output: 5.0,  provider: "lovable_ai" },
   "google/gemini-3-flash-preview":   { input: 0.075, output: 0.30, provider: "lovable_ai" },
   "google/gemini-2.5-flash":         { input: 0.075, output: 0.30, provider: "lovable_ai" },
   "google/gemini-2.5-flash-lite":    { input: 0.04,  output: 0.15, provider: "lovable_ai" },
