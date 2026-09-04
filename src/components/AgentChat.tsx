@@ -608,6 +608,7 @@ export function AgentChat({
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const [suggestionsContent, setSuggestionsContent] = useState("");
+  const [compressOpen, setCompressOpen] = useState(false);
   // Modo Workflow e leitura estruturada disponíveis para todos os assistentes (desktop)
   const workflowAvailable = !isMobile;
   // Sugestões para o caso: só no Clínicus e apenas quando já existe caso analisável
@@ -616,6 +617,13 @@ export function AgentChat({
     (currentConversation?.messages ?? []).some(
       (m) => m.id !== "streaming-temp" && !!m.content?.trim(),
     );
+
+  // Comprimir: age sempre sobre a ÚLTIMA resposta do assistente (só no Clínicus)
+  const lastAssistantAnswer = [...(currentConversation?.messages ?? [])]
+    .reverse()
+    .find((m) => m.role === "assistant" && m.id !== "streaming-temp" && !!m.content?.trim());
+  const compressAvailable = agentType === "clinicus" && !!lastAssistantAnswer;
+
 
 
   // Conteúdo enviado de outra tela (ex.: Modo Escuta)
