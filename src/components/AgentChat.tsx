@@ -1857,6 +1857,27 @@ export function AgentChat({
     }
   };
 
+  /** Ctrl+V de imagem: anexa direto no chat, como se tivesse sido arrastada. */
+  const handlePaste = async (e: React.ClipboardEvent) => {
+    const items = Array.from(e.clipboardData?.items || []);
+    const files = items
+      .filter((item) => item.kind === "file" && item.type.startsWith("image/"))
+      .map((item) => item.getAsFile())
+      .filter((f): f is File => !!f)
+      .map((f) =>
+        f.name && f.name !== "image.png"
+          ? f
+          : new File([f], `colado-${Date.now()}.${(f.type.split("/")[1] || "png").replace("jpeg", "jpg")}`, {
+              type: f.type,
+            })
+      );
+
+    if (files.length === 0) return;
+    e.preventDefault();
+    await processFiles(files);
+  };
+
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target;
     const files = Array.from(input.files || []);
@@ -2216,7 +2237,10 @@ export function AgentChat({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
+      onPaste={handlePaste}
     >
+
+
       {isDragging && (
         <div className="absolute inset-0 bg-primary/10 border-4 border-dashed border-primary rounded-lg flex items-center justify-center z-50 backdrop-blur-sm">
           <div className="text-center">
