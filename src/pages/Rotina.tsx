@@ -8,14 +8,16 @@ import { UnitsManagerDialog } from "@/components/rotina/UnitsManagerDialog";
 import { AdmitPatientDialog } from "@/components/rotina/AdmitPatientDialog";
 import { EditPatientDialog } from "@/components/rotina/EditPatientDialog";
 import { RoundSheet } from "@/components/rotina/RoundSheet";
+import { QuickRoundDialog } from "@/components/rotina/QuickRoundDialog";
 import { daysOfStay, useWard, type WardAdmission, type WardBed } from "@/hooks/useWard";
-import { BedDouble, Settings2, Sun, Plus, CheckCircle2, CircleDashed, Clock, Archive, Loader2 } from "lucide-react";
+import { BedDouble, Settings2, Sun, Plus, CheckCircle2, CircleDashed, Clock, Archive, Loader2, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 function RotinaInner() {
   const ward = useWard();
   const [unitsOpen, setUnitsOpen] = useState(false);
+  const [quickOpen, setQuickOpen] = useState(false);
   const [admitBed, setAdmitBed] = useState<WardBed | null>(null);
   const [openAdmissionId, setOpenAdmissionId] = useState<string | null>(null);
   const [editAdmission, setEditAdmission] = useState<WardAdmission | null>(null);
