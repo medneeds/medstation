@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { logAIUsage } from "../_shared/ai-logger.ts";
 import { accessDeniedResponse, requirePlatformAccess } from "../_shared/access-control.ts";
+import { extractTextFromImage, OcrHttpError } from "../_shared/ocr.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
