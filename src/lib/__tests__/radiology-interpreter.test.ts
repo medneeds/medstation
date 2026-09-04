@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   MAX_RADIOLOGY_IMAGES,
+  RADIOLOGY_ORIGIN,
   RADIOLOGY_ACCEPT_ATTR,
   RADIOLOGY_MODE,
   appendRadiologyFiles,
@@ -20,6 +21,7 @@ import {
   selectEvidenceIdsForRequest,
   validateRadiologyFile,
 } from "@/lib/radiologyInterpreter";
+import { buildRadiologySystemPrompt } from "../../../supabase/functions/_shared/radiology-interpreter";
 
 const MB = 1024 * 1024;
 const file = (name: string, type: string, size = 200 * 1024) => ({ name, type, size });
@@ -205,5 +207,69 @@ describe("Interpretador — armazenamento e corpo da requisição", () => {
     expect(formatBytes(512)).toBe("512 B");
     expect(formatBytes(2048)).toBe("2 KB");
     expect(formatBytes(3.5 * MB)).toBe("3.5 MB");
+  });
+});
+
+describe("Interpretador — contrato de formato do prompt", () => {
+  const auto = buildRadiologySystemPrompt("auto");
+  const quick = buildRadiologySystemPrompt("quick");
+  const report = buildRadiologySystemPrompt("report");
+
+  it("modo automático usa exatamente os blocos aprovados", () => {
+    for (const block of [
+      "TÉCNICA E QUALIDADE",
+      "ACHADOS",
+      "IMPRESSÃO",
+      "ACHADOS CRÍTICOS",
+      "LIMITAÇÕES",
+      "CONFIANÇA",
+      "CORRELAÇÃO CLÍNICA",
+    ]) {
+      expect(auto).toContain(block);
+    }
+    expect(auto).toContain("itens numerados");
+    expect(auto).toContain("Presente");
+    expect(auto).toContain("Não identificado");
+  });
+
+  it("modo rápido pede qualidade, até 3 achados, emergência e impressão curta", () => {
+    expect(quick).toContain("no máximo 5 linhas");
+    expect(quick).toContain("até 3 achados");
+    expect(quick).toContain("Emergência radiográfica");
+    expect(quick).toContain("Confiança: ALTA/MODERADA/BAIXA");
+  });
+
+  it("modo laudo usa exatamente EXAME/INDICAÇÃO/TÉCNICA/COMPARAÇÃO/ACHADOS/CONCLUSÃO", () => {
+    for (const block of ["EXAME", "INDICAÇÃO", "TÉCNICA", "COMPARAÇÃO", "ACHADOS", "CONCLUSÃO"]) {
+      expect(report).toContain(block);
+    }
+    expect(report).not.toContain("VIAS AÉREAS E DISPOSITIVOS");
+    expect(report).not.toContain("ESQUELETO E PARTES MOLES");
+  });
+
+  it("mantém a segunda olhada obrigatória, porém interna e nunca impressa", () => {
+    for (const prompt of [auto, quick, report]) {
+      expect(prompt).toContain("Segunda olhada obrigatória (INTERNA, nunca impressa)");
+      expect(prompt).toContain('não imprima "SEGUNDA OLHADA"');
+      expect(prompt).not.toContain("SEGUNDA OLHADA (");
+    }
+  });
+
+  it("não impõe disclaimer genérico ao final de toda resposta", () => {
+    for (const prompt of [auto, quick, report]) {
+      expect(prompt).not.toContain("ENCERRAMENTO OBRIGATÓRIO");
+      expect(prompt).not.toContain("Segunda leitura assistida por IA.");
+      expect(prompt).toContain("Não acrescente rodapé");
+    }
+  });
+
+  it("não cria bloco de alerta fora da estrutura aprovada", () => {
+    for (const prompt of [auto, quick, report]) {
+      expect(prompt).not.toContain("ALERTA DE ACHADO CRÍTICO");
+    }
+  });
+
+  it("cliente e núcleo compartilham a mesma taxonomia de origem", () => {
+    expect(RADIOLOGY_ORIGIN).toBe("examinus_interpreter");
   });
 });

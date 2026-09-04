@@ -28,6 +28,7 @@ import {
   radiologyAssistantMessageMetadata,
   radiologyChipLabel,
   radiologyEvidenceMetadata,
+  RADIOLOGY_ORIGIN,
   radiologyStoragePath,
   radiologyUserMessageMetadata,
   resolveExaminusModes,
@@ -869,7 +870,7 @@ export function AgentChat({
             file_size: att.size,
             metadata: radiologyEvidenceMetadata(att.mime),
             tags: ["radiografia", "torax", "interpretador"],
-            origin: "examinus_interpretador",
+            origin: RADIOLOGY_ORIGIN,
             is_active: true,
           })
           .select("id")
