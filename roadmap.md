@@ -12,23 +12,20 @@
 - [x] Vitest 179/179 · tsgo OK · lint sem novos erros
 - [x] NÃO publicado em produção (apenas função implantada no backend)
 
-## Em andamento — Clínicus · Interpretador de ECG (V1)
-- [ ] Núcleo `_shared/ecg-interpreter.ts` (constantes isoladas `ECG_MODEL`, validação, multimodal `image_url`, prompt ECG com checklist interno)
-- [ ] Edge Function `ecg-interpret` (auth + requirePlatformAccess + shield + rate limit + SSE + ai-logger assistant=clinicus)
-- [ ] `supabase/config.toml` (verify_jwt = true) · mapping `ecg-interpret -> clinicus` (adminMetrics + admin-posthog)
-- [ ] Cliente `src/lib/ecgInterpreter.ts` (exclusividade Anamnese/Relatório/Interpretador, fila, metadata, executeOnce)
-- [ ] Workspace `EcgInterpreterWorkspace.tsx` (dropzone, 2 painéis desktop 42/58, card mobile, follow-ups)
-- [ ] AgentChat: toggle "Interpretador" no Clínicus, envio sem OCR, persistência `ecg_evidence_ids`, signed URLs para reabertura
-- [ ] Testes de contrato (12 itens) · vitest · tsgo · build · eslint
-- [ ] Deploy só de `ecg-interpret` + `admin-posthog` · E2E autenticado (preview) · screenshots desktop/mobile · cleanup QA
+## Concluído (aguardando validação do usuário) — Clínicus · Interpretador de ECG (V1)
+- [x] Núcleo `_shared/ecg-interpreter.ts` (`ECG_MODEL` isolado = gemini-3.1-pro-preview, temp 0.1, validação, multimodal `image_url`, prompt ECG com checklist interno nunca impresso, resposta direta em perguntas de seguimento)
+- [x] Edge Function `ecg-interpret` (auth + requirePlatformAccess + shield + rate limit + SSE + ai-logger assistant=clinicus) — implantada, 401 sem sessão
+- [x] `supabase/config.toml` (verify_jwt = true) · mapping `ecg-interpret -> clinicus` (adminMetrics + admin-posthog implantado)
+- [x] Cliente `src/lib/ecgInterpreter.ts` (exclusividade Anamnese/Relatório/Interpretador, fila, metadata, executeOnce)
+- [x] Workspace `EcgInterpreterWorkspace.tsx` (dropzone, 2 painéis desktop 42/58, card mobile colapsável, zoom, follow-ups)
+- [x] AgentChat: pílula "Interpretador" no Clínicus (desktop + mobile), envio sem OCR, persistência `ecg_evidence_ids`, signed URLs na reabertura
+- [x] 53 testes de contrato · Vitest 239/239 · tsgo OK · build OK · eslint sem regressão (baseline 6 erros/1 aviso em AgentChat)
+- [x] E2E autenticado no preview (ECG 12 derivações CC BY) — PASS: envio só imagem, laudo, reabertura via Histórico com mesma evidence, pergunta direta, 1 INSERT por envio, sem OCR, logs sem conteúdo clínico · QA apagado, 0 resíduos
 - [ ] NÃO publicar frontend até validação do usuário
 
-## Pendente de validação com sessão
-- [ ] E2E autenticado no preview: ligar Interpretador → anexar RX tórax (JPEG/PNG) → enviar → conferir leitura em streaming e metadata gravada (requer login no preview; `LOVABLE_BROWSER_AUTH_STATUS=signed_out` nesta sessão)
-
 ## Próximos passos
-- [ ] Redeploy de `admin-posthog` junto com a próxima publicação (mapping `radiograph-interpret` → examinus)
 - [ ] Unificar prompt shield do `agent-chat` com `_shared/prompt-shield.ts`
-- [ ] Interpretador: thumbnails do histórico via signed URL (hoje mostra apenas contagem/chip)
-- [ ] Interpretador: botão "Avaliação rápida / Laudo completo" explícito ao lado do envio (hoje detecta pelo texto)
-- [ ] Interpretador: ampliar para outras modalidades (RX abdome, membros) após validação clínica
+- [ ] Interpretadores (RX/ECG): botão "Avaliação rápida / Laudo completo" explícito ao lado do envio (hoje detecta pelo texto)
+- [ ] Interpretador ECG: ao reabrir o Clínicus, oferecer atalho "Continuar última interpretação" (hoje a reabertura passa pelo Histórico)
+- [ ] Interpretador ECG: comparação seriada com 2+ traçados validada em E2E (suporte já existe no prompt/UI)
+- [ ] Interpretador RX: ampliar para outras modalidades (RX abdome, membros) após validação clínica
