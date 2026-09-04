@@ -1140,7 +1140,6 @@ export function AgentChat({
           id: `rx-${stamp}-${i}-${Math.random().toString(36).slice(2, 8)}`,
           file,
           mime,
-          type: mime,
           previewUrl,
           name: file.name,
           size: file.size,
@@ -1161,7 +1160,14 @@ export function AgentChat({
   };
 
   const removeRadiologyAttachment = (id: string) => {
-    setRadiologyAttachments((prev) => prev.filter((a) => a.id !== id));
+    setRadiologyAttachments((prev) => {
+      const target = prev.find((a) => a.id === id);
+      if (target) {
+        URL.revokeObjectURL(target.previewUrl);
+        objectUrlsRef.current = objectUrlsRef.current.filter((u) => u !== target.previewUrl);
+      }
+      return prev.filter((a) => a.id !== id);
+    });
   };
 
   const ocrImage = async (
