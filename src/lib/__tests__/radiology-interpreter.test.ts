@@ -134,7 +134,7 @@ describe("Interpretador — regra de envio e prompt padrão", () => {
 describe("Interpretador — contexto de imagens na conversa", () => {
   const msgs = [
     { role: "user", metadata: radiologyUserMessageMetadata(["a", "b"]) },
-    { role: "assistant", metadata: radiologyAssistantMessageMetadata(["a", "b"], "full") },
+    { role: "assistant", metadata: radiologyAssistantMessageMetadata(["a", "b"], "report") },
     { role: "user", metadata: { mode: "outro", radiology_evidence_ids: ["zzz"] } },
     { role: "user", metadata: radiologyUserMessageMetadata(["b", "c"], 1) },
     { role: "user", metadata: null },
