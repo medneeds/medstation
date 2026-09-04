@@ -1020,11 +1020,25 @@ export function AgentChat({
     const { data, error } = await supabase.functions.invoke('extract-file-text', {
       body: { file: base64, fileName, mimeType },
     });
-    if (error || !data?.text) {
-      throw new Error(error?.message || `Erro ao extrair ${fileName}`);
+    if (error) {
+      let serverMessage = '';
+      try {
+        const ctx = (error as any)?.context;
+        if (ctx && typeof ctx.json === 'function') {
+          const body = await ctx.json();
+          serverMessage = body?.error || '';
+        }
+      } catch {
+        // ignora falha ao ler corpo do erro
+      }
+      throw new Error(serverMessage || error.message || `Erro ao extrair ${fileName}`);
+    }
+    if (!data?.text) {
+      throw new Error(data?.error || `Não consegui ler ${fileName}`);
     }
     return data.text as string;
   };
+
 
   const fileToBase64 = (file: File): Promise<string> =>
     new Promise<string>((resolve, reject) => {
@@ -1059,7 +1073,7 @@ export function AgentChat({
             description: `Renderizando páginas de ${file.name}...`,
           });
 
-          const pages = await pdfToImages(file, { scale: 2, maxPages: 30 });
+          const pages = await pdfToImages(file, { scale: 2.5, quality: 0.92, maxPages: 30 });
 
           toast({
             title: "Lendo páginas",
