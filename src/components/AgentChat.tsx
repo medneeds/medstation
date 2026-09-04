@@ -885,17 +885,21 @@ export function AgentChat({
       const evidenceIds = selectEvidenceIdsForRequest(newIds, historicalIds);
       const userMetadata = radiologyUserMessageMetadata(evidenceIds, newIds.length);
 
-      // 2) Persiste a mensagem do usuário (com IDs, sem base64) — em segundo plano
-      const userInsertPromise = supabase
-        .from("messages")
-        .insert({
-          conversation_id: conversation.id,
-          role: "user",
-          content: messageContent,
-          metadata: userMetadata,
-        })
-        .select()
-        .single();
+      // 2) Persiste a mensagem do usuário (com IDs, sem base64) — em segundo plano.
+      // Importante: o builder do PostgREST é "thenable" e dispara a query a cada await/then.
+      // Envolvemos em uma Promise única para evitar INSERT duplicado.
+      const userInsertPromise = Promise.resolve(
+        supabase
+          .from("messages")
+          .insert({
+            conversation_id: conversation.id,
+            role: "user",
+            content: messageContent,
+            metadata: userMetadata,
+          })
+          .select()
+          .single(),
+      );
 
       userInsertPromise.then(({ data: userMsgData, error: userError }) => {
         setCurrentConversation((prev) => {
