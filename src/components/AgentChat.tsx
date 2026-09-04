@@ -993,8 +993,9 @@ export function AgentChat({
       setConversations((prev) =>
         prev.map((c) => (c.id === conversation!.id ? { ...c, last_message: lastPreview, updated_at: new Date().toISOString() } : c)),
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("[interpretador] error:", error);
+      const errorMessage = error instanceof Error ? error.message : typeof (error as { message?: unknown })?.message === "string" ? String((error as { message: string }).message) : "";
 
       // Remove a resposta em andamento e a mensagem otimista quando nada foi persistido
       setCurrentConversation((prev) => {
