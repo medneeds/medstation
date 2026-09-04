@@ -216,6 +216,8 @@ function RotinaInner() {
         onEdit={(adm) => setEditAdmission(adm)}
       />
 
+      <QuickRoundDialog open={quickOpen} onOpenChange={setQuickOpen} />
+
       <EditPatientDialog
         admission={editAdmission}
         bedLabel={ward.beds.find((b) => b.id === editAdmission?.bed_id)?.label}
