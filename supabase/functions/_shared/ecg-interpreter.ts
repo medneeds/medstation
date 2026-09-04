@@ -182,6 +182,22 @@ export interface EcgChatMessage {
 
 export const DEFAULT_ECG_PROMPT = "Interprete este eletrocardiograma.";
 
+/** Pedidos que exigem a estrutura completa mesmo em conversa já iniciada. */
+const FULL_INTERPRETATION_REQUEST = /\b(interpret\w*|analis\w*|avali\w*|leitura|reveja|revise|novamente|de novo|complet\w*|estrutura)\b/i;
+
+/**
+ * Pergunta de seguimento direta: já existe leitura do mesmo traçado no histórico
+ * e o médico faz uma pergunta pontual (ritmo, isquemia, intervalos...). Nesses
+ * casos a resposta deve ser objetiva, sem repetir a estrutura completa.
+ */
+export function isDirectEcgFollowUp(userText: string, previous: EcgChatTextMessage[]): boolean {
+  const text = (userText || "").trim();
+  if (!text || text === DEFAULT_ECG_PROMPT) return false;
+  if (!previous.some((m) => m.role === "assistant")) return false;
+  if (FULL_INTERPRETATION_REQUEST.test(text)) return false;
+  return true;
+}
+
 /**
  * Monta as mensagens para o gateway: system, histórico textual e última mensagem
  * do usuário em formato multimodal com os traçados anexados (data URLs).
@@ -198,11 +214,14 @@ export function buildEcgMessages(params: {
   const previous = lastIdx >= 0 ? history.slice(0, lastIdx) : history;
 
   const userText = (lastUser?.content || "").trim() || DEFAULT_ECG_PROMPT;
+  const directFollowUp = params.outputMode === "auto" && isDirectEcgFollowUp(userText, previous);
   const modeLine = params.outputMode === "quick"
     ? "FORMATO SOLICITADO: AVALIAÇÃO RÁPIDA."
     : params.outputMode === "report"
       ? "FORMATO SOLICITADO: LAUDO ESTRUTURADO COMPLETO."
-      : "FORMATO SOLICITADO: AUTOMÁTICO (equilíbrio entre objetividade e completude).";
+      : directFollowUp
+        ? "FORMATO SOLICITADO: RESPOSTA DIRETA À PERGUNTA DE SEGUIMENTO. Responda objetivamente à pergunta usando o mesmo traçado já analisado, em poucas linhas, sem repetir a estrutura completa nem os blocos do laudo. Cite apenas os achados que sustentam a resposta e termine com uma linha \"Confiança: ALTA/MODERADA/BAIXA\" com justificativa curta."
+        : "FORMATO SOLICITADO: AUTOMÁTICO (equilíbrio entre objetividade e completude).";
 
   const parts: EcgMultimodalPart[] = [
     {
