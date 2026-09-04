@@ -118,6 +118,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import {
@@ -608,6 +609,7 @@ export function AgentChat({
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const [suggestionsContent, setSuggestionsContent] = useState("");
+  const [compressOpen, setCompressOpen] = useState(false);
   // Modo Workflow e leitura estruturada disponíveis para todos os assistentes (desktop)
   const workflowAvailable = !isMobile;
   // Sugestões para o caso: só no Clínicus e apenas quando já existe caso analisável
@@ -616,6 +618,13 @@ export function AgentChat({
     (currentConversation?.messages ?? []).some(
       (m) => m.id !== "streaming-temp" && !!m.content?.trim(),
     );
+
+  // Comprimir: age sempre sobre a ÚLTIMA resposta do assistente (só no Clínicus)
+  const lastAssistantAnswer = [...(currentConversation?.messages ?? [])]
+    .reverse()
+    .find((m) => m.role === "assistant" && m.id !== "streaming-temp" && !!m.content?.trim());
+  const compressAvailable = agentType === "clinicus" && !!lastAssistantAnswer;
+
 
 
   // Conteúdo enviado de outra tela (ex.: Modo Escuta)
@@ -804,6 +813,31 @@ export function AgentChat({
       setLastConversation(null);
     }
   };
+
+  /**
+   * Comprimir (Clínicus): gera uma nova mensagem no chat com a última resposta
+   * compactada para ~75%, ~50% ou ~25% do volume de caracteres original.
+   */
+  const runCompression = (level: 75 | 50 | 25) => {
+    if (isLoading || !lastAssistantAnswer) return;
+    setCompressOpen(false);
+    const original = lastAssistantAnswer.content.trim();
+    const target = Math.max(200, Math.round((original.length * level) / 100));
+    const prompt = [
+      `COMPRIMIR A ÚLTIMA RESPOSTA PARA APROXIMADAMENTE ${level}% DO VOLUME DE CARACTERES (alvo: ~${target} caracteres).`,
+      "",
+      "REGRAS OBRIGATÓRIAS",
+      "- Base exclusiva: a última resposta que você gerou nesta conversa. Não acrescente dados, hipóteses, condutas ou exames que não estejam nela.",
+      "- Foco em resumo do caso: preserve identificação, quadro atual, achados relevantes, hipóteses e conduta. Corte redundância, frases de ligação e detalhes descritivos secundários.",
+      "- Use abreviações amplamente aceitas na prática médica (HAS, DM2, DPOC, IAM, ICC, HDA, HPP, EF, HD, CD, PA, FC, FR, SatO2, MV, RCR, IOT, ATB, VO, EV, SN).",
+      "- Nunca abrevie de forma ambígua nem invente siglas.",
+      "- Mantenha os títulos em CAIXA ALTA, sem asteriscos e sem markdown; corpo em texto corrido ou tópicos curtos.",
+      "- Não escreva comentários sobre a compressão, apenas o texto final.",
+    ].join("\n");
+    void sendMessage(prompt);
+  };
+
+
 
   /**
    * Sugestões para o caso (Clínicus): análise crítica em painel lateral.
@@ -1479,17 +1513,19 @@ export function AgentChat({
     }
   };
 
-  const sendMessage = async () => {
+  const sendMessage = async (preset?: unknown) => {
     if (isLoading) return;
-    if (radiologyActive) {
+    // `preset` só é considerado quando chamado programaticamente (não em onClick).
+    const presetContent = typeof preset === "string" ? preset : undefined;
+    if (!presetContent && radiologyActive) {
       await sendRadiologyMessage();
       return;
     }
-    if (ecgActive) {
+    if (!presetContent && ecgActive) {
       await sendEcgMessage();
       return;
     }
-    if (!message.trim()) {
+    if (!presetContent && !message.trim()) {
       const msg = "Mensagem vazia. Digite algum texto antes de enviar.";
       setValidationAnnouncement("");
       // re-set on next tick so screen readers re-announce repeated attempts
@@ -1503,7 +1539,7 @@ export function AgentChat({
     }
     setValidationAnnouncement("");
 
-    const messageContent = message;
+    const messageContent = presetContent ?? message;
     const baseConversation = currentConversation;
 
     // OPTIMISTIC UI: clear input + show user bubble + thinking instantly
@@ -3583,6 +3619,37 @@ export function AgentChat({
                 )}
               </Button>
             )}
+            {compressAvailable && (
+              <Popover open={compressOpen} onOpenChange={setCompressOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    disabled={isLoading}
+                    className="shrink-0 h-10 w-10 rounded-full"
+                    title="Comprimir a última resposta"
+                    aria-label="Comprimir a última resposta"
+                  >
+                    <Shrink className="h-4 w-4 text-primary" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent side="top" align="end" className="w-56 p-2">
+                  <p className="px-2 pb-1.5 text-[11px] text-muted-foreground">
+                    Resumo do caso com abreviações médicas
+                  </p>
+                  {([75, 50, 25] as const).map((lvl) => (
+                    <button
+                      key={lvl}
+                      type="button"
+                      onClick={() => runCompression(lvl)}
+                      className="w-full rounded-md px-2 py-2 text-left text-sm hover:bg-muted transition-colors"
+                    >
+                      {lvl}% do tamanho original
+                    </button>
+                  ))}
+                </PopoverContent>
+              </Popover>
+            )}
             <Button
               onClick={sendMessage}
               disabled={!canSend || isLoading || overLimit}
@@ -3672,6 +3739,36 @@ export function AgentChat({
                     </>
                   )}
                 </Button>
+              )}
+              {compressAvailable && (
+                <Popover open={compressOpen} onOpenChange={setCompressOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      disabled={isLoading}
+                      className="h-11 px-4 rounded-xl font-medium bg-background/90 hover:bg-primary/10 hover:border-primary/50"
+                      title="Comprimir a última resposta em resumo do caso com abreviações médicas"
+                    >
+                      <Shrink className="h-4 w-4 mr-1.5 text-primary" />
+                      Comprimir
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent side="top" align="end" className="w-60 p-2">
+                    <p className="px-2 pb-1.5 text-[11px] text-muted-foreground">
+                      Resumo do caso com abreviações médicas
+                    </p>
+                    {([75, 50, 25] as const).map((lvl) => (
+                      <button
+                        key={lvl}
+                        type="button"
+                        onClick={() => runCompression(lvl)}
+                        className="w-full rounded-md px-2 py-2 text-left text-sm hover:bg-muted transition-colors"
+                      >
+                        {lvl}% do tamanho original
+                      </button>
+                    ))}
+                  </PopoverContent>
+                </Popover>
               )}
               <Button
                 onClick={sendMessage}
