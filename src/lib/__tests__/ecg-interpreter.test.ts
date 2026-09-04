@@ -273,6 +273,35 @@ describe("ECG — montagem multimodal", () => {
     expect(detectEcgOutputMode("Qual o ritmo?")).toBe("auto");
     expect(detectEcgOutputMode("Faça o laudo", "quick")).toBe("quick");
   });
+
+  it("pergunta de seguimento após uma leitura pede resposta direta, não a estrutura completa", () => {
+    const prev = [{ role: "user" as const, content: "Interprete este eletrocardiograma." }, { role: "assistant" as const, content: "QUALIDADE TÉCNICA\n..." }];
+    expect(isDirectEcgFollowUp("Há sinais de isquemia aguda?", prev)).toBe(true);
+    expect(isDirectEcgFollowUp("Qual o ritmo?", prev)).toBe(true);
+    expect(isDirectEcgFollowUp("Meça os intervalos", prev)).toBe(true);
+    // primeira mensagem, ou pedido de nova leitura completa → estrutura completa
+    expect(isDirectEcgFollowUp("Há sinais de isquemia aguda?", [])).toBe(false);
+    expect(isDirectEcgFollowUp("Interprete este eletrocardiograma.", prev)).toBe(false);
+    expect(isDirectEcgFollowUp("Interprete novamente com foco em V1-V3", prev)).toBe(false);
+    expect(isDirectEcgFollowUp("Faça a análise completa", prev)).toBe(false);
+
+    const direct = buildEcgMessages({
+      systemPrompt: "S",
+      history: [...prev, { role: "user", content: "Há sinais de isquemia aguda?" }],
+      imageDataUrls: ["data:image/jpeg;base64,X"],
+      outputMode: "auto",
+    });
+    const directText = (direct[direct.length - 1].content as Array<{ text?: string }>)[0].text || "";
+    expect(directText).toContain("RESPOSTA DIRETA À PERGUNTA DE SEGUIMENTO");
+    expect(directText).not.toContain("FORMATO SOLICITADO: AUTOMÁTICO");
+
+    const first = buildEcgMessages({ systemPrompt: "S", history: [{ role: "user", content: "Há sinais de isquemia aguda?" }], imageDataUrls: ["data:image/jpeg;base64,X"], outputMode: "auto" });
+    expect(((first[first.length - 1].content as Array<{ text?: string }>)[0].text || "")).toContain("FORMATO SOLICITADO: AUTOMÁTICO");
+
+    // laudo explícito nunca vira resposta direta
+    const report = buildEcgMessages({ systemPrompt: "S", history: [...prev, { role: "user", content: "Faça o laudo" }], imageDataUrls: ["data:image/jpeg;base64,X"], outputMode: "report" });
+    expect(((report[report.length - 1].content as Array<{ text?: string }>)[0].text || "")).toContain("LAUDO ESTRUTURADO COMPLETO");
+  });
 });
 
 /* ------------------------------------------------------------------------ */
