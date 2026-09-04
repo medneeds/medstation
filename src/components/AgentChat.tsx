@@ -747,8 +747,286 @@ export function AgentChat({
   };
 
 
+  /**
+   * Interpretador (Examinus): envia a(s) radiografia(s) ORIGINAL(is) ao motor multimodal
+   * `radiograph-interpret`. Fluxo: upload no bucket privado → registro em `evidences`
+   * → chamada com IDs (nunca base64) → streaming da leitura.
+   */
+  const sendRadiologyMessage = async () => {
+    if (isLoading) return;
+    const pendingFiles = radiologyAttachments;
+    const historicalIds = radiologyHistoricalIds;
+
+    if (!canSendRadiologyMessage({ text: message, pendingCount: pendingFiles.length, historicalCount: historicalIds.length })) {
+      const msg = "Anexe uma radiografia de tórax (JPEG, PNG ou WebP) para interpretar.";
+      setValidationAnnouncement("");
+      setTimeout(() => setValidationAnnouncement(msg), 50);
+      toast({ title: "Nenhuma radiografia anexada", description: msg, variant: "destructive" });
+      return;
+    }
+    setValidationAnnouncement("");
+
+    const messageContent = normalizeRadiologyPrompt(message);
+    const baseConversation = currentConversation;
+
+    // OPTIMISTIC UI
+    const optimisticUserId = `optimistic-user-${Date.now()}`;
+    const optimisticUserMessage: Message = {
+      id: optimisticUserId,
+      role: "user",
+      content: messageContent,
+      created_at: new Date().toISOString(),
+      pending: true,
+      attachments: pendingFiles.map((a) => ({ previewUrl: a.previewUrl, name: a.name })),
+      metadata: pendingFiles.length > 0 ? radiologyUserMessageMetadata([], pendingFiles.length) : undefined,
+    };
+    const thinkingMessage: Message = {
+      id: "streaming-temp",
+      role: "assistant",
+      content: pendingFiles.length > 0 ? "Analisando a radiografia..." : "Pensando...",
+      created_at: new Date().toISOString(),
+    };
+    const optimisticConversation: Conversation = baseConversation
+      ? { ...baseConversation, messages: [...baseConversation.messages, optimisticUserMessage, thinkingMessage] }
+      : {
+          id: `optimistic-conv-${Date.now()}`,
+          name: `Conversa ${conversations.length + 1}`,
+          last_message: messageContent,
+          updated_at: new Date().toISOString(),
+          agent_type: agentType,
+          case_id: selectedCaseId || null,
+          messages: [optimisticUserMessage, thinkingMessage],
+        };
+
+    flushSync(() => {
+      setMessage("");
+      setRadiologyAttachments([]);
+      setIsLoading(true);
+      setCurrentConversation(optimisticConversation);
+    });
+
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
+    if (!user || !session) {
+      setCurrentConversation(baseConversation);
+      setRadiologyAttachments(pendingFiles);
+      setIsLoading(false);
+      toast({ title: "Sessão expirada", description: "Faça login novamente para continuar a conversa.", variant: "destructive" });
+      navigate("/auth");
+      return;
+    }
+
+    let conversation = baseConversation;
+    const uploadedPaths: string[] = [];
+    let uploadsComplete = false;
+
+    try {
+      if (!conversation) {
+        const { data, error } = await supabase
+          .from("conversations")
+          .insert({
+            user_id: user.id,
+            agent_type: agentType,
+            name: `Conversa ${conversations.length + 1}`,
+            case_id: selectedCaseId || null,
+          })
+          .select()
+          .single();
+        if (error) throw new Error("Não foi possível criar a conversa.");
+        conversation = { ...data, messages: [] };
+        setConversations((prev) => [conversation!, ...prev]);
+        setCurrentConversation((prev) => ({
+          ...conversation!,
+          messages: prev?.messages ?? [optimisticUserMessage, thinkingMessage],
+        }));
+      }
+
+      // 1) Upload das imagens originais para o bucket privado + registro em `evidences`
+      const newIds: string[] = [];
+      const batchStamp = Date.now();
+      for (let i = 0; i < pendingFiles.length; i++) {
+        const att = pendingFiles[i];
+        const filePath = radiologyStoragePath(user.id, att.mime, i, batchStamp);
+        const { error: uploadError } = await supabase.storage
+          .from("evidences")
+          .upload(filePath, att.file, { contentType: att.mime, upsert: false });
+        if (uploadError) {
+          console.error("[interpretador] upload error:", uploadError.message);
+          throw new Error(`Não foi possível enviar "${att.name}". Verifique sua conexão e tente novamente.`);
+        }
+        uploadedPaths.push(filePath);
+
+        const { data: evidenceRow, error: evidenceError } = await supabase
+          .from("evidences")
+          .insert({
+            user_id: user.id,
+            case_id: selectedCaseId || null,
+            type: "image",
+            source_type: "upload",
+            title: att.name,
+            file_path: filePath,
+            file_size: att.size,
+            metadata: radiologyEvidenceMetadata(att.mime),
+            tags: ["radiografia", "torax", "interpretador"],
+            origin: "examinus_interpretador",
+            is_active: true,
+          })
+          .select("id")
+          .single();
+        if (evidenceError || !evidenceRow) {
+          console.error("[interpretador] evidence insert error:", evidenceError?.message);
+          throw new Error(`Não foi possível registrar "${att.name}". Tente novamente.`);
+        }
+        newIds.push(evidenceRow.id);
+      }
+      uploadsComplete = true;
+
+      const evidenceIds = selectEvidenceIdsForRequest(newIds, historicalIds);
+      const userMetadata = radiologyUserMessageMetadata(evidenceIds, newIds.length);
+
+      // 2) Persiste a mensagem do usuário (com IDs, sem base64) — em segundo plano
+      const userInsertPromise = supabase
+        .from("messages")
+        .insert({
+          conversation_id: conversation.id,
+          role: "user",
+          content: messageContent,
+          metadata: userMetadata,
+        })
+        .select()
+        .single();
+
+      userInsertPromise.then(({ data: userMsgData, error: userError }) => {
+        setCurrentConversation((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            messages: prev.messages.map((m) => {
+              if (m.id !== optimisticUserId) return m;
+              if (userError || !userMsgData) return { ...m, pending: false, metadata: userMetadata };
+              return {
+                ...userMsgData,
+                role: userMsgData.role as "user" | "assistant",
+                pending: false,
+                attachments: m.attachments,
+              };
+            }),
+          };
+        });
+      });
+
+      const userMessage: Message = { ...optimisticUserMessage, metadata: userMetadata };
+
+      // 3) Chamada ao motor multimodal (streaming)
+      const body = buildRadiologyRequestBody({
+        messages: [...conversation.messages, userMessage],
+        evidenceIds,
+        caseId: selectedCaseId,
+        outputMode: "auto",
+      });
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/radiograph-interpret`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok || !response.body) {
+        let detail = "Falha ao conectar com o Interpretador.";
+        try {
+          const err = await response.json();
+          if (typeof err?.error === "string" && err.error) detail = err.error;
+        } catch { /* corpo não-JSON */ }
+        throw new Error(detail);
+      }
+
+      const outputMode = (response.headers.get("X-Radiology-Output-Mode") as RadiologyOutputMode | null) ?? "auto";
+
+      const assistantContent = await readAssistantSSE(response.body, (accumulated) => {
+        setCurrentConversation((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            messages: prev.messages.map((m) => (m.id === "streaming-temp" ? { ...m, content: accumulated } : m)),
+          };
+        });
+      });
+
+      if (!assistantContent.trim()) {
+        throw new Error("O Interpretador não retornou uma leitura. Tente novamente.");
+      }
+
+      // 4) Persiste a resposta
+      const { data: assistantMsgData, error: assistantError } = await supabase
+        .from("messages")
+        .insert({
+          conversation_id: conversation.id,
+          role: "assistant",
+          content: assistantContent,
+          metadata: radiologyAssistantMessageMetadata(evidenceIds, outputMode),
+        })
+        .select()
+        .single();
+      if (assistantError) throw assistantError;
+
+      const assistantMessage: Message = { ...assistantMsgData, role: assistantMsgData.role as "user" | "assistant" };
+      const persistedUser = await userInsertPromise;
+      const finalUserMessage: Message = persistedUser.data
+        ? { ...persistedUser.data, role: "user", attachments: optimisticUserMessage.attachments }
+        : { ...userMessage, pending: false };
+      const finalMessages = [...conversation.messages, finalUserMessage, assistantMessage];
+
+      const lastPreview = pendingFiles.length > 0
+        ? `Radiografia (${pendingFiles.length}) · ${messageContent}`
+        : messageContent;
+      await supabase
+        .from("conversations")
+        .update({ last_message: lastPreview, updated_at: new Date().toISOString() })
+        .eq("id", conversation.id);
+
+      setCurrentConversation({ ...conversation, messages: finalMessages, last_message: lastPreview });
+      setConversations((prev) =>
+        prev.map((c) => (c.id === conversation!.id ? { ...c, last_message: lastPreview, updated_at: new Date().toISOString() } : c)),
+      );
+    } catch (error: any) {
+      console.error("[interpretador] error:", error);
+
+      // Remove a resposta em andamento e a mensagem otimista quando nada foi persistido
+      setCurrentConversation((prev) => {
+        if (!prev) return prev;
+        const kept = prev.messages.filter((m) => m.id !== "streaming-temp" && (uploadsComplete || m.id !== optimisticUserId));
+        return { ...prev, messages: kept };
+      });
+
+      if (!uploadsComplete) {
+        // Devolve as imagens à fila para o médico tentar de novo sem reanexar
+        setRadiologyAttachments(pendingFiles);
+        setMessage((prev) => prev || (messageContent === normalizeRadiologyPrompt("") ? "" : messageContent));
+        if (uploadedPaths.length > 0) {
+          void supabase.storage.from("evidences").remove(uploadedPaths);
+        }
+      }
+
+      toast({
+        title: "Não foi possível interpretar",
+        description: error?.message || "Falha ao processar a radiografia.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const sendMessage = async () => {
     if (isLoading) return;
+    if (radiologyActive) {
+      await sendRadiologyMessage();
+      return;
+    }
     if (!message.trim()) {
       const msg = "Mensagem vazia. Digite algum texto antes de enviar.";
       setValidationAnnouncement("");
