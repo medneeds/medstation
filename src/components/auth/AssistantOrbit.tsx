@@ -99,16 +99,16 @@ function AssistantPlates() {
                 {tagline}
               </div>
               <div
-                className={`h-11 w-11 rounded-2xl border grid place-items-center transition-all duration-200 ${
+                className={`h-14 w-14 rounded-2xl border grid place-items-center transition-all duration-200 ${
                   isHover
                     ? "border-primary bg-primary/20 shadow-[0_14px_32px_-10px_hsl(var(--primary)/0.8),inset_0_1px_0_hsl(var(--primary)/0.5)]"
                     : "border-primary/30 bg-primary/10 shadow-[0_10px_24px_-12px_hsl(var(--primary)/0.6),inset_0_1px_0_hsl(var(--primary)/0.35)]"
                 }`}
               >
-                <Icon className="h-[18px] w-[18px] text-primary" strokeWidth={1.6} />
+                <Icon className="h-[22px] w-[22px] text-primary" strokeWidth={1.6} />
               </div>
               <span
-                className={`text-[8px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors duration-200 ${
+                className={`text-[10px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors duration-200 ${
                   isHover ? "text-primary" : "text-muted-foreground/80"
                 }`}
               >
