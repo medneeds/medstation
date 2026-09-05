@@ -197,8 +197,7 @@ export default function Auth() {
               <span className="italic text-primary">Digite menos.</span>
             </h1>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-md">
-              Documentação, Copiloto e Fluxo em uma só plataforma. Anamnese, exames, prescrição,
-              gasometria, scores — em segundos, no seu fluxo.
+              Documentação, Copiloto e Fluxo em uma só plataforma. Em segundos, no seu fluxo.
             </p>
           </div>
 
@@ -209,26 +208,6 @@ export default function Auth() {
             </Suspense>
           </div>
 
-          <ul className="space-y-2">
-            {[
-              "Examinus, Clínicus, Gasometrus e todo o restante da plataforma",
-              "Documentação automatizada com rigor clínico",
-              "Sem treinamento. Funciona como você pensa.",
-            ].map((line, i) => (
-              <motion.li
-                key={line}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 + i * 0.1, duration: 0.5 }}
-                className="flex items-center gap-3 text-sm text-muted-foreground"
-              >
-                <span className="h-1 w-1 rounded-full bg-primary" />
-                {line}
-              </motion.li>
-            ))}
-          </ul>
-
-          <p className="pt-4 text-[0.7rem] uppercase tracking-[0.18em] font-mono text-muted-foreground">
             © {new Date().getFullYear()} MedStation · LGPD
           </p>
         </motion.aside>
