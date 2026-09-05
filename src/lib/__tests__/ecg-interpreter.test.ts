@@ -558,11 +558,11 @@ describe("ECG — AgentChat preserva o fluxo legado e o RX", () => {
     expect(ecgGuard).toBeLessThan(ocrIdx);
   });
 
-  it("sendMessage roteia RX -> radiograph, ECG -> ecg-interpret, senão agent-chat legado", () => {
+  it("sendMessage roteia o Interpretador (RX/ECG no Examinus) antes do agent-chat legado", () => {
     const start = src.indexOf("const sendMessage = async");
     const chunk = src.slice(start, start + 600);
     expect(chunk.indexOf("await sendRadiologyMessage()")).toBeGreaterThan(-1);
-    expect(chunk.indexOf("await sendEcgMessage()")).toBeGreaterThan(chunk.indexOf("await sendRadiologyMessage()"));
+    expect(src).not.toContain("sendEcgMessage");
   });
 
   it("o payload legado do Clínicus para agent-chat permanece inalterado", () => {
@@ -574,7 +574,9 @@ describe("ECG — AgentChat preserva o fluxo legado e o RX", () => {
     expect(src).not.toMatch(/setReportMode\(v\); if \(v\) setDirectAHEMode\(false\)/);
     expect(src.match(/setClinicusModes\(\{ anamnese: v \}\)/g)).toHaveLength(2);
     expect(src.match(/setClinicusModes\(\{ relatorio: v \}\)/g)).toHaveLength(2);
-    expect(src.match(/setClinicusModes\(\{ interpretador: v \}\)/g)).toHaveLength(2);
+    // ECG é exclusivo do Examinus: o Clínicus não tem mais toggle de Interpretador.
+    expect(src).not.toContain("interpretador: v");
+    expect(src).not.toContain("clinicus-ecg-toggle");
   });
 
   it("o Interpretador do Examinus mantém RX e ganha ECG como modalidade", () => {
@@ -615,10 +617,10 @@ describe("ECG — layout do workspace", () => {
     expect(ws).not.toContain("Workflow");
   });
 
-  it("AgentChat troca o chat legado pelo workspace apenas quando ecgActive", () => {
+  it("AgentChat não expõe mais o modo ECG no Clínicus (ECG é exclusivo do Examinus)", () => {
     const src = readSrc("src/components/AgentChat.tsx");
-    expect(src).toContain("{ecgActive ? (");
-    expect(src).toContain("<EcgInterpreterWorkspace");
-    expect(src).toContain("accept={radiologyActive ? `${RADIOLOGY_ACCEPT_ATTR},application/pdf,.pdf` : ecgActive ? `${ECG_ACCEPT_ATTR},application/pdf,.pdf`");
+    expect(src).not.toContain("ecgActive");
+    expect(src).not.toContain("<EcgInterpreterWorkspace");
+    expect(src).not.toContain('agentType === "clinicus" && ecgInterpretMode');
   });
 });
