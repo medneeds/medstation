@@ -16,15 +16,10 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Loader2, AlertTriangle, Stethoscope, ScanLine, X, Activity } from "lucide-react";
 import { StreamCursor } from "@/components/chat/StreamCursor";
-import { EcgInterpreterWorkspace, type EcgPendingImage, type EcgResolvedImage } from "@/components/chat/EcgInterpreterWorkspace";
 import {
-  ECG_ACCEPT_ATTR,
   ECG_FUNCTION_NAME,
   ECG_ORIGIN,
-  MAX_ECG_IMAGES,
-  appendEcgFiles,
   buildEcgRequestBody,
-  canSendEcgMessage,
   collectEcgEvidenceIds,
   describeEcgMessage,
   ecgAssistantMessageMetadata,
@@ -35,7 +30,6 @@ import {
   executeOnce,
   normalizeEcgPrompt,
   resolveClinicusModes,
-  routeClinicusFiles,
   selectEcgEvidenceIdsForRequest,
   type EcgMime,
   type EcgOutputMode,
@@ -182,15 +176,6 @@ interface RadiologyAttachment {
   size: number;
 }
 
-/** Traçado de ECG pendente de envio no Interpretador (Clínicus). */
-interface EcgAttachment {
-  id: string;
-  file: File;
-  mime: EcgMime;
-  previewUrl: string;
-  name: string;
-  size: number;
-}
 
 /**
  * Consome um stream SSE no formato OpenAI (`data: {choices:[{delta:{content}}]}`),
@@ -457,15 +442,6 @@ export function AgentChat({
       ? collectEcgEvidenceIds(currentConversation?.messages ?? [])
       : collectRadiologyEvidenceIds(currentConversation?.messages ?? []);
 
-  // Interpretador (Clínicus) — V1: eletrocardiograma. Exclusivo com Anamnese e Relatório.
-  const [ecgInterpretMode, setEcgInterpretMode] = useState(false);
-  const [ecgAttachments, setEcgAttachments] = useState<EcgAttachment[]>([]);
-  /** Cache de sessão: URL assinada/preview + nome por evidence id, para manter o traçado visível após reload. */
-  const [ecgPreviewById, setEcgPreviewById] = useState<Record<string, { url: string | null; name: string; failed?: boolean }>>({});
-  const ecgActive = agentType === "clinicus" && ecgInterpretMode;
-  const ecgHistoricalIds = ecgActive
-    ? collectEcgEvidenceIds(currentConversation?.messages ?? [])
-    : [];
 
   // Ao abrir/reabrir uma conversa que já usou o Interpretador, respeita a modalidade persistida.
   const conversationModality = radiologyActive
@@ -495,9 +471,7 @@ export function AgentChat({
 
   const canSend = radiologyActive
     ? canSendRadiologyMessage({ text: message, pendingCount: radiologyAttachments.length, historicalCount: radiologyHistoricalIds.length })
-    : ecgActive
-      ? canSendEcgMessage({ text: message, pendingCount: ecgAttachments.length, historicalCount: ecgHistoricalIds.length })
-      : message.trim().length > 0;
+    : message.trim().length > 0;
 
   /** Liga/desliga Consultor e Interpretador mantendo a exclusividade mútua. */
   const setExaminusModes = (change: { consultor?: boolean; interpretador?: boolean }) => {
@@ -524,71 +498,13 @@ export function AgentChat({
   const [reportPurpose, setReportPurpose] = useState("geral");
   const [reportSpecialty, setReportSpecialty] = useState("auto");
 
-  /**
-   * Liga/desliga Anamnese, Relatório e Interpretador (ECG) do Clínicus mantendo a exclusividade mútua.
-   * Com o Interpretador desligado, o comportamento de Anamnese/Relatório é idêntico ao legado.
-   */
-  const setClinicusModes = (change: { anamnese?: boolean; relatorio?: boolean; interpretador?: boolean }) => {
-    const next = resolveClinicusModes({ directAHEMode, reportMode, ecgInterpretMode }, change);
+  /** Liga/desliga Anamnese e Relatório do Clínicus mantendo a exclusividade mútua. */
+  const setClinicusModes = (change: { anamnese?: boolean; relatorio?: boolean }) => {
+    const next = resolveClinicusModes({ directAHEMode, reportMode, ecgInterpretMode: false }, change);
     setDirectAHEMode(next.directAHEMode);
     setReportMode(next.reportMode);
-    setEcgInterpretMode(next.ecgInterpretMode);
-    if (next.ecgInterpretMode) {
-      // O workspace do Interpretador substitui foco/workflow enquanto estiver ativo.
-      setFocusMode(false);
-      setWorkflowMode(false);
-    } else if (ecgAttachments.length > 0) {
-      // Ao sair do Interpretador, descarta os traçados ainda não enviados.
-      setEcgAttachments([]);
-    }
   };
 
-  // Interpretador (ECG): resolve URLs assinadas dos traçados já persistidos, para que o ECG
-  // continue visível após reload/reabertura da conversa sem novo upload.
-  const ecgHistoricalKey = ecgHistoricalIds.join(",");
-  useEffect(() => {
-    if (!ecgActive) return;
-    const missing = ecgHistoricalIds.filter((id) => !(id in ecgPreviewById));
-    if (missing.length === 0) return;
-    let cancelled = false;
-    setEcgPreviewById((prev) => {
-      const next = { ...prev };
-      for (const id of missing) if (!(id in next)) next[id] = { url: null, name: "ECG" };
-      return next;
-    });
-    (async () => {
-      const { data: rows, error } = await supabase
-        .from("evidences")
-        .select("id, title, file_path")
-        .in("id", missing);
-      if (cancelled) return;
-      if (error || !rows) {
-        setEcgPreviewById((prev) => {
-          const next = { ...prev };
-          for (const id of missing) next[id] = { url: null, name: "ECG", failed: true };
-          return next;
-        });
-        return;
-      }
-      const withPath = rows.filter((r) => !!r.file_path);
-      const paths = withPath.map((r) => r.file_path as string);
-      const { data: signed } = paths.length > 0
-        ? await supabase.storage.from("evidences").createSignedUrls(paths, 3600)
-        : { data: [] as { signedUrl: string | null }[] };
-      if (cancelled) return;
-      setEcgPreviewById((prev) => {
-        const next = { ...prev };
-        for (const id of missing) next[id] = { url: null, name: "ECG", failed: true };
-        withPath.forEach((r, i) => {
-          const url = signed?.[i]?.signedUrl ?? null;
-          next[r.id] = { url, name: r.title || "ECG", failed: !url };
-        });
-        return next;
-      });
-    })();
-    return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ecgActive, ecgHistoricalKey]);
   const [bulaInteligenteMode, setBulaInteligenteMode] = useState(false);
   const [receitaMode, setReceitaMode] = useState(false);
   const [directLIMode, setDirectLIMode] = useState(false);
@@ -1232,286 +1148,6 @@ export function AgentChat({
     }
   };
 
-  /**
-   * Interpretador (Clínicus/ECG): envia o traçado ORIGINAL para o motor multimodal `ecg-interpret`.
-   * Nunca passa por agent-chat, radiograph-interpret nem OCR.
-   */
-  const sendEcgMessage = async (overrideText?: string) => {
-    if (isLoading) return;
-    const pendingFiles = ecgAttachments;
-    const historicalIds = ecgHistoricalIds;
-    const typedText = typeof overrideText === "string" ? overrideText : message;
-
-    if (!canSendEcgMessage({ text: typedText, pendingCount: pendingFiles.length, historicalCount: historicalIds.length })) {
-      const msg = "Anexe o traçado do ECG (JPEG, PNG ou WebP) para interpretar.";
-      setValidationAnnouncement("");
-      setTimeout(() => setValidationAnnouncement(msg), 50);
-      toast({ title: "Nenhum ECG anexado", description: msg, variant: "destructive" });
-      return;
-    }
-    setValidationAnnouncement("");
-
-    const messageContent = normalizeEcgPrompt(typedText);
-    const baseConversation = currentConversation;
-
-    // OPTIMISTIC UI
-    const optimisticUserId = `optimistic-user-${Date.now()}`;
-    const optimisticUserMessage: Message = {
-      id: optimisticUserId,
-      role: "user",
-      content: messageContent,
-      created_at: new Date().toISOString(),
-      pending: true,
-      attachments: pendingFiles.map((a) => ({ previewUrl: a.previewUrl, name: a.name })),
-      metadata: pendingFiles.length > 0 ? ecgUserMessageMetadata([], pendingFiles.length) : undefined,
-    };
-    const thinkingMessage: Message = {
-      id: "streaming-temp",
-      role: "assistant",
-      content: "",
-      created_at: new Date().toISOString(),
-    };
-    const optimisticConversation: Conversation = baseConversation
-      ? { ...baseConversation, messages: [...baseConversation.messages, optimisticUserMessage, thinkingMessage] }
-      : {
-          id: `optimistic-conv-${Date.now()}`,
-          name: `ECG ${conversations.length + 1}`,
-          last_message: messageContent,
-          updated_at: new Date().toISOString(),
-          agent_type: agentType,
-          case_id: selectedCaseId || null,
-          messages: [optimisticUserMessage, thinkingMessage],
-        };
-
-    flushSync(() => {
-      setMessage("");
-      setEcgAttachments([]);
-      setIsLoading(true);
-      setCurrentConversation(optimisticConversation);
-    });
-
-    const { data: { session } } = await supabase.auth.getSession();
-    const user = session?.user;
-    if (!user || !session) {
-      setCurrentConversation(baseConversation);
-      setEcgAttachments(pendingFiles);
-      setIsLoading(false);
-      toast({ title: "Sessão expirada", description: "Faça login novamente para continuar a conversa.", variant: "destructive" });
-      navigate("/auth");
-      return;
-    }
-
-    let conversation = baseConversation;
-    const uploadedPaths: string[] = [];
-    let uploadsComplete = false;
-
-    try {
-      if (!conversation) {
-        const { data, error } = await supabase
-          .from("conversations")
-          .insert({
-            user_id: user.id,
-            agent_type: agentType,
-            name: `ECG ${conversations.length + 1}`,
-            case_id: selectedCaseId || null,
-          })
-          .select()
-          .single();
-        if (error) throw new Error("Não foi possível criar a conversa.");
-        conversation = { ...data, messages: [] };
-        setConversations((prev) => [conversation!, ...prev]);
-        setCurrentConversation((prev) => ({
-          ...conversation!,
-          messages: prev?.messages ?? [optimisticUserMessage, thinkingMessage],
-        }));
-      }
-
-      // 1) Upload dos traçados originais para o bucket privado + registro em `evidences`
-      const newIds: string[] = [];
-      const newPreviews: Record<string, { url: string | null; name: string; failed?: boolean }> = {};
-      const batchStamp = Date.now();
-      for (let i = 0; i < pendingFiles.length; i++) {
-        const att = pendingFiles[i];
-        const filePath = ecgStoragePath(user.id, att.mime, i, batchStamp);
-        const { error: uploadError } = await supabase.storage
-          .from("evidences")
-          .upload(filePath, att.file, { contentType: att.mime, upsert: false });
-        if (uploadError) {
-          console.error("[ecg] upload error:", uploadError.message);
-          throw new Error(`Não foi possível enviar "${att.name}". Verifique sua conexão e tente novamente.`);
-        }
-        uploadedPaths.push(filePath);
-
-        const { data: evidenceRow, error: evidenceError } = await supabase
-          .from("evidences")
-          .insert({
-            user_id: user.id,
-            case_id: selectedCaseId || null,
-            type: "image",
-            source_type: "upload",
-            title: att.name,
-            file_path: filePath,
-            file_size: att.size,
-            metadata: ecgEvidenceMetadata(att.mime),
-            tags: ["ecg", "eletrocardiograma", "interpretador"],
-            origin: ECG_ORIGIN,
-            is_active: true,
-          })
-          .select("id")
-          .single();
-        if (evidenceError || !evidenceRow) {
-          console.error("[ecg] evidence insert error:", evidenceError?.message);
-          throw new Error(`Não foi possível registrar "${att.name}". Tente novamente.`);
-        }
-        newIds.push(evidenceRow.id);
-        newPreviews[evidenceRow.id] = { url: att.previewUrl, name: att.name };
-      }
-      uploadsComplete = true;
-      if (newIds.length > 0) setEcgPreviewById((prev) => ({ ...prev, ...newPreviews }));
-
-      const evidenceIds = selectEcgEvidenceIdsForRequest(newIds, historicalIds);
-      const userMetadata = ecgUserMessageMetadata(evidenceIds, newIds.length);
-
-      // 2) Persiste a mensagem do usuário (com IDs, sem base64) — em segundo plano.
-      // O builder do PostgREST é "thenable": executeOnce garante UM único INSERT.
-      const userInsertPromise = executeOnce(
-        supabase
-          .from("messages")
-          .insert({
-            conversation_id: conversation.id,
-            role: "user",
-            content: messageContent,
-            metadata: userMetadata,
-          })
-          .select()
-          .single(),
-      );
-
-      userInsertPromise.then(({ data: userMsgData, error: userError }) => {
-        setCurrentConversation((prev) => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            messages: prev.messages.map((m) => {
-              if (m.id !== optimisticUserId) return m;
-              if (userError || !userMsgData) return { ...m, pending: false, metadata: userMetadata };
-              return {
-                ...userMsgData,
-                role: userMsgData.role as "user" | "assistant",
-                pending: false,
-                attachments: m.attachments,
-              };
-            }),
-          };
-        });
-      });
-
-      const userMessage: Message = { ...optimisticUserMessage, metadata: userMetadata };
-
-      // 3) Chamada ao motor multimodal (streaming)
-      const body = buildEcgRequestBody({
-        messages: [...conversation.messages, userMessage],
-        evidenceIds,
-        caseId: selectedCaseId,
-        outputMode: "auto",
-      });
-
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${ECG_FUNCTION_NAME}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok || !response.body) {
-        let detail = "Falha ao conectar com o Interpretador de ECG.";
-        try {
-          const err = await response.json();
-          if (typeof err?.error === "string" && err.error) detail = err.error;
-        } catch { /* corpo não-JSON */ }
-        throw new Error(detail);
-      }
-
-      const outputMode = (response.headers.get("X-Ecg-Output-Mode") as EcgOutputMode | null) ?? "auto";
-
-      const assistantContent = await readAssistantSSE(response.body, (accumulated) => {
-        setCurrentConversation((prev) => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            messages: prev.messages.map((m) => (m.id === "streaming-temp" ? { ...m, content: accumulated } : m)),
-          };
-        });
-      });
-
-      if (!assistantContent.trim()) {
-        throw new Error("O Interpretador não retornou uma leitura. Tente novamente.");
-      }
-
-      // 4) Persiste a resposta
-      const { data: assistantMsgData, error: assistantError } = await supabase
-        .from("messages")
-        .insert({
-          conversation_id: conversation.id,
-          role: "assistant",
-          content: assistantContent,
-          metadata: ecgAssistantMessageMetadata(evidenceIds, outputMode),
-        })
-        .select()
-        .single();
-      if (assistantError) throw assistantError;
-
-      const assistantMessage: Message = { ...assistantMsgData, role: assistantMsgData.role as "user" | "assistant" };
-      const persistedUser = await userInsertPromise;
-      const finalUserMessage: Message = persistedUser.data
-        ? { ...persistedUser.data, role: "user", attachments: optimisticUserMessage.attachments }
-        : { ...userMessage, pending: false };
-      const finalMessages = [...conversation.messages, finalUserMessage, assistantMessage];
-
-      const lastPreview = pendingFiles.length > 0
-        ? `ECG (${pendingFiles.length}) · ${messageContent}`
-        : messageContent;
-      await supabase
-        .from("conversations")
-        .update({ last_message: lastPreview, updated_at: new Date().toISOString() })
-        .eq("id", conversation.id);
-
-      setCurrentConversation({ ...conversation, messages: finalMessages, last_message: lastPreview });
-      setConversations((prev) =>
-        prev.map((c) => (c.id === conversation!.id ? { ...c, last_message: lastPreview, updated_at: new Date().toISOString() } : c)),
-      );
-    } catch (error: unknown) {
-      console.error("[ecg] error:", error);
-      const errorMessage = error instanceof Error ? error.message : typeof (error as { message?: unknown })?.message === "string" ? String((error as { message: string }).message) : "";
-
-      // Remove a resposta em andamento e a mensagem otimista quando nada foi persistido
-      setCurrentConversation((prev) => {
-        if (!prev) return prev;
-        const kept = prev.messages.filter((m) => m.id !== "streaming-temp" && (uploadsComplete || m.id !== optimisticUserId));
-        return { ...prev, messages: kept };
-      });
-
-      if (!uploadsComplete) {
-        // Devolve os traçados à fila para o médico tentar de novo sem reanexar
-        setEcgAttachments(pendingFiles);
-        setMessage((prev) => prev || typedText);
-        if (uploadedPaths.length > 0) {
-          void supabase.storage.from("evidences").remove(uploadedPaths);
-        }
-      }
-
-      toast({
-        title: "Não foi possível interpretar o ECG",
-        description: errorMessage || "Falha ao processar o traçado.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const sendMessage = async (preset?: unknown) => {
     if (isLoading) return;
@@ -1519,10 +1155,6 @@ export function AgentChat({
     const presetContent = typeof preset === "string" ? preset : undefined;
     if (!presetContent && radiologyActive) {
       await sendRadiologyMessage();
-      return;
-    }
-    if (!presetContent && ecgActive) {
-      await sendEcgMessage();
       return;
     }
     if (!presetContent && !message.trim()) {
