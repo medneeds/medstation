@@ -384,15 +384,15 @@ describe("ECG — um único INSERT por mensagem do usuário", () => {
     expect(then).toHaveBeenCalledTimes(1);
   });
 
-  it("AgentChat envolve o INSERT da mensagem do usuário em executeOnce no fluxo de ECG", () => {
+  it("AgentChat envolve o INSERT da mensagem do usuário em Promise única no fluxo do Interpretador (RX/ECG)", () => {
     const src = readSrc("src/components/AgentChat.tsx");
-    const start = src.indexOf("const sendEcgMessage = async");
+    const start = src.indexOf("const sendRadiologyMessage = async");
     const end = src.indexOf("const sendMessage = async", start);
-    const ecgFlow = src.slice(start, end);
-    expect(ecgFlow).toContain("executeOnce(");
-    // exatamente um INSERT de role "user" dentro do fluxo de ECG (a mensagem otimista não conta)
-    expect(ecgFlow.match(/\.insert\(\{\s*conversation_id: conversation\.id,\s*role: "user"/g)).toHaveLength(1);
-    expect(ecgFlow.match(/executeOnce\(\s*supabase\s*\.from\("messages"\)\s*\.insert\(/g)).toHaveLength(1);
+    const flow = src.slice(start, end);
+    // exatamente um INSERT de role "user" no fluxo do Interpretador (a mensagem otimista não conta)
+    expect(flow.match(/\.insert\(\{\s*conversation_id: conversation\.id,\s*role: "user"/g)).toHaveLength(1);
+    // o builder thenable do PostgREST é envolvido uma única vez para evitar INSERT duplicado
+    expect(flow.match(/Promise\.resolve\(\s*supabase\s*\.from\("messages"\)\s*\.insert\(/g)).toHaveLength(1);
   });
 });
 
@@ -537,25 +537,24 @@ describe("ECG — isolamento do motor", () => {
 describe("ECG — AgentChat preserva o fluxo legado e o RX", () => {
   const src = readSrc("src/components/AgentChat.tsx");
 
-  it("o fluxo de ECG não chama agent-chat, radiograph-interpret nem extract-file-text", () => {
-    const start = src.indexOf("const sendEcgMessage = async");
+  it("o fluxo de ECG (Examinus) usa ecg-interpret dedicado e não chama agent-chat nem OCR", () => {
+    const start = src.indexOf("const sendRadiologyMessage = async");
     const end = src.indexOf("const sendMessage = async", start);
-    const ecgFlow = src.slice(start, end);
-    expect(ecgFlow).toContain("ECG_FUNCTION_NAME");
-    expect(ecgFlow).not.toContain("agent-chat");
-    expect(ecgFlow).not.toContain("radiograph-interpret");
-    expect(ecgFlow).not.toContain("extract-file-text");
-    expect(ecgFlow).toContain("origin: ECG_ORIGIN");
+    const flow = src.slice(start, end);
+    expect(flow).toContain("ECG_FUNCTION_NAME");
+    expect(flow).toContain("origin: ECG_ORIGIN");
+    expect(flow).not.toContain("agent-chat");
+    expect(flow).not.toContain("extract-file-text");
   });
 
-  it("processFiles retorna antes do OCR quando o Interpretador de ECG está ativo, e o RX continua intacto", () => {
+  it("processFiles retorna antes do OCR quando o Interpretador (RX/ECG) está ativo", () => {
     const start = src.indexOf("const processFiles = async");
     const ocrIdx = src.indexOf("ocrImage(", start);
-    const ecgGuard = src.indexOf("if (ecgActive) {", start);
-    const rxGuard = src.indexOf("if (radiologyActive) {", start);
-    expect(rxGuard).toBeGreaterThan(start);
-    expect(ecgGuard).toBeGreaterThan(rxGuard);
-    expect(ecgGuard).toBeLessThan(ocrIdx);
+    const interpreterGuard = src.indexOf("if (radiologyActive) {", start);
+    expect(interpreterGuard).toBeGreaterThan(start);
+    expect(interpreterGuard).toBeLessThan(ocrIdx);
+    // sem guarda legada do modo ECG do Clínicus
+    expect(src).not.toContain("routeClinicusFiles");
   });
 
   it("sendMessage roteia o Interpretador (RX/ECG no Examinus) antes do agent-chat legado", () => {
