@@ -19,6 +19,7 @@ import { StreamCursor } from "@/components/chat/StreamCursor";
 import {
   ECG_FUNCTION_NAME,
   ECG_ORIGIN,
+  appendEcgFiles,
   buildEcgRequestBody,
   collectEcgEvidenceIds,
   describeEcgMessage,
