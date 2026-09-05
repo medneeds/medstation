@@ -29,7 +29,7 @@ const ASSISTANTS = [
   { name: "Legalis", Icon: Scale },
 ];
 
-const RADIUS = 2.6;
+const RADIUS = 2.15;
 
 function OrbitRing() {
   // Anel-guia: torus fino inclinado que dá a sensação de "trilho" da órbita.
