@@ -1,4 +1,4 @@
-import { Suspense, useMemo, useRef } from "react";
+import { Suspense, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
@@ -6,27 +6,31 @@ import {
   Stethoscope, Activity, Wind, Calculator, Sigma, Pill,
   FileCheck, BookOpen, Compass, FileText, MessagesSquare, Scale,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 /**
  * Anel 3D com os 12 assistentes da MedStation orbitando lentamente.
  * As placas de vidro são DOM (Html do drei), então sempre encaram a câmera;
  * a profundidade vem da rotação do grupo, do anel-guia inclinado e do parallax
- * que segue o mouse. Apenas visual — sem interação de clique.
+ * que segue o mouse. Ao passar o mouse sobre um assistente, a placa reage
+ * (escala + brilho) e revela uma frase de efeito.
  */
 
-const ASSISTANTS = [
-  { name: "Clínicus", Icon: Stethoscope },
-  { name: "Examinus", Icon: Activity },
-  { name: "Gasometrus", Icon: Wind },
-  { name: "Scorius", Icon: Calculator },
-  { name: "Numerus", Icon: Sigma },
-  { name: "Prescriptus", Icon: Pill },
-  { name: "Atestus", Icon: FileCheck },
-  { name: "Protocolus", Icon: BookOpen },
-  { name: "Orientus", Icon: Compass },
-  { name: "CODexus", Icon: FileText },
-  { name: "Mediscuss", Icon: MessagesSquare },
-  { name: "Legalis", Icon: Scale },
+type Assistant = { name: string; Icon: LucideIcon; tagline: string };
+
+const ASSISTANTS: Assistant[] = [
+  { name: "Clínicus", Icon: Stethoscope, tagline: "Anamnese e evolução em segundos." },
+  { name: "Examinus", Icon: Activity, tagline: "Interprete exames e imagens sem fricção." },
+  { name: "Gasometrus", Icon: Wind, tagline: "Gasometria à beira do leito." },
+  { name: "Scorius", Icon: Calculator, tagline: "Scores clínicos na hora exata." },
+  { name: "Numerus", Icon: Sigma, tagline: "Cálculos e doses sem erro." },
+  { name: "Prescriptus", Icon: Pill, tagline: "Prescrição segura e inteligente." },
+  { name: "Atestus", Icon: FileCheck, tagline: "Atestados com rigor e CID." },
+  { name: "Protocolus", Icon: BookOpen, tagline: "Protocolos globais na ponta do dedo." },
+  { name: "Orientus", Icon: Compass, tagline: "Orientações claras para o paciente." },
+  { name: "CODexus", Icon: FileText, tagline: "Documentos clínicos organizados." },
+  { name: "Mediscuss", Icon: MessagesSquare, tagline: "Discussão clínica quando precisar." },
+  { name: "Legalis", Icon: Scale, tagline: "Blindagem jurídica e ética do registro." },
 ];
 
 const RADIUS = 2.2;
@@ -43,12 +47,13 @@ function OrbitRing() {
 
 function AssistantPlates() {
   const group = useRef<THREE.Group>(null);
+  const [hovered, setHovered] = useState<number | null>(null);
 
   useFrame((state, delta) => {
     if (!group.current) return;
     const dt = Math.min(delta, 0.05);
-    // Órbita lenta e contínua
-    group.current.rotation.y += dt * 0.22;
+    // Órbita lenta e contínua (pausa levemente quando um assistente está em foco)
+    group.current.rotation.y += dt * (hovered === null ? 0.22 : 0.06);
     // Parallax sutil seguindo o mouse (com easing independente de framerate)
     const { x, y } = state.pointer;
     group.current.rotation.x = THREE.MathUtils.damp(group.current.rotation.x, 0.62 + y * 0.14, 2.5, dt);
@@ -60,10 +65,12 @@ function AssistantPlates() {
   return (
     <group ref={group} rotation-x={0.62}>
       <OrbitRing />
-      {ASSISTANTS.map(({ name, Icon }, i) => {
+      {ASSISTANTS.map(({ name, Icon, tagline }, i) => {
         const angle = (i / ASSISTANTS.length) * Math.PI * 2;
         const x = Math.cos(angle) * RADIUS;
         const z = Math.sin(angle) * RADIUS;
+        const isHover = hovered === i;
+        const dim = hovered !== null && !isHover;
         return (
           <Html
             key={name}
@@ -73,13 +80,38 @@ function AssistantPlates() {
             style={{ pointerEvents: "none" }}
           >
             <div
-              className="flex flex-col items-center gap-1.5 select-none"
-              style={{ animation: `orb-bob 3.6s ease-in-out ${i * 0.3}s infinite` }}
+              className="relative flex flex-col items-center gap-1.5 select-none cursor-pointer pointer-events-auto transition-transform duration-200"
+              style={{
+                animation: `orb-bob 3.6s ease-in-out ${i * 0.3}s infinite`,
+                transform: isHover ? "scale(1.35)" : "scale(1)",
+                opacity: dim ? 0.45 : 1,
+                zIndex: isHover ? 30 : 1,
+              }}
+              onMouseEnter={() => setHovered(i)}
+              onMouseLeave={() => setHovered(null)}
             >
-              <div className="h-11 w-11 rounded-2xl border border-primary/30 bg-primary/10 backdrop-blur-md grid place-items-center shadow-[0_10px_24px_-12px_hsl(var(--primary)/0.6),inset_0_1px_0_hsl(var(--primary)/0.35)]">
+              {/* Frase de efeito no hover */}
+              <div
+                className={`absolute bottom-full mb-2 whitespace-nowrap rounded-full border border-primary/40 bg-background/90 px-2.5 py-1 text-[9px] font-medium text-foreground shadow-lg backdrop-blur-md transition-all duration-200 ${
+                  isHover ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1 pointer-events-none"
+                }`}
+              >
+                {tagline}
+              </div>
+              <div
+                className={`h-11 w-11 rounded-2xl border grid place-items-center transition-all duration-200 ${
+                  isHover
+                    ? "border-primary bg-primary/20 shadow-[0_14px_32px_-10px_hsl(var(--primary)/0.8),inset_0_1px_0_hsl(var(--primary)/0.5)]"
+                    : "border-primary/30 bg-primary/10 shadow-[0_10px_24px_-12px_hsl(var(--primary)/0.6),inset_0_1px_0_hsl(var(--primary)/0.35)]"
+                }`}
+              >
                 <Icon className="h-[18px] w-[18px] text-primary" strokeWidth={1.6} />
               </div>
-              <span className="text-[8px] uppercase tracking-[0.12em] text-muted-foreground/80 font-medium whitespace-nowrap">
+              <span
+                className={`text-[8px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors duration-200 ${
+                  isHover ? "text-primary" : "text-muted-foreground/80"
+                }`}
+              >
                 {name}
               </span>
             </div>
