@@ -29,7 +29,7 @@ const ASSISTANTS = [
   { name: "Legalis", Icon: Scale },
 ];
 
-const RADIUS = 2.6;
+const RADIUS = 2.2;
 
 function OrbitRing() {
   // Anel-guia: torus fino inclinado que dá a sensação de "trilho" da órbita.
@@ -51,14 +51,14 @@ function AssistantPlates() {
     group.current.rotation.y += dt * 0.22;
     // Parallax sutil seguindo o mouse (com easing independente de framerate)
     const { x, y } = state.pointer;
-    group.current.rotation.x = THREE.MathUtils.damp(group.current.rotation.x, y * 0.18, 2.5, dt);
-    group.current.rotation.z = THREE.MathUtils.damp(group.current.rotation.z, -x * 0.08, 2.5, dt);
-    // Flutuação vertical suave
-    group.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.08;
+    group.current.rotation.x = THREE.MathUtils.damp(group.current.rotation.x, 0.62 + y * 0.14, 2.5, dt);
+    group.current.rotation.z = THREE.MathUtils.damp(group.current.rotation.z, -x * 0.07, 2.5, dt);
+    // Flutuação vertical suave (base deslocada p/ cima para os rótulos inferiores caberem)
+    group.current.position.y = 0.28 + Math.sin(state.clock.elapsedTime * 0.6) * 0.08;
   });
 
   return (
-    <group ref={group} rotation-x={0.16}>
+    <group ref={group} rotation-x={0.62}>
       <OrbitRing />
       {ASSISTANTS.map(({ name, Icon }, i) => {
         const angle = (i / ASSISTANTS.length) * Math.PI * 2;
@@ -76,10 +76,10 @@ function AssistantPlates() {
               className="flex flex-col items-center gap-1.5 select-none"
               style={{ animation: `orb-bob 3.6s ease-in-out ${i * 0.3}s infinite` }}
             >
-              <div className="h-12 w-12 rounded-2xl border border-primary/30 bg-primary/10 backdrop-blur-md grid place-items-center shadow-[0_10px_24px_-12px_hsl(var(--primary)/0.6),inset_0_1px_0_hsl(var(--primary)/0.35)]">
-                <Icon className="h-5 w-5 text-primary" strokeWidth={1.6} />
+              <div className="h-11 w-11 rounded-2xl border border-primary/30 bg-primary/10 backdrop-blur-md grid place-items-center shadow-[0_10px_24px_-12px_hsl(var(--primary)/0.6),inset_0_1px_0_hsl(var(--primary)/0.35)]">
+                <Icon className="h-[18px] w-[18px] text-primary" strokeWidth={1.6} />
               </div>
-              <span className="text-[9px] uppercase tracking-[0.14em] text-muted-foreground/80 font-medium">
+              <span className="text-[8px] uppercase tracking-[0.12em] text-muted-foreground/80 font-medium whitespace-nowrap">
                 {name}
               </span>
             </div>
@@ -92,16 +92,17 @@ function AssistantPlates() {
 
 export function AssistantOrbit() {
   return (
-    <div className="relative h-[300px] xl:h-[340px] w-full" aria-hidden="true">
+    <div className="relative h-[420px] xl:h-[520px] w-full" aria-hidden="true">
       {/* brilho ambiente atrás da órbita */}
       <div className="pointer-events-none absolute inset-0 grid place-items-center">
-        <div className="h-48 w-48 rounded-full bg-primary/15 blur-3xl" />
+        <div className="h-56 w-56 rounded-full bg-primary/15 blur-3xl" />
       </div>
       <Canvas
         dpr={[1, 1.75]}
-        camera={{ position: [0, 1.3, 5.9], fov: 42 }}
+        camera={{ position: [0, 1.7, 6.8], fov: 34 }}
         gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
         style={{ background: "transparent" }}
+        onCreated={({ camera }) => camera.lookAt(0, 0, 0)}
       >
         <Suspense fallback={null}>
           <AssistantPlates />
