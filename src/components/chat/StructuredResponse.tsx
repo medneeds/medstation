@@ -49,15 +49,18 @@ export function StructuredResponse({
   size = "chat",
   trailing,
   className,
+  enabled = true,
 }: {
   content: string;
   size?: Size;
   /** Cursor de digitação exibido ao final do último bloco. */
   trailing?: React.ReactNode;
   className?: string;
+  /** Quando falso, o texto é exibido exatamente como veio (sem reformatar). */
+  enabled?: boolean;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const structured = useMemo(() => isStructuredClinicalText(content), [content]);
+  const structured = useMemo(() => enabled && isStructuredClinicalText(content), [enabled, content]);
   const sections = useMemo(() => (structured ? parseClinicalResponse(content) : []), [structured, content]);
   const titles = useMemo(() => clinicalSectionTitles(sections), [sections]);
 

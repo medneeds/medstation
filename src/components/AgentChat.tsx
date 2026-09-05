@@ -2809,6 +2809,7 @@ export function AgentChat({
                     <StructuredResponse
                       content={msg.content}
                       size={focusMode ? "focus" : "chat"}
+                      enabled={agentType === "clinicus"}
                       trailing={isStreaming ? <StreamCursor /> : undefined}
                     />
                   ) : (
@@ -3878,7 +3879,7 @@ export function AgentChat({
               </div>
               <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6">
                 {lastAnswer ? (
-                  <StructuredResponse content={lastAnswer.content} size="reading" className="mx-auto" />
+                  <StructuredResponse content={lastAnswer.content} size="reading" enabled={agentType === "clinicus"} className="mx-auto" />
                 ) : (
                   <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground gap-2">
                     <LayoutPanelLeft className="h-8 w-8 opacity-30" />
@@ -3949,7 +3950,7 @@ export function AgentChat({
           {readingMessage && (
             <>
               <div className="flex-1 min-h-0 overflow-y-auto pr-2 rounded-lg bg-muted/30 p-4 md:p-6">
-                <StructuredResponse content={readingMessage.content} size="reading" className="mx-auto" />
+                <StructuredResponse content={readingMessage.content} size="reading" enabled={agentType === "clinicus"} className="mx-auto" />
               </div>
 
               <div className="flex justify-end gap-2 pt-2 border-t">
