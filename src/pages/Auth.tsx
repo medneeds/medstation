@@ -15,7 +15,9 @@ import { Logo } from "@/components/Logo";
 import { trackLifecycleEvent } from "@/lib/analytics";
 import { Eye, EyeOff, MailCheck } from "lucide-react";
 
-
+const AssistantOrbit = lazy(() =>
+  import("@/components/auth/AssistantOrbit").then((m) => ({ default: m.AssistantOrbit }))
+);
 
 export default function Auth() {
   const navigate = useNavigate();
