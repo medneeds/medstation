@@ -33,7 +33,7 @@ const ASSISTANTS: Assistant[] = [
   { name: "Legalis", Icon: Scale, tagline: "Blindagem jurídica e ética do registro." },
 ];
 
-const RADIUS = 2.15;
+const RADIUS = 2.6;
 
 function OrbitRing() {
   // Anel-guia: torus fino inclinado que dá a sensação de "trilho" da órbita.
@@ -59,7 +59,7 @@ function AssistantPlates() {
     group.current.rotation.x = THREE.MathUtils.damp(group.current.rotation.x, 0.62 + y * 0.14, 2.5, dt);
     group.current.rotation.z = THREE.MathUtils.damp(group.current.rotation.z, -x * 0.07, 2.5, dt);
     // Flutuação vertical suave (base deslocada p/ cima para os rótulos inferiores caberem)
-    group.current.position.y = 0.28 + Math.sin(state.clock.elapsedTime * 0.6) * 0.08;
+    group.current.position.y = 0.34 + Math.sin(state.clock.elapsedTime * 0.6) * 0.08;
   });
 
   return (
@@ -92,23 +92,23 @@ function AssistantPlates() {
             >
               {/* Frase de efeito no hover */}
               <div
-                className={`absolute bottom-full mb-2 whitespace-nowrap rounded-full border border-primary/40 bg-background/90 px-2.5 py-1 text-[9px] font-medium text-foreground shadow-lg backdrop-blur-md transition-all duration-200 ${
+                className={`absolute bottom-full mb-2.5 whitespace-nowrap rounded-full border border-primary/40 bg-background/90 px-3 py-1.5 text-[11px] font-medium text-foreground shadow-lg backdrop-blur-md transition-all duration-200 ${
                   isHover ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1 pointer-events-none"
                 }`}
               >
                 {tagline}
               </div>
               <div
-                className={`h-14 w-14 rounded-2xl border grid place-items-center transition-all duration-200 ${
+                className={`h-16 w-16 rounded-2xl border grid place-items-center transition-all duration-200 ${
                   isHover
-                    ? "border-primary bg-primary/20 shadow-[0_14px_32px_-10px_hsl(var(--primary)/0.8),inset_0_1px_0_hsl(var(--primary)/0.5)]"
-                    : "border-primary/30 bg-primary/10 shadow-[0_10px_24px_-12px_hsl(var(--primary)/0.6),inset_0_1px_0_hsl(var(--primary)/0.35)]"
+                    ? "border-primary bg-primary/20 shadow-[0_16px_36px_-10px_hsl(var(--primary)/0.8),inset_0_1px_0_hsl(var(--primary)/0.5)]"
+                    : "border-primary/30 bg-primary/10 shadow-[0_12px_28px_-12px_hsl(var(--primary)/0.6),inset_0_1px_0_hsl(var(--primary)/0.35)]"
                 }`}
               >
-                <Icon className="h-[22px] w-[22px] text-primary" strokeWidth={1.6} />
+                <Icon className="h-[26px] w-[26px] text-primary" strokeWidth={1.6} />
               </div>
               <span
-                className={`text-[10px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors duration-200 ${
+                className={`text-[12px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors duration-200 ${
                   isHover ? "text-primary" : "text-muted-foreground/80"
                 }`}
               >
@@ -124,14 +124,14 @@ function AssistantPlates() {
 
 export function AssistantOrbit() {
   return (
-    <div className="relative h-[460px] xl:h-[560px] w-full" aria-hidden="true">
+    <div className="relative h-[540px] xl:h-[660px] w-full" aria-hidden="true">
       {/* brilho ambiente atrás da órbita */}
       <div className="pointer-events-none absolute inset-0 grid place-items-center">
-        <div className="h-56 w-56 rounded-full bg-primary/15 blur-3xl" />
+        <div className="h-72 w-72 rounded-full bg-primary/15 blur-3xl" />
       </div>
       <Canvas
         dpr={[1, 1.75]}
-        camera={{ position: [0, 1.7, 8.4], fov: 34 }}
+        camera={{ position: [0, 1.7, 9.6], fov: 36 }}
         gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
         style={{ background: "transparent" }}
         onCreated={({ camera }) => camera.lookAt(0, 0, 0)}
@@ -142,16 +142,16 @@ export function AssistantOrbit() {
       </Canvas>
       {/* Texto central dentro da órbita */}
       <div className="pointer-events-none absolute inset-0 z-0 flex flex-col items-center justify-center text-center px-6">
-        <div className="inline-flex items-center gap-2 text-[0.7rem] uppercase tracking-[0.25em] text-muted-foreground">
-          <span className="h-px w-7 bg-primary/70" />
+        <div className="inline-flex items-center gap-2.5 text-[0.85rem] uppercase tracking-[0.25em] text-muted-foreground">
+          <span className="h-px w-9 bg-primary/70" />
           Para médicos ocupados
         </div>
-        <h2 className="mt-2.5 font-display text-3xl xl:text-4xl leading-[0.98] tracking-tight text-foreground">
+        <h2 className="mt-3.5 font-display text-4xl xl:text-5xl leading-[0.98] tracking-tight text-foreground">
           Produza mais.
           <br />
           <span className="italic text-primary">Digite menos.</span>
         </h2>
-        <p className="mt-3 text-xs xl:text-sm text-muted-foreground leading-relaxed max-w-[17rem]">
+        <p className="mt-4 text-sm xl:text-base text-muted-foreground leading-relaxed max-w-[20rem]">
           Documentação, Copiloto e Fluxo em uma só plataforma. Em segundos, no seu fluxo.
         </p>
       </div>

@@ -194,7 +194,7 @@ export default function Auth() {
 
           {/* Órbita 3D como destaque central do painel — texto dentro do círculo */}
           <div className="flex-1 flex items-center justify-center min-h-0">
-            <Suspense fallback={<div className="h-[420px] xl:h-[520px]" />}>
+            <Suspense fallback={<div className="h-[540px] xl:h-[660px]" />}>
               <AssistantOrbit />
             </Suspense>
           </div>
