@@ -33,7 +33,7 @@ const ASSISTANTS: Assistant[] = [
   { name: "Legalis", Icon: Scale, tagline: "Blindagem jurídica e ética do registro." },
 ];
 
-const RADIUS = 2.6;
+const RADIUS = 2.4;
 
 function OrbitRing() {
   // Anel-guia: torus fino inclinado que dá a sensação de "trilho" da órbita.
