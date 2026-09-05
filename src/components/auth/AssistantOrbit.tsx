@@ -142,16 +142,16 @@ export function AssistantOrbit() {
       </Canvas>
       {/* Texto central dentro da órbita */}
       <div className="pointer-events-none absolute inset-0 z-0 flex flex-col items-center justify-center text-center px-6">
-        <div className="inline-flex items-center gap-2 text-[0.62rem] uppercase tracking-[0.25em] text-muted-foreground">
-          <span className="h-px w-6 bg-primary/70" />
+        <div className="inline-flex items-center gap-2 text-[0.7rem] uppercase tracking-[0.25em] text-muted-foreground">
+          <span className="h-px w-7 bg-primary/70" />
           Para médicos ocupados
         </div>
-        <h2 className="mt-2 font-display text-2xl xl:text-3xl leading-[0.98] tracking-tight text-foreground">
+        <h2 className="mt-2.5 font-display text-3xl xl:text-4xl leading-[0.98] tracking-tight text-foreground">
           Produza mais.
           <br />
           <span className="italic text-primary">Digite menos.</span>
         </h2>
-        <p className="mt-2.5 text-[0.72rem] xl:text-xs text-muted-foreground leading-relaxed max-w-[15rem]">
+        <p className="mt-3 text-xs xl:text-sm text-muted-foreground leading-relaxed max-w-[17rem]">
           Documentação, Copiloto e Fluxo em uma só plataforma. Em segundos, no seu fluxo.
         </p>
       </div>
