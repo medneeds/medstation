@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,7 +15,9 @@ import { Logo } from "@/components/Logo";
 import { trackLifecycleEvent } from "@/lib/analytics";
 import { Eye, EyeOff, MailCheck } from "lucide-react";
 
-
+const AssistantOrbit = lazy(() =>
+  import("@/components/auth/AssistantOrbit").then((m) => ({ default: m.AssistantOrbit }))
+);
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -219,9 +221,14 @@ export default function Auth() {
             </ul>
           </div>
 
-          <p className="mt-auto pt-10 text-[0.7rem] uppercase tracking-[0.18em] font-mono text-muted-foreground">
-            © {new Date().getFullYear()} MedStation · LGPD
-          </p>
+          <div className="mt-auto pt-6">
+            <Suspense fallback={<div className="h-[300px] xl:h-[340px]" />}>
+              <AssistantOrbit />
+            </Suspense>
+            <p className="pt-2 text-[0.7rem] uppercase tracking-[0.18em] font-mono text-muted-foreground">
+              © {new Date().getFullYear()} MedStation · LGPD
+            </p>
+          </div>
         </motion.aside>
 
         {/* Auth panel */}
