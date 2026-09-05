@@ -575,7 +575,7 @@ describe("ECG — AgentChat preserva o fluxo legado e o RX", () => {
     expect(src.match(/setClinicusModes\(\{ anamnese: v \}\)/g)).toHaveLength(2);
     expect(src.match(/setClinicusModes\(\{ relatorio: v \}\)/g)).toHaveLength(2);
     // ECG é exclusivo do Examinus: o Clínicus não tem mais toggle de Interpretador.
-    expect(src).not.toContain("interpretador: v");
+    expect(src).not.toContain("setClinicusModes({ interpretador");
     expect(src).not.toContain("clinicus-ecg-toggle");
   });
 
