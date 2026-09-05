@@ -208,6 +208,7 @@ export default function Auth() {
             </Suspense>
           </div>
 
+          <p className="pt-2 text-[0.7rem] uppercase tracking-[0.18em] font-mono text-muted-foreground">
             © {new Date().getFullYear()} MedStation · LGPD
           </p>
         </motion.aside>
