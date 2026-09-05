@@ -29,7 +29,7 @@ const ASSISTANTS = [
   { name: "Legalis", Icon: Scale },
 ];
 
-const RADIUS = 2.35;
+const RADIUS = 2.6;
 
 function OrbitRing() {
   // Anel-guia: torus fino inclinado que dá a sensação de "trilho" da órbita.
@@ -76,7 +76,7 @@ function AssistantPlates() {
               className="flex flex-col items-center gap-1.5 select-none"
               style={{ animation: `orb-bob 3.6s ease-in-out ${i * 0.3}s infinite` }}
             >
-              <div className="h-11 w-11 rounded-2xl border border-primary/30 bg-primary/10 backdrop-blur-md grid place-items-center shadow-[0_10px_24px_-12px_hsl(var(--primary)/0.6),inset_0_1px_0_hsl(var(--primary)/0.35)]">
+              <div className="h-12 w-12 rounded-2xl border border-primary/30 bg-primary/10 backdrop-blur-md grid place-items-center shadow-[0_10px_24px_-12px_hsl(var(--primary)/0.6),inset_0_1px_0_hsl(var(--primary)/0.35)]">
                 <Icon className="h-5 w-5 text-primary" strokeWidth={1.6} />
               </div>
               <span className="text-[9px] uppercase tracking-[0.14em] text-muted-foreground/80 font-medium">
@@ -99,7 +99,7 @@ export function AssistantOrbit() {
       </div>
       <Canvas
         dpr={[1, 1.75]}
-        camera={{ position: [0, 1.15, 5.4], fov: 42 }}
+        camera={{ position: [0, 1.3, 5.9], fov: 42 }}
         gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
         style={{ background: "transparent" }}
       >
