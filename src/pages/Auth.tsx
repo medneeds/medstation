@@ -203,8 +203,8 @@ export default function Auth() {
           </div>
 
           {/* Órbita 3D como destaque central do painel */}
-          <div className="flex-1 flex items-center justify-center py-4">
-            <Suspense fallback={<div className="h-[360px] xl:h-[440px]" />}>
+          <div className="flex-1 flex items-center justify-center py-2">
+            <Suspense fallback={<div className="h-[420px] xl:h-[520px]" />}>
               <AssistantOrbit />
             </Suspense>
           </div>

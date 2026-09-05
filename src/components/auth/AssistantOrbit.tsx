@@ -29,7 +29,7 @@ const ASSISTANTS = [
   { name: "Legalis", Icon: Scale },
 ];
 
-const RADIUS = 2.3;
+const RADIUS = 2.2;
 
 function OrbitRing() {
   // Anel-guia: torus fino inclinado que dá a sensação de "trilho" da órbita.
@@ -53,8 +53,8 @@ function AssistantPlates() {
     const { x, y } = state.pointer;
     group.current.rotation.x = THREE.MathUtils.damp(group.current.rotation.x, 0.62 + y * 0.14, 2.5, dt);
     group.current.rotation.z = THREE.MathUtils.damp(group.current.rotation.z, -x * 0.07, 2.5, dt);
-    // Flutuação vertical suave
-    group.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.08;
+    // Flutuação vertical suave (base deslocada p/ cima para os rótulos inferiores caberem)
+    group.current.position.y = 0.28 + Math.sin(state.clock.elapsedTime * 0.6) * 0.08;
   });
 
   return (
@@ -92,7 +92,7 @@ function AssistantPlates() {
 
 export function AssistantOrbit() {
   return (
-    <div className="relative h-[360px] xl:h-[440px] w-full" aria-hidden="true">
+    <div className="relative h-[420px] xl:h-[520px] w-full" aria-hidden="true">
       {/* brilho ambiente atrás da órbita */}
       <div className="pointer-events-none absolute inset-0 grid place-items-center">
         <div className="h-56 w-56 rounded-full bg-primary/15 blur-3xl" />
