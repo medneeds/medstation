@@ -186,22 +186,7 @@ export default function Auth() {
         >
           <Logo size="md" />
 
-          <div className="mt-8 space-y-4 max-w-xl">
-            <div className="inline-flex items-center gap-2 text-[0.7rem] uppercase tracking-[0.25em] text-muted-foreground">
-              <span className="h-px w-8 bg-primary" />
-              Para médicos ocupados
-            </div>
-            <h1 className="font-display text-4xl xl:text-5xl leading-[0.95] tracking-tight text-foreground">
-              Produza mais.
-              <br />
-              <span className="italic text-primary">Digite menos.</span>
-            </h1>
-            <p className="text-sm text-muted-foreground leading-relaxed max-w-md">
-              Documentação, Copiloto e Fluxo em uma só plataforma. Em segundos, no seu fluxo.
-            </p>
-          </div>
-
-          {/* Órbita 3D como destaque central do painel */}
+          {/* Órbita 3D como destaque central do painel — texto dentro do círculo */}
           <div className="flex-1 flex items-center justify-center py-2">
             <Suspense fallback={<div className="h-[420px] xl:h-[520px]" />}>
               <AssistantOrbit />
