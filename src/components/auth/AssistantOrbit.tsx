@@ -80,7 +80,7 @@ function AssistantPlates() {
             style={{ pointerEvents: "none" }}
           >
             <div
-              className="flex flex-col items-center gap-1.5 select-none cursor-pointer transition-transform duration-200"
+              className="relative flex flex-col items-center gap-1.5 select-none cursor-pointer pointer-events-auto transition-transform duration-200"
               style={{
                 animation: `orb-bob 3.6s ease-in-out ${i * 0.3}s infinite`,
                 transform: isHover ? "scale(1.35)" : "scale(1)",
