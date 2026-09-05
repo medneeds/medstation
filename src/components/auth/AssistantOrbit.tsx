@@ -20,7 +20,7 @@ type Assistant = { name: string; Icon: LucideIcon; tagline: string };
 
 const ASSISTANTS: Assistant[] = [
   { name: "Clínicus", Icon: Stethoscope, tagline: "Anamnese e evolução em segundos." },
-  { name: "Examinus", Icon: Activity, tagline: "Interprete exames e imagens sem fricção." },
+  { name: "Examinus", Icon: Activity, tagline: "Interprete ou resuma exames sem fricção." },
   { name: "Gasometrus", Icon: Wind, tagline: "Gasometria à beira do leito." },
   { name: "Scorius", Icon: Calculator, tagline: "Scores clínicos na hora exata." },
   { name: "Numerus", Icon: Sigma, tagline: "Cálculos e doses sem erro." },
