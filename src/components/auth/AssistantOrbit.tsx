@@ -99,7 +99,7 @@ export function AssistantOrbit() {
       </div>
       <Canvas
         dpr={[1, 1.75]}
-        camera={{ position: [0, 2.7, 6.8], fov: 34 }}
+        camera={{ position: [0, 1.7, 6.8], fov: 34 }}
         gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
         style={{ background: "transparent" }}
       >
