@@ -33,7 +33,7 @@ const ASSISTANTS: Assistant[] = [
   { name: "Legalis", Icon: Scale, tagline: "Blindagem jurídica e ética do registro." },
 ];
 
-const RADIUS = 2.75;
+const RADIUS = 2.5;
 
 function OrbitRing() {
   // Anel-guia: torus fino inclinado que dá a sensação de "trilho" da órbita.
@@ -131,7 +131,7 @@ export function AssistantOrbit() {
       </div>
       <Canvas
         dpr={[1, 1.75]}
-        camera={{ position: [0, 1.7, 9.0], fov: 38 }}
+        camera={{ position: [0, 1.7, 9.6], fov: 36 }}
         gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
         style={{ background: "transparent" }}
         onCreated={({ camera }) => camera.lookAt(0, 0, 0)}
