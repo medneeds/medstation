@@ -92,14 +92,14 @@ function AssistantPlates() {
 
 export function AssistantOrbit() {
   return (
-    <div className="relative h-[300px] xl:h-[340px] w-full" aria-hidden="true">
+    <div className="relative h-[360px] xl:h-[440px] w-full" aria-hidden="true">
       {/* brilho ambiente atrás da órbita */}
       <div className="pointer-events-none absolute inset-0 grid place-items-center">
-        <div className="h-48 w-48 rounded-full bg-primary/15 blur-3xl" />
+        <div className="h-56 w-56 rounded-full bg-primary/15 blur-3xl" />
       </div>
       <Canvas
         dpr={[1, 1.75]}
-        camera={{ position: [0, 1.3, 5.9], fov: 42 }}
+        camera={{ position: [0, 1.2, 6.4], fov: 40 }}
         gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
         style={{ background: "transparent" }}
       >
