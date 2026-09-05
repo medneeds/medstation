@@ -33,7 +33,7 @@ const ASSISTANTS: Assistant[] = [
   { name: "Legalis", Icon: Scale, tagline: "Blindagem jurídica e ética do registro." },
 ];
 
-const RADIUS = 2.2;
+const RADIUS = 2.15;
 
 function OrbitRing() {
   // Anel-guia: torus fino inclinado que dá a sensação de "trilho" da órbita.
@@ -99,16 +99,16 @@ function AssistantPlates() {
                 {tagline}
               </div>
               <div
-                className={`h-11 w-11 rounded-2xl border grid place-items-center transition-all duration-200 ${
+                className={`h-14 w-14 rounded-2xl border grid place-items-center transition-all duration-200 ${
                   isHover
                     ? "border-primary bg-primary/20 shadow-[0_14px_32px_-10px_hsl(var(--primary)/0.8),inset_0_1px_0_hsl(var(--primary)/0.5)]"
                     : "border-primary/30 bg-primary/10 shadow-[0_10px_24px_-12px_hsl(var(--primary)/0.6),inset_0_1px_0_hsl(var(--primary)/0.35)]"
                 }`}
               >
-                <Icon className="h-[18px] w-[18px] text-primary" strokeWidth={1.6} />
+                <Icon className="h-[22px] w-[22px] text-primary" strokeWidth={1.6} />
               </div>
               <span
-                className={`text-[8px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors duration-200 ${
+                className={`text-[10px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors duration-200 ${
                   isHover ? "text-primary" : "text-muted-foreground/80"
                 }`}
               >
@@ -131,7 +131,7 @@ export function AssistantOrbit() {
       </div>
       <Canvas
         dpr={[1, 1.75]}
-        camera={{ position: [0, 1.7, 6.8], fov: 34 }}
+        camera={{ position: [0, 1.7, 8.4], fov: 34 }}
         gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
         style={{ background: "transparent" }}
         onCreated={({ camera }) => camera.lookAt(0, 0, 0)}
@@ -142,16 +142,16 @@ export function AssistantOrbit() {
       </Canvas>
       {/* Texto central dentro da órbita */}
       <div className="pointer-events-none absolute inset-0 z-0 flex flex-col items-center justify-center text-center px-6">
-        <div className="inline-flex items-center gap-2 text-[0.62rem] uppercase tracking-[0.25em] text-muted-foreground">
-          <span className="h-px w-6 bg-primary/70" />
+        <div className="inline-flex items-center gap-2 text-[0.7rem] uppercase tracking-[0.25em] text-muted-foreground">
+          <span className="h-px w-7 bg-primary/70" />
           Para médicos ocupados
         </div>
-        <h2 className="mt-2 font-display text-2xl xl:text-3xl leading-[0.98] tracking-tight text-foreground">
+        <h2 className="mt-2.5 font-display text-3xl xl:text-4xl leading-[0.98] tracking-tight text-foreground">
           Produza mais.
           <br />
           <span className="italic text-primary">Digite menos.</span>
         </h2>
-        <p className="mt-2.5 text-[0.72rem] xl:text-xs text-muted-foreground leading-relaxed max-w-[15rem]">
+        <p className="mt-3 text-xs xl:text-sm text-muted-foreground leading-relaxed max-w-[17rem]">
           Documentação, Copiloto e Fluxo em uma só plataforma. Em segundos, no seu fluxo.
         </p>
       </div>
