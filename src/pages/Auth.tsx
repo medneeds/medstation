@@ -221,9 +221,14 @@ export default function Auth() {
             </ul>
           </div>
 
-          <p className="mt-auto pt-10 text-[0.7rem] uppercase tracking-[0.18em] font-mono text-muted-foreground">
-            © {new Date().getFullYear()} MedStation · LGPD
-          </p>
+          <div className="mt-auto pt-6">
+            <Suspense fallback={<div className="h-[300px] xl:h-[340px]" />}>
+              <AssistantOrbit />
+            </Suspense>
+            <p className="pt-2 text-[0.7rem] uppercase tracking-[0.18em] font-mono text-muted-foreground">
+              © {new Date().getFullYear()} MedStation · LGPD
+            </p>
+          </div>
         </motion.aside>
 
         {/* Auth panel */}
