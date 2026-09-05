@@ -184,18 +184,20 @@ export default function Auth() {
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           className="relative hidden lg:flex flex-col p-10 xl:p-14 border-r border-hairline"
         >
-          <Logo size="md" />
+          {/* Cabeçalho e rodapé sobrepostos — não consomem espaço da órbita */}
+          <div className="pointer-events-none absolute top-10 left-10 xl:top-14 xl:left-14 z-20">
+            <Logo size="md" />
+          </div>
+          <p className="pointer-events-none absolute bottom-10 left-10 xl:bottom-14 xl:left-14 z-20 text-[0.7rem] uppercase tracking-[0.18em] font-mono text-muted-foreground">
+            © {new Date().getFullYear()} MedStation · LGPD
+          </p>
 
           {/* Órbita 3D como destaque central do painel — texto dentro do círculo */}
-          <div className="flex-1 flex items-center justify-center py-2">
+          <div className="flex-1 flex items-center justify-center min-h-0">
             <Suspense fallback={<div className="h-[420px] xl:h-[520px]" />}>
               <AssistantOrbit />
             </Suspense>
           </div>
-
-          <p className="pt-2 text-[0.7rem] uppercase tracking-[0.18em] font-mono text-muted-foreground">
-            © {new Date().getFullYear()} MedStation · LGPD
-          </p>
         </motion.aside>
 
         {/* Auth panel */}
