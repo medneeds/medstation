@@ -1651,53 +1651,6 @@ export function AgentChat({
     });
   };
 
-  /**
-   * Interpretador (Clínicus): enfileira traçados de ECG originais para envio.
-   * JPEG/PNG/WebP ou PDF (renderizado em imagem no navegador), até 10 MB, máximo 4. Não há OCR aqui.
-   */
-  const addEcgAttachments = async (files: File[]) => {
-    if (files.length === 0) return;
-    const expandedFiles = await expandInterpreterFiles(files, Math.max(0, MAX_ECG_IMAGES - ecgAttachments.length));
-    if (expandedFiles.length === 0) return;
-    const { accepted, rejected } = appendEcgFiles(ecgAttachments.length, expandedFiles);
-    if (accepted.length > 0) {
-      const stamp = Date.now();
-      const next: EcgAttachment[] = accepted.map(({ file, mime }, i) => {
-        const previewUrl = URL.createObjectURL(file);
-        objectUrlsRef.current.push(previewUrl);
-        return {
-          id: `ecg-${stamp}-${i}-${Math.random().toString(36).slice(2, 8)}`,
-          file,
-          mime,
-          previewUrl,
-          name: file.name,
-          size: file.size,
-        };
-      });
-      setEcgAttachments((prev) => [...prev, ...next]);
-      toast({
-        description: `${accepted.length} ${accepted.length === 1 ? "ECG pronto" : "ECGs prontos"} para interpretar. Envie com ou sem contexto clínico.`,
-      });
-    }
-    if (rejected.length > 0) {
-      toast({
-        title: rejected.length === expandedFiles.length ? "Arquivo não aceito" : "Alguns arquivos não foram aceitos",
-        description: rejected.map((r) => r.reason).join(" "),
-        variant: "destructive",
-      });
-    }
-  };
-
-  const removeEcgAttachment = (id: string) => {
-    setEcgAttachments((prev) => {
-      const target = prev.find((a) => a.id === id);
-      if (target) {
-        URL.revokeObjectURL(target.previewUrl);
-        objectUrlsRef.current = objectUrlsRef.current.filter((u) => u !== target.previewUrl);
-      }
-      return prev.filter((a) => a.id !== id);
-    });
-  };
 
   const ocrImage = async (
     base64: string,
@@ -1741,12 +1694,6 @@ export function AgentChat({
     if (radiologyActive) {
       const { radiology } = routeExaminusFiles(files, { radiologyInterpretMode });
       await addRadiologyAttachments(radiology);
-      return;
-    }
-    // Interpretador (Clínicus/ECG): mesmo princípio — traçado original, sem OCR.
-    if (ecgActive) {
-      const { ecg } = routeClinicusFiles(files, { ecgInterpretMode });
-      await addEcgAttachments(ecg);
       return;
     }
 
@@ -1914,14 +1861,14 @@ export function AgentChat({
           <div className="text-center">
             {radiologyActive && !ecgInExaminus ? (
               <ScanLine className="h-16 w-16 mx-auto mb-4 text-primary" />
-            ) : ecgActive || ecgInExaminus ? (
+            ) : ecgInExaminus ? (
               <Activity className="h-16 w-16 mx-auto mb-4 text-primary" />
             ) : (
               <Paperclip className="h-16 w-16 mx-auto mb-4 text-primary" />
             )}
-            <p className="text-xl font-bold">{radiologyActive ? copy.dropTitle : ecgActive ? "Solte o ECG aqui" : "Solte o arquivo aqui"}</p>
+            <p className="text-xl font-bold">{radiologyActive ? copy.dropTitle : "Solte o arquivo aqui"}</p>
             <p className="text-sm text-muted-foreground mt-2">
-              {radiologyActive || ecgActive ? "JPEG, PNG, WebP ou PDF · até 4 imagens · sem DICOM" : "Imagens, PDF, DOCX, PPTX, XLSX, TXT, MD"}
+              {radiologyActive ? "JPEG, PNG, WebP ou PDF · até 4 imagens · sem DICOM" : "Imagens, PDF, DOCX, PPTX, XLSX, TXT, MD"}
             </p>
           </div>
         </div>
@@ -1930,78 +1877,13 @@ export function AgentChat({
       <input
         ref={fileInputRef}
         type="file"
-        accept={radiologyActive ? `${RADIOLOGY_ACCEPT_ATTR},application/pdf,.pdf` : ecgActive ? `${ECG_ACCEPT_ATTR},application/pdf,.pdf` : "image/*,application/pdf,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.md"}
+        accept={radiologyActive ? `${RADIOLOGY_ACCEPT_ATTR},application/pdf,.pdf` : "image/*,application/pdf,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.md"}
         multiple
         onChange={handleFileSelect}
         className="hidden"
       />
 
-      {ecgActive ? (
-        <>
-          {/* Interpretador de ECG (Clínicus): workspace focado substitui cabeçalho, ajustes e composer legados */}
-          <EcgInterpreterWorkspace
-            isMobile={isMobile}
-            conversationName={currentConversation?.name ?? null}
-            messages={currentConversation?.messages ?? []}
-            pending={ecgAttachments.map<EcgPendingImage>((a) => ({ id: a.id, previewUrl: a.previewUrl, name: a.name, size: a.size }))}
-            historical={ecgHistoricalIds.map<EcgResolvedImage>((id) => ({
-              id,
-              url: ecgPreviewById[id]?.url ?? null,
-              name: ecgPreviewById[id]?.name ?? "ECG",
-              failed: ecgPreviewById[id]?.failed,
-            }))}
-            message={message}
-            onMessageChange={setMessage}
-            onSend={() => { void sendMessage(); }}
-            onQuickAsk={(text) => { void sendEcgMessage(text); }}
-            canSend={canSend}
-            isLoading={isLoading}
-            onPickFiles={() => fileInputRef.current?.click()}
-            onRemovePending={removeEcgAttachment}
-            onExit={() => setClinicusModes({ interpretador: false })}
-            onNewConversation={createNewConversation}
-            onOpenHistory={() => setHistoryOpen(true)}
-            onCopy={copyToClipboard}
-            copiedMessageId={copiedMessageId}
-            onRead={(m) => setReadingMessage(m as Message)}
-            textareaRef={textareaRef}
-            messagesEndRef={messagesEndRef}
-          />
-
-          {/* Histórico (discreto) enquanto o Interpretador está ativo */}
-          <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
-            <SheetContent className="w-full sm:max-w-md">
-              <SheetHeader>
-                <SheetTitle>Histórico de Conversas</SheetTitle>
-              </SheetHeader>
-              <ScrollArea className="h-[calc(100vh-8rem)] mt-4">
-                <div className="space-y-2">
-                  {conversations.length === 0 ? (
-                    <div className="text-center py-12 text-muted-foreground">
-                      <FolderOpen className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                      <p>Nenhuma conversa ainda</p>
-                      <p className="text-sm mt-1">Envie um ECG para começar</p>
-                    </div>
-                  ) : (
-                    conversations.map((conv) => (
-                      <Card
-                        key={conv.id}
-                        className={`p-3 cursor-pointer hover:bg-accent transition-colors ${currentConversation?.id === conv.id ? "bg-accent" : ""}`}
-                        onClick={() => { void loadConversation(conv); setHistoryOpen(false); }}
-                      >
-                        <p className="font-medium truncate">{conv.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{conv.last_message || "Sem mensagens"}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{new Date(conv.updated_at).toLocaleDateString()}</p>
-                      </Card>
-                    ))
-                  )}
-                </div>
-              </ScrollArea>
-            </SheetContent>
-          </Sheet>
-        </>
-      ) : (
-        <>
+      <>
       {/* Header — minimal identity */}
       <div className="flex flex-col gap-2 mb-3 md:mb-4 pb-3 md:pb-4 border-b border-border/40 md:flex-row md:items-center md:justify-between md:gap-3">
         <div className="flex items-center gap-2.5 md:gap-3 min-w-0">
@@ -2777,17 +2659,6 @@ export function AgentChat({
                 )}
               </>
             )}
-            <Toggle
-              pressed={ecgInterpretMode}
-              onPressedChange={(v) => setClinicusModes({ interpretador: v })}
-              size="sm"
-              className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-primary/20 gap-1"
-              title="Interpretador de ECG — envie o traçado original"
-              data-testid="clinicus-ecg-toggle-mobile"
-            >
-              <Activity className="h-3 w-3" />
-              <span>Interpretador</span>
-            </Toggle>
           </div>
         )}
         {isMobile && agentType === "prescriptus" && (
@@ -2987,17 +2858,6 @@ export function AgentChat({
                     )}
                   </>
                 )}
-                <Toggle
-                  pressed={ecgInterpretMode}
-                  onPressedChange={(v) => setClinicusModes({ interpretador: v })}
-                  size="sm"
-                  className="shrink-0 h-8 data-[state=on]:bg-primary/20 gap-1 rounded-full"
-                  title="Interpretador de ECG — envie o traçado original para uma segunda leitura"
-                  data-testid="clinicus-ecg-toggle"
-                >
-                  <Activity className="h-4 w-4" />
-                  <span className="text-xs">Interpretador</span>
-                </Toggle>
               </>
             )}
             {agentType === "prescriptus" && (
@@ -3555,8 +3415,7 @@ export function AgentChat({
         );
       })()}
       </div>
-        </>
-      )}
+      </>
 
       {/* Painel lateral de sugestões para o caso (Clínicus) */}
       <CaseSuggestionsPanel
