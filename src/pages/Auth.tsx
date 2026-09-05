@@ -186,49 +186,51 @@ export default function Auth() {
         >
           <Logo size="md" />
 
-          <div className="mt-10 space-y-6 max-w-xl">
+          <div className="mt-8 space-y-4 max-w-xl">
             <div className="inline-flex items-center gap-2 text-[0.7rem] uppercase tracking-[0.25em] text-muted-foreground">
               <span className="h-px w-8 bg-primary" />
               Para médicos ocupados
             </div>
-            <h1 className="font-display text-5xl xl:text-6xl leading-[0.95] tracking-tight text-foreground">
+            <h1 className="font-display text-4xl xl:text-5xl leading-[0.95] tracking-tight text-foreground">
               Produza mais.
               <br />
               <span className="italic text-primary">Digite menos.</span>
             </h1>
-            <p className="text-base text-muted-foreground leading-relaxed max-w-md">
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-md">
               Documentação, Copiloto e Fluxo em uma só plataforma. Anamnese, exames, prescrição,
               gasometria, scores — em segundos, no seu fluxo.
             </p>
-
-            <ul className="space-y-2.5 pt-2">
-              {[
-                "Examinus, Clínicus, Gasometrus e todo o restante da plataforma",
-                "Documentação automatizada com rigor clínico",
-                "Sem treinamento. Funciona como você pensa.",
-              ].map((line, i) => (
-                <motion.li
-                  key={line}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 + i * 0.1, duration: 0.5 }}
-                  className="flex items-center gap-3 text-sm text-muted-foreground"
-                >
-                  <span className="h-1 w-1 rounded-full bg-primary" />
-                  {line}
-                </motion.li>
-              ))}
-            </ul>
           </div>
 
-          <div className="mt-auto pt-6">
-            <Suspense fallback={<div className="h-[300px] xl:h-[340px]" />}>
+          {/* Órbita 3D como destaque central do painel */}
+          <div className="flex-1 flex items-center justify-center py-4">
+            <Suspense fallback={<div className="h-[360px] xl:h-[440px]" />}>
               <AssistantOrbit />
             </Suspense>
-            <p className="pt-2 text-[0.7rem] uppercase tracking-[0.18em] font-mono text-muted-foreground">
-              © {new Date().getFullYear()} MedStation · LGPD
-            </p>
           </div>
+
+          <ul className="space-y-2">
+            {[
+              "Examinus, Clínicus, Gasometrus e todo o restante da plataforma",
+              "Documentação automatizada com rigor clínico",
+              "Sem treinamento. Funciona como você pensa.",
+            ].map((line, i) => (
+              <motion.li
+                key={line}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 + i * 0.1, duration: 0.5 }}
+                className="flex items-center gap-3 text-sm text-muted-foreground"
+              >
+                <span className="h-1 w-1 rounded-full bg-primary" />
+                {line}
+              </motion.li>
+            ))}
+          </ul>
+
+          <p className="pt-4 text-[0.7rem] uppercase tracking-[0.18em] font-mono text-muted-foreground">
+            © {new Date().getFullYear()} MedStation · LGPD
+          </p>
         </motion.aside>
 
         {/* Auth panel */}
