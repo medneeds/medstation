@@ -102,6 +102,7 @@ export function AssistantOrbit() {
         camera={{ position: [0, 1.7, 6.8], fov: 34 }}
         gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
         style={{ background: "transparent" }}
+        onCreated={({ camera }) => camera.lookAt(0, 0, 0)}
       >
         <Suspense fallback={null}>
           <AssistantPlates />
