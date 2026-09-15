@@ -344,8 +344,15 @@ serve(async (req) => {
     const globalCurrency = payingAll.find((r) => r.currency)?.currency || "brl";
 
 
+    const isAnnual = (r: { interval: string | null }) => r.interval === "year";
+    const isMonthly = (r: { interval: string | null }) => r.interval === "month";
+
     const stats = {
       total_users: allUsers.length,
+      annual_subscribers: payingAll.filter(isAnnual).length,
+      monthly_subscribers: payingAll.filter(isMonthly).length,
+      annual_active: globalActive.filter(isAnnual).length,
+      monthly_active: globalActive.filter(isMonthly).length,
       total_records: records.length,
       active: globalActive.length,
       trialing: globalTrialing.length,
