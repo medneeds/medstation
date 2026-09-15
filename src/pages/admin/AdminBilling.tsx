@@ -334,6 +334,16 @@ export default function AdminBilling() {
                   </td>
                   <td className="px-4 py-2">{r.full_name || "—"}</td>
                   <td className="px-4 py-2"><Badge variant="outline">{r.effective_status}</Badge></td>
+                  <td className="px-4 py-2 text-xs">
+                    {r.interval === "year" ? (
+                      <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">anual</Badge>
+                    ) : r.interval === "month" ? (
+                      <Badge variant="outline" className="text-[10px]">mensal</Badge>
+                    ) : (
+                      "—"
+                    )}
+                    {r.plan_label && <span className="ml-2 text-muted-foreground">{r.plan_label}</span>}
+                  </td>
                   <td className="px-4 py-2 text-right tabular-nums">
                     {r.monthly_amount_cents ? fmtMoney(r.monthly_amount_cents, r.currency || currency) : "—"}
                   </td>
