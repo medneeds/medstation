@@ -60,7 +60,7 @@ export interface FileLike {
 
 export type RadiologyFileValidation = { ok: true; mime: RadiologyMime } | { ok: false; reason: string };
 
-/** Aceita apenas JPEG/PNG/WebP até 25 MB. PDF, DICOM, HEIC, GIF etc. são rejeitados. */
+/** Aceita apenas JPEG/PNG/WebP até 50 MB. PDF, DICOM, HEIC, GIF etc. são rejeitados. */
 export function validateRadiologyFile(file: FileLike): RadiologyFileValidation {
   const declared = (file.type || "").toLowerCase();
   const mime: RadiologyMime | null = isAllowedRadiologyMime(declared)
@@ -76,7 +76,7 @@ export function validateRadiologyFile(file: FileLike): RadiologyFileValidation {
     return { ok: false, reason: `"${file.name}" está vazio.` };
   }
   if (file.size > MAX_RADIOLOGY_IMAGE_BYTES) {
-    return { ok: false, reason: `"${file.name}" excede 25 MB.` };
+    return { ok: false, reason: `"${file.name}" excede 50 MB.` };
   }
   return { ok: true, mime };
 }

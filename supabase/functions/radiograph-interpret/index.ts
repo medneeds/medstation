@@ -189,7 +189,7 @@ serve(async (req) => {
     }
     const bytes = new Uint8Array(await blob.arrayBuffer());
     if (bytes.byteLength === 0) return json({ error: "Uma das imagens está vazia" }, 400);
-    if (bytes.byteLength > MAX_RADIOLOGY_IMAGE_BYTES) return json({ error: "Imagem acima do limite de 25 MB" }, 400);
+    if (bytes.byteLength > MAX_RADIOLOGY_IMAGE_BYTES) return json({ error: "Imagem acima do limite de 50 MB" }, 400);
     totalBytes += bytes.byteLength;
     imageDataUrls.push(bytesToDataUrl(bytes, ev.mime));
   }

@@ -9,7 +9,7 @@ export const ECG_TEMPERATURE = 0.1;
 export const ECG_MAX_TOKENS = 3200;
 
 export const MAX_ECG_IMAGES = 4;
-export const MAX_ECG_IMAGE_BYTES = 25 * 1024 * 1024; // 25 MB por imagem
+export const MAX_ECG_IMAGE_BYTES = 50 * 1024 * 1024; // 50 MB por imagem
 export const MAX_ECG_HISTORY = 12;
 
 export const ECG_ALLOWED_MIME = ["image/jpeg", "image/png", "image/webp"] as const;
@@ -117,7 +117,7 @@ export function selectOwnedEcgEvidences(
       return { ok: false, error: "Formato de imagem não suportado. Use JPEG, PNG ou WebP.", status: 400 };
     }
     if (typeof row.file_size === "number" && row.file_size > MAX_ECG_IMAGE_BYTES) {
-      return { ok: false, error: "Imagem acima do limite de 25 MB.", status: 400 };
+      return { ok: false, error: "Imagem acima do limite de 50 MB.", status: 400 };
     }
     resolved.push({ id, filePath: row.file_path, mime });
   }

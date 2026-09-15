@@ -83,7 +83,7 @@ export interface EcgFileLike {
 
 export type EcgFileValidation = { ok: true; mime: EcgMime } | { ok: false; reason: string };
 
-/** Aceita apenas JPEG/PNG/WebP até 25 MB. PDF, DICOM, HEIC, GIF etc. são rejeitados nesta V1. */
+/** Aceita apenas JPEG/PNG/WebP até 50 MB. PDF, DICOM, HEIC, GIF etc. são rejeitados nesta V1. */
 export function validateEcgFile(file: EcgFileLike): EcgFileValidation {
   const declared = (file.type || "").toLowerCase();
   const mime: EcgMime | null = isAllowedEcgMime(declared)
@@ -99,7 +99,7 @@ export function validateEcgFile(file: EcgFileLike): EcgFileValidation {
     return { ok: false, reason: `"${file.name}" está vazio.` };
   }
   if (file.size > MAX_ECG_IMAGE_BYTES) {
-    return { ok: false, reason: `"${file.name}" excede 25 MB.` };
+    return { ok: false, reason: `"${file.name}" excede 50 MB.` };
   }
   return { ok: true, mime };
 }
