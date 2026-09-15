@@ -391,6 +391,8 @@ serve(async (req) => {
       else if (statusFilter === "trial_expired") filtered = filtered.filter((r) => r.trial_expired);
       else if (statusFilter === "legacy_pricing") filtered = filtered.filter((r) => r.pricing_cohort === "legacy_pre_unification");
       else if (statusFilter === "pricing_review_due") filtered = filtered.filter((r) => r.pricing_review_due);
+      else if (statusFilter === "annual") filtered = filtered.filter((r) => payingStatuses.has(r.stripe_status) && isAnnual(r));
+      else if (statusFilter === "monthly") filtered = filtered.filter((r) => payingStatuses.has(r.stripe_status) && isMonthly(r));
       else if (stripeStatusFilters.has(statusFilter)) filtered = filtered.filter((r) => r.stripe_status === statusFilter);
       else filtered = filtered.filter((r) => r.effective_status === statusFilter);
     }
