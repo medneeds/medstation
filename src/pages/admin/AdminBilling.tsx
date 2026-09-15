@@ -315,12 +315,12 @@ export default function AdminBilling() {
             </thead>
             <tbody>
               {loading && (
-                <tr><td colSpan={7} className="py-10 text-center text-muted-foreground">
+                <tr><td colSpan={8} className="py-10 text-center text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin inline" />
                 </td></tr>
               )}
               {!loading && records.length === 0 && (
-                <tr><td colSpan={7} className="py-10 text-center text-muted-foreground">Nenhum registro no filtro atual.</td></tr>
+                <tr><td colSpan={8} className="py-10 text-center text-muted-foreground">Nenhum registro no filtro atual.</td></tr>
               )}
               {records.map((r, i) => (
                 <tr key={`${r.stripe_customer_id || r.user_id || r.email}-${i}`} className="border-t border-border/40 hover:bg-muted/30">
