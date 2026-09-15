@@ -20,7 +20,7 @@ interface AgentVoiceInputProps {
 }
 
 const WAVEFORM_BARS = 28;
-const MAX_RECORDING_SECONDS = 180; // 3 minutes hard cap
+const MAX_RECORDING_SECONDS = 900; // 15 minutes hard cap
 
 const vibrate = (pattern: number | number[]) => {
   try {
