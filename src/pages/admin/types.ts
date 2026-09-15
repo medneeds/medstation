@@ -59,6 +59,10 @@ export interface SubscriberStats {
   access_active?: number;
   legacy_pricing?: number;
   pricing_review_due?: number;
+  annual_subscribers?: number;
+  monthly_subscribers?: number;
+  annual_active?: number;
+  monthly_active?: number;
   mrr_cents: number;
   arr_cents: number;
   avg_ticket_cents: number;

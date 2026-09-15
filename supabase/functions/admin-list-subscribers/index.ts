@@ -344,8 +344,15 @@ serve(async (req) => {
     const globalCurrency = payingAll.find((r) => r.currency)?.currency || "brl";
 
 
+    const isAnnual = (r: { interval: string | null }) => r.interval === "year";
+    const isMonthly = (r: { interval: string | null }) => r.interval === "month";
+
     const stats = {
       total_users: allUsers.length,
+      annual_subscribers: payingAll.filter(isAnnual).length,
+      monthly_subscribers: payingAll.filter(isMonthly).length,
+      annual_active: globalActive.filter(isAnnual).length,
+      monthly_active: globalActive.filter(isMonthly).length,
       total_records: records.length,
       active: globalActive.length,
       trialing: globalTrialing.length,
@@ -384,6 +391,8 @@ serve(async (req) => {
       else if (statusFilter === "trial_expired") filtered = filtered.filter((r) => r.trial_expired);
       else if (statusFilter === "legacy_pricing") filtered = filtered.filter((r) => r.pricing_cohort === "legacy_pre_unification");
       else if (statusFilter === "pricing_review_due") filtered = filtered.filter((r) => r.pricing_review_due);
+      else if (statusFilter === "annual") filtered = filtered.filter((r) => payingStatuses.has(r.stripe_status) && isAnnual(r));
+      else if (statusFilter === "monthly") filtered = filtered.filter((r) => payingStatuses.has(r.stripe_status) && isMonthly(r));
       else if (stripeStatusFilters.has(statusFilter)) filtered = filtered.filter((r) => r.stripe_status === statusFilter);
       else filtered = filtered.filter((r) => r.effective_status === statusFilter);
     }
@@ -431,6 +440,10 @@ serve(async (req) => {
       free_trial: filtered.filter((r) => r.in_trial).length,
       free_trial_expired: filtered.filter((r) => r.trial_expired).length,
       access_active: filtered.filter((r) => r.access_active).length,
+      annual_subscribers: filteredPaying.filter(isAnnual).length,
+      monthly_subscribers: filteredPaying.filter(isMonthly).length,
+      annual_active: filteredActive.filter(isAnnual).length,
+      monthly_active: filteredActive.filter(isMonthly).length,
       mrr_cents: Math.round(filteredMrr),
       arr_cents: Math.round(filteredMrr * 12),
       mrr_at_risk_cents: Math.round(filteredMrrAtRisk),

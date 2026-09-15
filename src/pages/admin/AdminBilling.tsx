@@ -213,6 +213,20 @@ export default function AdminBilling() {
         </Card>
       </div>
 
+      {/* Plano anual vs mensal */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="p-4">
+          <div className="text-xs uppercase text-muted-foreground">Assinantes anuais</div>
+          <div className="text-2xl font-display font-semibold mt-1">{displayed?.annual_subscribers ?? "—"}</div>
+          <div className="text-[11px] text-muted-foreground mt-1">{displayed?.annual_active ?? 0} com cobrança ativa</div>
+        </Card>
+        <Card className="p-4">
+          <div className="text-xs uppercase text-muted-foreground">Assinantes mensais</div>
+          <div className="text-2xl font-display font-semibold mt-1">{displayed?.monthly_subscribers ?? "—"}</div>
+          <div className="text-[11px] text-muted-foreground mt-1">{displayed?.monthly_active ?? 0} com cobrança ativa</div>
+        </Card>
+      </div>
+
       {/* Status pills */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <Card className="p-3"><div className="text-[11px] uppercase text-muted-foreground">Cancelados</div><div className="text-lg font-semibold mt-0.5 text-red-500">{displayed?.canceled ?? "—"}</div></Card>
@@ -255,6 +269,8 @@ export default function AdminBilling() {
               <SelectItem value="courtesy">Cortesias</SelectItem>
               <SelectItem value="admin">Admin</SelectItem>
               <SelectItem value="none">Sem assinatura</SelectItem>
+              <SelectItem value="annual">Plano anual</SelectItem>
+              <SelectItem value="monthly">Plano mensal</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -290,6 +306,7 @@ export default function AdminBilling() {
                 <th className="text-left px-4 py-2">Email</th>
                 <th className="text-left px-4 py-2">Nome</th>
                 <th className="text-left px-4 py-2">Status</th>
+                <th className="text-left px-4 py-2">Plano</th>
                 <th className="text-right px-4 py-2">Valor / mês</th>
                 <th className="text-left px-4 py-2">Início</th>
                 <th className="text-left px-4 py-2">Renovação</th>
@@ -298,12 +315,12 @@ export default function AdminBilling() {
             </thead>
             <tbody>
               {loading && (
-                <tr><td colSpan={7} className="py-10 text-center text-muted-foreground">
+                <tr><td colSpan={8} className="py-10 text-center text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin inline" />
                 </td></tr>
               )}
               {!loading && records.length === 0 && (
-                <tr><td colSpan={7} className="py-10 text-center text-muted-foreground">Nenhum registro no filtro atual.</td></tr>
+                <tr><td colSpan={8} className="py-10 text-center text-muted-foreground">Nenhum registro no filtro atual.</td></tr>
               )}
               {records.map((r, i) => (
                 <tr key={`${r.stripe_customer_id || r.user_id || r.email}-${i}`} className="border-t border-border/40 hover:bg-muted/30">
@@ -317,6 +334,16 @@ export default function AdminBilling() {
                   </td>
                   <td className="px-4 py-2">{r.full_name || "—"}</td>
                   <td className="px-4 py-2"><Badge variant="outline">{r.effective_status}</Badge></td>
+                  <td className="px-4 py-2 text-xs">
+                    {r.interval === "year" ? (
+                      <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">anual</Badge>
+                    ) : r.interval === "month" ? (
+                      <Badge variant="outline" className="text-[10px]">mensal</Badge>
+                    ) : (
+                      "—"
+                    )}
+                    {r.plan_label && <span className="ml-2 text-muted-foreground">{r.plan_label}</span>}
+                  </td>
                   <td className="px-4 py-2 text-right tabular-nums">
                     {r.monthly_amount_cents ? fmtMoney(r.monthly_amount_cents, r.currency || currency) : "—"}
                   </td>
