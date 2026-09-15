@@ -215,7 +215,7 @@ export function buildRadiologyMessages(params: {
   ];
 }
 
-const CRITICAL_FINDINGS = [
+const CRITICAL_FINDINGS_CHEST = [
   "pneumotórax (qualquer volume; hipertensivo com desvio mediastinal é emergência)",
   "pneumomediastino ou enfisema subcutâneo extenso",
   "pneumoperitônio / ar livre subdiafragmático",
@@ -227,6 +227,20 @@ const CRITICAL_FINDINGS = [
   "consolidação extensa/multilobar em paciente instável",
   "edema pulmonar franco de instalação aguda",
   "fratura de múltiplos arcos costais com tórax instável ou fratura de esterno/coluna",
+];
+
+const CRITICAL_FINDINGS_ABDOMEN = [
+  "pneumoperitônio / ar livre intraperitoneal (cúpulas, sinal de Rigler, ligamento falciforme)",
+  "obstrução intestinal com alças distendidas, níveis hidroaéreos e ausência de gás distal/retal",
+  "sinais de volvo (sigmoide em grão de café, volvo de ceco)",
+  "megacólon tóxico (dilatação acentuada do cólon transverso com contorno mucoso irregular)",
+  "pneumatose intestinal, gás em veia porta ou gás em parede de víscera — suspeita de isquemia",
+  "gás em topografia biliar (aerobilia) ou íleo biliar com cálculo ectópico",
+  "coleção com gás fora do trato digestivo, sugerindo abscesso ou perfuração contida",
+  "aneurisma de aorta abdominal calcificado com contorno alargado em contexto de dor aguda",
+  "corpo estranho ingerido de risco (bateria, objeto pontiagudo) ou material cirúrgico retido",
+  "sonda nasogástrica, cateter ou stent em posição anômala",
+  "pneumoperitônio pós-operatório recente (interpretar com cautela, não presumir perfuração)",
 ];
 
 export function buildRadiologySystemPrompt(outputMode: RadiologyOutputMode): string {
