@@ -269,6 +269,17 @@ describe("Interpretador — contrato de formato do prompt", () => {
     }
   });
 
+  it("cobre radiografia de abdome agudo com achados críticos e limites próprios", () => {
+    for (const prompt of [auto, quick, report]) {
+      expect(prompt).toContain("ABDOME");
+      expect(prompt).toContain("pneumoperitônio / ar livre intraperitoneal");
+      expect(prompt).toContain("obstrução intestinal");
+      expect(prompt).toContain("pneumatose intestinal");
+      expect(prompt).toContain("LIMITES PRÓPRIOS DA RADIOGRAFIA DE ABDOME");
+      expect(prompt).toContain("normalidade não exclui");
+    }
+  });
+
   it("cliente e núcleo compartilham a mesma taxonomia de origem", () => {
     expect(RADIOLOGY_ORIGIN).toBe("examinus_interpreter");
   });

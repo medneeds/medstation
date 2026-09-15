@@ -18,7 +18,7 @@ export const INTERPRETER_MODALITY_LABEL: Record<InterpreterModality, string> = {
 
 /** Texto exibido junto ao seletor, sempre visível antes do envio. */
 export const INTERPRETER_MODALITY_HINT: Record<InterpreterModality, string> = {
-  radiografia: "Segunda leitura de radiografia de tórax a partir da imagem original.",
+  radiografia: "Segunda leitura de radiografia de tórax ou de abdome a partir da imagem original.",
   ecg: "Segunda leitura de eletrocardiograma a partir do traçado original.",
 };
 
@@ -49,6 +49,10 @@ const RADIOGRAPHY_HINTS = [
   "cxr",
   "torax",
   "tórax",
+  "abdome",
+  "abdomen",
+  "abdômen",
+  "abdominal",
 ];
 
 function normalize(value: string): string {
@@ -138,7 +142,7 @@ export function interpreterCopy(modality: InterpreterModality) {
     dropTitle: ecg ? "Solte o ECG aqui" : "Solte a radiografia aqui",
     emptyError: ecg
       ? "Anexe o traçado do ECG (JPEG, PNG, WebP ou PDF) para interpretar."
-      : "Anexe uma radiografia de tórax (JPEG, PNG, WebP ou PDF) para interpretar.",
+      : "Anexe uma radiografia de tórax ou de abdome (JPEG, PNG, WebP ou PDF) para interpretar.",
     attachedOne: ecg ? "ECG anexado" : "radiografia anexada",
     attachedMany: ecg ? "ECGs anexados" : "radiografias anexadas",
     pendingAria: ecg ? "ECGs anexados" : "Radiografias anexadas",

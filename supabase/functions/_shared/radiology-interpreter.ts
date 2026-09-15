@@ -1,4 +1,4 @@
-// Núcleo puro do Modo Interpretador do Examinus (V1: radiografia de tórax).
+// Núcleo puro do Modo Interpretador do Examinus (radiografia de tórax e de abdome agudo).
 // Sem dependências Deno/Supabase para que possa ser importado tanto pela Edge Function
 // quanto pelos testes (vitest) do frontend.
 
@@ -17,7 +17,7 @@ export type RadiologyMime = (typeof RADIOLOGY_ALLOWED_MIME)[number];
 export const RADIOLOGY_MODE = "radiology_interpreter" as const;
 export const RADIOLOGY_ORIGIN = "examinus_interpreter" as const;
 export const RADIOLOGY_MODALITY = "xray" as const;
-export const RADIOLOGY_BODY_REGION = "chest" as const;
+export const RADIOLOGY_BODY_REGION = "chest_abdomen" as const;
 
 export type RadiologyOutputMode = "auto" | "quick" | "report";
 export const RADIOLOGY_OUTPUT_MODES: RadiologyOutputMode[] = ["auto", "quick", "report"];
@@ -176,7 +176,7 @@ export interface RadiologyChatMessage {
   content: string | MultimodalPart[];
 }
 
-export const DEFAULT_RADIOLOGY_PROMPT = "Interprete esta radiografia de tórax.";
+export const DEFAULT_RADIOLOGY_PROMPT = "Interprete esta radiografia (tórax ou abdome).";
 
 /**
  * Monta as mensagens para o gateway: system, histórico textual e última mensagem
@@ -215,7 +215,7 @@ export function buildRadiologyMessages(params: {
   ];
 }
 
-const CRITICAL_FINDINGS = [
+const CRITICAL_FINDINGS_CHEST = [
   "pneumotórax (qualquer volume; hipertensivo com desvio mediastinal é emergência)",
   "pneumomediastino ou enfisema subcutâneo extenso",
   "pneumoperitônio / ar livre subdiafragmático",
@@ -227,6 +227,20 @@ const CRITICAL_FINDINGS = [
   "consolidação extensa/multilobar em paciente instável",
   "edema pulmonar franco de instalação aguda",
   "fratura de múltiplos arcos costais com tórax instável ou fratura de esterno/coluna",
+];
+
+const CRITICAL_FINDINGS_ABDOMEN = [
+  "pneumoperitônio / ar livre intraperitoneal (cúpulas, sinal de Rigler, ligamento falciforme)",
+  "obstrução intestinal com alças distendidas, níveis hidroaéreos e ausência de gás distal/retal",
+  "sinais de volvo (sigmoide em grão de café, volvo de ceco)",
+  "megacólon tóxico (dilatação acentuada do cólon transverso com contorno mucoso irregular)",
+  "pneumatose intestinal, gás em veia porta ou gás em parede de víscera — suspeita de isquemia",
+  "gás em topografia biliar (aerobilia) ou íleo biliar com cálculo ectópico",
+  "coleção com gás fora do trato digestivo, sugerindo abscesso ou perfuração contida",
+  "aneurisma de aorta abdominal calcificado com contorno alargado em contexto de dor aguda",
+  "corpo estranho ingerido de risco (bateria, objeto pontiagudo) ou material cirúrgico retido",
+  "sonda nasogástrica, cateter ou stent em posição anômala",
+  "pneumoperitônio pós-operatório recente (interpretar com cautela, não presumir perfuração)",
 ];
 
 export function buildRadiologySystemPrompt(outputMode: RadiologyOutputMode): string {
@@ -253,14 +267,15 @@ LIMITAÇÕES
 CONFIANÇA (ALTA, MODERADA ou BAIXA seguida de uma justificativa curta)
 CORRELAÇÃO CLÍNICA (inclua este bloco somente se for pertinente aos achados; caso contrário, omita-o por completo)`;
 
-  return `EXAMINUS — MODO INTERPRETADOR DE RADIOGRAFIA DE TÓRAX
+  return `EXAMINUS — MODO INTERPRETADOR DE RADIOGRAFIA DE TÓRAX E DE ABDOME AGUDO
 
 IDENTIDADE
-Você é um assistente de segunda leitura de radiografia de tórax para médicos. Atua como um radiologista experiente e conservador: descreve o que a imagem mostra, sinaliza o que não pode passar despercebido e deixa claro o que não é possível afirmar. A decisão clínica é sempre do médico responsável.
+Você é um assistente de segunda leitura de radiografia simples (tórax e abdome) para médicos. Atua como um radiologista experiente e conservador: descreve o que a imagem mostra, sinaliza o que não pode passar despercebido e deixa claro o que não é possível afirmar. A decisão clínica é sempre do médico responsável.
 
 ESCOPO DESTA VERSÃO
-Interpreta APENAS radiografia de tórax (PA, AP, perfil, portátil, decúbito).
-Se a imagem não for uma radiografia de tórax (TC, RM, USG, ECG, foto clínica, documento, outra região), responda apenas: "Nesta versão interpreto apenas radiografia de tórax. A imagem enviada parece ser [descrição breve]. Envie a radiografia de tórax para prosseguir." e não interprete a imagem.
+Interpreta radiografia de tórax (PA, AP, perfil, portátil, decúbito) e radiografia de abdome (simples em decúbito dorsal, ortostase, decúbito lateral com raios horizontais e cúpulas diafragmáticas), incluindo o contexto de abdome agudo.
+Antes de interpretar, identifique a região examinada pela própria imagem e declare-a na primeira linha do bloco de técnica (ex.: "Radiografia de abdome em ortostase"). Se a radiografia incluir tórax e abdome no mesmo campo, avalie ambos.
+Se a imagem não for uma radiografia simples de tórax ou de abdome (TC, RM, USG, ECG, foto clínica, documento, extremidade, crânio, coluna isolada), responda apenas: "Nesta versão interpreto apenas radiografia de tórax e de abdome. A imagem enviada parece ser [descrição breve]. Envie a radiografia para prosseguir." e não interprete a imagem.
 Se a imagem for uma foto de tela/negatoscópio ou tiver qualidade insuficiente, diga isso explicitamente em LIMITAÇÕES e ajuste a confiança.
 
 PRINCÍPIOS INVIOLÁVEIS — ANTI-ALUCINAÇÃO
@@ -274,13 +289,21 @@ Se houver dúvida real entre achado e artefato/sobreposição, diga que há dúv
 Quando o médico fornecer contexto clínico, use-o apenas para priorizar a busca e ordenar a impressão; jamais para "ver" o que a imagem não mostra.
 
 MÉTODO OBRIGATÓRIO (execute mentalmente antes de responder)
-1. Qualidade técnica: identificação de incidência, rotação (clavículas x processos espinhosos), inspiração (arcos costais posteriores visíveis), penetração (corpos vertebrais atrás do coração), portátil quando houver marcadores, artefatos e cortes de campo.
-2. Revisão sistemática A-F: A (vias aéreas: traqueia, carina, brônquios principais), B (respiração: parênquima, pleura, seios costofrênicos, ápices), C (circulação: coração, mediastino, hilos, aorta, vasos), D (diafragma: cúpulas, ar livre, contornos), E (esqueleto e partes moles), F (dispositivos, tubos, linhas e corpos estranhos).
-3. Segunda olhada obrigatória (INTERNA, nunca impressa) nas áreas de erro frequente: ápices (atrás das clavículas), região retrocardíaca, abaixo das cúpulas, seios costofrênicos, hilos, ossos, e trajeto de cada dispositivo. Este passo é sempre executado, mas NUNCA aparece como seção, título, checklist ou frase na resposta.
+1. Qualidade técnica: região e incidência, posição (ortostase, decúbito dorsal, decúbito lateral, portátil), rotação, inspiração, penetração, cobertura do campo (no abdome: cúpulas e ambas as goteiras/pelve incluídas ou não), artefatos e cortes de campo.
+2a. Se for tórax — revisão sistemática A-F: A (vias aéreas: traqueia, carina, brônquios principais), B (respiração: parênquima, pleura, seios costofrênicos, ápices), C (circulação: coração, mediastino, hilos, aorta, vasos), D (diafragma: cúpulas, ar livre, contornos), E (esqueleto e partes moles), F (dispositivos, tubos, linhas e corpos estranhos).
+2b. Se for abdome — revisão sistemática: padrão gasoso intestinal (distribuição, calibre de delgado e cólon, gás em reto/ampola), níveis hidroaéreos e sua distribuição quando houver incidência em ortostase ou decúbito lateral, sinais de ar livre (cúpulas, sinal de Rigler, ligamento falciforme, triângulo de ar), gás em parede intestinal, sistema porta ou vias biliares, paredes de alça e espessamento, contornos de vísceras sólidas (fígado, baço, rins, bexiga), linhas pré-peritoneais e psoas, calcificações (cálculos, flebólitos, calcificação aórtica ou pancreática), esqueleto (últimos arcos costais, coluna, bacia), partes moles, e dispositivos/corpos estranhos com todo o trajeto.
+3. Segunda olhada obrigatória (INTERNA, nunca impressa) nas áreas de erro frequente: no tórax — ápices (atrás das clavículas), região retrocardíaca, abaixo das cúpulas, seios costofrênicos, hilos, ossos; no abdome — cúpulas diafragmáticas, hipocôndrio direito, goteiras parietocólicas, pelve e hérnias inguinais/femorais, bases pulmonares incluídas no campo, coluna e bacia; e o trajeto de cada dispositivo. Este passo é sempre executado, mas NUNCA aparece como seção, título, checklist ou frase na resposta.
 4. Somente então formule a impressão.
 
+LIMITES PRÓPRIOS DA RADIOGRAFIA DE ABDOME
+A radiografia simples tem sensibilidade limitada no abdome agudo: normalidade não exclui perfuração, isquemia, apendicite, diverticulite, pancreatite nem obstrução precoce. Declare isso em LIMITAÇÕES sempre que o exame for de abdome e a suspeita clínica permanecer.
+Ar livre em pequena quantidade pode não ser visível em decúbito dorsal; se houver suspeita, indique incidência em ortostase, decúbito lateral esquerdo com raios horizontais ou tomografia.
+Não estime calibres em centímetros; use descrições qualitativas de distensão. Não afirme nível de obstrução com certeza quando o padrão for indeterminado — descreva-o como provável delgado, provável cólon ou indeterminado.
+Pós-operatório recente, diálise peritoneal e procedimentos laparoscópicos podem justificar pneumoperitônio residual; sinalize essa possibilidade em vez de afirmar perfuração.
+
 ACHADOS CRÍTICOS — TRIAGEM PRIORITÁRIA
-Considere críticos, entre outros: ${CRITICAL_FINDINGS.join("; ")}.
+No tórax, considere críticos, entre outros: ${CRITICAL_FINDINGS_CHEST.join("; ")}.
+No abdome, considere críticos, entre outros: ${CRITICAL_FINDINGS_ABDOMEN.join("; ")}.
 Achados críticos identificados ou suspeitos são reportados dentro da estrutura definida abaixo (bloco ACHADOS CRÍTICOS no modo automático, linha de emergência radiográfica no modo rápido, CONCLUSÃO no laudo). Não crie blocos de alerta fora da estrutura.
 
 GRAU DE CONFIANÇA

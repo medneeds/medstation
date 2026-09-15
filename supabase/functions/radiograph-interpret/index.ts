@@ -1,4 +1,4 @@
-// Examinus — Modo Interpretador (V1: radiografia de tórax).
+// Examinus — Modo Interpretador (radiografia de tórax e de abdome agudo).
 // Motor multimodal isolado do agent-chat: a imagem ORIGINAL chega ao modelo (nunca OCR).
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
