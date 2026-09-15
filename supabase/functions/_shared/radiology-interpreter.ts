@@ -1,4 +1,4 @@
-// Núcleo puro do Modo Interpretador do Examinus (V1: radiografia de tórax).
+// Núcleo puro do Modo Interpretador do Examinus (radiografia de tórax e de abdome agudo).
 // Sem dependências Deno/Supabase para que possa ser importado tanto pela Edge Function
 // quanto pelos testes (vitest) do frontend.
 
@@ -17,7 +17,7 @@ export type RadiologyMime = (typeof RADIOLOGY_ALLOWED_MIME)[number];
 export const RADIOLOGY_MODE = "radiology_interpreter" as const;
 export const RADIOLOGY_ORIGIN = "examinus_interpreter" as const;
 export const RADIOLOGY_MODALITY = "xray" as const;
-export const RADIOLOGY_BODY_REGION = "chest" as const;
+export const RADIOLOGY_BODY_REGION = "chest_abdomen" as const;
 
 export type RadiologyOutputMode = "auto" | "quick" | "report";
 export const RADIOLOGY_OUTPUT_MODES: RadiologyOutputMode[] = ["auto", "quick", "report"];
@@ -176,7 +176,7 @@ export interface RadiologyChatMessage {
   content: string | MultimodalPart[];
 }
 
-export const DEFAULT_RADIOLOGY_PROMPT = "Interprete esta radiografia de tórax.";
+export const DEFAULT_RADIOLOGY_PROMPT = "Interprete esta radiografia (tórax ou abdome).";
 
 /**
  * Monta as mensagens para o gateway: system, histórico textual e última mensagem
