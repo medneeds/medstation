@@ -8,7 +8,7 @@ export const RADIOLOGY_TEMPERATURE = 0.1;
 export const RADIOLOGY_MAX_TOKENS = 3200;
 
 export const MAX_RADIOLOGY_IMAGES = 4;
-export const MAX_RADIOLOGY_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB por imagem
+export const MAX_RADIOLOGY_IMAGE_BYTES = 25 * 1024 * 1024; // 25 MB por imagem
 export const MAX_RADIOLOGY_HISTORY = 12;
 
 export const RADIOLOGY_ALLOWED_MIME = ["image/jpeg", "image/png", "image/webp"] as const;
@@ -113,7 +113,7 @@ export function selectOwnedRadiologyEvidences(
       return { ok: false, error: "Formato de imagem não suportado. Use JPEG, PNG ou WebP.", status: 400 };
     }
     if (typeof row.file_size === "number" && row.file_size > MAX_RADIOLOGY_IMAGE_BYTES) {
-      return { ok: false, error: "Imagem acima do limite de 10 MB.", status: 400 };
+      return { ok: false, error: "Imagem acima do limite de 25 MB.", status: 400 };
     }
     resolved.push({ id, filePath: row.file_path, mime });
   }
