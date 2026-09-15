@@ -73,8 +73,8 @@ describe("Interpretador — validação de arquivos", () => {
 
   it("rejeita arquivos vazios e acima de 50 MB", () => {
     expect(validateRadiologyFile(file("vazio.jpg", "image/jpeg", 0)).ok).toBe(false);
-    expect(validateRadiologyFile(file("grande.jpg", "image/jpeg", 25 * MB + 1)).ok).toBe(false);
-    expect(validateRadiologyFile(file("limite.jpg", "image/jpeg", 25 * MB)).ok).toBe(true);
+    expect(validateRadiologyFile(file("grande.jpg", "image/jpeg", 50 * MB + 1)).ok).toBe(false);
+    expect(validateRadiologyFile(file("limite.jpg", "image/jpeg", 50 * MB)).ok).toBe(true);
   });
 
   it("o atributo accept do input só lista os MIMEs permitidos", () => {
