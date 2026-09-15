@@ -1588,7 +1588,7 @@ export function AgentChat({
 
   /**
    * Interpretador (Examinus): enfileira o exame ORIGINAL (radiografia ou ECG) para envio.
-   * JPEG/PNG/WebP ou PDF (renderizado em imagem), até 10 MB por imagem, máximo 4. Não há OCR aqui.
+   * JPEG/PNG/WebP ou PDF (renderizado em imagem), até 25 MB por imagem, máximo 4. Não há OCR aqui.
    * A detecção automática de modalidade é auxiliar: só age com pista textual explícita e
    * nunca sobrepõe uma escolha manual do médico.
    */
