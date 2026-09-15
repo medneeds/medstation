@@ -129,7 +129,7 @@ describe("ECG — roteamento de arquivos e validação", () => {
     }
   });
 
-  it("rejeita arquivos vazios e acima de 25 MB", () => {
+  it("rejeita arquivos vazios e acima de 50 MB", () => {
     expect(validateEcgFile(file("ecg.jpg", "image/jpeg", 0)).ok).toBe(false);
     expect(validateEcgFile(file("ecg.jpg", "image/jpeg", 25 * MB + 1)).ok).toBe(false);
     expect(validateEcgFile(file("ecg.jpg", "image/jpeg", 25 * MB)).ok).toBe(true);
@@ -210,7 +210,7 @@ describe("ECG — validação do payload no backend", () => {
     expect(selectOwnedEcgEvidences([U1], [row(U1, { is_active: false })], OWNER)).toMatchObject({ ok: false, status: 403 });
   });
 
-  it("rejeita caminho fora da pasta do usuário, tipo não-imagem, MIME inválido e >25 MB", () => {
+  it("rejeita caminho fora da pasta do usuário, tipo não-imagem, MIME inválido e >50 MB", () => {
     expect(selectOwnedEcgEvidences([U1], [row(U1, { file_path: `${OTHER}/ecg/x.jpg` })], OWNER)).toMatchObject({ ok: false, status: 400 });
     expect(selectOwnedEcgEvidences([U1], [row(U1, { type: "document" })], OWNER)).toMatchObject({ ok: false, status: 400 });
     expect(selectOwnedEcgEvidences([U1], [row(U1, { metadata: { mime_type: "application/pdf" }, file_path: `${OWNER}/ecg/x.pdf` })], OWNER)).toMatchObject({ ok: false, status: 400 });

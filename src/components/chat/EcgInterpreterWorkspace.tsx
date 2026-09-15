@@ -162,7 +162,7 @@ function EcgDropzone({ onPickFiles, compact = false }: { onPickFiles: () => void
       <span className={`block font-medium tracking-tight ${compact ? "text-sm" : "text-base md:text-lg"}`}>
         Arraste ou selecione um ECG
       </span>
-      <span className="mt-1 block text-xs md:text-sm text-muted-foreground">JPEG, PNG ou WebP · até {MAX_ECG_IMAGES} traçados · 25 MB cada</span>
+      <span className="mt-1 block text-xs md:text-sm text-muted-foreground">JPEG, PNG ou WebP · até {MAX_ECG_IMAGES} traçados · 50 MB cada</span>
       {!compact && (
         <span className="mt-5 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm">
           <Plus className="h-4 w-4" aria-hidden />

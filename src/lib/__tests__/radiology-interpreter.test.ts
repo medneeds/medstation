@@ -71,7 +71,7 @@ describe("Interpretador — validação de arquivos", () => {
     }
   });
 
-  it("rejeita arquivos vazios e acima de 25 MB", () => {
+  it("rejeita arquivos vazios e acima de 50 MB", () => {
     expect(validateRadiologyFile(file("vazio.jpg", "image/jpeg", 0)).ok).toBe(false);
     expect(validateRadiologyFile(file("grande.jpg", "image/jpeg", 25 * MB + 1)).ok).toBe(false);
     expect(validateRadiologyFile(file("limite.jpg", "image/jpeg", 25 * MB)).ok).toBe(true);
