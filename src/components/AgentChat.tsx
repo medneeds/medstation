@@ -2525,7 +2525,7 @@ export function AgentChat({
               onPressedChange={(v) => setExaminusModes({ interpretador: v })}
               size="sm"
               className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-cyan-500/20 data-[state=on]:text-cyan-700 dark:data-[state=on]:text-cyan-300"
-              title="Interpretador: segunda leitura de radiografia de tórax ou ECG a partir da imagem original"
+              title="Interpretador: segunda leitura de radiografia de tórax ou abdome, ou de ECG, a partir da imagem original"
             >
               <ScanLine className="w-3 h-3 mr-1" />
               <span>Interpretador</span>
@@ -2988,7 +2988,7 @@ export function AgentChat({
                   icon={ScanLine}
                   tone="cyan"
                   label="Interpretador"
-                  info="Segunda leitura de radiografia de tórax ou de ECG: escolha a modalidade, envie o exame (JPEG, PNG, WebP ou PDF, até 4) e receba achados, impressão com grau de confiança e limitações. A imagem original vai direto ao modelo, sem OCR."
+                  info="Segunda leitura de radiografia de tórax ou de abdome (incluindo abdome agudo) e de ECG: escolha a modalidade, envie o exame (JPEG, PNG, WebP ou PDF, até 4) e receba achados, impressão com grau de confiança e limitações. A imagem original vai direto ao modelo, sem OCR."
                   pressed={radiologyInterpretMode}
                   onPressedChange={(v) => setExaminusModes({ interpretador: v })}
                 />
@@ -3168,7 +3168,7 @@ export function AgentChat({
                 }
               }}
               placeholder={radiologyActive
-                ? "Envie uma radiografia de tórax (JPEG, PNG ou WebP) e, se quiser, descreva o contexto clínico. Peça \"avaliação rápida\" ou \"laudo completo\"."
+                ? "Envie uma radiografia de tórax ou de abdome (JPEG, PNG ou WebP) e, se quiser, descreva o contexto clínico. Peça \"avaliação rápida\" ou \"laudo completo\"."
                 : agentType === "examinus" && examSuggestMode
                   ? "Peça um painel, cole um caso ou pergunte sobre um exame"
                   : placeholder}
