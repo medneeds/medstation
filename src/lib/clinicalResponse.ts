@@ -20,6 +20,8 @@ export type ClinicalSection = {
   raw: string;
 };
 
+const ORDERED_RE = /^\s*(\d{1,2}[.)])\s+/;
+const PLAIN_BULLET_RE = /^\s*[-•*–—]\s+/;
 const BULLET_RE = /^\s*(?:[-•*–—]|\d+[.)])\s+/;
 const KEY_VALUE_RE = /^([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ0-9][^:\n]{1,48}):\s+(.+)$/;
 
