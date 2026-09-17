@@ -113,7 +113,10 @@ export function parseClinicalResponse(text: string): ClinicalSection[] {
     const trimmed = line.trim();
 
     if (!trimmed) {
-      flushAll();
+      // Uma linha em branco entre itens numerados não quebra a receita.
+      flushParagraph();
+      flushBullets();
+      if (ordered.length) orderedGapped = true;
       continue;
     }
 
