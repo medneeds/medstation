@@ -8,6 +8,8 @@ export type ClinicalBlock =
   | { type: "heading"; text: string }
   | { type: "paragraph"; text: string }
   | { type: "bullets"; items: string[] }
+  /** Lista numerada — o número original é preservado (receituário). */
+  | { type: "ordered"; items: { marker: string; text: string }[] }
   | { type: "keyValue"; label: string; value: string };
 
 export type ClinicalSection = {
@@ -18,6 +20,8 @@ export type ClinicalSection = {
   raw: string;
 };
 
+const ORDERED_RE = /^\s*(\d{1,2}[.)])\s+/;
+const PLAIN_BULLET_RE = /^\s*[-•*–—]\s+/;
 const BULLET_RE = /^\s*(?:[-•*–—]|\d+[.)])\s+/;
 const KEY_VALUE_RE = /^([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ0-9][^:\n]{1,48}):\s+(.+)$/;
 
@@ -62,6 +66,8 @@ export function parseClinicalResponse(text: string): ClinicalSection[] {
   let current: ClinicalSection | null = null;
   let paragraph: string[] = [];
   let bullets: string[] = [];
+  let ordered: { marker: string; text: string }[] = [];
+  let orderedGapped = false;
 
   const ensureSection = () => {
     if (!current) {
@@ -91,16 +97,28 @@ export function parseClinicalResponse(text: string): ClinicalSection[] {
     ensureSection().blocks.push({ type: "bullets", items });
   };
 
+  const flushOrdered = () => {
+    if (!ordered.length) return;
+    const items = ordered.slice();
+    ordered = [];
+    orderedGapped = false;
+    ensureSection().blocks.push({ type: "ordered", items });
+  };
+
   const flushAll = () => {
     flushParagraph();
     flushBullets();
+    flushOrdered();
   };
 
   for (const line of lines) {
     const trimmed = line.trim();
 
     if (!trimmed) {
-      flushAll();
+      // Uma linha em branco entre itens numerados não quebra a receita.
+      flushParagraph();
+      flushBullets();
+      if (ordered.length) orderedGapped = true;
       continue;
     }
 
@@ -111,13 +129,34 @@ export function parseClinicalResponse(text: string): ClinicalSection[] {
       continue;
     }
 
-    if (BULLET_RE.test(line)) {
+    const orderedMatch = trimmed.match(ORDERED_RE);
+    if (orderedMatch) {
       flushParagraph();
-      bullets.push(trimmed.replace(BULLET_RE, "").trim());
+      flushBullets();
+      orderedGapped = false;
+      ordered.push({
+        marker: orderedMatch[1],
+        text: trimmed.replace(ORDERED_RE, "").trim(),
+      });
+      continue;
+    }
+
+    if (PLAIN_BULLET_RE.test(line)) {
+      flushParagraph();
+      flushOrdered();
+      bullets.push(trimmed.replace(PLAIN_BULLET_RE, "").trim());
+      continue;
+    }
+
+    // Linha solta logo após um item numerado é continuação dele (posologia).
+    if (ordered.length && !orderedGapped) {
+      const lastItem = ordered[ordered.length - 1];
+      lastItem.text = `${lastItem.text}\n${trimmed}`;
       continue;
     }
 
     flushBullets();
+    flushOrdered();
     paragraph.push(trimmed);
   }
 
@@ -132,6 +171,8 @@ export function parseClinicalResponse(text: string): ClinicalSection[] {
       if (block.type === "paragraph") parts.push(block.text);
       else if (block.type === "keyValue") parts.push(`${block.label}: ${block.value}`);
       else if (block.type === "bullets") parts.push(block.items.map((i) => `- ${i}`).join("\n"));
+      else if (block.type === "ordered")
+        parts.push(block.items.map((i) => `${i.marker} ${i.text}`).join("\n"));
     }
     section.raw = parts.join("\n").trim();
   }

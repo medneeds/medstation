@@ -93,3 +93,32 @@ describe("parseClinicalResponse", () => {
     expect(parseClinicalResponse("")).toEqual([]);
   });
 });
+
+describe("listas numeradas do receituário", () => {
+  const receita = `MODELO DE PRESCRIÇÃO
+
+USO ORAL
+
+1. Amoxicilina 500 mg -------- 21 comprimidos
+Tomar 1 comprimido de 8 em 8 horas por 7 dias
+
+2. Dipirona 500 mg -------- 20 comprimidos
+Tomar 1 comprimido até 6 em 6 horas se dor
+
+ORIENTAÇÕES AO PACIENTE:
+• Suspender e procurar atendimento se rash cutâneo`;
+
+  it("preserva a numeração original dos itens", () => {
+    const sections = parseClinicalResponse(receita);
+    const ordered = sections.flatMap((s) => s.blocks).find((b) => b.type === "ordered");
+    expect(ordered).toBeDefined();
+    if (ordered?.type !== "ordered") throw new Error("bloco numerado ausente");
+    expect(ordered.items.map((i) => i.marker)).toEqual(["1.", "2."]);
+    expect(ordered.items[0].text).toContain("Amoxicilina 500 mg");
+    expect(ordered.items[0].text).toContain("8 em 8 horas");
+  });
+
+  it("reconhece a receita como texto estruturado", () => {
+    expect(isStructuredClinicalText(receita)).toBe(true);
+  });
+});

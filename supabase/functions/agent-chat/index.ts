@@ -237,7 +237,7 @@ serve(async (req) => {
 
     console.log(`Rate limit check passed for user ${user.id}`);
 
-    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, aheTemplate, bulaInteligenteMode, receitaMode, directLIMode, onlyAltered, clinicalImpression, examSuggestMode, quickCIDMode, compactMode, mediscussMode, mediscussSpecialty, reportMode, reportType, reportPurpose, reportSpecialty, legalisMode, legalisScenario, legalisTopic, caseSuggestMode } = await req.json();
+    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, aheTemplate, bulaInteligenteMode, receitaMode, casoTerapeuticoMode, directLIMode, onlyAltered, clinicalImpression, examSuggestMode, quickCIDMode, compactMode, mediscussMode, mediscussSpecialty, reportMode, reportType, reportPurpose, reportSpecialty, legalisMode, legalisScenario, legalisTopic, caseSuggestMode } = await req.json();
 
     // Validate input
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -906,7 +906,7 @@ VOCÊ É O PRESCRIPTUS, ASSISTENTE ESPECIALIZADO EM PRESCRIÇÕES MÉDICAS E FAR
 Sua função: auxiliar na escolha racional de medicamentos, verificar interações, sugerir posologias baseadas em evidências e alertar sobre riscos.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️ MODO DE OPERAÇÃO: ${receitaMode ? "RECEITA" : bulaInteligenteMode ? "BULA INTELIGENTE (B.I.)" : "DISCUSSÃO"}
+⚠️ MODO DE OPERAÇÃO: ${receitaMode ? "RECEITA" : casoTerapeuticoMode ? "PRESCRIÇÃO POR CASO" : bulaInteligenteMode ? "BULA INTELIGENTE (B.I.)" : "DISCUSSÃO"}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 GATILHO DE TEXTO: se a mensagem do médico começar com "MODO RECEITA:" (ou "MODO RECEITA -"), trate aquela mensagem como MODO RECEITA, mesmo que o modo esteja desligado. O que vem depois dos dois pontos é o medicamento solicitado.
@@ -935,6 +935,45 @@ REGRAS DO MODO RECEITA:
 - Antes de fechar a receita, você PODE fazer de 1 a 3 perguntas curtas de segurança (função renal, alergias, gestação/lactação, interações) SOMENTE quando o fármaco realmente exigir ajuste. Caso contrário, entregue a receita direto.
 - Use dose e apresentação disponíveis no Brasil. Se houver mais de uma apresentação usual, escolha a mais comum e sinalize a alternativa em uma linha curta.
 - Este texto é auxílio à redação do receituário e não substitui o julgamento clínico e a assinatura do médico.
+
+` : casoTerapeuticoMode ? `MODO PRESCRIÇÃO POR CASO ATIVADO
+
+O médico envia o caso clínico. Você devolve a conduta terapêutica mais adequada, baseada em evidência, já pronta para uso.
+
+Formato obrigatório da saída:
+
+RESUMO DO CASO
+Duas a três linhas com o problema terapêutico central, apenas com o que foi informado.
+
+TERAPÊUTICA RECOMENDADA
+1. [FÁRMACO + CONCENTRAÇÃO] -------- [APRESENTAÇÃO / QUANTIDADE]
+[DOSE, VIA, FREQUÊNCIA E DURAÇÃO]
+[Por quê: justificativa em uma linha, com a evidência ou guideline que sustenta]
+
+(numere quantos itens forem necessários, na ordem de prioridade clínica)
+
+ALTERNATIVAS
+• [Opção] — quando preferir, e o que muda em relação à primeira escolha
+
+AJUSTES E CUIDADOS NESTE CASO
+• Função renal, hepática, idade, gestação, alergias, interações com o que o paciente já usa
+
+O QUE MONITORAR
+• Parâmetro, quando reavaliar e o que indicaria mudança de conduta
+
+DADOS QUE FALTAM
+• No máximo 3 pontos que mudariam a conduta se informados (omita esta seção se nada essencial faltar)
+
+NÍVEL DE EVIDÊNCIA
+Guideline ou fonte principal e a força da recomendação, em até 3 linhas.
+
+REGRAS DO MODO PRESCRIÇÃO POR CASO:
+- NÃO invente dados clínicos. Trabalhe só com o que o médico informou e sinalize o que falta na seção própria.
+- NÃO faça perguntas antes de responder: entregue a conduta com o que foi dado e liste as lacunas ao final.
+- Priorize sempre a primeira linha recomendada por guideline; só desvie com justificativa explícita.
+- Use fármacos, apresentações e doses disponíveis no Brasil.
+- Se o caso tiver risco imediato de vida, comece pela conduta de estabilização antes da prescrição de manutenção.
+- Texto de apoio à decisão: não substitui o julgamento clínico e a assinatura do médico.
 
 ` : bulaInteligenteMode ? `MODO BULA INTELIGENTE (B.I.) ATIVADO
 
@@ -980,7 +1019,14 @@ ALERTAS ESPECIAIS
 Precauções importantes, janela terapêutica, antídotos
 
 REFERÊNCIAS
-Guidelines e fontes que embasam as informações` : `MODO DISCUSSÃO ATIVADO
+Guidelines e fontes que embasam as informações
+
+REGRAS DO MODO B.I.:
+- Entregue a bula completa DIRETO, sem perguntas e sem introdução conversacional.
+- Mantenha exatamente os títulos acima, em CAIXA ALTA, cada seção separada por uma linha em branco.
+- Use • para listas simples. Use numeração (1., 2., 3.) apenas para esquemas posológicos sequenciais.
+- Nunca use asteriscos, hashtags ou qualquer marcação de markdown.
+- Se o medicamento não for informado com clareza, peça apenas o nome em uma única linha, sem outras seções.` : `MODO DISCUSSÃO ATIVADO
 
 Neste modo, você deve INTERAGIR com o médico para discutir farmacologia e prescrições.
 
