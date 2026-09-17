@@ -67,6 +67,7 @@ export function parseClinicalResponse(text: string): ClinicalSection[] {
   let paragraph: string[] = [];
   let bullets: string[] = [];
   let ordered: { marker: string; text: string }[] = [];
+  let orderedGapped = false;
 
   const ensureSection = () => {
     if (!current) {
@@ -100,6 +101,7 @@ export function parseClinicalResponse(text: string): ClinicalSection[] {
     if (!ordered.length) return;
     const items = ordered.slice();
     ordered = [];
+    orderedGapped = false;
     ensureSection().blocks.push({ type: "ordered", items });
   };
 
@@ -131,6 +133,7 @@ export function parseClinicalResponse(text: string): ClinicalSection[] {
     if (orderedMatch) {
       flushParagraph();
       flushBullets();
+      orderedGapped = false;
       ordered.push({
         marker: orderedMatch[1],
         text: trimmed.replace(ORDERED_RE, "").trim(),
@@ -146,13 +149,14 @@ export function parseClinicalResponse(text: string): ClinicalSection[] {
     }
 
     // Linha solta logo após um item numerado é continuação dele (posologia).
-    if (ordered.length) {
+    if (ordered.length && !orderedGapped) {
       const lastItem = ordered[ordered.length - 1];
       lastItem.text = `${lastItem.text}\n${trimmed}`;
       continue;
     }
 
     flushBullets();
+    flushOrdered();
     paragraph.push(trimmed);
   }
 
