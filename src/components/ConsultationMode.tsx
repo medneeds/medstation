@@ -36,6 +36,8 @@ import {
   Send,
   Columns2,
   Maximize2,
+  AlertTriangle,
+  RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useConsultation } from "@/hooks/useConsultation";
