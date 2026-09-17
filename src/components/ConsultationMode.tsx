@@ -126,7 +126,13 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     isTranscribing,
     isStructuring,
     isFinalizing,
+    reviewProgress,
     formattedTime,
+    remainingSeconds,
+    formattedRemaining,
+    countdownFromSeconds,
+    limitReached,
+    listeningHealth,
     currentSpeaker,
     audioLevel,
     error,
@@ -149,12 +155,34 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     specialty,
     setSpecialty,
     detectedSpecialty,
+    recoverableDraft,
+    restoreDraft,
+    discardDraft,
+    clearDraft,
   } = useConsultation({ caseId });
+
+  const showCountdown = isRecording && remainingSeconds <= countdownFromSeconds;
+  const countdownUrgent = isRecording && remainingSeconds <= 60;
 
 
   useEffect(() => {
     if (error) toast.error(error);
   }, [error]);
+
+  // Avisos de tempo: 10, 5 e 1 minuto restantes
+  const warnedRef = useRef<Set<number>>(new Set());
+  useEffect(() => {
+    if (!isRecording || isPaused) return;
+    const minutes = Math.ceil(remainingSeconds / 60);
+    if (![10, 5, 1].includes(minutes)) return;
+    if (warnedRef.current.has(minutes)) return;
+    warnedRef.current.add(minutes);
+    toast.warning(
+      minutes === 1
+        ? 'Falta 1 minuto de escuta — a consulta será concluída automaticamente.'
+        : `Faltam ${minutes} minutos de escuta.`
+    );
+  }, [remainingSeconds, isRecording, isPaused]);
 
 
 
