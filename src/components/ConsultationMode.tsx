@@ -999,6 +999,39 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
         />
       )}
 
+      {/* Consulta não finalizada encontrada no aparelho */}
+      {recoverableDraft && !isRecording && segments.length === 0 && !showFinishDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/85 backdrop-blur-sm p-4">
+          <Card className="max-w-md w-full p-5 space-y-4 shadow-[0_24px_60px_-24px_hsl(var(--primary)/0.45)]">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-full bg-primary/10">
+                <RotateCcw className="h-5 w-5 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="font-semibold text-base">Consulta não finalizada</h2>
+                <p className="text-xs text-muted-foreground">
+                  {recoverableDraft.segments.length} trechos guardados —{' '}
+                  {new Date(recoverableDraft.savedAt).toLocaleString('pt-BR', {
+                    day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
+                  })}
+                </p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Encontramos uma consulta que não chegou a ser salva. Quer retomar de onde parou?
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" size="sm" onClick={discardDraft}>Descartar</Button>
+              <Button size="sm" className="gap-2" onClick={restoreDraft}>
+                <RotateCcw className="h-4 w-4" />
+                Retomar consulta
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+
 
     </div>
   );
