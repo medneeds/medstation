@@ -502,14 +502,21 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                 })}
               </span>
             )}
-            <div className={cn(
-              "flex items-center gap-1.5 md:gap-2 text-xs px-2 md:px-2.5 h-8 rounded-xl border transition-colors",
-              isRecording && !isPaused
-                ? "bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400"
-                : isPaused
-                ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-600 dark:text-yellow-400"
-                : "bg-muted/40 border-border/60 text-muted-foreground"
-            )}>
+            <div
+              title={showCountdown ? 'Tempo restante de escuta' : 'Tempo de consulta'}
+              className={cn(
+                "flex items-center gap-1.5 md:gap-2 text-xs px-2 md:px-2.5 h-8 rounded-xl border transition-colors",
+                countdownUrgent
+                  ? "bg-red-500/20 border-red-500/50 text-red-600 dark:text-red-400"
+                  : showCountdown
+                  ? "bg-amber-500/15 border-amber-500/40 text-amber-700 dark:text-amber-400"
+                  : isRecording && !isPaused
+                  ? "bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400"
+                  : isPaused
+                  ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-600 dark:text-yellow-400"
+                  : "bg-muted/40 border-border/60 text-muted-foreground"
+              )}
+            >
               {isRecording ? (
                 <span className="relative flex h-2 w-2">
                   {!isPaused && <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping" />}
@@ -518,7 +525,12 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               ) : (
                 <Clock className="h-3 w-3 text-muted-foreground" />
               )}
-              <span className="font-mono tabular-nums tracking-tight">{formattedTime}</span>
+              <span className="font-mono tabular-nums tracking-tight">
+                {showCountdown ? `-${formattedRemaining}` : formattedTime}
+              </span>
+              {showCountdown && (
+                <span className="hidden md:inline text-[10px] uppercase tracking-wider font-medium">restantes</span>
+              )}
             </div>
 
 
