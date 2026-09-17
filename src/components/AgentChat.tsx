@@ -508,6 +508,8 @@ export function AgentChat({
 
   const [bulaInteligenteMode, setBulaInteligenteMode] = useState(false);
   const [receitaMode, setReceitaMode] = useState(false);
+  /** Prescriptus: o médico manda o caso e recebe a terapêutica sugerida com evidência. */
+  const [casoTerapeuticoMode, setCasoTerapeuticoMode] = useState(false);
   const [directLIMode, setDirectLIMode] = useState(false);
   const [quickCIDMode, setQuickCIDMode] = useState(false);
   const [mediscussMode, setMediscussMode] = useState("auto");
@@ -1305,7 +1307,7 @@ export function AgentChat({
           caseId: selectedCaseId,
           ...(agentType === "examinus" && { usePipeSeparator, includeTime, onlyAltered, clinicalImpression, compactMode, examSuggestMode }),
           ...(agentType === "clinicus" && { directAHEMode, aheTemplate, reportMode, reportType, reportPurpose, reportSpecialty }),
-          ...(agentType === "prescriptus" && { bulaInteligenteMode, receitaMode }),
+          ...(agentType === "prescriptus" && { bulaInteligenteMode, receitaMode, casoTerapeuticoMode }),
           ...(agentType === "gasometrus" && { directLIMode }),
           ...(agentType === "codexus" && { quickCIDMode }),
           ...(agentType === "mediscuss" && { mediscussMode, mediscussSpecialty }),
