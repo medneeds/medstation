@@ -52,6 +52,7 @@ export function FinalizeFlow({
   segmentsCount,
   filledSections,
   totalSections,
+  reviewProgress,
   caseName,
   onCaseNameChange,
   folders,
@@ -107,6 +108,10 @@ export function FinalizeFlow({
   const activeIndex = STEPS.findIndex((s) => s.key === phase);
   const isProcessing = phase === "review" || phase === "structuring";
   const canSave = phase === "done" && segmentsCount > 0;
+  const hintFor = (key: FinalizePhase, fallback: string) =>
+    key === "review" && reviewProgress && reviewProgress.total > 1
+      ? `Revisando parte ${Math.max(1, reviewProgress.done)} de ${reviewProgress.total}`
+      : fallback;
 
   return (
     <div className="fixed inset-0 bg-background/85 backdrop-blur-sm z-50 flex items-center justify-center p-3 md:p-4 overflow-y-auto">
