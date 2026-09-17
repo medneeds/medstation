@@ -170,7 +170,7 @@ export function FinalizeFlow({
                 ? "Processo interrompido"
                 : phase === "done"
                 ? "Concluído"
-                : STEPS[activeIndex]?.hint}
+                : hintFor(phase, STEPS[activeIndex]?.hint ?? "")}
             </span>
             <span className="tabular-nums font-medium">
               {phase === "error" ? "—" : `${Math.round(progress)}%`}
@@ -201,7 +201,7 @@ export function FinalizeFlow({
                   >
                     {step.label}
                   </p>
-                  {active && <p className="text-[11px] text-muted-foreground">{step.hint}</p>}
+                  {active && <p className="text-[11px] text-muted-foreground">{hintFor(step.key, step.hint)}</p>}
                 </div>
               </li>
             );
