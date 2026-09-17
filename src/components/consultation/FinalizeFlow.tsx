@@ -18,6 +18,7 @@ interface FinalizeFlowProps {
   segmentsCount: number;
   filledSections: number;
   totalSections: number;
+  reviewProgress?: { done: number; total: number };
   caseName: string;
   onCaseNameChange: (v: string) => void;
   folders: CaseFolder[];
