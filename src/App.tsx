@@ -29,6 +29,7 @@ const Notes = lazy(() => import("./pages/Notes"));
 const NoteDetail = lazy(() => import("./pages/NoteDetail"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ConfirmarEmail = lazy(() => import("./pages/ConfirmarEmail"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Comecar = lazy(() => import("./pages/Comecar"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Obrigado = lazy(() => import("./pages/Obrigado"));
@@ -109,6 +110,8 @@ const App = () => (
 
             <Route path="/auth" element={<Auth />} />
             <Route path="/confirmar-email" element={<ConfirmarEmail />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/redefinir-senha" element={<Navigate to="/reset-password" replace />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/consultorio-landing" element={<Navigate to="/" replace />} />
             <Route

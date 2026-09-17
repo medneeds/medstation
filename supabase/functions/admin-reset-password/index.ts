@@ -120,7 +120,7 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     // Generate password reset link using admin API
-    const defaultRedirect = "https://medstation-ai.lovable.app/auth";
+    const defaultRedirect = "https://medstation-ai.com.br/reset-password";
     const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
       type: "recovery",
       email: userEmail,
