@@ -8,6 +8,8 @@ export type ClinicalBlock =
   | { type: "heading"; text: string }
   | { type: "paragraph"; text: string }
   | { type: "bullets"; items: string[] }
+  /** Lista numerada — o número original é preservado (receituário). */
+  | { type: "ordered"; items: { marker: string; text: string }[] }
   | { type: "keyValue"; label: string; value: string };
 
 export type ClinicalSection = {
