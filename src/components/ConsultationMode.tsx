@@ -976,6 +976,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           errorMessage={finalizeError}
           formattedTime={formattedTime}
           segmentsCount={segments.length}
+          reviewProgress={reviewProgress}
           filledSections={countFilledSections(structure)}
           totalSections={11}
           caseName={caseName}
