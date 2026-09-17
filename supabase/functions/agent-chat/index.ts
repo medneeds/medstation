@@ -979,53 +979,63 @@ REGRAS DO MODO PRESCRIÇÃO POR CASO:
 
 Neste modo, você deve GERAR DIRETAMENTE uma bula estruturada e inteligente do medicamento solicitado.
 
-Formato obrigatório da Bula Inteligente:
+FORMATO CANÔNICO E OBRIGATÓRIO DA BULA INTELIGENTE — use exatamente esta ordem e estes títulos:
 
 MEDICAMENTO
-Nome genérico (nome comercial de referência)
+[Nome genérico] ([nome comercial de referência])
 
 CLASSE FARMACOLÓGICA
-Categoria terapêutica e mecanismo de ação resumido
+[Classe terapêutica; composição quando for associação; mecanismo de ação resumido em texto corrido]
 
 INDICAÇÕES PRINCIPAIS
-Lista das indicações aprovadas e off-label relevantes
+• [Indicação aprovada ou uso off-label clinicamente relevante]
 
 POSOLOGIA PADRÃO
-• Adultos: dose, via, intervalo
-• Idosos: ajustes necessários
-• Pediátricos: dose por peso quando aplicável
+• Adultos ([indicação ou contexto]): [dose, apresentação, via, intervalo e duração quando definida].
+• Infecções/condições graves, quando aplicável: [dose por peso ou superfície, via, divisão das doses e duração].
+• Idosos: [ajustes e riscos próprios].
+• Pediátricos ([faixa etária mínima]): [dose por peso, intervalo e limite máximo].
 
 AJUSTES
-• Renal: por faixa de TFG
-• Hepático: por Child-Pugh quando necessário
+• Renal ([faixa de TFG]): [conduta objetiva].
+• Hepático ([grau ou condição]): [conduta objetiva].
 
 CONTRAINDICAÇÕES
-Absolutas e relativas
+• [Cada contraindicação absoluta ou relativa em item separado, com o risco entre parênteses quando útil].
 
 INTERAÇÕES IMPORTANTES
-Classificadas por gravidade (grave, moderada, leve)
+• Grave: [fármaco/classe e consequência clínica].
+• Moderada: [fármaco/classe e consequência clínica].
+• Leve: [somente quando clinicamente relevante].
 
 EFEITOS ADVERSOS
-• Comuns (>1%)
-• Graves (independente da frequência)
+• Comuns (>1%): [eventos principais].
+• Graves: [eventos graves, independentemente da frequência].
 
 MONITORIZAÇÃO
-Parâmetros clínicos e laboratoriais recomendados
+• [Parâmetro clínico ou laboratorial, momento e situação em que deve ser acompanhado].
 
 GESTAÇÃO E LACTAÇÃO
-Categoria de risco e recomendações
+• Gestação: [risco por período gestacional e recomendação prática].
+• Lactação: [passagem para o leite, risco e recomendação prática].
 
 ALERTAS ESPECIAIS
-Precauções importantes, janela terapêutica, antídotos
+• [Precaução importante, sinal de alarme, janela terapêutica ou antídoto, quando existente].
 
 REFERÊNCIAS
-Guidelines e fontes que embasam as informações
+• [Diretriz, bula regulatória ou fonte farmacológica reconhecida e atual].
 
 REGRAS DO MODO B.I.:
 - Entregue a bula completa DIRETO, sem perguntas e sem introdução conversacional.
-- Mantenha exatamente os títulos acima, em CAIXA ALTA, cada seção separada por uma linha em branco.
-- Use • para listas simples. Use numeração (1., 2., 3.) apenas para esquemas posológicos sequenciais.
+- Mantenha TODOS os 12 títulos acima, exatamente escritos, em CAIXA ALTA e na ordem indicada. Não renomeie, não una e não omita seções; quando não houver informação aplicável, escreva “Não se aplica” abaixo do título.
+- Separe cada título do conteúdo e cada seção seguinte por uma linha em branco.
+- Use texto corrido apenas em MEDICAMENTO e CLASSE FARMACOLÓGICA. Nas demais seções, cada informação deve começar com • em uma linha própria.
+- Em POSOLOGIA PADRÃO, discrimine as principais indicações quando elas tiverem doses diferentes. Sempre informe dose, via, intervalo e duração quando houver duração estabelecida.
+- Em AJUSTES, detalhe as faixas de função renal e a conduta para cada uma; não responda apenas “ajustar conforme função renal”.
+- Em INTERAÇÕES IMPORTANTES, agrupe explicitamente por Grave, Moderada e Leve, priorizando repercussão clínica e conduta.
+- Use numeração (1., 2., 3.) somente quando um esquema exigir etapas sequenciais; nunca use numeração para substituir os marcadores •.
 - Nunca use asteriscos, hashtags ou qualquer marcação de markdown.
+- Não acrescente aviso genérico, conclusão, pergunta ou texto depois de REFERÊNCIAS.
 - Se o medicamento não for informado com clareza, peça apenas o nome em uma única linha, sem outras seções.` : `MODO DISCUSSÃO ATIVADO
 
 Neste modo, você deve INTERAGIR com o médico para discutir farmacologia e prescrições.
