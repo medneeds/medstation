@@ -45,6 +45,20 @@ export default function Auth() {
   const justConfirmed = searchParams.get("confirmed") === "1";
   const [confirmHandled, setConfirmHandled] = useState(!justConfirmed);
 
+  // Link de redefinição de senha que caiu no login (e-mails antigos):
+  // encaminha para a página de nova senha preservando o token do link.
+  const isRecoveryLink = (() => {
+    if (typeof window === "undefined") return false;
+    const hash = window.location.hash.replace(/^#/, "");
+    return /type=recovery/.test(hash) || /type=recovery/.test(window.location.search);
+  })();
+
+  useEffect(() => {
+    if (!isRecoveryLink) return;
+    navigate(`/reset-password${window.location.search}${window.location.hash}`, { replace: true });
+  }, [isRecoveryLink, navigate]);
+
+
   useEffect(() => {
     if (!justConfirmed) return;
     toast({
@@ -58,7 +72,7 @@ export default function Auth() {
 
 
   useEffect(() => {
-    if (!confirmHandled) return;
+    if (!confirmHandled || isRecoveryLink) return;
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) navigate(destination, { replace: true });
     });
