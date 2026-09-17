@@ -66,6 +66,7 @@ export function parseClinicalResponse(text: string): ClinicalSection[] {
   let current: ClinicalSection | null = null;
   let paragraph: string[] = [];
   let bullets: string[] = [];
+  let ordered: { marker: string; text: string }[] = [];
 
   const ensureSection = () => {
     if (!current) {
@@ -95,9 +96,17 @@ export function parseClinicalResponse(text: string): ClinicalSection[] {
     ensureSection().blocks.push({ type: "bullets", items });
   };
 
+  const flushOrdered = () => {
+    if (!ordered.length) return;
+    const items = ordered.slice();
+    ordered = [];
+    ensureSection().blocks.push({ type: "ordered", items });
+  };
+
   const flushAll = () => {
     flushParagraph();
     flushBullets();
+    flushOrdered();
   };
 
   for (const line of lines) {
@@ -115,9 +124,28 @@ export function parseClinicalResponse(text: string): ClinicalSection[] {
       continue;
     }
 
-    if (BULLET_RE.test(line)) {
+    const orderedMatch = trimmed.match(ORDERED_RE);
+    if (orderedMatch) {
       flushParagraph();
-      bullets.push(trimmed.replace(BULLET_RE, "").trim());
+      flushBullets();
+      ordered.push({
+        marker: orderedMatch[1],
+        text: trimmed.replace(ORDERED_RE, "").trim(),
+      });
+      continue;
+    }
+
+    if (PLAIN_BULLET_RE.test(line)) {
+      flushParagraph();
+      flushOrdered();
+      bullets.push(trimmed.replace(PLAIN_BULLET_RE, "").trim());
+      continue;
+    }
+
+    // Linha solta logo após um item numerado é continuação dele (posologia).
+    if (ordered.length) {
+      const lastItem = ordered[ordered.length - 1];
+      lastItem.text = `${lastItem.text}\n${trimmed}`;
       continue;
     }
 
