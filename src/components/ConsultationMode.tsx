@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -36,6 +36,8 @@ import {
   Send,
   Columns2,
   Maximize2,
+  AlertTriangle,
+  RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useConsultation } from "@/hooks/useConsultation";
@@ -126,7 +128,13 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     isTranscribing,
     isStructuring,
     isFinalizing,
+    reviewProgress,
     formattedTime,
+    remainingSeconds,
+    formattedRemaining,
+    countdownFromSeconds,
+    limitReached,
+    listeningHealth,
     currentSpeaker,
     audioLevel,
     error,
@@ -149,12 +157,34 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     specialty,
     setSpecialty,
     detectedSpecialty,
+    recoverableDraft,
+    restoreDraft,
+    discardDraft,
+    clearDraft,
   } = useConsultation({ caseId });
+
+  const showCountdown = isRecording && remainingSeconds <= countdownFromSeconds;
+  const countdownUrgent = isRecording && remainingSeconds <= 60;
 
 
   useEffect(() => {
     if (error) toast.error(error);
   }, [error]);
+
+  // Avisos de tempo: 10, 5 e 1 minuto restantes
+  const warnedRef = useRef<Set<number>>(new Set());
+  useEffect(() => {
+    if (!isRecording || isPaused) return;
+    const minutes = Math.ceil(remainingSeconds / 60);
+    if (![10, 5, 1].includes(minutes)) return;
+    if (warnedRef.current.has(minutes)) return;
+    warnedRef.current.add(minutes);
+    toast.warning(
+      minutes === 1
+        ? 'Falta 1 minuto de escuta — a consulta será concluída automaticamente.'
+        : `Faltam ${minutes} minutos de escuta.`
+    );
+  }, [remainingSeconds, isRecording, isPaused]);
 
 
 
@@ -192,6 +222,15 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
   }, [stopRecording, updateStructure]);
 
   const handleFinish = useCallback(() => { void runFinalizeFlow(); }, [runFinalizeFlow]);
+
+  // Limite de 60 minutos: encerra e conclui sem perder nada
+  const autoFinalizedRef = useRef(false);
+  useEffect(() => {
+    if (!limitReached || autoFinalizedRef.current) return;
+    autoFinalizedRef.current = true;
+    toast.info('Limite de 60 minutos atingido — concluindo a consulta.');
+    void runFinalizeFlow({ alreadyStopped: true });
+  }, [limitReached, runFinalizeFlow]);
 
   const handleGenerateStructure = useCallback(async () => {
     try {
@@ -287,6 +326,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
         .single();
       if (insertError) throw insertError;
       setSavedCaseId(data.id);
+      clearDraft();
       const folderName = folders.find((f) => f.id === caseFolderId)?.name;
       toast.success(folderName ? `Caso salvo em "${folderName}" 👏` : 'Caso salvo 👏');
     } catch (e: any) {
@@ -294,7 +334,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     } finally {
       setIsSavingCase(false);
     }
-  }, [caseName, buildStructuredText, structure.chiefComplaint, caseFolderId, consultationDate, folders]);
+  }, [caseName, buildStructuredText, structure.chiefComplaint, caseFolderId, consultationDate, folders, clearDraft]);
 
 
   return (
@@ -464,14 +504,21 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                 })}
               </span>
             )}
-            <div className={cn(
-              "flex items-center gap-1.5 md:gap-2 text-xs px-2 md:px-2.5 h-8 rounded-xl border transition-colors",
-              isRecording && !isPaused
-                ? "bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400"
-                : isPaused
-                ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-600 dark:text-yellow-400"
-                : "bg-muted/40 border-border/60 text-muted-foreground"
-            )}>
+            <div
+              title={showCountdown ? 'Tempo restante de escuta' : 'Tempo de consulta'}
+              className={cn(
+                "flex items-center gap-1.5 md:gap-2 text-xs px-2 md:px-2.5 h-8 rounded-xl border transition-colors",
+                countdownUrgent
+                  ? "bg-red-500/20 border-red-500/50 text-red-600 dark:text-red-400"
+                  : showCountdown
+                  ? "bg-amber-500/15 border-amber-500/40 text-amber-700 dark:text-amber-400"
+                  : isRecording && !isPaused
+                  ? "bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400"
+                  : isPaused
+                  ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-600 dark:text-yellow-400"
+                  : "bg-muted/40 border-border/60 text-muted-foreground"
+              )}
+            >
               {isRecording ? (
                 <span className="relative flex h-2 w-2">
                   {!isPaused && <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping" />}
@@ -480,7 +527,12 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               ) : (
                 <Clock className="h-3 w-3 text-muted-foreground" />
               )}
-              <span className="font-mono tabular-nums tracking-tight">{formattedTime}</span>
+              <span className="font-mono tabular-nums tracking-tight">
+                {showCountdown ? `-${formattedRemaining}` : formattedTime}
+              </span>
+              {showCountdown && (
+                <span className="hidden md:inline text-[10px] uppercase tracking-wider font-medium">restantes</span>
+              )}
             </div>
 
 
@@ -640,10 +692,37 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           </motion.div>
         )}
 
+        {isRecording && listeningHealth !== 'live' && listeningHealth !== 'idle' && (
+          <div
+            className={cn(
+              "relative flex items-center gap-2 px-3 py-1.5 border-t text-xs",
+              listeningHealth === 'reconnecting'
+                ? "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                : "border-destructive/30 bg-destructive/10 text-destructive"
+            )}
+          >
+            {listeningHealth === 'reconnecting' ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <span>Reconectando a escuta… o que já foi transcrito está guardado.</span>
+              </>
+            ) : (
+              <>
+                <AlertTriangle className="h-3.5 w-3.5" />
+                <span>A escuta parou. Toque em Pausar e depois em Continuar para retomar.</span>
+              </>
+            )}
+          </div>
+        )}
+
         {isFinalizing && (
           <div className="relative flex items-center gap-2 px-3 py-1.5 border-t border-border/40 bg-muted/30 text-xs text-muted-foreground">
             <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-            <span>Revisão final do áudio em andamento…</span>
+            <span>
+              {reviewProgress.total > 1
+                ? `Revisando o áudio — parte ${Math.max(1, reviewProgress.done)} de ${reviewProgress.total}…`
+                : 'Revisão final do áudio em andamento…'}
+            </span>
           </div>
         )}
       </header>
@@ -897,6 +976,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           errorMessage={finalizeError}
           formattedTime={formattedTime}
           segmentsCount={segments.length}
+          reviewProgress={reviewProgress}
           filledSections={countFilledSections(structure)}
           totalSections={11}
           caseName={caseName}
@@ -919,6 +999,39 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           onExit={handleExit}
         />
       )}
+
+      {/* Consulta não finalizada encontrada no aparelho */}
+      {recoverableDraft && !isRecording && segments.length === 0 && !showFinishDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/85 backdrop-blur-sm p-4">
+          <Card className="max-w-md w-full p-5 space-y-4 shadow-[0_24px_60px_-24px_hsl(var(--primary)/0.45)]">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-full bg-primary/10">
+                <RotateCcw className="h-5 w-5 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="font-semibold text-base">Consulta não finalizada</h2>
+                <p className="text-xs text-muted-foreground">
+                  {recoverableDraft.segments.length} trechos guardados —{' '}
+                  {new Date(recoverableDraft.savedAt).toLocaleString('pt-BR', {
+                    day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
+                  })}
+                </p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Encontramos uma consulta que não chegou a ser salva. Quer retomar de onde parou?
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" size="sm" onClick={discardDraft}>Descartar</Button>
+              <Button size="sm" className="gap-2" onClick={restoreDraft}>
+                <RotateCcw className="h-4 w-4" />
+                Retomar consulta
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
 
 
     </div>

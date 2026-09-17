@@ -18,6 +18,7 @@ interface FinalizeFlowProps {
   segmentsCount: number;
   filledSections: number;
   totalSections: number;
+  reviewProgress?: { done: number; total: number };
   caseName: string;
   onCaseNameChange: (v: string) => void;
   folders: CaseFolder[];
@@ -51,6 +52,7 @@ export function FinalizeFlow({
   segmentsCount,
   filledSections,
   totalSections,
+  reviewProgress,
   caseName,
   onCaseNameChange,
   folders,
@@ -106,6 +108,10 @@ export function FinalizeFlow({
   const activeIndex = STEPS.findIndex((s) => s.key === phase);
   const isProcessing = phase === "review" || phase === "structuring";
   const canSave = phase === "done" && segmentsCount > 0;
+  const hintFor = (key: FinalizePhase, fallback: string) =>
+    key === "review" && reviewProgress && reviewProgress.total > 1
+      ? `Revisando parte ${Math.max(1, reviewProgress.done)} de ${reviewProgress.total}`
+      : fallback;
 
   return (
     <div className="fixed inset-0 bg-background/85 backdrop-blur-sm z-50 flex items-center justify-center p-3 md:p-4 overflow-y-auto">
@@ -164,7 +170,7 @@ export function FinalizeFlow({
                 ? "Processo interrompido"
                 : phase === "done"
                 ? "Concluído"
-                : STEPS[activeIndex]?.hint}
+                : hintFor(phase, STEPS[activeIndex]?.hint ?? "")}
             </span>
             <span className="tabular-nums font-medium">
               {phase === "error" ? "—" : `${Math.round(progress)}%`}
@@ -195,7 +201,7 @@ export function FinalizeFlow({
                   >
                     {step.label}
                   </p>
-                  {active && <p className="text-[11px] text-muted-foreground">{step.hint}</p>}
+                  {active && <p className="text-[11px] text-muted-foreground">{hintFor(step.key, step.hint)}</p>}
                 </div>
               </li>
             );
