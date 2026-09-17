@@ -77,6 +77,10 @@ export default function Auth() {
       if (session) navigate(destination, { replace: true });
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (_event === "PASSWORD_RECOVERY") {
+        navigate("/reset-password", { replace: true });
+        return;
+      }
       if (session) {
         if (_event === "SIGNED_IN") armBrandIntro();
         navigate(destination, { replace: true });
