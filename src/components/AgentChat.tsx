@@ -2668,7 +2668,7 @@ export function AgentChat({
           <div className="flex items-center gap-1.5 mb-2">
             <Toggle
               pressed={bulaInteligenteMode}
-              onPressedChange={(v) => { setBulaInteligenteMode(v); if (v) setReceitaMode(false); }}
+              onPressedChange={(v) => { setBulaInteligenteMode(v); if (v) { setReceitaMode(false); setCasoTerapeuticoMode(false); } }}
               size="sm"
               className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-primary/20 gap-1"
               title="Modo B.I."
@@ -2677,8 +2677,18 @@ export function AgentChat({
               <span>B.I.</span>
             </Toggle>
             <Toggle
+              pressed={casoTerapeuticoMode}
+              onPressedChange={(v) => { setCasoTerapeuticoMode(v); if (v) { setBulaInteligenteMode(false); setReceitaMode(false); } }}
+              size="sm"
+              className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-primary/20 gap-1"
+              title="Prescrição por caso"
+            >
+              <Stethoscope className="h-3 w-3" />
+              <span>Por caso</span>
+            </Toggle>
+            <Toggle
               pressed={receitaMode}
-              onPressedChange={(v) => { setReceitaMode(v); if (v) setBulaInteligenteMode(false); }}
+              onPressedChange={(v) => { setReceitaMode(v); if (v) { setBulaInteligenteMode(false); setCasoTerapeuticoMode(false); } }}
               size="sm"
               className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-primary/20 gap-1"
               title="Modo Receita"
@@ -2867,7 +2877,7 @@ export function AgentChat({
               <>
               <Toggle
                 pressed={bulaInteligenteMode}
-                onPressedChange={(v) => { setBulaInteligenteMode(v); if (v) setReceitaMode(false); }}
+                onPressedChange={(v) => { setBulaInteligenteMode(v); if (v) { setReceitaMode(false); setCasoTerapeuticoMode(false); } }}
                 size="sm"
                 className="shrink-0 h-8 data-[state=on]:bg-primary/20 gap-1 rounded-full"
                 title="Modo B.I.: Bula Inteligente"
@@ -2876,8 +2886,18 @@ export function AgentChat({
                 <span className="text-xs">B.I.</span>
               </Toggle>
               <Toggle
+                pressed={casoTerapeuticoMode}
+                onPressedChange={(v) => { setCasoTerapeuticoMode(v); if (v) { setBulaInteligenteMode(false); setReceitaMode(false); } }}
+                size="sm"
+                className="shrink-0 h-8 data-[state=on]:bg-primary/20 gap-1 rounded-full"
+                title="Prescrição por caso: descreva o paciente e receba a terapêutica sugerida com evidência"
+              >
+                <Stethoscope className="h-4 w-4" />
+                <span className="text-xs">Por caso</span>
+              </Toggle>
+              <Toggle
                 pressed={receitaMode}
-                onPressedChange={(v) => { setReceitaMode(v); if (v) setBulaInteligenteMode(false); }}
+                onPressedChange={(v) => { setReceitaMode(v); if (v) { setBulaInteligenteMode(false); setCasoTerapeuticoMode(false); } }}
                 size="sm"
                 className="shrink-0 h-8 data-[state=on]:bg-primary/20 gap-1 rounded-full"
                 title="Modo Receita: saída pronta para o receituário"
