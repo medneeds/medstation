@@ -164,6 +164,8 @@ export function parseClinicalResponse(text: string): ClinicalSection[] {
       if (block.type === "paragraph") parts.push(block.text);
       else if (block.type === "keyValue") parts.push(`${block.label}: ${block.value}`);
       else if (block.type === "bullets") parts.push(block.items.map((i) => `- ${i}`).join("\n"));
+      else if (block.type === "ordered")
+        parts.push(block.items.map((i) => `${i.marker} ${i.text}`).join("\n"));
     }
     section.raw = parts.join("\n").trim();
   }

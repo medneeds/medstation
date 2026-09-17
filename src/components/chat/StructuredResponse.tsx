@@ -140,6 +140,23 @@ export function StructuredResponse({
                       </ul>
                     );
                   }
+                  if (block.type === "ordered") {
+                    return (
+                      <ol key={bi} className="space-y-2">
+                        {block.items.map((item, ii) => (
+                          <li key={ii} className="flex gap-2.5">
+                            <span className="shrink-0 font-semibold text-primary tabular-nums">
+                              {item.marker}
+                            </span>
+                            <span className="whitespace-pre-wrap">
+                              {item.text}
+                              {last && ii === block.items.length - 1 ? trailing : null}
+                            </span>
+                          </li>
+                        ))}
+                      </ol>
+                    );
+                  }
                   if (block.type === "keyValue") {
                     return (
                       <p key={bi} className="whitespace-pre-wrap">
