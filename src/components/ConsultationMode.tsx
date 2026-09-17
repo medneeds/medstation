@@ -221,6 +221,15 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
 
   const handleFinish = useCallback(() => { void runFinalizeFlow(); }, [runFinalizeFlow]);
 
+  // Limite de 60 minutos: encerra e conclui sem perder nada
+  const autoFinalizedRef = useRef(false);
+  useEffect(() => {
+    if (!limitReached || autoFinalizedRef.current) return;
+    autoFinalizedRef.current = true;
+    toast.info('Limite de 60 minutos atingido — concluindo a consulta.');
+    void runFinalizeFlow({ alreadyStopped: true });
+  }, [limitReached, runFinalizeFlow]);
+
   const handleGenerateStructure = useCallback(async () => {
     try {
       await updateStructure();
