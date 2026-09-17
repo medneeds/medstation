@@ -324,6 +324,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
         .single();
       if (insertError) throw insertError;
       setSavedCaseId(data.id);
+      clearDraft();
       const folderName = folders.find((f) => f.id === caseFolderId)?.name;
       toast.success(folderName ? `Caso salvo em "${folderName}" 👏` : 'Caso salvo 👏');
     } catch (e: any) {
@@ -331,7 +332,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     } finally {
       setIsSavingCase(false);
     }
-  }, [caseName, buildStructuredText, structure.chiefComplaint, caseFolderId, consultationDate, folders]);
+  }, [caseName, buildStructuredText, structure.chiefComplaint, caseFolderId, consultationDate, folders, clearDraft]);
 
 
   return (
