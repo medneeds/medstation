@@ -173,6 +173,12 @@ async function syncSubscription(
   }, { onConflict: "stripe_subscription_id" });
 
   if (error) throw new Error(`Failed to persist subscription: ${error.message}`);
+
+  if (price?.recurring?.interval === "year" && (status === "active" || status === "trialing")) {
+    const email = await getCustomerEmail(stripe, customerId);
+    await deliverAnnualBonus(supabase, email, subscription.id);
+  }
+
   return { userId, customerId };
 }
 
@@ -280,6 +286,10 @@ async function grantOneTimeAccess(
       .eq("user_id", userId)
       .neq("checkout_session_id", session.id)
       .in("recovery_status", ["eligible", "contacted"]);
+  }
+
+  if (accessPeriod === "annual_12m") {
+    await deliverAnnualBonus(supabase, email ?? null, session.id);
   }
 
   return { granted: true, accessEnd, accessPeriod, paymentMethod };
