@@ -14,6 +14,8 @@ import { DISPLAY_PRICING, brl, type PlanSlug } from "@/lib/subscription-tiers";
 import { TimeSavingsComparison } from "@/components/TimeSavingsComparison";
 import { trackCtaClick, trackCheckoutStarted } from "@/lib/analytics";
 import { describeCheckoutError } from "@/lib/checkoutErrors";
+import { AnnualBonusCard } from "@/components/AnnualBonusCard";
+import { ANNUAL_BONUS } from "@/lib/annualBonus";
 
 
 const included = [
@@ -202,6 +204,14 @@ export default function Pricing() {
               {isYearly && (
                 <p className="text-[11px] md:text-xs text-primary mt-1">
                   Cartão ou Pix à vista.
+                </p>
+              )}
+
+              {isYearly ? (
+                <AnnualBonusCard className="mt-4" />
+              ) : (
+                <p className="mt-4 text-[11px] md:text-xs text-primary">
+                  No plano anual você ainda leva o {ANNUAL_BONUS.name} ({ANNUAL_BONUS.valueLabel}) de bônus.
                 </p>
               )}
 

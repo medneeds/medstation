@@ -30,6 +30,8 @@ interface SubscriptionContextType {
   trialSource: TrialSource;
   trialStartedAt: string | null;
   trialEndsAt: string | null;
+  /** Assinatura anual (recorrente) ou compra anual à vista — habilita o bônus. */
+  isAnnual: boolean;
   loading: boolean;
   checkSubscription: () => Promise<void>;
 }
@@ -51,6 +53,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [trialSource, setTrialSource] = useState<TrialSource>(null);
   const [trialStartedAt, setTrialStartedAt] = useState<string | null>(null);
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
+  const [isAnnual, setIsAnnual] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const reset = () => {
@@ -68,6 +71,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     setTrialSource(null);
     setTrialStartedAt(null);
     setTrialEndsAt(null);
+    setIsAnnual(false);
   };
 
   const checkSubscription = async () => {
@@ -96,6 +100,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       setTrialSource((data?.trial_source as TrialSource) || null);
       setTrialStartedAt(data?.trial_started_at || null);
       setTrialEndsAt(data?.trial_ends_at || null);
+      setIsAnnual(data?.annual === true);
     } catch (error) {
       console.error("[SubscriptionContext] Error checking subscription:", error);
     } finally {
@@ -140,6 +145,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       trialSource,
       trialStartedAt,
       trialEndsAt,
+      isAnnual,
       loading,
       checkSubscription,
     }}>

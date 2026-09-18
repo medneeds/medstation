@@ -28,6 +28,8 @@ import { trackCtaClick } from "@/lib/analytics";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { DISPLAY_PRICING, brl } from "@/lib/subscription-tiers";
 import { ArrowRight, Check, Quote, Star } from "lucide-react";
+import { AnnualBonusCard } from "@/components/AnnualBonusCard";
+import { ANNUAL_BONUS } from "@/lib/annualBonus";
 
 const proof = [
   { value: "Documentação", label: "texto clínico pronto para revisão" },
@@ -70,6 +72,10 @@ const faq = [
   {
     q: "A IA decide por mim?",
     a: "Não. Cada resposta é apoio à decisão, com base em evidências, e a decisão clínica final é sempre do médico.",
+  },
+  {
+    q: "O que o plano anual inclui de bônus?",
+    a: `Quem assina o plano anual recebe o ${ANNUAL_BONUS.name} (${ANNUAL_BONUS.valueLabel}) sem custo adicional: ${ANNUAL_BONUS.tagline.toLowerCase()}. ${ANNUAL_BONUS.deliveryDetailed}`,
   },
 ];
 
@@ -296,6 +302,11 @@ export default function Lp3() {
                       ? "Flexível, cancele quando quiser."
                       : `≈ ${brl(p.now / 12)} por mês.`}
                   </p>
+                  {cycle === "yearly" && (
+                    <p className="mt-2 text-xs font-medium text-primary">
+                      + {ANNUAL_BONUS.name} de bônus ({ANNUAL_BONUS.valueLabel})
+                    </p>
+                  )}
                 </button>
               );
             })}
@@ -305,6 +316,8 @@ export default function Lp3() {
             <strong className="text-primary">Preço vigente:</strong> este é o valor atual do plano único MedStation.
             Eventuais reajustes futuros serão definidos conforme a evolução do produto e comunicados antes de qualquer mudança na cobrança.
           </div>
+
+          <AnnualBonusCard className="mt-6 max-w-xl mx-auto text-left" />
 
           <p className="mt-4 text-center text-xs text-muted-foreground">
             {billing === "monthly"

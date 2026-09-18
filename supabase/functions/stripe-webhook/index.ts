@@ -64,6 +64,46 @@ async function resolveUserId(
   return existing?.id ?? null;
 }
 
+/**
+ * Bônus do plano anual (Arsenal Med). Enviado uma única vez por e-mail:
+ * o próprio email_send_log serve de trava de idempotência, porque renovações
+ * anuais e reentregas de evento não devem gerar um segundo envio.
+ */
+async function deliverAnnualBonus(
+  supabase: ReturnType<typeof serviceClient>,
+  email: string | null,
+  reference: string,
+) {
+  if (!email) return;
+  try {
+    const { data: already } = await supabase
+      .from("email_send_log")
+      .select("id")
+      .eq("template_name", "arsenal-med-bonus")
+      .eq("recipient_email", email)
+      .eq("status", "sent")
+      .limit(1)
+      .maybeSingle();
+    if (already) return;
+
+    await sendTemplateEmailWithLog("arsenal-med-bonus", email, {
+      templateData: { email },
+      idempotencyKey: `arsenal-bonus-${reference}`,
+    });
+
+    await supabase.rpc("create_admin_notification", {
+      p_type: "sale",
+      p_title: "Bônus anual a liberar (Arsenal Med)",
+      p_message: `Assinante anual: ${email}. Confirmar liberação no painel do Arsenal Med.`,
+      p_link: "/admin/faturamento",
+      p_severity: "info",
+    });
+  } catch (error) {
+    // Falha no bônus nunca pode derrubar o processamento do pagamento.
+    console.error("[stripe-webhook] annual bonus delivery failed", (error as Error)?.message);
+  }
+}
+
 async function syncSubscription(
   supabase: ReturnType<typeof serviceClient>,
   stripe: Stripe,

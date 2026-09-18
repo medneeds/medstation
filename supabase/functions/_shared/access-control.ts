@@ -30,6 +30,8 @@ export type AccessResolution = {
   pricingCohort: PricingCohort;
   legacyFullAccessUntil: string | null;
   pricingReviewDue: boolean;
+  /** Plano anual (assinatura anual ou compra anual à vista) — habilita o bônus Arsenal Med. */
+  isAnnual: boolean;
   /** true when Stripe could not be reached and access came from other evidence. */
   billingCheckDegraded: boolean;
 };
@@ -75,6 +77,7 @@ function base(status: AccessStatus): AccessResolution {
     pricingCohort: null,
     legacyFullAccessUntil: null,
     pricingReviewDue: false,
+    isAnnual: false,
     billingCheckDegraded: false,
   };
 }
@@ -116,6 +119,7 @@ async function stripeAccess(email: string): Promise<AccessResolution | null> {
   result.productIds = summary.productIds;
   result.hasAgents = summary.productIds.some((id) => AGENTS_PRODUCT_IDS.has(id));
   result.hasConsultorio = summary.productIds.some((id) => CONSULTORIO_PRODUCT_IDS.has(id));
+  result.isAnnual = summary.isAnnual;
   return result;
 }
 
@@ -135,7 +139,7 @@ async function annualPurchaseAccess(
     if (email && /^[^,()]+$/.test(email)) filters.push(`email.eq.${email}`);
     const { data } = await supabase
       .from("stripe_one_time_purchases")
-      .select("access_end")
+      .select("access_end, access_period")
       .eq("status", "paid")
       .or(filters.join(","))
       .order("access_end", { ascending: false })
@@ -153,6 +157,7 @@ async function annualPurchaseAccess(
     result.hasAgents = true;
     result.hasConsultorio = true;
     result.pricingCohort = "current_unified";
+    result.isAnnual = (data as { access_period?: string | null } | null)?.access_period === "annual_12m";
     return result;
   } catch {
     return null;

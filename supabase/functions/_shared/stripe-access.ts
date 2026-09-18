@@ -8,6 +8,7 @@
 
 export type MinimalPrice = {
   product?: string | { id?: string } | null;
+  recurring?: { interval?: string | null } | null;
 };
 
 export type MinimalSubscriptionItem = {
@@ -57,11 +58,18 @@ export function extractProductIds(sub: MinimalSubscription): string[] {
   return ids;
 }
 
+/** true quando qualquer item da assinatura cobra em intervalo anual. */
+export function hasAnnualInterval(sub: MinimalSubscription): boolean {
+  return (sub.items?.data ?? []).some((item) => item.price?.recurring?.interval === "year");
+}
+
 export type SubscriptionSummary = {
   hasHealthy: boolean;
   hasPastDue: boolean;
   productIds: string[];
   subscriptionEnd: string | null;
+  /** Alguma assinatura válida é cobrada anualmente. */
+  isAnnual: boolean;
 };
 
 /**
@@ -77,10 +85,12 @@ export function summarizeSubscriptions(subs: MinimalSubscription[]): Subscriptio
   let subscriptionEnd: string | null = null;
   let hasHealthy = false;
   let hasPastDue = false;
+  let isAnnual = false;
 
   for (const sub of valid) {
     if (sub.status === "active" || sub.status === "trialing") hasHealthy = true;
     if (sub.status === "past_due") hasPastDue = true;
+    if (hasAnnualInterval(sub)) isAnnual = true;
 
     for (const id of extractProductIds(sub)) {
       if (!productIds.includes(id)) productIds.push(id);
@@ -90,7 +100,7 @@ export function summarizeSubscriptions(subs: MinimalSubscription[]): Subscriptio
     if (end && (!subscriptionEnd || end > subscriptionEnd)) subscriptionEnd = end;
   }
 
-  return { hasHealthy, hasPastDue, productIds, subscriptionEnd };
+  return { hasHealthy, hasPastDue, productIds, subscriptionEnd, isAnnual };
 }
 
 /**

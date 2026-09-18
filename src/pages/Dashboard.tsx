@@ -28,6 +28,7 @@ import { Link } from "react-router-dom";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { MedStationDiscovery, AllToolsSection } from "@/components/MedStationDiscovery";
 import { FreeExaminusSpotlight } from "@/components/FreeExaminusSpotlight";
+import { AnnualBonusCard } from "@/components/AnnualBonusCard";
 
 interface Stats {
   totalPatients: number;
@@ -172,7 +173,8 @@ const agentModules = [
 
 
 export default function Dashboard() {
-  const { subscribed } = useSubscription();
+  const { subscribed, isAnnual } = useSubscription();
+  const [accountEmail, setAccountEmail] = useState<string | null>(null);
   const [stats, setStats] = useState<Stats>({
     totalPatients: 0,
     totalCases: 0,
@@ -189,6 +191,7 @@ export default function Dashboard() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      setAccountEmail(user.email ?? null);
 
       const [patientsRes, casesRes, prescriptionsRes, examsRes] = await Promise.all([
         supabase
@@ -257,6 +260,8 @@ export default function Dashboard() {
       <MedStationDiscovery />
 
       <FreeExaminusSpotlight />
+
+      {isAnnual && <AnnualBonusCard variant="member" accountEmail={accountEmail} />}
 
 
 

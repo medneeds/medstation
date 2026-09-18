@@ -96,6 +96,7 @@ serve(async (req) => {
         pricing_cohort: access.pricingCohort,
         legacy_full_access_until: access.legacyFullAccessUntil,
         pricing_review_due: access.pricingReviewDue,
+        annual: access.isAnnual,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
