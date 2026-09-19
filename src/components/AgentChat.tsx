@@ -1852,7 +1852,7 @@ export function AgentChat({
     <div 
       className={
         focusMode || workflowMode
-          ? "fixed inset-0 z-[60] bg-background flex flex-col p-4 md:p-6 overflow-hidden animate-fade-in"
+          ? "fixed inset-x-0 bottom-0 top-14 z-[60] bg-background flex flex-col p-4 md:p-6 overflow-hidden animate-fade-in"
           : "flex flex-col h-full p-3 md:p-6"
       }
 

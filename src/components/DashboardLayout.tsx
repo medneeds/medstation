@@ -132,7 +132,7 @@ function DashboardLayoutInner({ children }: DashboardLayoutProps) {
         <div className="flex min-h-screen w-full bg-background">
           <AppSidebar />
           <div className="flex flex-1 flex-col min-w-0">
-            <header className="sticky top-0 z-20 flex h-14 items-center justify-between hairline-b bg-background/85 backdrop-blur-md px-3 md:px-5">
+            <header className={`sticky top-0 ${isAssistant ? "z-[70]" : "z-20"} flex h-14 items-center justify-between hairline-b bg-background/85 backdrop-blur-md px-3 md:px-5`}>
               <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
                 <SidebarTrigger
                   className="h-8 w-8 rounded-sm border border-hairline hover:bg-accent hover:border-foreground/40 transition-colors"
