@@ -18,6 +18,7 @@ import { AssistantPromoEngine } from "@/components/AssistantPromoEngine";
 import { ConciergeInternal } from "@/components/ConciergeInternal";
 import { AccessContentGate, TrialWelcomeDialog } from "@/components/AccessExperienceGate";
 import { FirstAccessGate } from "@/components/FirstAccessGate";
+import { AssistantHeaderSlotProvider } from "@/components/AssistantHeaderSlot";
 
 
 /** Placeholder discreto exibido enquanto o chunk da página carrega. */
@@ -79,6 +80,9 @@ function DashboardLayoutInner({ children }: DashboardLayoutProps) {
   const crumb = getCrumb(pathname);
   const [searchOpen, setSearchOpen] = useState(false);
   const [conciergeOpen, setConciergeOpen] = useState(false);
+  const [assistantHeaderTarget, setAssistantHeaderTarget] = useState<HTMLDivElement | null>(null);
+  const isAssistant = Object.prototype.hasOwnProperty.call(ROUTE_LABELS, pathname.split("/").filter(Boolean)[0] || "") &&
+    ["clinicus", "examinus", "gasometrus", "scorius", "numerus", "prescriptus", "atestus", "protocolus", "orientus", "codexus", "mediscuss", "legalis"].includes(pathname.split("/").filter(Boolean)[0] || "");
   const isEmbed =
     typeof window !== "undefined" &&
     new URLSearchParams(search || window.location.search).get("embed") === "1";
@@ -123,18 +127,18 @@ function DashboardLayoutInner({ children }: DashboardLayoutProps) {
   }, []);
 
   return (
-    <>
+    <AssistantHeaderSlotProvider target={assistantHeaderTarget}>
       <SidebarProvider>
         <div className="flex min-h-screen w-full bg-background">
           <AppSidebar />
           <div className="flex flex-1 flex-col min-w-0">
-            <header className="sticky top-0 z-20 flex h-14 items-center justify-between hairline-b bg-background/85 backdrop-blur-md px-3 md:px-5">
-              <div className="flex items-center gap-3 md:gap-5 flex-1 min-w-0">
+            <header className={`sticky top-0 ${isAssistant ? "z-[70]" : "z-20"} flex h-14 items-center justify-between hairline-b bg-background/85 backdrop-blur-md px-3 md:px-5`}>
+              <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
                 <SidebarTrigger
                   className="h-8 w-8 rounded-sm border border-hairline hover:bg-accent hover:border-foreground/40 transition-colors"
                 />
 
-                <div className="hidden md:flex items-center gap-3 min-w-0">
+                <div className={isAssistant ? "hidden" : "hidden md:flex items-center gap-3 min-w-0"}>
                   <span className="font-mono text-2xs uppercase tracking-mono text-muted-foreground/70">
                     MedStation
                   </span>
@@ -144,11 +148,16 @@ function DashboardLayoutInner({ children }: DashboardLayoutProps) {
                   </span>
                 </div>
 
+                <div
+                  ref={setAssistantHeaderTarget}
+                  className={isAssistant ? "flex min-w-0 flex-1 items-center" : "hidden"}
+                />
+
                 <button
                   type="button"
                   onClick={() => setSearchOpen(true)}
                   aria-label="Buscar"
-                  className="ml-auto flex items-center gap-2 h-8 rounded-sm border border-hairline bg-transparent text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors px-2 md:px-3 md:w-full md:max-w-xs"
+                  className={`${isAssistant ? "hidden xl:flex xl:max-w-[260px]" : "ml-auto flex md:w-full md:max-w-xs"} items-center gap-2 h-8 rounded-sm border border-hairline bg-transparent text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors px-2 md:px-3`}
                 >
                   <Search className="h-3.5 w-3.5 shrink-0" />
                   <span className="hidden md:inline text-sm flex-1 text-left truncate">
@@ -191,6 +200,6 @@ function DashboardLayoutInner({ children }: DashboardLayoutProps) {
       <AssistantPromoEngine />
       <ConciergeInternal open={conciergeOpen} onOpenChange={setConciergeOpen} />
       <LegacyTrialInviteDialog />
-    </>
+    </AssistantHeaderSlotProvider>
   );
 }
