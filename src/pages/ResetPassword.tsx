@@ -21,6 +21,8 @@ export default function ResetPassword() {
   const [saving, setSaving] = useState(false);
   const [resendEmail, setResendEmail] = useState("");
   const [resending, setResending] = useState(false);
+  const [code, setCode] = useState("");
+  const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
