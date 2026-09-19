@@ -1891,95 +1891,191 @@ export function AgentChat({
       />
 
       <>
-      {/* Header — minimal identity */}
-      <div className="flex flex-col gap-2 mb-3 md:mb-4 pb-3 md:pb-4 border-b border-border/40 md:flex-row md:items-center md:justify-between md:gap-3">
-        <div className="flex items-center gap-2.5 md:gap-3 min-w-0">
-          <AssistantGlyph size="sm" className={agentColor}>
-            <span className="block [&>svg]:h-4 [&>svg]:w-4 md:[&>svg]:h-5 md:[&>svg]:w-5">
-              {agentIcon}
-            </span>
-          </AssistantGlyph>
-
-          <div className="flex-1 min-w-0">
-            <h2 className="text-sm md:text-lg font-medium tracking-tight truncate leading-tight">{agentName}</h2>
-            {currentConversation && (
-              <p className="text-[11px] md:text-xs text-muted-foreground/80 truncate mt-0.5">{currentConversation.name}</p>
-            )}
+      {assistantHeaderSlot && createPortal(
+        <div className="flex min-w-0 flex-1 items-center gap-1.5 md:gap-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <AssistantGlyph size="xs" className={agentColor}>
+              <span className="block [&>svg]:h-4 [&>svg]:w-4">{agentIcon}</span>
+            </AssistantGlyph>
+            <div className="hidden min-w-0 sm:block">
+              <p className="truncate text-sm font-semibold leading-tight text-foreground">{agentName}</p>
+              {currentConversation && (
+                <p className="hidden max-w-32 truncate text-[10px] leading-tight text-muted-foreground lg:block xl:max-w-40">
+                  {currentConversation.name}
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Mobile inline actions */}
-          <div className="flex md:hidden gap-1 shrink-0">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setFocusMode(v => !v)} title={focusMode ? "Sair do modo foco" : "Modo foco — expandir leitura"}>
-              {focusMode ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={createNewConversation} title="Nova Conversa">
-              <Plus className="h-4 w-4" />
-            </Button>
-            <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8" title="Histórico">
-                  <History className="h-4 w-4" />
+          {cases.length > 0 && (
+            <Select
+              value={selectedCaseId || "none"}
+              onValueChange={(value) => setSelectedCaseId(value === "none" ? undefined : value)}
+            >
+              <SelectTrigger
+                className="h-8 w-8 shrink-0 justify-center gap-0 px-0 text-xs sm:w-40 sm:justify-between sm:px-2.5 lg:w-48"
+                aria-label="Selecionar caso"
+                title="Selecionar caso"
+              >
+                <FolderOpen className="h-3.5 w-3.5 sm:hidden" />
+                <span className="hidden min-w-0 truncate sm:block"><SelectValue placeholder="Selecionar caso" /></span>
+              </SelectTrigger>
+              <SelectContent className="z-[80]">
+                <SelectItem value="none">Sem caso específico</SelectItem>
+                {cases.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{c.title}</span>
+                      <span className="text-xs text-muted-foreground">{c.patient_name}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          <div className="ml-auto flex shrink-0 items-center gap-1">
+            {workflowAvailable && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={workflowMode ? "default" : "ghost"}
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => { setWorkflowMode((value) => !value); setFocusMode(false); }}
+                    aria-label={workflowMode ? "Sair do Workflow" : "Abrir Workflow"}
+                  >
+                    <LayoutPanelLeft className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{workflowMode ? "Sair do Workflow" : "Workflow"}</TooltipContent>
+              </Tooltip>
+            )}
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={focusMode ? "default" : "ghost"}
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setFocusMode((value) => !value)}
+                  aria-label={focusMode ? "Sair do modo foco" : "Abrir modo foco"}
+                >
+                  {focusMode ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
                 </Button>
-              </SheetTrigger>
+              </TooltipTrigger>
+              <TooltipContent>{focusMode ? "Sair do foco" : "Foco"}</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={createNewConversation}
+                  aria-label="Nova conversa"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Nova conversa</TooltipContent>
+            </Tooltip>
+
+            <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Histórico">
+                      <History className="h-4 w-4" />
+                    </Button>
+                  </SheetTrigger>
+                </TooltipTrigger>
+                <TooltipContent>Histórico</TooltipContent>
+              </Tooltip>
               <SheetContent className="w-full sm:max-w-md">
                 <SheetHeader>
                   <SheetTitle>Histórico de Conversas</SheetTitle>
                 </SheetHeader>
-                <ScrollArea className="h-[calc(100vh-8rem)] mt-4">
+                <ScrollArea className="mt-4 h-[calc(100vh-8rem)]">
                   <div className="space-y-2">
                     {conversations.length === 0 ? (
-                      <div className="text-center py-12 text-muted-foreground">
-                        <FolderOpen className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                      <div className="py-12 text-center text-muted-foreground">
+                        <FolderOpen className="mx-auto mb-4 h-12 w-12 opacity-30" />
                         <p>Nenhuma conversa ainda</p>
+                        <p className="mt-1 text-sm">Crie uma nova conversa para começar</p>
                       </div>
                     ) : (
                       conversations.map((conv) => (
                         <Card
                           key={conv.id}
-                          className={`p-3 cursor-pointer hover:bg-accent transition-colors ${
-                            currentConversation?.id === conv.id ? "bg-accent" : ""
-                          }`}
+                          className={`cursor-pointer p-3 transition-colors hover:bg-accent ${currentConversation?.id === conv.id ? "bg-accent" : ""}`}
                           onClick={() => loadConversation(conv)}
                         >
                           <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">{conv.name}</p>
-                              <p className="text-xs text-muted-foreground truncate">
-                                {conv.last_message || "Sem mensagens"}
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {new Date(conv.updated_at).toLocaleDateString()}
-                              </p>
+                            <div className="min-w-0 flex-1">
+                              {editingConversationId === conv.id ? (
+                                <Input
+                                  value={editingName}
+                                  onChange={(event) => setEditingName(event.target.value)}
+                                  onBlur={() => renameConversation(conv.id, editingName)}
+                                  onKeyDown={(event) => {
+                                    if (event.key === "Enter") renameConversation(conv.id, editingName);
+                                  }}
+                                  className="mb-1 h-7"
+                                  autoFocus
+                                />
+                              ) : (
+                                <p className="truncate font-medium">{conv.name}</p>
+                              )}
+                              <p className="truncate text-xs text-muted-foreground">{conv.last_message || "Sem mensagens"}</p>
+                              <p className="mt-1 text-xs text-muted-foreground">{new Date(conv.updated_at).toLocaleDateString()}</p>
                             </div>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 w-7 p-0 text-destructive hover:text-destructive shrink-0"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Excluir conversa?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    A conversa "{conv.name}" será excluída permanentemente.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => deleteConversation(conv.id)}
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  setEditingConversationId(conv.id);
+                                  setEditingName(conv.name);
+                                }}
+                                aria-label="Renomear conversa"
+                              >
+                                <Edit2 className="h-3 w-3" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                                    onClick={(event) => event.stopPropagation()}
+                                    aria-label="Excluir conversa"
                                   >
-                                    Excluir
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Excluir conversa?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Esta ação não pode ser desfeita. A conversa "{conv.name}" será excluída permanentemente.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => deleteConversation(conv.id)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Excluir
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
                           </div>
                         </Card>
                       ))
@@ -1989,164 +2085,9 @@ export function AgentChat({
               </SheetContent>
             </Sheet>
           </div>
-        </div>
-
-        {/* Case selector */}
-        {cases.length > 0 && (
-          <div className="w-full md:w-64">
-            <Select
-              value={selectedCaseId || "none"}
-              onValueChange={(value) => setSelectedCaseId(value === "none" ? undefined : value)}
-            >
-              <SelectTrigger className="w-full h-9 md:h-10 text-xs md:text-sm">
-                <SelectValue placeholder="Selecionar caso" />
-              </SelectTrigger>
-              <SelectContent className="z-[80]">
-                <SelectItem value="none">Sem caso específico</SelectItem>
-                {cases.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{c.title}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {c.patient_name}
-                      </span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-
-        {/* Desktop actions */}
-        <div className="hidden md:flex gap-2">
-          {workflowAvailable && (
-            <Button
-              variant={workflowMode ? "default" : "outline"}
-              size="sm"
-              onClick={() => { setWorkflowMode(v => !v); setFocusMode(false); }}
-              title={workflowMode ? "Sair do Modo Workflow (Esc)" : "Modo Workflow — conversa e documento lado a lado"}
-            >
-              <LayoutPanelLeft className="h-4 w-4" />
-              <span className="ml-2">{workflowMode ? "Sair do Workflow" : "Workflow"}</span>
-            </Button>
-          )}
-          <Button variant="outline" size="sm" onClick={() => setFocusMode(v => !v)} title={focusMode ? "Sair do modo foco (Esc)" : "Modo foco — expandir área de leitura"}>
-            {focusMode ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
-            <span className="ml-2">{focusMode ? "Sair do foco" : "Foco"}</span>
-          </Button>
-
-          <Button variant="outline" size="sm" onClick={createNewConversation} title="Nova Conversa">
-            <Plus className="h-4 w-4" />
-            <span className="ml-2">Nova Conversa</span>
-          </Button>
-
-          <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="sm" title="Histórico">
-                <History className="h-4 w-4" />
-                <span className="ml-2">Histórico</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent className="w-full sm:max-w-md">
-              <SheetHeader>
-                <SheetTitle>Histórico de Conversas</SheetTitle>
-              </SheetHeader>
-              <ScrollArea className="h-[calc(100vh-8rem)] mt-4">
-                <div className="space-y-2">
-                  {conversations.length === 0 ? (
-                    <div className="text-center py-12 text-muted-foreground">
-                      <FolderOpen className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                      <p>Nenhuma conversa ainda</p>
-                      <p className="text-sm mt-1">Crie uma nova conversa para começar</p>
-                    </div>
-                  ) : (
-                    conversations.map((conv) => (
-                      <Card
-                        key={conv.id}
-                        className={`p-3 cursor-pointer hover:bg-accent transition-colors ${
-                          currentConversation?.id === conv.id ? "bg-accent" : ""
-                        }`}
-                        onClick={() => loadConversation(conv)}
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            {editingConversationId === conv.id ? (
-                              <Input
-                                value={editingName}
-                                onChange={(e) => setEditingName(e.target.value)}
-                                onBlur={() => renameConversation(conv.id, editingName)}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") {
-                                    renameConversation(conv.id, editingName);
-                                  }
-                                }}
-                                className="h-7 mb-1"
-                                autoFocus
-                              />
-                            ) : (
-                              <p className="font-medium truncate">{conv.name}</p>
-                            )}
-                            <p className="text-xs text-muted-foreground truncate">
-                              {conv.last_message || "Sem mensagens"}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {new Date(conv.updated_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingConversationId(conv.id);
-                                setEditingName(conv.name);
-                              }}
-                            >
-                              <Edit2 className="h-3 w-3" />
-                            </Button>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Excluir conversa?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Esta ação não pode ser desfeita. A conversa "{conv.name}" será excluída permanentemente.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => deleteConversation(conv.id)}
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                  >
-                                    Excluir
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </div>
-                      </Card>
-                    ))
-                  )}
-                </div>
-              </ScrollArea>
-            </SheetContent>
-          </Sheet>
-        </div>
-      </div>
+        </div>,
+        assistantHeaderSlot,
+      )}
 
       {/* Action buttons if provided */}
       {actionButtons.length > 0 && (
