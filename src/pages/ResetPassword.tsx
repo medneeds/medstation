@@ -241,7 +241,7 @@ export default function ResetPassword() {
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
                   Por segurança, o link vale por pouco tempo e só pode ser usado uma vez.
-                  Informe seu e-mail para receber um novo.
+                  Use o código de 6 dígitos que está no mesmo e-mail ou peça um novo envio.
                 </p>
                 <div className="space-y-2">
                   <Label htmlFor="resend-email">Seu e-mail</Label>
@@ -253,9 +253,26 @@ export default function ResetPassword() {
                     placeholder="voce@exemplo.com"
                   />
                 </div>
-                <Button className="w-full" onClick={handleResend} disabled={resending}>
+                <div className="space-y-2">
+                  <Label htmlFor="recovery-code">Código do e-mail</Label>
+                  <Input
+                    id="recovery-code"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    placeholder="000000"
+                    className="tracking-[0.4em] text-center text-lg"
+                  />
+                </div>
+                <Button className="w-full" onClick={handleVerifyCode} disabled={verifying}>
+                  {verifying && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Confirmar código
+                </Button>
+                <Button variant="outline" className="w-full" onClick={handleResend} disabled={resending}>
                   {resending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Enviar novo link
+                  Enviar novo e-mail
                 </Button>
                 <Button variant="ghost" className="w-full" onClick={() => navigate("/auth")}>
                   Voltar para o login
