@@ -2982,8 +2982,7 @@ Regras:
           model,
           input: messagesForAI,
           stream: true,
-          reasoning: { effort: "high", summary: "auto" },
-          include: ["reasoning.encrypted_content"],
+          reasoning: { effort: "medium" },
           store: false,
         } : {
           model,
