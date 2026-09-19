@@ -16,11 +16,15 @@ import {
 interface RecoveryEmailProps {
   siteName: string
   confirmationUrl: string
+  token?: string
+  codeUrl?: string
 }
 
 export const RecoveryEmail = ({
   siteName,
   confirmationUrl,
+  token,
+  codeUrl,
 }: RecoveryEmailProps) => (
   <Html lang="pt-BR" dir="ltr">
     <Head />
@@ -35,6 +39,20 @@ export const RecoveryEmail = ({
         <Button style={button} href={confirmationUrl}>
           Redefinir senha
         </Button>
+        {token ? (
+          <>
+            <Text style={text}>
+              Se o botão não funcionar ou disser que o link expirou, use o
+              código abaixo em{' '}
+              <a href={codeUrl} style={link}>
+                {codeUrl}
+              </a>
+              :
+            </Text>
+            <Text style={code}>{token}</Text>
+            <Text style={text}>O código vale por 1 hora.</Text>
+          </>
+        ) : null}
         <Text style={footer}>
           Se você não pediu a redefinição, pode ignorar este e-mail com
           segurança. Sua senha continuará a mesma.
@@ -69,3 +87,11 @@ const button = {
   textDecoration: 'none',
 }
 const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const link = { color: '#15803d', textDecoration: 'underline' }
+const code = {
+  fontSize: '30px',
+  fontWeight: 'bold' as const,
+  letterSpacing: '6px',
+  color: '#000000',
+  margin: '10px 0 0',
+}
