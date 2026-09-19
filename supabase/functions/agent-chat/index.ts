@@ -128,6 +128,60 @@ function buildShieldRefusalSSE(): ReadableStream<Uint8Array> {
     },
   });
 }
+
+function responsesToChatCompletionSSE(upstream: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
+  const decoder = new TextDecoder();
+  const encoder = new TextEncoder();
+  let buffer = "";
+
+  return new ReadableStream<Uint8Array>({
+    async start(controller) {
+      const reader = upstream.getReader();
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() ?? "";
+
+          for (const rawLine of lines) {
+            const line = rawLine.trim();
+            if (!line.startsWith("data:")) continue;
+            const payload = line.slice(5).trim();
+            if (!payload || payload === "[DONE]") continue;
+
+            try {
+              const event = JSON.parse(payload);
+              if (event.type === "response.output_text.delta" && typeof event.delta === "string") {
+                const chunk = { choices: [{ index: 0, delta: { content: event.delta }, finish_reason: null }] };
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
+              } else if (event.type === "response.completed") {
+                const sourceUsage = event.response?.usage;
+                const usage = sourceUsage ? {
+                  prompt_tokens: sourceUsage.input_tokens ?? 0,
+                  completion_tokens: sourceUsage.output_tokens ?? 0,
+                  total_tokens: sourceUsage.total_tokens ?? ((sourceUsage.input_tokens ?? 0) + (sourceUsage.output_tokens ?? 0)),
+                } : undefined;
+                const chunk = { choices: [{ index: 0, delta: {}, finish_reason: "stop" }], ...(usage ? { usage } : {}) };
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
+              } else if (event.type === "error") {
+                const message = event.error?.message || event.message || "A análise clínica não pôde ser concluída.";
+                const chunk = { choices: [{ index: 0, delta: { content: `ERRO: ${message}` }, finish_reason: "stop" }] };
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
+              }
+            } catch {
+              // Ignore malformed upstream events while preserving the remaining stream.
+            }
+          }
+        }
+      } finally {
+        controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+        controller.close();
+      }
+    },
+  });
+}
 // ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -2912,21 +2966,34 @@ Regras:
     const isInstitutionalUti = agentType === "clinicus" && directAHEMode && aheTemplate === "uti_evolucao_v2";
     const model = isInstitutionalUti ? "openai/gpt-6-astra" : "google/gemini-3-flash-preview";
     const startedAt = Date.now();
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiResponse = await fetch(
+      isInstitutionalUti
+        ? "https://ai.gateway.lovable.dev/v1/responses"
+        : "https://ai.gateway.lovable.dev/v1/chat/completions",
+      {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${lovableApiKey}`,
+        ...(isInstitutionalUti
+          ? { "Lovable-API-Key": lovableApiKey, "X-Lovable-AIG-SDK": "fetch" }
+          : { Authorization: `Bearer ${lovableApiKey}` }),
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        model,
-        messages: messagesForAI,
-        temperature: isInstitutionalUti ? undefined : (agentType === "examinus" ? (examSuggestMode ? 0.3 : 0) : undefined),
-        reasoning_effort: isInstitutionalUti ? "high" : undefined,
-        stream: true,
-        stream_options: { include_usage: true },
-      }),
-    });
+      body: JSON.stringify(isInstitutionalUti ? {
+          model,
+          input: messagesForAI,
+          stream: true,
+          reasoning: { effort: "high", summary: "auto" },
+          include: ["reasoning.encrypted_content"],
+          store: false,
+        } : {
+          model,
+          messages: messagesForAI,
+          temperature: agentType === "examinus" ? (examSuggestMode ? 0.3 : 0) : undefined,
+          stream: true,
+          stream_options: { include_usage: true },
+        }),
+      },
+    );
 
     if (!aiResponse.ok) {
       console.error("AI response failed with status:", aiResponse.status);
@@ -2940,8 +3007,11 @@ Regras:
 
     // Instrumenta stream — captura usage do chunk final e loga.
     const { teeStreamWithUsage } = await import("../_shared/ai-logger.ts");
+    const clientCompatibleStream = isInstitutionalUti
+      ? responsesToChatCompletionSSE(aiResponse.body!)
+      : aiResponse.body!;
     const instrumented = teeStreamWithUsage(
-      aiResponse.body!,
+      clientCompatibleStream,
       {
         userId: user?.id ?? null,
         assistant: agentType,
