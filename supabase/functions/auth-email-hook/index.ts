@@ -161,6 +161,8 @@ const handler = createAuthEmailHandler({
         React.createElement(RecoveryEmail, {
           siteName: SITE_NAME,
           confirmationUrl: data.url,
+          token: data.token,
+          codeUrl: `${SITE_URL}/reset-password`,
         }),
     },
     email_change: {

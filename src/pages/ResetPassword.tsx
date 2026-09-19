@@ -21,6 +21,8 @@ export default function ResetPassword() {
   const [saving, setSaving] = useState(false);
   const [resendEmail, setResendEmail] = useState("");
   const [resending, setResending] = useState(false);
+  const [code, setCode] = useState("");
+  const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -97,6 +99,35 @@ export default function ResetPassword() {
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    const email = resendEmail.trim().toLowerCase();
+    const token = code.replace(/\D/g, "");
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      toast({ variant: "destructive", title: "Informe seu e-mail" });
+      return;
+    }
+    if (token.length < 6) {
+      toast({ variant: "destructive", title: "Código inválido", description: "O código tem 6 dígitos." });
+      return;
+    }
+    setVerifying(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({ email, token, type: "recovery" });
+      if (error) throw error;
+      setCode("");
+      setStatus("ready");
+      toast({ title: "Código confirmado", description: "Agora escolha sua nova senha." });
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Código não aceito",
+        description: err?.message || "Confira o código ou peça um novo e-mail.",
+      });
+    } finally {
+      setVerifying(false);
     }
   };
 
@@ -210,7 +241,7 @@ export default function ResetPassword() {
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
                   Por segurança, o link vale por pouco tempo e só pode ser usado uma vez.
-                  Informe seu e-mail para receber um novo.
+                  Use o código de 6 dígitos que está no mesmo e-mail ou peça um novo envio.
                 </p>
                 <div className="space-y-2">
                   <Label htmlFor="resend-email">Seu e-mail</Label>
@@ -222,9 +253,26 @@ export default function ResetPassword() {
                     placeholder="voce@exemplo.com"
                   />
                 </div>
-                <Button className="w-full" onClick={handleResend} disabled={resending}>
+                <div className="space-y-2">
+                  <Label htmlFor="recovery-code">Código do e-mail</Label>
+                  <Input
+                    id="recovery-code"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    placeholder="000000"
+                    className="tracking-[0.4em] text-center text-lg"
+                  />
+                </div>
+                <Button className="w-full" onClick={handleVerifyCode} disabled={verifying}>
+                  {verifying && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Confirmar código
+                </Button>
+                <Button variant="outline" className="w-full" onClick={handleResend} disabled={resending}>
                   {resending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Enviar novo link
+                  Enviar novo e-mail
                 </Button>
                 <Button variant="ghost" className="w-full" onClick={() => navigate("/auth")}>
                   Voltar para o login
