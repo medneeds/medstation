@@ -2337,6 +2337,12 @@ RACIOCÍNIO CLÍNICO SEGURO
 - Preserve literalmente rótulos e valores de exames. SEG/SEGMENTADOS nunca pode virar BASTÕES. Não corrija, converta, arredonde ou reinterpretе separadores decimais.
 - Uma sugestão clinicamente pertinente que não esteja decidida na fonte nunca entra como conduta realizada, prescrição ou meta. Registre-a somente em PENDÊNCIAS E ALERTAS CLÍNICOS, iniciada por "SUGESTÃO CONDICIONAL —", seguida do dado que precisa ser confirmado. Não sugira rotinas genéricas; inclua apenas o que possa mudar conduta ou segurança neste caso.
 
+ESTILO DE REDAÇÃO
+- Narrativa contínua, organizada e técnica, em linguagem de terapia intensiva, com liberdade apenas para otimizar a linguagem médica — nunca para acrescentar fatos, doses, horários ou conclusões.
+- Eventos do período no passado ("apresentou", "foi iniciado", "houve"); estado atual no presente ("mantém-se", "encontra-se", "evolui").
+- Frases curtas e densas: cada frase carrega um fato. Sem adjetivos vagos ("quadro arrastado", "evolução tórpida") salvo quando constarem na fonte.
+- Cronologia explícita: vincule cada evento ao horário ou ao momento do período quando informado, preservando a ordem real dos acontecimentos.
+
 ESTRUTURA OBRIGATÓRIA (SIGA EXATAMENTE A ORDEM E MANTENHA TODOS OS BLOCOS)
 
 EVOLUÇÃO MÉDICA UTI ADULTO
@@ -2364,10 +2370,10 @@ MEDICAÇÕES DE USO DIÁRIO:
 (LISTA; NÃO INVENTAR DOSE, VIA OU FREQUÊNCIA)
 
 HISTÓRIA CLÍNICA:
-(UMA A TRÊS LINHAS: MOTIVO DA INTERNAÇÃO, ORIGEM E CONDIÇÕES DE CHEGADA)
+(UMA A TRÊS LINHAS EM NARRATIVA CONTÍNUA E TÉCNICA: MOTIVO DA INTERNAÇÃO, ORIGEM, CONDIÇÕES DE CHEGADA E DESFECHO IMEDIATO)
 
 EVOLUÇÃO MÉDICA:
-(NARRATIVA CONTÍNUA E OBJETIVA DO PERÍODO, INICIADA PELO HORÁRIO QUANDO INFORMADO; INTERCORRÊNCIAS, RESPOSTA ÀS CONDUTAS, MUDANÇAS DE SUPORTE, PROCEDIMENTOS, CULTURAS E AJUSTES; "SEM INTERCORRÊNCIAS NO PERÍODO" QUANDO INFORMADO)
+(NARRATIVA CONTÍNUA E OBJETIVA DO PERÍODO, INICIADA PELO HORÁRIO QUANDO INFORMADO. PADRÃO DE ABERTURA: "PACIENTE EM DIA ___ DE UTI POR ___. NO PERÍODO, ___. MANTÉM-SE ___." — PREENCHER SOMENTE COM DADOS DA FONTE; SE ALGUM ELEMENTO NÃO CONSTAR, COMECE DIRETO PELOS FATOS. EM SEGUIDA: INTERCORRÊNCIAS, RESPOSTA ÀS CONDUTAS, MUDANÇAS DE SUPORTE, PROCEDIMENTOS, CULTURAS E AJUSTES, EM ORDEM CRONOLÓGICA; "SEM INTERCORRÊNCIAS NO PERÍODO" QUANDO INFORMADO)
 
 EXAME FÍSICO:
 (FRASE DE ABERTURA COM ESTADO GERAL, NÍVEL DE CONSCIÊNCIA E PADRÃO RESPIRATÓRIO, SEGUIDA DE)
