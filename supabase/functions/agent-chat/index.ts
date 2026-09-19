@@ -2267,7 +2267,10 @@ ${contextData}`;
 DOCUMENTO SOLICITADO: EVOLUÇÃO MÉDICA EM UTI ADULTO — MODELO INSTITUCIONAL.
 Foco: ficha diária completa do leito, com plano terapêutico por ação e prazo, metas do dia e gerenciamento de risco.
 
-ESTRUTURA OBRIGATÓRIA (SIGA A ORDEM; OMITA BLOCOS SEM DADOS, EXCETO SINAIS VITAIS E GERENCIAMENTO DE RISCO)
+ESTE MODELO TEM PRIORIDADE SOBRE QUALQUER ESTRUTURA GENÉRICA DO CLÍNICUS.
+Retorne exclusivamente a ficha abaixo. Não use títulos alternativos, não mude a ordem, não acrescente blocos e não transforme a ficha em anamnese, admissão ou passagem de caso.
+
+ESTRUTURA OBRIGATÓRIA (SIGA EXATAMENTE A ORDEM E MANTENHA TODOS OS BLOCOS)
 
 EVOLUÇÃO MÉDICA UTI ADULTO
 | DIA DE UTI:   | DATA/HORA:
@@ -2277,6 +2280,9 @@ DIAGNÓSTICOS:
 
 PROBLEMAS ATIVOS:
 ___ | STATUS: ATIVO / EM INVESTIGAÇÃO / CONTROLADO / RESOLVIDO.
+
+HIPÓTESES DIAGNÓSTICAS:
+(SOMENTE POSSIBILIDADES AINDA EM INVESTIGAÇÃO, UM POR LINHA, COM O DADO INFORMADO QUE AS SUSTENTA; SE NÃO HOUVER, ESCREVA "DADOS INSUFICIENTES PARA FORMULAÇÃO")
 
 HPP:
 (ANTECEDENTES PESSOAIS RELEVANTES)
@@ -2311,7 +2317,7 @@ GASOMETRIA (DATA/HORA): PH ___ | PCO2 ___ | HCO3 ___ | BE ___ | PO2 ___ | SAT __
 CULTURAS / IMAGENS / OUTROS: (DATA E ACHADO DOCUMENTADO; PENDENTES COMO "EM ANDAMENTO")
 
 PLANO TERAPÊUTICO: AÇÃO E PRAZO/DURAÇÃO (COM GERENCIAMENTO DIÁRIO):
-(ITENS CURTOS, UM POR LINHA, CADA UM COM AÇÃO E, QUANDO INFORMADO, PRAZO OU FREQUÊNCIA. EXEMPLOS DE EIXOS: FREQUÊNCIA DE SINAIS VITAIS, CURVA TÉRMICA E GLICEMIA; SUPORTE HEMODINÂMICO E VENTILATÓRIO; ANTIBIOTICOTERAPIA COM DIA DE TRATAMENTO; DIETA E APORTE NUTRICIONAL; CONTROLE GLICÊMICO E METAS; FUNÇÃO RENAL; ACOMPANHAMENTO DE ESPECIALIDADES; PROGRAMAÇÃO DE ALTA; ACOLHIMENTO E COMUNICAÇÃO COM PACIENTE E FAMÍLIA. INCLUA APENAS OS EIXOS COM DADO INFORMADO, COM LIBERDADE PARA OTIMIZAR A LINGUAGEM CONFORME EVIDÊNCIA, SEM CRIAR DADOS DO PACIENTE.)
+(ITENS CURTOS, UM POR LINHA. CADA ITEM DEVE CONTER "AÇÃO: ... | PRAZO/DURAÇÃO: ...". QUANDO O PRAZO OU A DURAÇÃO NÃO TIVER SIDO INFORMADO, USE "NÃO INFORMADO"; NÃO INVENTE. EXEMPLOS DE EIXOS: FREQUÊNCIA DE SINAIS VITAIS, CURVA TÉRMICA E GLICEMIA; SUPORTE HEMODINÂMICO E VENTILATÓRIO; ANTIBIOTICOTERAPIA COM DIA DE TRATAMENTO; DIETA E APORTE NUTRICIONAL; CONTROLE GLICÊMICO E METAS; FUNÇÃO RENAL; ACOMPANHAMENTO DE ESPECIALIDADES; PROGRAMAÇÃO DE ALTA; ACOLHIMENTO E COMUNICAÇÃO COM PACIENTE E FAMÍLIA. INCLUA APENAS OS EIXOS COM DADO INFORMADO, SEM CRIAR DADOS DO PACIENTE.)
 
 METAS/CONDUTAS DO DIA:
 (ITENS CURTOS, UM POR LINHA, SOMENTE AS DECISÕES DO DIA)
@@ -2330,6 +2336,14 @@ D - PROTOCOLO DE DOR (END):
 REGRAS DO GERENCIAMENTO DE RISCO
 - Preencha cada letra apenas com o que foi informado. Sem dado: "NÃO INFORMADO". Quando o médico indicar que não se aplica: "NÃO SE APLICA".
 - Nunca invente profilaxia, medicação, dispositivo, escala, escore ou frequência de cuidado.
+
+REGRAS FINAIS DE FIDELIDADE
+- Mantenha todos os títulos exatamente como escritos acima, inclusive os dois-pontos quando presentes.
+- Bloco sem dados: mantenha o título e escreva "NÃO INFORMADO". Não omita nenhum bloco.
+- Não deduza melhora, piora, resolução, estabilidade, resposta terapêutica, diagnóstico, prognóstico ou meta a partir de dados isolados. Registre essas conclusões somente quando estiverem explícitas na fonte.
+- Não converta antecedente em diagnóstico ativo. Não converta hipótese em diagnóstico confirmado.
+- Não crie metas numéricas, prazos, frequências, profilaxias ou recomendações não fornecidas pelo médico.
+- Antes de responder, faça uma conferência silenciosa da ordem dos blocos, das oito linhas do gerenciamento de risco e da ausência de marcadores antes dos títulos.
 
 ${contextData}`;
 
