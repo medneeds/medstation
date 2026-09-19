@@ -4,7 +4,7 @@ import { AssistantGlyph } from "@/components/AssistantGlyph";
 
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { flushSync } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -73,6 +73,8 @@ import { AgentVoiceInput } from "@/components/AgentVoiceInput";
 import { ThinkingIndicator } from "@/components/ThinkingIndicator";
 import { StructuredResponse } from "@/components/chat/StructuredResponse";
 import { CaseSuggestionsPanel } from "@/components/chat/CaseSuggestionsPanel";
+import { useAssistantHeaderSlot } from "@/components/AssistantHeaderSlot";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { useSubscription } from "@/contexts/SubscriptionContext";
 
@@ -399,6 +401,7 @@ export function AgentChat({
   const { toast } = useToast();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const assistantHeaderSlot = useAssistantHeaderSlot();
   const { subscribed } = useSubscription();
   const [message, setMessage] = useState("");
   // Assinantes: sem limite de caracteres. Cadastrados sem assinatura: 30.000.
