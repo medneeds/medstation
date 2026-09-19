@@ -128,6 +128,60 @@ function buildShieldRefusalSSE(): ReadableStream<Uint8Array> {
     },
   });
 }
+
+function responsesToChatCompletionSSE(upstream: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
+  const decoder = new TextDecoder();
+  const encoder = new TextEncoder();
+  let buffer = "";
+
+  return new ReadableStream<Uint8Array>({
+    async start(controller) {
+      const reader = upstream.getReader();
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() ?? "";
+
+          for (const rawLine of lines) {
+            const line = rawLine.trim();
+            if (!line.startsWith("data:")) continue;
+            const payload = line.slice(5).trim();
+            if (!payload || payload === "[DONE]") continue;
+
+            try {
+              const event = JSON.parse(payload);
+              if (event.type === "response.output_text.delta" && typeof event.delta === "string") {
+                const chunk = { choices: [{ index: 0, delta: { content: event.delta }, finish_reason: null }] };
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
+              } else if (event.type === "response.completed") {
+                const sourceUsage = event.response?.usage;
+                const usage = sourceUsage ? {
+                  prompt_tokens: sourceUsage.input_tokens ?? 0,
+                  completion_tokens: sourceUsage.output_tokens ?? 0,
+                  total_tokens: sourceUsage.total_tokens ?? ((sourceUsage.input_tokens ?? 0) + (sourceUsage.output_tokens ?? 0)),
+                } : undefined;
+                const chunk = { choices: [{ index: 0, delta: {}, finish_reason: "stop" }], ...(usage ? { usage } : {}) };
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
+              } else if (event.type === "error") {
+                const message = event.error?.message || event.message || "A análise clínica não pôde ser concluída.";
+                const chunk = { choices: [{ index: 0, delta: { content: `ERRO: ${message}` }, finish_reason: "stop" }] };
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
+              }
+            } catch {
+              // Ignore malformed upstream events while preserving the remaining stream.
+            }
+          }
+        }
+      } finally {
+        controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+        controller.close();
+      }
+    },
+  });
+}
 // ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -2270,10 +2324,26 @@ Foco: ficha diária completa do leito, com plano terapêutico por ação e prazo
 ESTE MODELO TEM PRIORIDADE SOBRE QUALQUER ESTRUTURA GENÉRICA DO CLÍNICUS.
 Retorne exclusivamente a ficha abaixo. Não use títulos alternativos, não mude a ordem, não acrescente blocos e não transforme a ficha em anamnese, admissão ou passagem de caso.
 
+PROCESSAMENTO CLÍNICO INTERNO OBRIGATÓRIO — NÃO EXIBIR
+Antes de redigir, execute silenciosamente três passagens:
+1. INVENTÁRIO INTEGRAL: extraia cada fato clínico da fonte, incluindo identificação assistencial útil, idade/sexo, cronologia, sintomas, eventos, tratamentos administrados, suportes e parâmetros, exame físico, sinais vitais, escalas, exames com todos os valores e qualificadores, laudos, solicitações, pendências, condutas e comunicação. Ignore ruído administrativo, cabeçalhos repetidos, números de página e marcadores de impressão.
+2. RECONCILIAÇÃO: elimine apenas duplicações literais. Preserve informações complementares. Se duas partes da fonte divergirem de modo clinicamente relevante, não escolha silenciosamente: registre "DIVERGÊNCIA NA FONTE: ..." no bloco correspondente. O registro mais recente só prevalece quando a fonte trouxer data ou horário que prove essa ordem.
+3. AUDITORIA DE COBERTURA: compare a ficha redigida com o inventário e recoloque todo fato clínico ainda ausente no bloco apropriado. Nenhum dado pode desaparecer apenas por não caber no resumo narrativo.
+
+RACIOCÍNIO CLÍNICO SEGURO
+- Organize e correlacione os dados, mas diferencie fato documentado de interpretação clínica.
+- Diagnóstico confirmado exige que a fonte o declare como diagnóstico ativo/estabelecido ou traga confirmação objetiva inequívoca. Expressões "a esclarecer", "suspeita", "provável", "?", "a afastar" e exames solicitados permanecem em HIPÓTESES DIAGNÓSTICAS ou PENDÊNCIAS E ALERTAS CLÍNICOS.
+- Não transforme crise convulsiva em epilepsia; episódio descrito em tônico-clônico; pressão limítrofe em estabilidade hemodinâmica; agitação em risco de queda; anticonvulsivante em profilaxia geral; consolidação em pneumonia; nem qualquer associação plausível em fato documentado.
+- Preserve literalmente rótulos e valores de exames. SEG/SEGMENTADOS nunca pode virar BASTÕES. Não corrija, converta, arredonde ou reinterpretе separadores decimais.
+- Uma sugestão clinicamente pertinente que não esteja decidida na fonte nunca entra como conduta realizada, prescrição ou meta. Registre-a somente em PENDÊNCIAS E ALERTAS CLÍNICOS, iniciada por "SUGESTÃO CONDICIONAL —", seguida do dado que precisa ser confirmado. Não sugira rotinas genéricas; inclua apenas o que possa mudar conduta ou segurança neste caso.
+
 ESTRUTURA OBRIGATÓRIA (SIGA EXATAMENTE A ORDEM E MANTENHA TODOS OS BLOCOS)
 
 EVOLUÇÃO MÉDICA UTI ADULTO
 | DIA DE UTI:   | DATA/HORA:
+
+IDENTIFICAÇÃO CLÍNICA:
+(NOME, IDADE, SEXO, ORIGEM, LEITO E NÚMEROS ASSISTENCIAIS SOMENTE QUANDO CONSTAREM NA FONTE; OMITIR CONVÊNIO, TELEFONE, TEMPO DE PLANO E DADOS SEM UTILIDADE CLÍNICA)
 
 DIAGNÓSTICOS:
 (SOMENTE DIAGNÓSTICOS SUSTENTADOS POR DADO OBJETIVO, UM POR LINHA)
@@ -2315,12 +2385,16 @@ EXAMES COMPLEMENTARES (SOMENTE OS CITADOS NO INPUT, COM DATA E HORÁRIO)
 LABORATÓRIO (DATA/HORA): NA ___ | K ___ | CR ___ | UR ___ | GLICEMIA ___ | HB ___ | HT ___ | LEUCO ___ | PLAQ ___ | OUTROS ___
 GASOMETRIA (DATA/HORA): PH ___ | PCO2 ___ | HCO3 ___ | BE ___ | PO2 ___ | SAT ___ | LACTATO ___
 CULTURAS / IMAGENS / OUTROS: (DATA E ACHADO DOCUMENTADO; PENDENTES COMO "EM ANDAMENTO")
+(NÃO LIMITE "OUTROS" AOS CAMPOS DO EXEMPLO. PRESERVE TODOS OS EXAMES, FRAÇÕES, CONTAGENS, ESCALAS E RESULTADOS INFORMADOS, SEM TROCAR RÓTULO OU VALOR.)
 
 PLANO TERAPÊUTICO: AÇÃO E PRAZO/DURAÇÃO (COM GERENCIAMENTO DIÁRIO):
 (ITENS CURTOS, UM POR LINHA. CADA ITEM DEVE CONTER "AÇÃO: ... | PRAZO/DURAÇÃO: ...". QUANDO O PRAZO OU A DURAÇÃO NÃO TIVER SIDO INFORMADO, USE "NÃO INFORMADO"; NÃO INVENTE. EXEMPLOS DE EIXOS: FREQUÊNCIA DE SINAIS VITAIS, CURVA TÉRMICA E GLICEMIA; SUPORTE HEMODINÂMICO E VENTILATÓRIO; ANTIBIOTICOTERAPIA COM DIA DE TRATAMENTO; DIETA E APORTE NUTRICIONAL; CONTROLE GLICÊMICO E METAS; FUNÇÃO RENAL; ACOMPANHAMENTO DE ESPECIALIDADES; PROGRAMAÇÃO DE ALTA; ACOLHIMENTO E COMUNICAÇÃO COM PACIENTE E FAMÍLIA. INCLUA APENAS OS EIXOS COM DADO INFORMADO, SEM CRIAR DADOS DO PACIENTE.)
 
 METAS/CONDUTAS DO DIA:
 (ITENS CURTOS, UM POR LINHA, SOMENTE AS DECISÕES DO DIA)
+
+PENDÊNCIAS E ALERTAS CLÍNICOS:
+(PRIMEIRO, LISTE TODOS OS EXAMES, PARECERES, CULTURAS, PROCEDIMENTOS E REAVALIAÇÕES EXPRESSAMENTE PENDENTES. DEPOIS, SE HOUVER UMA LACUNA OU INCONSISTÊNCIA QUE POSSA MUDAR CONDUTA OU SEGURANÇA, REGISTRE-A DE FORMA OBJETIVA. SUGESTÕES NÃO DOCUMENTADAS DEVEM COMEÇAR POR "SUGESTÃO CONDICIONAL —" E NUNCA SER APRESENTADAS COMO ORDEM JÁ PRESCRITA.)
 
 GERENCIAMENTO DE RISCO
 (BLOCO OBRIGATÓRIO, SEMPRE COM AS OITO LINHAS, NESTA ORDEM E COM ESTES RÓTULOS)
@@ -2343,7 +2417,9 @@ REGRAS FINAIS DE FIDELIDADE
 - Não deduza melhora, piora, resolução, estabilidade, resposta terapêutica, diagnóstico, prognóstico ou meta a partir de dados isolados. Registre essas conclusões somente quando estiverem explícitas na fonte.
 - Não converta antecedente em diagnóstico ativo. Não converta hipótese em diagnóstico confirmado.
 - Não crie metas numéricas, prazos, frequências, profilaxias ou recomendações não fornecidas pelo médico.
-- Antes de responder, faça uma conferência silenciosa da ordem dos blocos, das oito linhas do gerenciamento de risco e da ausência de marcadores antes dos títulos.
+- No PLANO TERAPÊUTICO, preserve cada conduta expressamente informada e associe-a, quando possível, ao problema correspondente sem alterar seu sentido. Não substitua "conforme necessidade" por uma frequência nem "conforme protocolo" por dose ou duração inventada.
+- Não classifique fenitoína ou outro anticonvulsivante como profilaxia do bloco P. Esse item é reservado às profilaxias explicitamente identificadas na fonte, como tromboembolismo venoso ou lesão aguda de mucosa gástrica.
+- Antes de responder, faça uma conferência silenciosa da ordem e presença de todos os blocos, da cobertura integral dos fatos, da fidelidade dos rótulos e valores, das oito linhas do gerenciamento de risco e da ausência de marcadores antes dos títulos.
 
 ${contextData}`;
 
@@ -2887,22 +2963,37 @@ Regras:
     ];
 
     // Call Lovable AI with streaming
-    const model = "google/gemini-3-flash-preview";
+    const isInstitutionalUti = agentType === "clinicus" && directAHEMode && aheTemplate === "uti_evolucao_v2";
+    const model = isInstitutionalUti ? "openai/gpt-6-astra" : "google/gemini-3-flash-preview";
     const startedAt = Date.now();
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiResponse = await fetch(
+      isInstitutionalUti
+        ? "https://ai.gateway.lovable.dev/v1/responses"
+        : "https://ai.gateway.lovable.dev/v1/chat/completions",
+      {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${lovableApiKey}`,
+        ...(isInstitutionalUti
+          ? { "Lovable-API-Key": lovableApiKey, "X-Lovable-AIG-SDK": "fetch" }
+          : { Authorization: `Bearer ${lovableApiKey}` }),
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        model,
-        messages: messagesForAI,
-        temperature: agentType === "examinus" ? (examSuggestMode ? 0.3 : 0) : undefined,
-        stream: true,
-        stream_options: { include_usage: true },
-      }),
-    });
+      body: JSON.stringify(isInstitutionalUti ? {
+          model,
+          input: messagesForAI,
+          stream: true,
+          reasoning: { effort: "high", summary: "auto" },
+          include: ["reasoning.encrypted_content"],
+          store: false,
+        } : {
+          model,
+          messages: messagesForAI,
+          temperature: agentType === "examinus" ? (examSuggestMode ? 0.3 : 0) : undefined,
+          stream: true,
+          stream_options: { include_usage: true },
+        }),
+      },
+    );
 
     if (!aiResponse.ok) {
       console.error("AI response failed with status:", aiResponse.status);
@@ -2916,8 +3007,11 @@ Regras:
 
     // Instrumenta stream — captura usage do chunk final e loga.
     const { teeStreamWithUsage } = await import("../_shared/ai-logger.ts");
+    const clientCompatibleStream = isInstitutionalUti
+      ? responsesToChatCompletionSSE(aiResponse.body!)
+      : aiResponse.body!;
     const instrumented = teeStreamWithUsage(
-      aiResponse.body!,
+      clientCompatibleStream,
       {
         userId: user?.id ?? null,
         assistant: agentType,
