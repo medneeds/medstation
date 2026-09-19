@@ -2342,6 +2342,8 @@ ESTILO DE REDAÇÃO
 - Eventos do período no passado ("apresentou", "foi iniciado", "houve"); estado atual no presente ("mantém-se", "encontra-se", "evolui").
 - Frases curtas e densas: cada frase carrega um fato. Sem adjetivos vagos ("quadro arrastado", "evolução tórpida") salvo quando constarem na fonte.
 - Cronologia explícita: vincule cada evento ao horário ou ao momento do período quando informado, preservando a ordem real dos acontecimentos.
+- Seja completo sem ser repetitivo: registre cada fato clínico uma única vez no bloco mais específico. Nos demais blocos, faça apenas a correlação indispensável, sem recapitular história, exames ou condutas.
+- Produza diretamente a ficha final. Não exponha inventário, conferência, justificativas internas ou resumo do próprio processo.
 
 ESTRUTURA OBRIGATÓRIA (SIGA EXATAMENTE A ORDEM E MANTENHA TODOS OS BLOCOS)
 
@@ -2769,7 +2771,7 @@ DECISÃO FINAL É DO MÉDICO ASSISTENTE — sugestões não substituem julgament
 
       // Bloco comum a TODOS os modelos de anamnese: hipóteses diagnósticas explícitas,
       // sem confundir com diagnósticos ativos nem com antecedentes prévios.
-      systemPrompt += `
+      if (aheTemplate !== "uti_evolucao_v2") systemPrompt += `
 
 REGRA OBRIGATÓRIA — HIPÓTESES DIAGNÓSTICAS
 Todo documento deve conter um bloco próprio de HIPÓTESES DIAGNÓSTICAS, posicionado logo após os diagnósticos ativos (ou, quando o modelo não tiver esse campo, após a história/impressão).
@@ -2988,7 +2990,9 @@ Regras:
           model,
           input: messagesForAI,
           stream: true,
-          reasoning: { effort: "medium" },
+          // O prompt já executa inventário, reconciliação e auditoria de cobertura.
+          // Esforço baixo evita uma segunda deliberação extensa sem reduzir esses controles.
+          reasoning: { effort: "low" },
           store: false,
         } : {
           model,
