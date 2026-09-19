@@ -2261,6 +2261,79 @@ EQUIPE MULTIPROFISSIONAL CIENTE.
 
 ${contextData}`;
 
+    // UTI — EVOLUÇÃO VERSÃO 2 (MODELO INSTITUCIONAL COM GERENCIAMENTO DE RISCO)
+    const utiEvolucaoV2Prompt = `${utiSharedRules}
+
+DOCUMENTO SOLICITADO: EVOLUÇÃO MÉDICA EM UTI ADULTO — MODELO INSTITUCIONAL.
+Foco: ficha diária completa do leito, com plano terapêutico por ação e prazo, metas do dia e gerenciamento de risco.
+
+ESTRUTURA OBRIGATÓRIA (SIGA A ORDEM; OMITA BLOCOS SEM DADOS, EXCETO SINAIS VITAIS E GERENCIAMENTO DE RISCO)
+
+EVOLUÇÃO MÉDICA UTI ADULTO
+| DIA DE UTI:   | DATA/HORA:
+
+DIAGNÓSTICOS:
+(SOMENTE DIAGNÓSTICOS SUSTENTADOS POR DADO OBJETIVO, UM POR LINHA)
+
+PROBLEMAS ATIVOS:
+___ | STATUS: ATIVO / EM INVESTIGAÇÃO / CONTROLADO / RESOLVIDO.
+
+HPP:
+(ANTECEDENTES PESSOAIS RELEVANTES)
+
+ALERGIAS:
+(SOMENTE O QUE FOI INFORMADO; "NEGA" APENAS SE O MÉDICO DISSER; CASO CONTRÁRIO "NÃO INFORMADO")
+
+MEDICAÇÕES DE USO DIÁRIO:
+(LISTA; NÃO INVENTAR DOSE, VIA OU FREQUÊNCIA)
+
+HISTÓRIA CLÍNICA:
+(UMA A TRÊS LINHAS: MOTIVO DA INTERNAÇÃO, ORIGEM E CONDIÇÕES DE CHEGADA)
+
+EVOLUÇÃO MÉDICA:
+(NARRATIVA CONTÍNUA E OBJETIVA DO PERÍODO, INICIADA PELO HORÁRIO QUANDO INFORMADO; INTERCORRÊNCIAS, RESPOSTA ÀS CONDUTAS, MUDANÇAS DE SUPORTE, PROCEDIMENTOS, CULTURAS E AJUSTES; "SEM INTERCORRÊNCIAS NO PERÍODO" QUANDO INFORMADO)
+
+EXAME FÍSICO:
+(FRASE DE ABERTURA COM ESTADO GERAL, NÍVEL DE CONSCIÊNCIA E PADRÃO RESPIRATÓRIO, SEGUIDA DE)
+ACV:
+AR:
+ABDOME:
+EXT.:
+NEURO.:
+
+SINAIS VITAIS:
+PA ___ X ___ | FC ___ | FR ___ | SPO2 ___ | TAX ___
+(SE AUSENTES: "NÃO INFORMADOS")
+
+EXAMES COMPLEMENTARES (SOMENTE OS CITADOS NO INPUT, COM DATA E HORÁRIO)
+LABORATÓRIO (DATA/HORA): NA ___ | K ___ | CR ___ | UR ___ | GLICEMIA ___ | HB ___ | HT ___ | LEUCO ___ | PLAQ ___ | OUTROS ___
+GASOMETRIA (DATA/HORA): PH ___ | PCO2 ___ | HCO3 ___ | BE ___ | PO2 ___ | SAT ___ | LACTATO ___
+CULTURAS / IMAGENS / OUTROS: (DATA E ACHADO DOCUMENTADO; PENDENTES COMO "EM ANDAMENTO")
+
+PLANO TERAPÊUTICO: AÇÃO E PRAZO/DURAÇÃO (COM GERENCIAMENTO DIÁRIO):
+(ITENS CURTOS, UM POR LINHA, CADA UM COM AÇÃO E, QUANDO INFORMADO, PRAZO OU FREQUÊNCIA. EXEMPLOS DE EIXOS: FREQUÊNCIA DE SINAIS VITAIS, CURVA TÉRMICA E GLICEMIA; SUPORTE HEMODINÂMICO E VENTILATÓRIO; ANTIBIOTICOTERAPIA COM DIA DE TRATAMENTO; DIETA E APORTE NUTRICIONAL; CONTROLE GLICÊMICO E METAS; FUNÇÃO RENAL; ACOMPANHAMENTO DE ESPECIALIDADES; PROGRAMAÇÃO DE ALTA; ACOLHIMENTO E COMUNICAÇÃO COM PACIENTE E FAMÍLIA. INCLUA APENAS OS EIXOS COM DADO INFORMADO, COM LIBERDADE PARA OTIMIZAR A LINGUAGEM CONFORME EVIDÊNCIA, SEM CRIAR DADOS DO PACIENTE.)
+
+METAS/CONDUTAS DO DIA:
+(ITENS CURTOS, UM POR LINHA, SOMENTE AS DECISÕES DO DIA)
+
+GERENCIAMENTO DE RISCO
+(BLOCO OBRIGATÓRIO, SEMPRE COM AS OITO LINHAS, NESTA ORDEM E COM ESTES RÓTULOS)
+P - PROFILAXIAS:
+U - LESÃO POR PRESSÃO:
+B - BRONCOASPIRAÇÃO:
+F - FLEBITE:
+I - INVASIVOS:
+S - SANGRAMENTO:
+Q - QUEDAS:
+D - PROTOCOLO DE DOR (END):
+
+REGRAS DO GERENCIAMENTO DE RISCO
+- Preencha cada letra apenas com o que foi informado. Sem dado: "NÃO INFORMADO". Quando o médico indicar que não se aplica: "NÃO SE APLICA".
+- Nunca invente profilaxia, medicação, dispositivo, escala, escore ou frequência de cuidado.
+
+${contextData}`;
+
+
     // Avaliação Inicial na Emergência — história inicial enxuta para prontuário de M.E.
     const emergenciaInicialPrompt = `Você é o Clínicus, assistente clínico virtual especializado em gerar a HISTÓRIA INICIAL para prontuário de Medicina de Emergência, a partir de relatos médicos em texto livre, transcrições de voz ou dados brutos, em português do Brasil.
 
@@ -2589,6 +2662,8 @@ DECISÃO FINAL É DO MÉDICO ASSISTENTE — sugestões não substituem julgament
         systemPrompt = emergenciaInicialPrompt;
       } else if (aheTemplate === "emergencia_completa" || aheTemplate === "v2") {
         systemPrompt = aheV2EmergenciaPrompt;
+      } else if (aheTemplate === "uti_evolucao_v2") {
+        systemPrompt = utiEvolucaoV2Prompt;
       } else if (aheTemplate === "uti_evolucao") {
         systemPrompt = utiEvolucaoPrompt;
       } else if (aheTemplate === "uti_admissao" || aheTemplate === "uti" || aheTemplate === "v3") {
