@@ -402,7 +402,7 @@ Regras de formatação
 PROIBIDO usar asteriscos:
 - NÃO usar ** (negrito)
 - NÃO usar * (itálico)
-- NÃO usar # (títulos markdown)
+- NÃO usar marcadores de título Markdown
 
 Formatação permitida:
 - Títulos de seção em CAIXA ALTA seguidos de linha em branco
@@ -2012,7 +2012,7 @@ ${contextData}`,
 
 REGRAS DE FORMATAÇÃO
 
-- Use apenas # para separar seções, conforme o modelo abaixo.
+- Use os títulos em CAIXA ALTA para separar seções, sem qualquer marcador antes deles, conforme o modelo abaixo.
 - Dentro das seções, escreva em texto corrido, sem bullet points, marcadores ou listas numeradas.
 - Os delimitadores do modelo (ex: "- ESTADO GERAL:") são rótulos estruturais fixos do documento, não marcadores de lista — mantenha-os exatamente como estão no template.
 - Quando dados estiverem ausentes, registre "Não informado". Nunca infira ou invente informações clínicas.
@@ -2035,39 +2035,39 @@ Escreva cada conduta em linha separada, sem marcadores. Adapte as condutas ao ca
 
 MODELO DE SAÍDA
 
-# MEDICINA DE EMERGÊNCIA
+MEDICINA DE EMERGÊNCIA
 
 Admissão: [data]
 
-# HISTÓRIA DA DOENÇA ATUAL
+HISTÓRIA DA DOENÇA ATUAL
 
 [Cronologia do quadro: início, características semiológicas, fatores de melhora e piora, sintomas associados, evolução até a admissão.]
 
-# ANTECEDENTES MÓRBIDOS PESSOAIS
+ANTECEDENTES MÓRBIDOS PESSOAIS
 
 [Comorbidades, cirurgias prévias, internações, doenças crônicas.]
 
-# MEDICAMENTOS DE USO CONTÍNUO
+MEDICAMENTOS DE USO CONTÍNUO
 
 [Fármacos com doses, se informadas.]
 
-# ALERGIAS MEDICAMENTOSAS
+ALERGIAS MEDICAMENTOSAS
 
 [Descrever ou registrar ausência de alergias conhecidas.]
 
-# ANTROPOMETRIA
+ANTROPOMETRIA
 
 Peso: [ ] kg | Estatura: [ ] m | IMC: [ ] kg/m²
 
-# DISPOSITIVOS
+DISPOSITIVOS
 
 [Cateteres, SVD, SNE, oxigenoterapia, acessos venosos e outros.]
 
-# SINAIS VITAIS ADMISSIONAIS
+SINAIS VITAIS ADMISSIONAIS
 
 PA: [ ] mmHg | FC: [ ] bpm | FR: [ ] irpm | SpO2: [ ]% | Tax: [ ] °C | Glicemia capilar: [ ] mg/dL
 
-# EXAME FÍSICO
+EXAME FÍSICO
 
 - Estado geral: [nível de consciência, perfusão, hidratação, toxemia]
 - Cardiovascular: [ictus, ritmo, bulhas, sopros, perfusão]
@@ -2075,27 +2075,27 @@ PA: [ ] mmHg | FC: [ ] bpm | FR: [ ] irpm | SpO2: [ ]% | Tax: [ ] °C | Glicemia
 - Abdominal: [inspeção, palpação, dor, defesa, ruídos hidroaéreos]
 - Extremidades: [edema, perfusão, sinais de TVP, cianose]
 
-# EXAMES LABORATORIAIS
+EXAMES LABORATORIAIS
 
 LAB ([data]): [parágrafo único na ordem padronizada, sem unidades, com impressão sintética ao final.]
 
-# EXAMES DE IMAGEM
+EXAMES DE IMAGEM
 
 [Achados relevantes com interpretação clínica.]
 
-# PARECERES E AVALIAÇÕES
+PARECERES E AVALIAÇÕES
 
 [Transcrição técnica do parecer, conduta proposta e recomendações.]
 
-# EVOLUÇÃO E IMPRESSÃO CLÍNICA INICIAL
+EVOLUÇÃO E IMPRESSÃO CLÍNICA INICIAL
 
 [Síntese diagnóstica, gravidade e justificativa para internação.]
 
-# PLANO TERAPÊUTICO
+PLANO TERAPÊUTICO
 
 [Condutas adaptadas ao caso, uma por linha, sem marcadores.]
 
-# METAS TERAPÊUTICAS
+METAS TERAPÊUTICAS
 
 [Objetivos clínicos prioritários para o caso: estabilização hemodinâmica, controle de foco infeccioso, definição diagnóstica, entre outros.]
 
@@ -2110,7 +2110,7 @@ Se a informação não existe, ela deve ser OMITIDA ou marcada como "NÃO INFORM
 
 PADRÃO DE FORMATAÇÃO (OBRIGATÓRIO)
 - Escreva em caixa mista (texto normal). Apenas os TÍTULOS DOS BLOCOS ficam em caixa alta. Nunca force o corpo do texto em maiúsculas — o médico decide isso na hora de copiar.
-- Sem linhas de separação, sem markdown, sem asteriscos, sem #, sem emojis.
+- Sem linhas de separação, sem markdown, sem asteriscos, sem marcadores antes dos títulos e sem emojis.
 - Linha em branco apenas entre os grandes blocos; itens internos agrupados, sem espaçamento desnecessário.
 - Exames em linha corrida, sem unidades de medida no laboratório.
 - Sempre datar exames e, quando disponível, incluir o horário.
@@ -2363,7 +2363,7 @@ REGRAS GERAIS
 - NÃO invente informações. Se algum dado não estiver disponível, simplesmente omita-o (não escreva "não informado" nem deixe o rótulo vazio sem conteúdo relevante).
 - Evite redundâncias e frases longas.
 - Utilize abreviações médicas padronizadas.
-- PROIBIDO usar asteriscos (**, *) ou títulos markdown (#).
+- PROIBIDO usar asteriscos ou marcadores de títulos Markdown.
 
 EXAME FÍSICO DIRECIONADO
 - Descreva apenas os achados relevantes.
@@ -2422,7 +2422,7 @@ REGRAS GERAIS
 - NÃO invente informações. Se um dado não estiver disponível, omita a seção correspondente.
 - Contexto ambulatorial: priorize seguimento longitudinal, adesão terapêutica, prevenção e orientações ao paciente.
 - Evite redundâncias e frases longas; utilize abreviações médicas padronizadas.
-- PROIBIDO usar asteriscos (**, *) ou títulos markdown (#).
+- PROIBIDO usar asteriscos ou marcadores de títulos Markdown.
 
 EXAME FÍSICO
 - Descreva apenas achados relevantes ao motivo da consulta.
@@ -2476,7 +2476,7 @@ O médico envia informações desorganizadas (fragmentos, tópicos soltos, áudi
   Imagem: DD/MM (TC tórax): consolidação em lobo inferior direito.
 • Use vírgula decimal, ponto de milhar, sem unidades, apenas valores relevantes ao caso (priorize alterados e os que sustentam o raciocínio).
 • NUNCA invente dados. Ausente: "não disponível" ou "aguardando resultado".
-• NUNCA use asteriscos, # ou markdown. Títulos apenas em CAIXA ALTA, seguidos de linha em branco.
+• NUNCA use asteriscos ou markdown. Títulos apenas em CAIXA ALTA, sem marcadores antes deles e seguidos de linha em branco.
 • Não use jargão vago ("normal", "sem alterações") sem especificar o que foi avaliado.
 • Extensão alvo: 1.500 a 3.500 caracteres.`;
 
@@ -2525,7 +2525,7 @@ PRINCÍPIO ANTIALUCINAÇÃO
 - Datas de admissão e CID: use apenas os informados. Se não houver data de admissão, escreva "[Data de Admissão]" como campo a preencher.
 
 FORMATAÇÃO
-- Títulos em CAIXA ALTA, seguidos de linha em branco. Sem markdown, sem asteriscos, sem #.
+- Títulos em CAIXA ALTA, sem marcadores antes deles e seguidos de linha em branco. Sem markdown ou asteriscos.
 - Texto corrido em caixa mista, impessoal e formal.
 - Sem linhas de separação. Espaço em branco apenas entre os grandes blocos.
 - Itens internos agrupados, sem espaçamento desnecessário.
@@ -2645,7 +2645,7 @@ FORMATAÇÃO
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 • Cabeçalhos em CAIXA ALTA, listas com hífen, linhas em branco entre blocos
-• PROIBIDO markdown: nada de #, ##, ** ou *
+• PROIBIDO markdown e qualquer marcador antes dos títulos
 • Sem introdução — comece direto no primeiro cabeçalho
 
 Encerre SEMPRE com a linha:
@@ -2828,7 +2828,7 @@ Regras:
 • Nunca invente fonte, ano ou grau. Na dúvida, use [BAIXA] e diga que a evidência é limitada
 • Ao final da resposta, inclua uma linha:
   CONFIANÇA GERAL: ALTA | MODERADA | BAIXA — seguida de uma frase curta justificando
-• Mantenha a formatação sem markdown: sem títulos com # e sem asteriscos`;
+• Mantenha a formatação sem markdown: títulos em CAIXA ALTA sem marcadores e sem asteriscos`;
     }
 
 
