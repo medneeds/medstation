@@ -37,3 +37,8 @@
 - [ ] Clínicus mantém o Interpretador de ECG existente, sem alteração de comportamento
 - [ ] Testes puros + vitest completo + tsgo + build + lint dos arquivos tocados + E2E autenticado com usuário QA descartável e limpeza total
 - [ ] NÃO publicar antes do relatório dos gates
+
+## Em andamento — Cabeçalho único dos assistentes
+- [x] Unificar identidade, caso e ações do assistente no cabeçalho principal
+- [x] Remover a faixa interna duplicada sem retirar funções
+- [ ] Validar desktop e mobile: caso, histórico, nova conversa, Foco e Workflow
