@@ -41,4 +41,4 @@
 ## Em andamento — Cabeçalho único dos assistentes
 - [x] Unificar identidade, caso e ações do assistente no cabeçalho principal
 - [x] Remover a faixa interna duplicada sem retirar funções
-- [ ] Validar desktop e mobile: caso, histórico, nova conversa, Foco e Workflow
+- [x] Validar desktop e mobile: caso, histórico, nova conversa, Foco e Workflow
