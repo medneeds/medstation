@@ -102,6 +102,35 @@ export default function ResetPassword() {
     }
   };
 
+  const handleVerifyCode = async () => {
+    const email = resendEmail.trim().toLowerCase();
+    const token = code.replace(/\D/g, "");
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      toast({ variant: "destructive", title: "Informe seu e-mail" });
+      return;
+    }
+    if (token.length < 6) {
+      toast({ variant: "destructive", title: "Código inválido", description: "O código tem 6 dígitos." });
+      return;
+    }
+    setVerifying(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({ email, token, type: "recovery" });
+      if (error) throw error;
+      setCode("");
+      setStatus("ready");
+      toast({ title: "Código confirmado", description: "Agora escolha sua nova senha." });
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Código não aceito",
+        description: err?.message || "Confira o código ou peça um novo e-mail.",
+      });
+    } finally {
+      setVerifying(false);
+    }
+  };
+
   const handleResend = async () => {
     const email = resendEmail.trim().toLowerCase();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
