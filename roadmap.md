@@ -42,3 +42,9 @@
 - [x] Unificar identidade, caso e ações do assistente no cabeçalho principal
 - [x] Remover a faixa interna duplicada sem retirar funções
 - [x] Validar desktop e mobile: caso, histórico, nova conversa, Foco e Workflow
+
+ARTE FINAL — CARROSSEL CLÍNICO
+- [ ] Revisar 8 artes quadradas com exemplos clínicos mais densos
+- [ ] Criar 6 variações verticais para feed 4:5
+- [ ] Criar 6 variações para stories 9:16
+- [ ] Inspecionar textos, margens e coerência do conjunto
