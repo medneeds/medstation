@@ -4,6 +4,7 @@ import { template as referralRewardGranted } from './referral-reward-granted.tsx
 import { template as legacyTrialInvite } from './legacy-trial-invite.tsx'
 import { template as paymentFailed } from './payment-failed.tsx'
 import { template as arsenalMedBonus } from './arsenal-med-bonus.tsx'
+import { template as loginCode } from './login-code.tsx'
 
 export interface TemplateEntry {
   // deno-lint-ignore no-explicit-any
@@ -22,4 +23,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'legacy-trial-invite': legacyTrialInvite,
   'payment-failed': paymentFailed,
   'arsenal-med-bonus': arsenalMedBonus,
+  'login-code': loginCode,
 }
