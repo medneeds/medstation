@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useInactivityLogout } from "@/hooks/useInactivityLogout";
+import { DeviceGuard } from "@/components/auth/DeviceGuard";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
@@ -66,5 +67,5 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  return <>{children}</>;
+  return <DeviceGuard>{children}</DeviceGuard>;
 }

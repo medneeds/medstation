@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { trackLifecycleEvent } from "@/lib/analytics";
+import { markFreshLogin } from "@/lib/deviceGuard";
 
 interface GoogleAuthButtonProps {
   label?: string;
@@ -15,6 +16,8 @@ interface GoogleAuthButtonProps {
   trackAsSignup?: boolean;
   /** Acquisition surface, such as lp3. */
   source?: string;
+  /** Computador compartilhado marcado na tela de login. */
+  sharedComputer?: boolean;
 }
 
 export function GoogleAuthButton({
@@ -23,6 +26,7 @@ export function GoogleAuthButton({
   hideDivider = false,
   trackAsSignup = false,
   source = "auth",
+  sharedComputer = false,
 }: GoogleAuthButtonProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -41,6 +45,7 @@ export function GoogleAuthButton({
 
     const destination = resolveDestination();
     const redirectUri = `${window.location.origin}${destination}`;
+    markFreshLogin(sharedComputer);
 
     if (trackAsSignup) {
       trackLifecycleEvent("signup_started", {

@@ -1,0 +1,1 @@
+- Login protegido por aparelho: DeviceGuard (ProtectedRoute/AdminRoute) + edge functions device-check/device-verify; 1 acesso ativo em active_sessions, falhas liberam o acesso — para não travar o médico.

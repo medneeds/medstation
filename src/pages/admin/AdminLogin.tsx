@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Loader2, Lock, ShieldCheck, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import { markFreshLogin } from "@/lib/deviceGuard";
 
 /**
  * Painel MedStation — porta de entrada dedicada à equipe interna.
@@ -74,6 +75,7 @@ export default function AdminLogin() {
         setSubmitting(false);
         return;
       }
+      markFreshLogin(false);
       toast.success("Bem-vindo ao painel");
       navigate(from, { replace: true });
     } catch (err: any) {

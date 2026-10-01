@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminRole } from "@/hooks/useAdminRole";
+import { DeviceGuard } from "@/components/auth/DeviceGuard";
 
 /**
  * Guard exclusivo do painel administrativo.
@@ -50,5 +51,5 @@ export function AdminRoute({
   if (!isStaff) return <Navigate to="/dashboard" replace />;
   if (requireAdmin && !isAdmin) return <Navigate to="/admin" replace />;
 
-  return <>{children}</>;
+  return <DeviceGuard>{children}</DeviceGuard>;
 }

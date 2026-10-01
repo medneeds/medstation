@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      active_sessions: {
+        Row: {
+          created_at: string
+          device_hash: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_hash: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_hash?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       admin_notification_prefs: {
         Row: {
           created_at: string
@@ -778,6 +799,39 @@ export type Database = {
           email?: string | null
           email_sent_at?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      login_challenges: {
+        Row: {
+          attempts: number
+          code_hash: string
+          consumed_at: string | null
+          created_at: string
+          device_hash: string
+          expires_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          code_hash: string
+          consumed_at?: string | null
+          created_at?: string
+          device_hash: string
+          expires_at: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          code_hash?: string
+          consumed_at?: string | null
+          created_at?: string
+          device_hash?: string
+          expires_at?: string
+          id?: string
           user_id?: string
         }
         Relationships: []
@@ -1768,6 +1822,39 @@ export type Database = {
           id?: string
           metadata?: Json | null
           reason?: string
+        }
+        Relationships: []
+      }
+      trusted_devices: {
+        Row: {
+          created_at: string
+          device_hash: string
+          expires_at: string
+          id: string
+          label: string | null
+          last_used_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_hash: string
+          expires_at?: string
+          id?: string
+          label?: string | null
+          last_used_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_hash?: string
+          expires_at?: string
+          id?: string
+          label?: string | null
+          last_used_at?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
