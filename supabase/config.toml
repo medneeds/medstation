@@ -82,3 +82,9 @@ verify_jwt = false
 
 [functions.admin-purchase-recovery]
 verify_jwt = false
+
+[functions.device-check]
+verify_jwt = false
+
+[functions.device-verify]
+verify_jwt = false
