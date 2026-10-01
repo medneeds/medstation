@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Shield, Mail, KeyRound, Loader2, ShieldCheck, ShieldOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { TrustedDevicesList } from "@/components/TrustedDevicesList";
 
 type Provider = "google" | "email" | "unknown";
 
@@ -190,6 +191,8 @@ export function AccountSecurityCard() {
                 </Button>
               )}
             </div>
+
+            <TrustedDevicesList />
           </>
         )}
       </CardContent>
