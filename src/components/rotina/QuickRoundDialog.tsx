@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { AssistantGlyph } from "@/components/AssistantGlyph";
 import { AgentVoiceInput } from "@/components/AgentVoiceInput";
+import { applySpoken } from "@/lib/voiceAccess";
 import { copyText } from "@/lib/clipboard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -161,7 +162,7 @@ export function QuickRoundDialog({ open, onOpenChange }: Props) {
                 <AgentVoiceInput
                   context="Evolução médica diária de enfermaria e UTI. Termos clínicos, medicações e doses."
                   disabled={generating}
-                  onTranscription={(t) => setChanges((prev) => (prev ? `${prev} ${t}` : t))}
+                  onTranscription={(t, o) => setChanges((prev) => applySpoken(prev, t, o?.replace))}
                 />
               </div>
             </div>
@@ -248,6 +249,7 @@ export function QuickRoundDialog({ open, onOpenChange }: Props) {
                   <AgentVoiceInput
                     context="Ajuste de evolução médica à beira do leito."
                     disabled={refining}
+                    incremental={false}
                     onTranscription={(t) => void refine(t)}
                   />
                   <Button

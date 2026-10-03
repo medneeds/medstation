@@ -69,7 +69,8 @@ import {
 } from "@/lib/radiologyInterpreter";
 import { exportAgentConversationToPDF } from "@/utils/pdfExport";
 import { pdfToImages, pdfToImageFiles } from "@/utils/pdfToImages";
-import { AgentVoiceInput } from "@/components/AgentVoiceInput";
+import { AgentVoiceInput, type VoiceDeliveryOptions } from "@/components/AgentVoiceInput";
+import { applySpoken } from "@/lib/voiceAccess";
 import { ThinkingIndicator } from "@/components/ThinkingIndicator";
 import { StructuredResponse } from "@/components/chat/StructuredResponse";
 import { CaseSuggestionsPanel } from "@/components/chat/CaseSuggestionsPanel";
@@ -1468,8 +1469,8 @@ export function AgentChat({
   };
 
   // Handle voice transcription
-  const handleVoiceTranscription = (transcription: string) => {
-    setMessage(transcription);
+  const handleVoiceTranscription = (transcription: string, options?: VoiceDeliveryOptions) => {
+    setMessage((prev) => applySpoken(prev, transcription, options?.replace));
   };
 
   const copyToClipboard = async (text: string, messageId: string) => {
