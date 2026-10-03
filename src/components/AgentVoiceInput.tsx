@@ -552,7 +552,7 @@ export function AgentVoiceInput({ onTranscription, disabled = false, context, in
                   <div className="flex items-center justify-between mb-1">
                     <span
                       className={`text-[10px] uppercase tracking-[0.18em] font-medium ${
-                        health === "live" ? "text-primary" : health === "backup" ? "text-muted-foreground" : "text-amber-600 dark:text-amber-400"
+                        health === "live" ? "text-primary" : health === "backup" ? "text-muted-foreground" : "text-destructive"
                       }`}
                     >
                       {healthLabel[health]}
