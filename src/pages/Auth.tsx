@@ -375,6 +375,12 @@ export default function Auth() {
                       >
                         {loading ? "Entrando..." : "Entrar"}
                       </Button>
+                      <p className="flex items-start gap-2 rounded-xl border border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground leading-relaxed">
+                        <Lock className="h-3.5 w-3.5 mt-0.5 shrink-0 text-primary" />
+                        <span>
+                          Seu acesso é pessoal e intransferível. Não salve sua senha em computadores do hospital e não use a conta de outro médico.
+                        </span>
+                      </p>
                     </form>
                   </motion.div>
                 </TabsContent>

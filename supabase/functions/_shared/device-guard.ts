@@ -1,7 +1,7 @@
 import { createClient, type SupabaseClient, type User } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
 
-export const TRUST_DAYS = 30
+export const TRUST_DAYS = 7
 export const CODE_TTL_MS = 10 * 60 * 1000
 export const RESEND_COOLDOWN_MS = 60 * 1000
 export const MAX_ATTEMPTS = 5
