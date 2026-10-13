@@ -71,7 +71,7 @@ export function SubscribeNowDialog({ open, onOpenChange }: Props) {
       >
         {c === "yearly" && (
           <span className="absolute -top-2.5 right-3 rounded-full bg-primary px-2 py-0.5 text-[0.65rem] font-semibold text-primary-foreground">
-            Mais escolhido · {savingPct}% off
+            Melhor custo · {savingPct}% off
           </span>
         )}
         <div className="flex items-center justify-between">
