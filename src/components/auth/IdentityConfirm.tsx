@@ -66,12 +66,23 @@ export function IdentityConfirm({ userId }: { userId: string }) {
           <div className="h-12 w-12 rounded-2xl bg-primary/15 border border-primary/30 grid place-items-center">
             <UserCheck className="h-6 w-6 text-primary" />
           </div>
-          <DialogTitle className="text-xl">
-            {name ? `Você é ${name}?` : "Esta conta é sua?"}
-          </DialogTitle>
-          {crm && <p className="text-sm font-medium text-foreground">{crm}</p>}
+          <div className="space-y-2">
+            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-primary/90">Bom te ver de novo</p>
+            <DialogTitle className="text-xl">
+              {name ? `Que bom te ver, ${name.split(/\s+/)[0]}!` : "Que bom ter você por aqui!"}
+            </DialogTitle>
+            {(name || crm) && (
+              <p className="text-sm font-medium text-foreground pt-0.5">
+                {name}
+                {name && crm ? " · " : ""}
+                {crm}
+              </p>
+            )}
+          </div>
           <DialogDescription className="leading-relaxed">
-            Seu acesso é pessoal e intransferível. Se você não for o dono desta conta, saia agora e entre com o seu próprio login.
+            Só queremos confirmar se esta conta é sua mesmo. Seu acesso é pessoal e intransferível — assim
+            cuidamos dos seus pacientes, do seu prontuário e da sua assinatura. Se não for você, saia agora e
+            entre com o seu próprio login, sem nenhum problema.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2 pt-2">
