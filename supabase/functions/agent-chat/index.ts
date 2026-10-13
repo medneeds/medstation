@@ -2872,6 +2872,8 @@ DECISÃO FINAL É DO MÉDICO ASSISTENTE — sugestões não substituem julgament
         systemPrompt = aheV2EmergenciaPrompt;
       } else if (aheTemplate === "desfecho_alta") {
         systemPrompt = sumarioAltaPrompt;
+      } else if (aheTemplate === "desfecho_obito") {
+        systemPrompt = sumarioObitoPrompt;
       } else if (aheTemplate === "uti_evolucao_v2") {
         systemPrompt = utiEvolucaoV2Prompt;
       } else if (aheTemplate === "uti_evolucao") {
