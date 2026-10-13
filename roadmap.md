@@ -1,5 +1,9 @@
 # Roadmap
 
+## Planejamento — Clínicus · Professor clínico
+- [ ] Aprovar escopo, cinco estilos explicativos e encaixe na tela antes de implementar (aguarda aprovação do usuário)
+- [ ] Após aprovação: construir e validar o contexto educativo sem alterar anamnese, relatório ou outros assistentes
+
 ## Concluído — Examinus · Modo Interpretador (V1 RX tórax)
 - [x] Migration: `messages.metadata` JSONB
 - [x] Módulo compartilhado `_shared/radiology-interpreter.ts` (validação, multimodal, prompt ABCDE)
