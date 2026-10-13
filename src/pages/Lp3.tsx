@@ -30,6 +30,7 @@ import { DISPLAY_PRICING, brl } from "@/lib/subscription-tiers";
 import { ArrowRight, Check, Quote, Star } from "lucide-react";
 import { AnnualBonusCard } from "@/components/AnnualBonusCard";
 import { ANNUAL_BONUS } from "@/lib/annualBonus";
+import { SubscribeNowDialog } from "@/components/landing/SubscribeNowDialog";
 
 const proof = [
   { value: "Documentação", label: "texto clínico pronto para revisão" },
@@ -81,6 +82,7 @@ const faq = [
 
 export default function Lp3() {
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
+  const [subscribeOpen, setSubscribeOpen] = useState(false);
   useReferralCapture();
 
 
@@ -160,6 +162,22 @@ export default function Lp3() {
                   </li>
                 ))}
               </ul>
+
+              <div className="mt-7 flex flex-col sm:flex-row sm:items-center gap-3">
+                <Button
+                  size="lg"
+                  className="h-12 px-6 text-base shadow-medical"
+                  onClick={() => {
+                    trackCtaClick({ cta: "hero_assinar_agora", section: "lp3", destination: "dialog" });
+                    setSubscribeOpen(true);
+                  }}
+                >
+                  Assinar agora <ArrowRight className="w-4 h-4 ml-1.5" />
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  Menos de R$ 2 por dia · <span className="text-foreground font-medium">7 dias de garantia</span>
+                </span>
+              </div>
             </div>
 
             <LeadForm source="lp3" />
@@ -372,6 +390,8 @@ export default function Lp3() {
       <DeferredIdle delayMs={900}>
         <ConciergeFab />
       </DeferredIdle>
+
+      <SubscribeNowDialog open={subscribeOpen} onOpenChange={setSubscribeOpen} />
     </div>
   );
 }
