@@ -1,8 +1,12 @@
 # Roadmap
 
-## Planejamento — Clínicus · Professor clínico
-- [ ] Aprovar escopo, cinco estilos explicativos e encaixe na tela antes de implementar (aguarda aprovação do usuário)
-- [ ] Após aprovação: construir e validar o contexto educativo sem alterar anamnese, relatório ou outros assistentes
+## Clínicus · Professor clínico
+- [x] Escopo e cinco estilos aprovados pelo usuário
+- [x] Construir contexto educativo isolado de anamnese, relatório e outros assistentes
+- [x] Validar seleção, exclusividade e restauração com 16 testes; conferir respostas reais nos cinco estilos
+- [ ] Concluir revisão clínica: respostas ainda podem afirmar mecanismos não confirmados em casos graves
+- [ ] Validar envio e reabertura pela tela autenticada (bloqueado pela confirmação do aparelho por código de e-mail)
+- [ ] Publicar somente mediante solicitação explícita do usuário
 
 ## Concluído — Examinus · Modo Interpretador (V1 RX tórax)
 - [x] Migration: `messages.metadata` JSONB
