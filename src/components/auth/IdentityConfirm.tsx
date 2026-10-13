@@ -81,8 +81,8 @@ export function IdentityConfirm({ userId }: { userId: string }) {
           </div>
           <DialogDescription className="leading-relaxed">
             Só queremos confirmar se esta conta é sua mesmo. Seu acesso é pessoal e intransferível — assim
-            cuidamos dos seus pacientes, do seu prontuário e da sua assinatura. Se não for você, saia agora e
-            entre com o seu próprio login, sem nenhum problema.
+            cuidamos melhor dos seus casos e personalizamos a MedStation para o seu dia a dia. Se não for
+            você, saia agora e entre com o seu próprio login, sem nenhum problema.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2 pt-2">
