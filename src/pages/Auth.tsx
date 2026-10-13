@@ -13,7 +13,7 @@ import { signInSchema } from "@/lib/validations";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { Logo } from "@/components/Logo";
 import { trackLifecycleEvent } from "@/lib/analytics";
-import { Eye, EyeOff, MailCheck } from "lucide-react";
+import { Eye, EyeOff, MailCheck, Lock } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { markFreshLogin, getSharedPreference } from "@/lib/deviceGuard";
 

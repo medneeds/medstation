@@ -34,7 +34,7 @@ const LoginCodeEmail = ({ name, code = '000000', device, when }: LoginCodeProps)
         </Text>
         <Text style={footer}>
           O código vale por 10 minutos. Ao entrar, os outros aparelhos conectados à sua conta serão desconectados.
-          Se não foi você, ignore este e-mail e troque sua senha.
+          Se não foi você, alguém tentou usar sua conta: ignore este e-mail e troque sua senha. Seu acesso é pessoal e intransferível.
         </Text>
       </Container>
     </Body>

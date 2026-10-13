@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { IdentityConfirm } from "@/components/auth/IdentityConfirm";
 import {
   clearDeviceState,
   clearFreshLogin,
@@ -173,7 +174,13 @@ export function DeviceGuard({ children }: { children: React.ReactNode }) {
     }
   };
 
-  if (phase === "ok") return <>{children}</>;
+  if (phase === "ok")
+    return (
+      <>
+        {children}
+        {userId && <IdentityConfirm userId={userId} />}
+      </>
+    );
 
   if (phase === "checking") {
     return (
