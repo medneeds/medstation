@@ -6,6 +6,8 @@ describe("Clínicus Professor: regras de seleção", () => {
   it("identifica dados graves para suspender humor sem afirmar diagnóstico", () => {
     expect(professorSafetyContext("Paciente com hipotensão 70/40 e dispneia intensa").severe).toBe(true);
     expect(professorSafetyContext("Explique SIADH").severe).toBe(false);
+    expect(professorSafetyContext("PA 70x40, lactato 6 e confuso").severe).toBe(true);
+    expect(professorSafetyContext("Explique insuficiência cardíaca").severe).toBe(false);
   });
   it("reconhece caso real para não inventar uma narrativa adicional", () => {
     expect(professorSafetyContext("Caso real informado: homem com dispneia e edema").realCase).toBe(true);

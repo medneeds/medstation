@@ -57,7 +57,7 @@ Termine com uma pérola clínica breve que traduza a narrativa em raciocínio. E
 };
 
 export function professorSafetyContext(text: string) {
-  const severe = /\b(?:óbito|obito|choque|coma|inconsciente|sofrimento grave|emergência|emergencia|hipotens[aã]o|70\s*\/\s*40|dispneia intensa)\b/i.test(text);
+  const severe = /(?:óbito|obito|choque|coma\b|inconsciente|sofrimento grave|emerg[êe]ncia|hipotens[aã]o|\b(?:PA|press[aã]o)\s*(?:de\s*)?[4-8]\d\s*[x\/×]\s*\d{2}|\b[4-8]\d\s*[x\/×]\s*[2-5]\d\b|lactato\s*(?:de\s*)?(?:[4-9]|\d{2})|confus[oa]|rebaixamento|dispneia intensa|satura[çc][aã]o\s*(?:de\s*)?[5-8]\d|parada card)/i.test(text);
   const realCase = /\b(?:caso real|paciente|homem com|mulher com|caso informado)\b/i.test(text);
   return { severe, realCase };
 }
