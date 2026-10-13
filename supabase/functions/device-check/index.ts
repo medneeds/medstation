@@ -9,6 +9,7 @@ import {
   markActive,
   RESEND_COOLDOWN_MS,
   sha256,
+  TRUST_DAYS,
 } from '../_shared/device-guard.ts'
 
 function maskEmail(email: string) {
@@ -74,7 +75,7 @@ Deno.serve(async (req) => {
           device_hash: deviceHash,
           label,
           last_used_at: nowIso,
-          expires_at: new Date(Date.now() + 30 * 86400000).toISOString(),
+          expires_at: new Date(Date.now() + TRUST_DAYS * 86400000).toISOString(),
         },
         { onConflict: 'user_id,device_hash' },
       )
