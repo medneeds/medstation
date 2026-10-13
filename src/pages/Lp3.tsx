@@ -155,7 +155,7 @@ export default function Lp3() {
               </p>
 
               <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2.5">
-                {["Sem cartão de crédito", "Sem instalar nada", "Cancele quando quiser"].map((b) => (
+                {["Teste de 7 dias sem cartão", "Sem instalar nada", "Assinatura cancele quando quiser"].map((b) => (
                   <li key={b} className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Check className="w-4 h-4 text-primary" />
                     {b}
