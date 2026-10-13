@@ -320,6 +320,7 @@ const CLINICUS_CONTEXTS = [
   { value: "uti_admissao", label: "UTI · Admissão (Paciente Crítico)" },
   { value: "uti_evolucao", label: "UTI · Evolução / Plantão" },
   { value: "uti_evolucao_v2", label: "UTI · Evolução (Modelo Institucional)" },
+  { value: "desfecho_alta", label: "Desfecho · Sumário de Alta" },
 ] as const;
 
 type ClinicusContext = (typeof CLINICUS_CONTEXTS)[number]["value"];
