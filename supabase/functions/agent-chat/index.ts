@@ -2834,7 +2834,7 @@ DECISÃO FINAL É DO MÉDICO ASSISTENTE — sugestões não substituem julgament
 
       // Bloco comum a TODOS os modelos de anamnese: hipóteses diagnósticas explícitas,
       // sem confundir com diagnósticos ativos nem com antecedentes prévios.
-      if (aheTemplate !== "uti_evolucao_v2") systemPrompt += `
+      if (aheTemplate !== "uti_evolucao_v2" && aheTemplate !== "desfecho_alta") systemPrompt += `
 
 REGRA OBRIGATÓRIA — HIPÓTESES DIAGNÓSTICAS
 Todo documento deve conter um bloco próprio de HIPÓTESES DIAGNÓSTICAS, posicionado logo após os diagnósticos ativos (ou, quando o modelo não tiver esse campo, após a história/impressão).
