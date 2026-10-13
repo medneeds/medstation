@@ -1,8 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { clinicusModeMetadata, resolveClinicusTeachingModes, restoreClinicusTeachingMode } from "../clinicusProfessor";
-import { isProfessorStyle, PROFESSOR_STYLES, PROFESSOR_ONE_LINE_MAX_WORDS, PROFESSOR_STORY_WORDS, validateProfessorRequest } from "../../../supabase/functions/agent-chat/professor";
+import { isProfessorStyle, PROFESSOR_STYLES, PROFESSOR_ONE_LINE_MAX_WORDS, PROFESSOR_STORY_WORDS, professorSafetyContext, validateProfessorRequest } from "../../../supabase/functions/agent-chat/professor";
 
 describe("Clínicus Professor: regras de seleção", () => {
+  it("identifica dados graves para suspender humor sem afirmar diagnóstico", () => {
+    expect(professorSafetyContext("Paciente com hipotensão 70/40 e dispneia intensa").severe).toBe(true);
+    expect(professorSafetyContext("Explique SIADH").severe).toBe(false);
+  });
+  it("reconhece caso real para não inventar uma narrativa adicional", () => {
+    expect(professorSafetyContext("Caso real informado: homem com dispneia e edema").realCase).toBe(true);
+    expect(professorSafetyContext("Explique síndrome nefrótica").realCase).toBe(false);
+  });
   it("aceita exatamente os cinco estilos aprovados", () => {
     expect(PROFESSOR_STYLES.map((style) => style.value)).toEqual(["formal", "descontraido", "metaforico", "uma_linha", "historias"]);
     for (const value of ["formal", "descontraido", "metaforico", "uma_linha", "historias"]) expect(isProfessorStyle(value)).toBe(true);

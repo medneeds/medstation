@@ -3054,7 +3054,8 @@ Regras:
 
     // Educational mode replaces document instructions while retaining the same model and history.
     if (agentType === "clinicus" && professorMode === true) {
-      systemPrompt = buildProfessorPrompt(isProfessorStyle(professorStyle) ? professorStyle : "formal", contextData);
+      const latestQuestion = [...messages].reverse().find((message: { role: string; content: string }) => message.role === "user")?.content ?? "";
+      systemPrompt = buildProfessorPrompt(isProfessorStyle(professorStyle) ? professorStyle : "formal", contextData, latestQuestion);
     }
 
     // SHIELD: blinda o system prompt com regras absolutas anti-extração
