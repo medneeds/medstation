@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { resolveUserAccess, accessDeniedResponse } from "../_shared/access-control.ts";
+import { buildProfessorPrompt, isProfessorStyle, validateProfessorRequest } from "./professor.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -291,7 +292,14 @@ serve(async (req) => {
 
     console.log(`Rate limit check passed for user ${user.id}`);
 
-    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, aheTemplate, bulaInteligenteMode, receitaMode, casoTerapeuticoMode, directLIMode, onlyAltered, clinicalImpression, examSuggestMode, quickCIDMode, compactMode, mediscussMode, mediscussSpecialty, reportMode, reportType, reportPurpose, reportSpecialty, legalisMode, legalisScenario, legalisTopic, caseSuggestMode } = await req.json();
+    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, aheTemplate, bulaInteligenteMode, receitaMode, casoTerapeuticoMode, directLIMode, onlyAltered, clinicalImpression, examSuggestMode, quickCIDMode, compactMode, mediscussMode, mediscussSpecialty, reportMode, reportType, reportPurpose, reportSpecialty, legalisMode, legalisScenario, legalisTopic, caseSuggestMode, professorMode, professorStyle } = await req.json();
+
+    const professorError = validateProfessorRequest({ agentType, professorMode, professorStyle, directAHEMode, reportMode, caseSuggestMode });
+    if (professorError) {
+      return new Response(JSON.stringify({ error: professorError }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Validate input
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -3043,6 +3051,12 @@ Regras:
 • Mantenha a formatação sem markdown: títulos em CAIXA ALTA sem marcadores e sem asteriscos`;
     }
 
+
+    // Educational mode replaces document instructions while retaining the same model and history.
+    if (agentType === "clinicus" && professorMode === true) {
+      const latestQuestion = [...messages].reverse().find((message: { role: string; content: string }) => message.role === "user")?.content ?? "";
+      systemPrompt = buildProfessorPrompt(isProfessorStyle(professorStyle) ? professorStyle : "formal", contextData, latestQuestion);
+    }
 
     // SHIELD: blinda o system prompt com regras absolutas anti-extração
     systemPrompt = PROMPT_SHIELD_PREAMBLE + systemPrompt;

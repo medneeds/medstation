@@ -1,1 +1,2 @@
 - Login protegido por aparelho: DeviceGuard (ProtectedRoute/AdminRoute) + edge functions device-check/device-verify; 1 acesso ativo em active_sessions, falhas liberam o acesso — para não travar o médico.
+- Keep Clinicus teaching as an exclusive mode of the existing chat, with validated styles in its server-local professor module and mode metadata on messages; this isolates education from document templates and restores the last selected mode without new routes or storage tables.

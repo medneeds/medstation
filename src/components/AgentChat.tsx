@@ -1,6 +1,8 @@
 import { getAgentSuggestions } from "@/lib/agentIntro";
 import { OutputControl } from "@/components/chat/OutputControl";
 import { AssistantGlyph } from "@/components/AssistantGlyph";
+import { ProfessorControls } from "@/components/chat/ProfessorControls";
+import { clinicusModeMetadata, resolveClinicusTeachingModes, restoreClinicusTeachingMode, type ProfessorStyle } from "@/lib/clinicusProfessor";
 
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -30,7 +32,6 @@ import {
   ecgUserMessageMetadata,
   
   normalizeEcgPrompt,
-  resolveClinicusModes,
   selectEcgEvidenceIdsForRequest,
   type EcgMime,
   type EcgOutputMode,
@@ -502,15 +503,29 @@ export function AgentChat({
   const [directAHEMode, setDirectAHEMode] = useState(false);
   const [aheTemplate, setAheTemplate] = useState<ClinicusContext>("enfermaria");
   const [reportMode, setReportMode] = useState(false);
+  const [professorMode, setProfessorMode] = useState(false);
+  const [professorStyle, setProfessorStyle] = useState<ProfessorStyle>("formal");
   const [reportType, setReportType] = useState<ClinicusReportType>("relatorio_medico");
   const [reportPurpose, setReportPurpose] = useState("geral");
   const [reportSpecialty, setReportSpecialty] = useState("auto");
 
-  /** Liga/desliga Anamnese e Relatório do Clínicus mantendo a exclusividade mútua. */
-  const setClinicusModes = (change: { anamnese?: boolean; relatorio?: boolean }) => {
-    const next = resolveClinicusModes({ directAHEMode, reportMode, ecgInterpretMode: false }, change);
+  /** Teaching and documentation are mutually exclusive without changing other assistants. */
+  const setClinicusModes = (change: { anamnese?: boolean; relatorio?: boolean; professor?: boolean }) => {
+    if (isLoading) return;
+    const next = resolveClinicusTeachingModes({ directAHEMode, reportMode, professorMode }, change);
     setDirectAHEMode(next.directAHEMode);
     setReportMode(next.reportMode);
+    setProfessorMode(next.professorMode);
+    requestAnimationFrame(() => textareaRef.current?.focus());
+  };
+
+  const restoreTeachingMode = (messages: Message[]) => {
+    if (agentType !== "clinicus") return;
+    const restored = restoreClinicusTeachingMode(messages);
+    setDirectAHEMode(restored.directAHEMode);
+    setReportMode(restored.reportMode);
+    setProfessorMode(restored.professorMode);
+    setProfessorStyle(restored.professorStyle);
   };
 
   const [bulaInteligenteMode, setBulaInteligenteMode] = useState(false);
@@ -730,12 +745,14 @@ export function AgentChat({
       };
       setConversations([newConv, ...conversations]);
       setCurrentConversation(newConv);
+      restoreTeachingMode([]);
     }
   };
 
   const restoreLastConversation = () => {
     if (lastConversation) {
       setCurrentConversation(lastConversation);
+      restoreTeachingMode(lastConversation.messages);
       setLastConversation(null);
     }
   };
@@ -1183,6 +1200,8 @@ export function AgentChat({
 
     const messageContent = presetContent ?? message;
     const baseConversation = currentConversation;
+    const modeMetadata = agentType === "clinicus"
+      ? clinicusModeMetadata({ directAHEMode, reportMode, professorMode }, professorStyle) : undefined;
 
     // OPTIMISTIC UI: clear input + show user bubble + thinking instantly
     // (BEFORE any await — so the first paint happens in the same frame as the click)
@@ -1193,12 +1212,14 @@ export function AgentChat({
       content: messageContent,
       created_at: new Date().toISOString(),
       pending: true,
+      metadata: modeMetadata,
     };
     const thinkingMessage: Message = {
       id: "streaming-temp",
       role: "assistant",
       content: "Pensando...",
       created_at: new Date().toISOString(),
+      metadata: modeMetadata,
     };
 
     // Temporary local conversation shell so the bubble renders even before
@@ -1273,6 +1294,7 @@ export function AgentChat({
           conversation_id: conversation.id,
           role: "user",
           content: messageContent,
+          ...(modeMetadata && { metadata: modeMetadata }),
         })
         .select()
         .single();
@@ -1314,6 +1336,7 @@ export function AgentChat({
           caseId: selectedCaseId,
           ...(agentType === "examinus" && { usePipeSeparator, includeTime, onlyAltered, clinicalImpression, compactMode, examSuggestMode }),
           ...(agentType === "clinicus" && { directAHEMode, aheTemplate, reportMode, reportType, reportPurpose, reportSpecialty }),
+          ...(agentType === "clinicus" && { professorMode, professorStyle }),
           ...(agentType === "prescriptus" && { bulaInteligenteMode, receitaMode, casoTerapeuticoMode }),
           ...(agentType === "gasometrus" && { directLIMode }),
           ...(agentType === "codexus" && { quickCIDMode }),
@@ -1383,7 +1406,8 @@ export function AgentChat({
         .insert({
           conversation_id: conversation.id,
           role: "assistant",
-          content: assistantContent
+          content: assistantContent,
+          ...(modeMetadata && { metadata: modeMetadata }),
         })
         .select()
         .single();
@@ -1430,6 +1454,7 @@ export function AgentChat({
       });
     } finally {
       setIsLoading(false);
+      requestAnimationFrame(() => textareaRef.current?.focus());
     }
   };
 
@@ -1443,6 +1468,7 @@ export function AgentChat({
       setConversations(conversations.filter(c => c.id !== conversationId));
       if (currentConversation?.id === conversationId) {
         setCurrentConversation(null);
+        restoreTeachingMode([]);
       }
     }
   };
@@ -1467,6 +1493,7 @@ export function AgentChat({
   const loadConversation = async (conversation: Conversation) => {
     const messages = await loadConversationMessages(conversation.id);
     setCurrentConversation({ ...conversation, messages });
+    restoreTeachingMode(messages);
     setHistoryOpen(false); // Close the history sidebar after loading
   };
 
@@ -2166,7 +2193,10 @@ export function AgentChat({
                 subtitle: "Diga o quadro e o tratamento — escrevo a orientação de alta em linguagem clara, do jeito que ele entende em casa.",
               },
             };
-            const g = greetings[agentType] ?? {
+            const g = agentType === "clinicus" && professorMode ? {
+              title: "Qual diagnóstico vamos entender hoje?",
+              subtitle: "Qual doença, sintoma ou síndrome está em discussão?",
+            } : greetings[agentType] ?? {
               title: `Pronto, doutor(a). ${agentName} à postos.`,
               subtitle: "Pode começar — eu cuido do resto.",
             };
@@ -2193,7 +2223,7 @@ export function AgentChat({
                 </div>
                 <p className="text-base md:text-xl font-medium text-foreground tracking-tight">{g.title}</p>
                 <p className="text-xs md:text-sm mt-2 leading-relaxed">{g.subtitle}</p>
-                {getAgentSuggestions(agentType).length > 0 && (
+                {!professorMode && getAgentSuggestions(agentType).length > 0 && (
                   <div className="mt-5 flex flex-wrap justify-center gap-2">
                     {getAgentSuggestions(agentType).map((s) => (
                       <button
@@ -2572,6 +2602,9 @@ export function AgentChat({
               <ClipboardList className="h-3 w-3" />
               <span>Relatório</span>
             </Toggle>
+            <ProfessorControls active={professorMode} style={professorStyle} compact disabled={isLoading}
+              onActiveChange={(v) => setClinicusModes({ professor: v })}
+              onStyleChange={(v) => { setProfessorStyle(v); requestAnimationFrame(() => textareaRef.current?.focus()); }} />
             {reportMode && (
               <>
                 <Select value={reportType} onValueChange={(v) => setReportType(v as ClinicusReportType)}>
@@ -2778,6 +2811,9 @@ export function AgentChat({
                   <ClipboardList className="h-4 w-4" />
                   <span className="text-xs">Relatório</span>
                 </Toggle>
+                <ProfessorControls active={professorMode} style={professorStyle} disabled={isLoading}
+                  onActiveChange={(v) => setClinicusModes({ professor: v })}
+                  onStyleChange={(v) => { setProfessorStyle(v); requestAnimationFrame(() => textareaRef.current?.focus()); }} />
                 {reportMode && (
                   <>
                     <Select value={reportType} onValueChange={(v) => setReportType(v as ClinicusReportType)}>
