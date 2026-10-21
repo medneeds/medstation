@@ -239,7 +239,7 @@ export default function Internos() {
                 </div>
               </div>
               <Button type="submit" size="lg" className="w-full" disabled={loading}>
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Quero meu acesso gratuito <ArrowRight className="ml-1 h-4 w-4" /></>}
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>{full ? "Entrar na lista de espera" : "Quero meu acesso gratuito"} <ArrowRight className="ml-1 h-4 w-4" /></>}
               </Button>
               <p className="text-center text-xs text-muted-foreground">Depois da inscrição você entra no grupo de internos no WhatsApp.</p>
             </form>
