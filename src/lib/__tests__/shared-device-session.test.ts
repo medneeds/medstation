@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from "vitest";
 import { markFreshLogin, sharedSessionExpired, SHARED_STALE_MS } from "@/lib/deviceGuard";
 
