@@ -135,6 +135,7 @@ export function clearDeviceState() {
       .filter((k) => k.startsWith(OK_PREFIX))
       .forEach((k) => sessionStorage.removeItem(k));
     localStorage.removeItem(SHARED_KEY);
+    localStorage.removeItem("ms_shared_beat");
     sessionStorage.removeItem(SHARED_ALIVE_KEY);
   }, undefined);
 }
