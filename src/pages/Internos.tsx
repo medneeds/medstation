@@ -13,6 +13,7 @@ import { maskPhoneBr } from "@/pages/Onboarding";
 import { trackLifecycleEvent } from "@/lib/analytics";
 import {
   INTERN_CAMPAIGN, BR_STATES, MEDICAL_PERIODS, graduationYearOptions, isGuaranteedSpot,
+  spotsLeft, isCampaignFull, waitlistPosition,
 } from "@/lib/internCampaign";
 
 const schema = z.object({
@@ -50,10 +51,16 @@ export default function Internos() {
   const [result, setResult] = useState<{ position: number } | null>(null);
 
   useEffect(() => {
-    supabase.rpc("intern_spots_taken").then(({ data }) => typeof data === "number" && setTaken(data));
+    const refresh = () =>
+      supabase.rpc("intern_spots_taken").then(({ data }) => typeof data === "number" && setTaken(data));
+    refresh();
+    // Atualiza o contador enquanto a página está aberta, para encerrar as vagas sozinha.
+    const t = window.setInterval(refresh, 30000);
+    return () => window.clearInterval(t);
   }, []);
 
-  const left = taken === null ? null : Math.max(0, INTERN_CAMPAIGN.spots - taken);
+  const left = taken === null ? null : spotsLeft(taken);
+  const full = taken !== null && isCampaignFull(taken);
   const set = (k: keyof Form, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   const submit = async (e: React.FormEvent) => {
@@ -86,6 +93,7 @@ export default function Internos() {
       options: { shouldCreateUser: true, emailRedirectTo: `${window.location.origin}/auth?confirmed=1` },
     }).catch(() => {});
     setLoading(false);
+    setTaken((t) => Math.max(t ?? 0, position));
     setResult({ position });
   };
 
@@ -105,9 +113,15 @@ export default function Internos() {
 
       <main className="mx-auto grid max-w-6xl gap-10 px-5 pb-16 pt-4 md:grid-cols-[1.1fr_1fr] md:gap-14 md:pt-10">
         <section>
-          <span className="inline-flex rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-            {left === null ? `Acesso gratuito · ${INTERN_CAMPAIGN.spots} vagas` : left > 0 ? `Acesso gratuito · restam ${left} de ${INTERN_CAMPAIGN.spots} vagas` : "Vagas esgotadas · lista de espera"}
-          </span>
+          {full ? (
+            <span className="inline-flex rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-foreground">
+              Vagas encerradas · lista de espera aberta
+            </span>
+          ) : (
+            <span className="inline-flex rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+              {left === null ? `Acesso gratuito · ${INTERN_CAMPAIGN.spots} vagas` : `Acesso gratuito · restam ${left} de ${INTERN_CAMPAIGN.spots} vagas`}
+            </span>
+          )}
           <h1 className="mt-5 font-display text-[2.4rem] leading-[1.05] md:text-6xl font-semibold tracking-tight">
             Internos de medicina,{" "}
             <em className="text-primary">vocês foram convocados.</em>
@@ -129,7 +143,9 @@ export default function Internos() {
             ))}
           </ul>
           <p className="mt-6 text-xs text-muted-foreground">
-            Sem cartão de crédito. A ordem de inscrição define as {INTERN_CAMPAIGN.spots} vagas.
+            {full
+              ? `As ${INTERN_CAMPAIGN.spots} vagas já foram preenchidas. Quem entra na lista de espera é chamado pela ordem de inscrição se uma vaga for liberada.`
+              : `Sem cartão de crédito. A ordem de inscrição define as ${INTERN_CAMPAIGN.spots} vagas.`}
           </p>
         </section>
 
@@ -138,10 +154,14 @@ export default function Internos() {
             <div className="space-y-4 text-center py-6">
               <MessageCircle className="mx-auto h-10 w-10 text-primary" />
               <h2 className="text-2xl font-semibold">
-                {isGuaranteedSpot(result.position) ? `Você é o nº ${result.position}. Vaga garantida!` : `Você é o nº ${result.position} na lista de espera.`}
+                {isGuaranteedSpot(result.position)
+                  ? `Você é o nº ${result.position}. Vaga garantida!`
+                  : `Você é o nº ${waitlistPosition(result.position)} da lista de espera.`}
               </h2>
               <p className="text-sm text-muted-foreground">
-                Enviamos um link para o seu e-mail para criar sua conta. Toque no botão abaixo para entrar no grupo de internos no WhatsApp.
+                {isGuaranteedSpot(result.position)
+                  ? "Enviamos um link para o seu e-mail para criar sua conta. Toque no botão abaixo para entrar no grupo de internos no WhatsApp."
+                  : "As vagas desta turma foram preenchidas, mas seus dados estão guardados. Se uma vaga for liberada, chamamos pela ordem da lista. Enviamos um link para o seu e-mail para você já deixar sua conta criada."}
               </p>
               <Button asChild size="lg" className="w-full">
                 <a href={INTERN_CAMPAIGN.whatsappGroupUrl}>Entrar no grupo do WhatsApp <ArrowRight className="ml-1 h-4 w-4" /></a>
@@ -149,11 +169,20 @@ export default function Internos() {
             </div>
           ) : (
             <form onSubmit={submit} className="space-y-4" noValidate>
-              <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 text-center">
-                <p className="text-2xl font-bold text-primary">100% gratuito</p>
-                <p className="text-sm text-muted-foreground">{INTERN_CAMPAIGN.courtesyDays} dias de acesso completo, sem pagar nada e sem cartão</p>
-              </div>
-              <h2 className="text-xl font-semibold">Garanta seu acesso gratuito</h2>
+              {full ? (
+                <div className="rounded-xl border border-border bg-muted p-4 text-center">
+                  <p className="text-2xl font-bold">Vagas encerradas</p>
+                  <p className="text-sm text-muted-foreground">
+                    As {INTERN_CAMPAIGN.spots} vagas gratuitas foram preenchidas. Deixe seus dados na lista de espera e chamamos pela ordem de inscrição.
+                  </p>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 text-center">
+                  <p className="text-2xl font-bold text-primary">100% gratuito</p>
+                  <p className="text-sm text-muted-foreground">{INTERN_CAMPAIGN.courtesyDays} dias de acesso completo, sem pagar nada e sem cartão</p>
+                </div>
+              )}
+              <h2 className="text-xl font-semibold">{full ? "Entre na lista de espera" : "Garanta seu acesso gratuito"}</h2>
               <div className="space-y-1.5">
                 <Label htmlFor="in-name">Nome completo</Label>
                 <Input id="in-name" value={form.full_name} onChange={(e) => set("full_name", e.target.value)} maxLength={120} />
