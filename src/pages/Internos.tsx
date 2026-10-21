@@ -87,7 +87,6 @@ export default function Internos() {
     }).catch(() => {});
     setLoading(false);
     setResult({ position });
-    setTimeout(() => { window.location.href = INTERN_CAMPAIGN.whatsappGroupUrl; }, 4000);
   };
 
   const field = (k: keyof Form) => errors[k] && <p className="text-xs text-destructive">{errors[k]}</p>;
@@ -142,7 +141,7 @@ export default function Internos() {
                 {isGuaranteedSpot(result.position) ? `Você é o nº ${result.position}. Vaga garantida!` : `Você é o nº ${result.position} na lista de espera.`}
               </h2>
               <p className="text-sm text-muted-foreground">
-                Enviamos um link para o seu e-mail para criar sua conta. Agora vamos te levar para o grupo de internos no WhatsApp.
+                Enviamos um link para o seu e-mail para criar sua conta. Toque no botão abaixo para entrar no grupo de internos no WhatsApp.
               </p>
               <Button asChild size="lg" className="w-full">
                 <a href={INTERN_CAMPAIGN.whatsappGroupUrl}>Entrar no grupo do WhatsApp <ArrowRight className="ml-1 h-4 w-4" /></a>
