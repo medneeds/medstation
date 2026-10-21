@@ -1,2 +1,3 @@
 - Login protegido por aparelho: DeviceGuard (ProtectedRoute/AdminRoute) + edge functions device-check/device-verify; 1 acesso ativo em active_sessions, falhas liberam o acesso — para não travar o médico.
 - Keep Clinicus teaching as an exclusive mode of the existing chat, with validated styles in its server-local professor module and mode metadata on messages; this isolates education from document templates and restores the last selected mode without new routes or storage tables.
+- Intern courtesy campaigns use a dedicated signups table filled only through a validated public function, and a profile trigger copies academic data (no CRM) on account creation; this keeps campaign order auditable and separate from generic leads.
