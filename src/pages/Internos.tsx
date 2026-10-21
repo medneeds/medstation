@@ -109,7 +109,7 @@ export default function Internos() {
           <span className="inline-flex rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
             {left === null ? `${INTERN_CAMPAIGN.spots} vagas` : left > 0 ? `Restam ${left} de ${INTERN_CAMPAIGN.spots} vagas` : "Vagas esgotadas · lista de espera"}
           </span>
-          <h1 className="mt-5 font-serif text-[2.4rem] leading-[1.05] md:text-6xl font-semibold tracking-tight">
+          <h1 className="mt-5 font-display text-[2.4rem] leading-[1.05] md:text-6xl font-semibold tracking-tight">
             Internos de medicina,{" "}
             <em className="text-primary">vocês foram convocados.</em>
           </h1>

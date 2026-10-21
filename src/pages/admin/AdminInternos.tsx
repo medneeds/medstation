@@ -40,7 +40,7 @@ export default function AdminInternos() {
     const expires = new Date(Date.now() + INTERN_CAMPAIGN.courtesyDays * 86400000).toISOString();
     const { error } = await supabase.from("courtesy_access").insert({
       user_id: r.converted_user_id, granted_by: user!.id, expires_at: expires,
-      reason: `Campanha internos · posição ${rows.indexOf(r) + 1}`, source: "manual",
+      reason: `Campanha internos · posição ${rows.indexOf(r) + 1}`, source: "intern_campaign",
     });
     if (!error) {
       await supabase.from("intern_campaign_signups" as never).update({ courtesy_granted_at: new Date().toISOString() } as never).eq("id", r.id);
