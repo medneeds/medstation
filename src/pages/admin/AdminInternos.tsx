@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Gift, Loader2, MessageCircle, RefreshCw } from "lucide-react";
 import { whatsappUrl } from "./AdminUsers";
-import { INTERN_CAMPAIGN, isGuaranteedSpot } from "@/lib/internCampaign";
+import { INTERN_CAMPAIGN, isGuaranteedSpot, planInternCourtesy } from "@/lib/internCampaign";
 
 interface Row {
   id: string; full_name: string; email: string; phone: string; medical_school: string;
@@ -36,18 +36,51 @@ export default function AdminInternos() {
   const grant = async (r: Row) => {
     if (!r.converted_user_id) return;
     setBusy(r.id);
-    const { data: { user } } = await supabase.auth.getUser();
-    const expires = new Date(Date.now() + INTERN_CAMPAIGN.courtesyDays * 86400000).toISOString();
-    const { error } = await supabase.from("courtesy_access").insert({
-      user_id: r.converted_user_id, granted_by: user!.id, expires_at: expires,
-      reason: `Campanha internos · posição ${rows.indexOf(r) + 1}`, source: "intern_campaign",
-    });
-    if (!error) {
-      await supabase.from("intern_campaign_signups" as never).update({ courtesy_granted_at: new Date().toISOString() } as never).eq("id", r.id);
-      toast.success(`${INTERN_CAMPAIGN.courtesyDays} dias liberados para ${r.full_name}`);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Sessão expirada. Entre de novo no painel.");
+      const { data: existing, error: readErr } = await supabase
+        .from("courtesy_access")
+        .select("id, expires_at")
+        .eq("user_id", r.converted_user_id)
+        .maybeSingle();
+      if (readErr) throw readErr;
+
+      const plan = planInternCourtesy(existing);
+      const reason = `Campanha internos · posição ${rows.indexOf(r) + 1}`;
+      if (plan.action === "insert") {
+        const { error } = await supabase.from("courtesy_access").insert({
+          user_id: r.converted_user_id, granted_by: user.id, expires_at: plan.expiresAt,
+          reason, source: "intern_campaign",
+        });
+        if (error) throw error;
+      } else if (plan.action === "update" && existing) {
+        const { error } = await supabase.from("courtesy_access").update({
+          granted_by: user.id, expires_at: plan.expiresAt, reason, source: "intern_campaign",
+        }).eq("id", existing.id);
+        if (error) throw error;
+      }
+
+      const { error: markErr } = await supabase
+        .from("intern_campaign_signups" as never)
+        .update({ courtesy_granted_at: new Date().toISOString() } as never)
+        .eq("id", r.id);
+      if (markErr) throw markErr;
+
+      toast.success(
+        plan.action === "keep"
+          ? `${r.full_name} já tinha um acesso maior que 30 dias — mantido e marcado como liberado`
+          : `${INTERN_CAMPAIGN.courtesyDays} dias liberados para ${r.full_name}`,
+      );
       await load();
-    } else toast.error("Não foi possível liberar a cortesia");
-    setBusy(null);
+    } catch (e) {
+      console.error("grant intern courtesy", e);
+      toast.error("Não foi possível liberar a cortesia", {
+        description: e instanceof Error ? e.message : (e as { message?: string })?.message,
+      });
+    } finally {
+      setBusy(null);
+    }
   };
 
   const granted = rows.filter((r) => r.courtesy_granted_at).length;

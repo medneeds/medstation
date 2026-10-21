@@ -1,5 +1,23 @@
 import { describe, it, expect } from "vitest";
-import { INTERN_CAMPAIGN, isGuaranteedSpot, graduationYearOptions } from "@/lib/internCampaign";
+import { INTERN_CAMPAIGN, isGuaranteedSpot, graduationYearOptions, planInternCourtesy } from "@/lib/internCampaign";
+
+describe("liberação da cortesia de internos", () => {
+  const now = new Date("2026-10-21T17:00:00Z");
+  const in30 = "2026-11-20T17:00:00.000Z";
+  it("sem cortesia anterior: cria 30 dias", () => {
+    expect(planInternCourtesy(null, now)).toEqual({ action: "insert", expiresAt: in30 });
+  });
+  it("teste antigo já vencido: atualiza para 30 dias a partir de hoje", () => {
+    expect(planInternCourtesy({ expires_at: "2026-08-18T21:12:58Z" }, now)).toEqual({ action: "update", expiresAt: in30 });
+  });
+  it("teste de 7 dias ainda ativo: estende para 30 dias", () => {
+    expect(planInternCourtesy({ expires_at: "2026-10-28T17:18:59Z" }, now)).toEqual({ action: "update", expiresAt: in30 });
+  });
+  it("acesso maior que 30 dias ou sem prazo: não encurta", () => {
+    expect(planInternCourtesy({ expires_at: "2027-01-01T00:00:00Z" }, now).action).toBe("keep");
+    expect(planInternCourtesy({ expires_at: null }, now).action).toBe("keep");
+  });
+});
 
 describe("campanha de internos", () => {
   it("libera 30 vagas por 30 dias", () => {
