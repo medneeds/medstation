@@ -353,6 +353,7 @@ export default function Onboarding() {
                     </div>
                   )}
                 </div>
+                )}
               </div>
 
               <Button onClick={handleProfileNext} disabled={saving} className="h-12 w-full sm:w-auto">
