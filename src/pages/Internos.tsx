@@ -106,7 +106,7 @@ export default function Internos() {
       <main className="mx-auto grid max-w-6xl gap-10 px-5 pb-16 pt-4 md:grid-cols-[1.1fr_1fr] md:gap-14 md:pt-10">
         <section>
           <span className="inline-flex rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-            {left === null ? `${INTERN_CAMPAIGN.spots} vagas` : left > 0 ? `Restam ${left} de ${INTERN_CAMPAIGN.spots} vagas` : "Vagas esgotadas · lista de espera"}
+            {left === null ? `Acesso gratuito · ${INTERN_CAMPAIGN.spots} vagas` : left > 0 ? `Acesso gratuito · restam ${left} de ${INTERN_CAMPAIGN.spots} vagas` : "Vagas esgotadas · lista de espera"}
           </span>
           <h1 className="mt-5 font-display text-[2.4rem] leading-[1.05] md:text-6xl font-semibold tracking-tight">
             Internos de medicina,{" "}
@@ -149,7 +149,11 @@ export default function Internos() {
             </div>
           ) : (
             <form onSubmit={submit} className="space-y-4" noValidate>
-              <h2 className="text-xl font-semibold">Garanta sua vaga</h2>
+              <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 text-center">
+                <p className="text-2xl font-bold text-primary">100% gratuito</p>
+                <p className="text-sm text-muted-foreground">{INTERN_CAMPAIGN.courtesyDays} dias de acesso completo, sem pagar nada e sem cartão</p>
+              </div>
+              <h2 className="text-xl font-semibold">Garanta seu acesso gratuito</h2>
               <div className="space-y-1.5">
                 <Label htmlFor="in-name">Nome completo</Label>
                 <Input id="in-name" value={form.full_name} onChange={(e) => set("full_name", e.target.value)} maxLength={120} />
@@ -206,7 +210,7 @@ export default function Internos() {
                 </div>
               </div>
               <Button type="submit" size="lg" className="w-full" disabled={loading}>
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Quero minha vaga <ArrowRight className="ml-1 h-4 w-4" /></>}
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Quero meu acesso gratuito <ArrowRight className="ml-1 h-4 w-4" /></>}
               </Button>
               <p className="text-center text-xs text-muted-foreground">Depois da inscrição você entra no grupo de internos no WhatsApp.</p>
             </form>
