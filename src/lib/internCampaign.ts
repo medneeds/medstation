@@ -20,6 +20,21 @@ export function isGuaranteedSpot(position: number): boolean {
   return position >= 1 && position <= INTERN_CAMPAIGN.spots;
 }
 
+/** Vagas garantidas restantes, dado o total de inscritos. */
+export function spotsLeft(taken: number): number {
+  return Math.max(0, INTERN_CAMPAIGN.spots - taken);
+}
+
+/** Quando as 30 vagas estão preenchidas, a página passa a inscrever na lista de espera. */
+export function isCampaignFull(taken: number): boolean {
+  return taken >= INTERN_CAMPAIGN.spots;
+}
+
+/** Posição na lista de espera (31º inscrito = 1º da espera); null para vaga garantida. */
+export function waitlistPosition(position: number): number | null {
+  return isGuaranteedSpot(position) ? null : position - INTERN_CAMPAIGN.spots;
+}
+
 export function graduationYearOptions(now = new Date()): number[] {
   const y = now.getFullYear();
   return Array.from({ length: 5 }, (_, i) => y + i);

@@ -37,3 +37,23 @@ describe("campanha de internos", () => {
     expect(Math.max(...opts)).toBeLessThanOrEqual(2026 + 10);
   });
 });
+
+describe("vagas encerradas e lista de espera", () => {
+  it("com 29 inscritos resta 1 vaga e a campanha segue aberta", async () => {
+    const { spotsLeft, isCampaignFull } = await import("@/lib/internCampaign");
+    expect(spotsLeft(29)).toBe(1);
+    expect(isCampaignFull(29)).toBe(false);
+  });
+  it("com 30 inscritos as vagas encerram e passa para lista de espera", async () => {
+    const { spotsLeft, isCampaignFull } = await import("@/lib/internCampaign");
+    expect(spotsLeft(30)).toBe(0);
+    expect(isCampaignFull(30)).toBe(true);
+    expect(spotsLeft(45)).toBe(0);
+  });
+  it("31º inscrito é o 1º da lista de espera; 30º não está na espera", async () => {
+    const { waitlistPosition } = await import("@/lib/internCampaign");
+    expect(waitlistPosition(30)).toBeNull();
+    expect(waitlistPosition(31)).toBe(1);
+    expect(waitlistPosition(40)).toBe(10);
+  });
+});
