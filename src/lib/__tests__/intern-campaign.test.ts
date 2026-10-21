@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { INTERN_CAMPAIGN, isGuaranteedSpot, graduationYearOptions, planInternCourtesy } from "@/lib/internCampaign";
+import { INTERN_CAMPAIGN, isGuaranteedSpot, graduationYearOptions } from "@/lib/internCampaign";
+import { planInternCourtesy as planRule } from "../../../supabase/functions/admin-grant-intern-courtesy/plan";
+const planInternCourtesy = (e: { expires_at: string | null } | null, now: Date) => planRule(e, INTERN_CAMPAIGN.courtesyDays, now);
 
 describe("liberação da cortesia de internos", () => {
   const now = new Date("2026-10-21T17:00:00Z");

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Gift, Loader2, MessageCircle, RefreshCw } from "lucide-react";
 import { whatsappUrl } from "./AdminUsers";
-import { INTERN_CAMPAIGN, isGuaranteedSpot, planInternCourtesy } from "@/lib/internCampaign";
+import { INTERN_CAMPAIGN, isGuaranteedSpot } from "@/lib/internCampaign";
 
 interface Row {
   id: string; full_name: string; email: string; phone: string; medical_school: string;
@@ -37,41 +37,29 @@ export default function AdminInternos() {
     if (!r.converted_user_id) return;
     setBusy(r.id);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Sessão expirada. Entre de novo no painel.");
-      const { data: existing, error: readErr } = await supabase
-        .from("courtesy_access")
-        .select("id, expires_at")
-        .eq("user_id", r.converted_user_id)
-        .maybeSingle();
-      if (readErr) throw readErr;
-
-      const plan = planInternCourtesy(existing);
-      const reason = `Campanha internos · posição ${rows.indexOf(r) + 1}`;
-      if (plan.action === "insert") {
-        const { error } = await supabase.from("courtesy_access").insert({
-          user_id: r.converted_user_id, granted_by: user.id, expires_at: plan.expiresAt,
-          reason, source: "intern_campaign",
-        });
-        if (error) throw error;
-      } else if (plan.action === "update" && existing) {
-        const { error } = await supabase.from("courtesy_access").update({
-          granted_by: user.id, expires_at: plan.expiresAt, reason, source: "intern_campaign",
-        }).eq("id", existing.id);
-        if (error) throw error;
+      const { data, error } = await supabase.functions.invoke("admin-grant-intern-courtesy", {
+        body: { signupId: r.id },
+      });
+      if (error) {
+        let msg = error.message;
+        try {
+          const body = await (error as { context?: Response }).context?.json();
+          if (body?.error) msg = body.error;
+        } catch { /* mantém a mensagem original */ }
+        throw new Error(msg);
       }
-
-      const { error: markErr } = await supabase
-        .from("intern_campaign_signups" as never)
-        .update({ courtesy_granted_at: new Date().toISOString() } as never)
-        .eq("id", r.id);
-      if (markErr) throw markErr;
-
-      toast.success(
-        plan.action === "keep"
-          ? `${r.full_name} já tinha um acesso maior que 30 dias — mantido e marcado como liberado`
-          : `${INTERN_CAMPAIGN.courtesyDays} dias liberados para ${r.full_name}`,
-      );
+      if (data?.alreadyGranted) {
+        toast.info(`${r.full_name} já estava com a cortesia liberada`);
+      } else {
+        const emailNote =
+          data?.email === "sent" ? "E-mail de boas-vindas enviado."
+          : data?.email === "suppressed" ? "O e-mail de boas-vindas não foi enviado: esse endereço bloqueou nossos e-mails."
+          : "O acesso foi liberado, mas o e-mail de boas-vindas falhou.";
+        const title = data?.plan === "keep"
+          ? `${r.full_name} já tinha um acesso maior que 30 dias — mantido`
+          : `${INTERN_CAMPAIGN.courtesyDays} dias liberados para ${r.full_name}`;
+        (data?.email === "sent" ? toast.success : toast.warning)(title, { description: emailNote });
+      }
       await load();
     } catch (e) {
       console.error("grant intern courtesy", e);
