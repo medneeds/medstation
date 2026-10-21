@@ -142,11 +142,12 @@ async function annualPurchaseAccess(
       .select("access_end, access_period")
       .eq("status", "paid")
       .or(filters.join(","))
+      .gt("access_end", new Date().toISOString())
       .order("access_end", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .limit(20);
 
-    const accessEnd = data?.access_end ?? null;
+    const rows = (data ?? []) as { access_end: string | null; access_period?: string | null }[];
+    const accessEnd = rows[0]?.access_end ?? null;
     if (!accessEnd || new Date(accessEnd).getTime() <= Date.now()) return null;
 
     const result = base("paid_active");
@@ -157,7 +158,8 @@ async function annualPurchaseAccess(
     result.hasAgents = true;
     result.hasConsultorio = true;
     result.pricingCohort = "current_unified";
-    result.isAnnual = (data as { access_period?: string | null } | null)?.access_period === "annual_12m";
+    // Recarga mensal durante o anual não tira o bônus: vale qualquer anual ainda ativo
+    result.isAnnual = rows.some((r) => r.access_period === "annual_12m");
     return result;
   } catch {
     return null;
@@ -214,7 +216,18 @@ export async function resolveUserAccess(user: Pick<User, "id" | "email" | "creat
   }
 
   const annual = await annualPurchaseAccess(supabase, user.id, user.email ?? undefined);
-  if (annual) return annual;
+  if (annual) {
+    // Assinatura anual no cartão + compra avulsa ativa: mantém o status de anual
+    if (!annual.isAnnual && user.email) {
+      try {
+        const paid = await stripeAccess(user.email);
+        if (paid?.isAnnual) annual.isAnnual = true;
+      } catch {
+        /* sem impacto no acesso */
+      }
+    }
+    return annual;
+  }
 
   let billingDegraded = false;
   if (user.email) {

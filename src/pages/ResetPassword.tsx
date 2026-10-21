@@ -48,8 +48,11 @@ export default function ResetPassword() {
       if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         window.history.replaceState({}, "", "/reset-password");
-        finish(!error);
-        return;
+        if (!error) {
+          finish(true);
+          return;
+        }
+        // O próprio cliente pode já ter usado o código: confere a sessão abaixo
       }
 
       // Formato clássico: #access_token=...&type=recovery
@@ -61,8 +64,10 @@ export default function ResetPassword() {
           refresh_token: refreshToken,
         });
         window.history.replaceState({}, "", "/reset-password");
-        finish(!error);
-        return;
+        if (!error) {
+          finish(true);
+          return;
+        }
       }
 
       // Alguns clientes já processaram o link e criaram a sessão

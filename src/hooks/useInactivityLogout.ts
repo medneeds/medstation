@@ -43,7 +43,7 @@ export function useInactivityLogout(enabled: boolean) {
         await supabase.auth.signOut();
       } finally {
         toast.error("Sessão encerrada por inatividade", {
-          description: "Você ficou 1 hora sem atividade. Faça login novamente.",
+          description: "Você ficou 30 minutos sem atividade. Faça login novamente.",
         });
       }
     };

@@ -475,6 +475,7 @@ export function AgentVoiceInput({ onTranscription, disabled = false, context, in
       }
       onTranscriptionRef.current(transcription, replace ? { replace } : undefined);
       pendingBlobRef.current = null;
+      pendingReplaceRef.current = undefined;
       setHasPendingRetry(false);
     } catch (error: any) {
       console.error("Error processing audio:", error);
@@ -499,10 +500,16 @@ export function AgentVoiceInput({ onTranscription, disabled = false, context, in
     }
   };
 
+  const retryingRef = useRef(false);
   const retryPending = async () => {
     const blob = pendingBlobRef.current;
-    if (!blob) return;
-    await transcribeBackup(blob, pendingReplaceRef.current);
+    if (!blob || retryingRef.current) return;
+    retryingRef.current = true;
+    try {
+      await transcribeBackup(blob, pendingReplaceRef.current);
+    } finally {
+      retryingRef.current = false;
+    }
   };
 
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;

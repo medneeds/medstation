@@ -77,6 +77,12 @@ export function isPoorOcr(text: string): boolean {
   return clean.length < 24;
 }
 
+/** Há algum texto real (mesmo curto, como um único valor de exame)? */
+export function hasReadableText(text: string): boolean {
+  const clean = text.replace(/\[ilegível\]/gi, "").trim();
+  return !!clean && !/^SEM_TEXTO_LEGIVEL$/i.test(clean);
+}
+
 /**
  * Extrai texto de uma imagem/página. Tenta o modelo rápido de alta qualidade e,
  * se o resultado vier pobre, reprocessa com o modelo mais forte.
@@ -98,8 +104,16 @@ export async function extractTextFromImage(
     if (!isPoorOcr(second.text)) {
       return { text: second.text, model: OCR_FALLBACK_MODEL, usage: second.usage };
     }
+    // Leitura curta não é erro: devolve o que foi lido (prefere a mais completa)
+    const best = [second.text, first.text]
+      .filter(hasReadableText)
+      .sort((a, b) => b.length - a.length)[0];
+    if (best) {
+      const model = best === second.text ? OCR_FALLBACK_MODEL : OCR_PRIMARY_MODEL;
+      return { text: best, model, usage: second.usage };
+    }
     return { text: "", model: OCR_FALLBACK_MODEL, usage: second.usage };
   } catch (_err) {
-    return { text: isPoorOcr(first.text) ? "" : first.text, model: OCR_PRIMARY_MODEL, usage: first.usage };
+    return { text: hasReadableText(first.text) ? first.text : "", model: OCR_PRIMARY_MODEL, usage: first.usage };
   }
 }
