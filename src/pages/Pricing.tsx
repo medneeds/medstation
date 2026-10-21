@@ -335,8 +335,8 @@ export default function Pricing() {
       <GuestEmailDialog
         open={dialogOpen}
         onOpenChange={(o) => { setDialogOpen(o); if (!o) setPendingPlan(null); }}
-        planLabel="MedStation Completo"
-        priceLabel={`${brl(price.now)}${isYearly ? "/ano" : "/mês"}`}
+        planLabel={pendingPlan === "pix_monthly_30d" ? "MedStation · 30 dias via Pix" : "MedStation Completo"}
+        priceLabel={pendingPlan === "pix_monthly_30d" ? "R$ 59,90 · pagamento único, sem renovação" : `${brl(price.now)}${isYearly ? "/ano" : "/mês"}`}
         loading={loadingPlan !== null}
         onConfirm={(email) => { if (pendingPlan) runGuestCheckout(pendingPlan, email); }}
       />

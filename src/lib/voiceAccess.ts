@@ -15,6 +15,10 @@ export function appendSpoken(prev: string, next: string): string {
 
 /** Aplica uma transcrição: substitui o trecho ao vivo pela versão completa, ou acrescenta. */
 export function applySpoken(prev: string, text: string, replace?: string): string {
-  if (replace && prev.includes(replace)) return prev.replace(replace, text.trim());
+  if (replace) {
+    // O trecho ao vivo já está no texto (ou foi editado/enviado pelo médico):
+    // nunca colar a fala inteira de novo.
+    return prev.includes(replace) ? prev.replace(replace, text.trim()) : prev;
+  }
   return appendSpoken(prev, text);
 }

@@ -14,4 +14,8 @@ describe("microfone dos assistentes", () => {
   it("revisão do áudio completo substitui o trecho ao vivo sem duplicar", () => {
     expect(applySpoken("Obs: dor torac", "dor torácica há 2 horas", "dor torac")).toBe("Obs: dor torácica há 2 horas");
   });
+  it("não cola a fala de novo quando o trecho ao vivo foi editado ou enviado", () => {
+    expect(applySpoken("Obs: dor no peito", "dor torácica há 2 horas", "dor torac")).toBe("Obs: dor no peito");
+    expect(applySpoken("", "dor torácica há 2 horas", "dor torac")).toBe("");
+  });
 });

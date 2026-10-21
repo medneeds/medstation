@@ -145,6 +145,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     generateSummary,
     startRecording,
     stopRecording,
+    waitForStop,
     pauseRecording,
     resumeRecording,
     updateStructure,
@@ -210,7 +211,9 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     setShowFinishDialog(true);
     try {
       setFinalizePhase('review');
+      // Sempre espera a revisão final do áudio antes de montar a anamnese
       if (!opts?.alreadyStopped) await stopRecording();
+      else await waitForStop();
       setFinalizePhase('structuring');
       await updateStructure();
       setActiveTab('structure');
@@ -219,14 +222,18 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
       setFinalizeError(e?.message || null);
       setFinalizePhase('error');
     }
-  }, [stopRecording, updateStructure]);
+  }, [stopRecording, waitForStop, updateStructure]);
 
   const handleFinish = useCallback(() => { void runFinalizeFlow(); }, [runFinalizeFlow]);
 
   // Limite de 60 minutos: encerra e conclui sem perder nada
   const autoFinalizedRef = useRef(false);
   useEffect(() => {
-    if (!limitReached || autoFinalizedRef.current) return;
+    if (!limitReached) {
+      autoFinalizedRef.current = false; // nova gravação: o limite volta a valer
+      return;
+    }
+    if (autoFinalizedRef.current) return;
     autoFinalizedRef.current = true;
     toast.info('Limite de 60 minutos atingido — concluindo a consulta.');
     void runFinalizeFlow({ alreadyStopped: true });

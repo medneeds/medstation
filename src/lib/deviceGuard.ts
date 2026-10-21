@@ -69,8 +69,10 @@ export function markFreshLogin(shared: boolean) {
     if (shared) {
       localStorage.setItem(SHARED_KEY, "1");
       sessionStorage.setItem(SHARED_ALIVE_KEY, "1");
+      localStorage.setItem("ms_shared_beat", String(Date.now()));
     } else {
       localStorage.removeItem(SHARED_KEY);
+      localStorage.removeItem("ms_shared_beat");
       sessionStorage.removeItem(SHARED_ALIVE_KEY);
     }
   }, undefined);
@@ -90,12 +92,35 @@ export function getSharedPreference() {
   return isSharedDevice();
 }
 
-/** Computador compartilhado: navegador foi fechado e reaberto? */
-export function sharedSessionExpired() {
-  return safe(
-    () => localStorage.getItem(SHARED_KEY) === "1" && sessionStorage.getItem(SHARED_ALIVE_KEY) !== "1",
-    false,
-  );
+/** Abas abertas renovam este sinal; se ficar parado, o navegador foi fechado. */
+export const SHARED_BEAT_KEY = "ms_shared_beat";
+export const SHARED_BEAT_MS = 20_000;
+export const SHARED_STALE_MS = 3 * 60_000;
+
+/** Marca que há uma aba viva neste computador compartilhado. */
+export function touchSharedBeat() {
+  safe(() => {
+    if (localStorage.getItem(SHARED_KEY) !== "1") return;
+    if (sessionStorage.getItem(SHARED_ALIVE_KEY) !== "1") return;
+    localStorage.setItem(SHARED_BEAT_KEY, String(Date.now()));
+  }, undefined);
+}
+
+/**
+ * Computador compartilhado: navegador foi fechado e reaberto?
+ * Uma aba nova enquanto outra continua aberta herda a sessão viva.
+ */
+export function sharedSessionExpired(now = Date.now()) {
+  return safe(() => {
+    if (localStorage.getItem(SHARED_KEY) !== "1") return false;
+    if (sessionStorage.getItem(SHARED_ALIVE_KEY) === "1") return false;
+    const beat = Number(localStorage.getItem(SHARED_BEAT_KEY) || 0);
+    if (beat && now - beat < SHARED_STALE_MS) {
+      sessionStorage.setItem(SHARED_ALIVE_KEY, "1");
+      return false;
+    }
+    return true;
+  }, false);
 }
 
 export function isDeviceOk(userId: string) {
@@ -110,6 +135,7 @@ export function clearDeviceState() {
       .filter((k) => k.startsWith(OK_PREFIX))
       .forEach((k) => sessionStorage.removeItem(k));
     localStorage.removeItem(SHARED_KEY);
+    localStorage.removeItem("ms_shared_beat");
     sessionStorage.removeItem(SHARED_ALIVE_KEY);
   }, undefined);
 }

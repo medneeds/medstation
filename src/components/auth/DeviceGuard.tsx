@@ -16,6 +16,8 @@ import {
   isSharedDevice,
   setDeviceOk,
   sharedSessionExpired,
+  touchSharedBeat,
+  SHARED_BEAT_MS,
 } from "@/lib/deviceGuard";
 
 const HEARTBEAT_MS = 60 * 1000;
@@ -112,6 +114,14 @@ export function DeviceGuard({ children }: { children: React.ReactNode }) {
     const t = window.setTimeout(() => setResendIn((s) => s - 1), 1000);
     return () => window.clearTimeout(t);
   }, [phase, resendIn]);
+
+  // Computador compartilhado: abas abertas mantêm a sessão viva entre si
+  useEffect(() => {
+    if (phase !== "ok") return;
+    touchSharedBeat();
+    const t = window.setInterval(touchSharedBeat, SHARED_BEAT_MS);
+    return () => window.clearInterval(t);
+  }, [phase]);
 
   // Batimento: este aparelho ainda é o acesso ativo?
   useEffect(() => {

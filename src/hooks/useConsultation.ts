@@ -489,6 +489,12 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
 
   // Revisão final em blocos: cada bloco de ~10 min é transcrito em alta
   // precisão e os textos são recolados. Um bloco que falha não derruba o resto.
+  const reviewedRef = useRef('');
+  useEffect(() => {
+    reviewedRef.current = reviewedTranscript;
+  }, [reviewedTranscript]);
+  const stopPromiseRef = useRef<Promise<void> | null>(null);
+
   const runFinalReview = useCallback(async (blocks: Blob[]) => {
     const usable = blocks.filter((b) => b.size > 2000);
     if (usable.length === 0) return;
@@ -523,7 +529,8 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     }
 
     if (parts.length > 0) {
-      setReviewedTranscript(parts.join('\n\n'));
+      reviewedRef.current = parts.join('\n\n');
+      setReviewedTranscript(reviewedRef.current);
       if (failures > 0) {
         toast.warning('Parte do áudio não pôde ser revisada — usando a transcrição ao vivo nesse trecho.');
       } else {
@@ -535,7 +542,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     setIsFinalizing(false);
   }, []);
 
-  const stopRecording = useCallback(async () => {
+  const stopRecordingInner = useCallback(async () => {
     isRecordingRef.current = false;
     isPausedRef.current = false;
     stopTimer();
@@ -556,6 +563,16 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
       await runFinalReview(blocks);
     }
   }, [stopTimer, stopMediaResources, runFinalReview, flushBlockRecorder]);
+
+  // Guarda a parada em andamento para quem precisa esperar a revisão final
+  const stopRecording = useCallback(() => {
+    const p = stopRecordingInner();
+    stopPromiseRef.current = p;
+    return p;
+  }, [stopRecordingInner]);
+  const waitForStop = useCallback(async () => {
+    try { await stopPromiseRef.current; } catch { /* segue com o que houver */ }
+  }, []);
 
   const stopRecordingRef = useRef(stopRecording);
   useEffect(() => {
@@ -598,7 +615,8 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
 
   const buildTranscriptForAI = useCallback(
     (opts?: { preferReviewed?: boolean }) => {
-      if (opts?.preferReviewed && reviewedTranscript) return reviewedTranscript;
+      // lê a revisão pela ref: quem chama depois de esperar a parada vê a versão final
+      if (opts?.preferReviewed && reviewedRef.current) return reviewedRef.current;
       return segments
         .map((s) => {
           const who = s.speaker === 'doctor' ? 'Médico' : s.speaker === 'patient' ? 'Paciente' : 'Acompanhante';
@@ -606,7 +624,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
         })
         .join('\n');
     },
-    [segments, reviewedTranscript]
+    [segments]
   );
 
   const structuringRef = useRef(false);
@@ -662,9 +680,27 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
   );
 
   // ---- Estruturação ao vivo, com ritmo adaptativo --------------------------
+  // Agendamento único: falas novas não reiniciam a contagem, então a anamnese
+  // continua atualizando mesmo em conversa contínua.
   const lastLiveCountRef = useRef(0);
+  const segCountRef = useRef(0);
+  segCountRef.current = segments.length;
+  const runStructuringRef = useRef(runStructuring);
+  runStructuringRef.current = runStructuring;
+  const liveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const liveActive = liveStructuring && isRecording && !isPaused;
   useEffect(() => {
-    if (!liveStructuring || !isRecording || isPaused) return;
+    if (liveActive) return;
+    if (liveTimerRef.current) {
+      clearTimeout(liveTimerRef.current);
+      liveTimerRef.current = null;
+    }
+  }, [liveActive]);
+  useEffect(() => () => {
+    if (liveTimerRef.current) clearTimeout(liveTimerRef.current);
+  }, []);
+  useEffect(() => {
+    if (!liveActive || liveTimerRef.current) return;
     if (segments.length < 3) return;
 
     // consultas longas: espaça as atualizações para não competir com a escuta
@@ -672,13 +708,12 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     const delay = segments.length > 120 ? 9000 : segments.length > 50 ? 6000 : 4000;
     if (segments.length - lastLiveCountRef.current < step) return;
 
-    const timer = setTimeout(() => {
-      lastLiveCountRef.current = segments.length;
-      void runStructuring({ silent: true });
+    liveTimerRef.current = setTimeout(() => {
+      liveTimerRef.current = null;
+      lastLiveCountRef.current = segCountRef.current;
+      void runStructuringRef.current({ silent: true });
     }, delay);
-
-    return () => clearTimeout(timer);
-  }, [segments.length, liveStructuring, isRecording, isPaused, runStructuring]);
+  }, [segments.length, liveActive]);
 
   // Limpa o realce dos campos alterados
   useEffect(() => {
@@ -888,6 +923,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     // Actions
     startRecording,
     stopRecording,
+    waitForStop,
     pauseRecording,
     resumeRecording,
     updateStructure,
