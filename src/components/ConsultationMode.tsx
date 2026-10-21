@@ -145,6 +145,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     generateSummary,
     startRecording,
     stopRecording,
+    waitForStop,
     pauseRecording,
     resumeRecording,
     updateStructure,
