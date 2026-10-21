@@ -4,7 +4,7 @@ export const INTERN_CAMPAIGN = {
   spots: 30,
   courtesyDays: 30,
   /** Link do grupo de WhatsApp para onde o interno é levado após a inscrição. */
-  whatsappGroupUrl: "https://chat.whatsapp.com/",
+  whatsappGroupUrl: "https://chat.whatsapp.com/LQu9cCmdCagI0swlYUjInY",
 } as const;
 
 export const BR_STATES = [
