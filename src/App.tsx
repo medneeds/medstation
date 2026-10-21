@@ -78,6 +78,8 @@ const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
 const AdminFunnel = lazy(() => import("./pages/admin/AdminFunnel"));
 const AdminAudience = lazy(() => import("./pages/admin/AdminAudience"));
 const AdminEmails = lazy(() => import("./pages/admin/AdminEmails"));
+const AdminInternos = lazy(() => import("./pages/admin/AdminInternos"));
+const Internos = lazy(() => import("./pages/Internos"));
 const Indicar = lazy(() => import("./pages/Indicar"));
 const ReferralRedirect = lazy(() => import("./pages/ReferralRedirect"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -101,6 +103,7 @@ const App = () => (
           <Routes>
 
             <Route path="/" element={<Lp3 />} />
+            <Route path="/internos" element={<Internos />} />
             <Route path="/landing" element={<Navigate to="/" replace />} />
             <Route path="/tour" element={<Navigate to="/" replace />} />
             <Route path="/comecar" element={<Comecar />} />
@@ -366,6 +369,7 @@ const App = () => (
               <Route index element={<AdminDashboard />} />
               <Route path="usuarios" element={<AdminUsers />} />
               <Route path="faturamento" element={<AdminRoute requireAdmin><AdminBilling /></AdminRoute>} />
+              <Route path="internos" element={<AdminRoute requireAdmin><AdminInternos /></AdminRoute>} />
               <Route path="indicacoes" element={<AdminRoute requireAdmin><AdminReferrals /></AdminRoute>} />
               <Route path="suporte" element={<AdminSupport />} />
               <Route path="analytics" element={<AdminAnalytics />} />

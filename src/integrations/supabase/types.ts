@@ -728,6 +728,57 @@ export type Database = {
         }
         Relationships: []
       }
+      intern_campaign_signups: {
+        Row: {
+          campaign: string
+          city: string
+          converted_user_id: string | null
+          courtesy_granted_at: string | null
+          created_at: string
+          current_period: string
+          email: string
+          full_name: string
+          graduation_year: number
+          id: string
+          medical_school: string
+          phone: string
+          state: string
+          utm: Json
+        }
+        Insert: {
+          campaign?: string
+          city: string
+          converted_user_id?: string | null
+          courtesy_granted_at?: string | null
+          created_at?: string
+          current_period: string
+          email: string
+          full_name: string
+          graduation_year: number
+          id?: string
+          medical_school: string
+          phone: string
+          state: string
+          utm?: Json
+        }
+        Update: {
+          campaign?: string
+          city?: string
+          converted_user_id?: string | null
+          courtesy_granted_at?: string | null
+          created_at?: string
+          current_period?: string
+          email?: string
+          full_name?: string
+          graduation_year?: number
+          id?: string
+          medical_school?: string
+          phone?: string
+          state?: string
+          utm?: Json
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           converted_user_id: string | null
@@ -1267,13 +1318,16 @@ export type Database = {
           created_at: string
           crm: string | null
           crm_state: string | null
+          current_period: string | null
           date_of_birth: string | null
           full_name: string | null
           gender: string | null
           graduation_year: number | null
           id: string
+          medical_school: string | null
           phone: string | null
           postal_code: string | null
+          professional_status: string
           rqe: string | null
           specialty: string | null
           state: string | null
@@ -1288,13 +1342,16 @@ export type Database = {
           created_at?: string
           crm?: string | null
           crm_state?: string | null
+          current_period?: string | null
           date_of_birth?: string | null
           full_name?: string | null
           gender?: string | null
           graduation_year?: number | null
           id: string
+          medical_school?: string | null
           phone?: string | null
           postal_code?: string | null
+          professional_status?: string
           rqe?: string | null
           specialty?: string | null
           state?: string | null
@@ -1309,13 +1366,16 @@ export type Database = {
           created_at?: string
           crm?: string | null
           crm_state?: string | null
+          current_period?: string | null
           date_of_birth?: string | null
           full_name?: string | null
           gender?: string | null
           graduation_year?: number | null
           id?: string
+          medical_school?: string | null
           phone?: string | null
           postal_code?: string | null
+          professional_status?: string
           rqe?: string | null
           specialty?: string | null
           state?: string | null
@@ -2303,6 +2363,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      intern_spots_taken: { Args: never; Returns: number }
       is_feature_enabled: { Args: { _key: string }; Returns: boolean }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       search_cases: {
@@ -2318,6 +2379,23 @@ export type Database = {
           tags: string[]
           title: string
           updated_at: string
+        }[]
+      }
+      submit_intern_signup: {
+        Args: {
+          p_city: string
+          p_current_period: string
+          p_email: string
+          p_full_name: string
+          p_graduation_year: number
+          p_medical_school: string
+          p_phone: string
+          p_state: string
+          p_utm?: Json
+        }
+        Returns: {
+          already: boolean
+          queue_position: number
         }[]
       }
     }

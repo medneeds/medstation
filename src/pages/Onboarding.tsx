@@ -80,6 +80,8 @@ export default function Onboarding() {
   const [gender, setGender] = useState("");
   const [crm, setCrm] = useState("");
   const [crmState, setCrmState] = useState("");
+  const [isIntern, setIsIntern] = useState(false);
+  const [internInfo, setInternInfo] = useState("");
   const [showErrors, setShowErrors] = useState(false);
 
   const [routinePains, setRoutinePains] = useState<RoutinePain[]>([]);
@@ -99,7 +101,7 @@ export default function Onboarding() {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("full_name, phone, date_of_birth, gender, crm, crm_state")
+        .select("full_name, phone, date_of_birth, gender, crm, crm_state, professional_status, medical_school, current_period, graduation_year")
         .eq("id", session.user.id)
         .maybeSingle();
 
@@ -110,6 +112,10 @@ export default function Onboarding() {
       setGender(profile.gender ?? "");
       setCrm(profile.crm ?? "");
       setCrmState(profile.crm_state ?? "");
+      if (profile.professional_status === "interno") {
+        setIsIntern(true);
+        setInternInfo([profile.medical_school, profile.current_period, profile.graduation_year ? `formatura ${profile.graduation_year}` : null].filter(Boolean).join(" · "));
+      }
     })();
     trackEvent("onboarding_started", { source: "first_access" });
     return () => { active = false; };
@@ -308,6 +314,12 @@ export default function Onboarding() {
                   )}
                 </div>
 
+                {isIntern ? (
+                  <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 text-sm">
+                    <p className="font-medium">Interno de medicina · sem CRM</p>
+                    {internInfo && <p className="mt-1 text-muted-foreground">{internInfo}</p>}
+                  </div>
+                ) : (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="ob-crm">CRM (opcional)</Label>
@@ -341,6 +353,7 @@ export default function Onboarding() {
                     </div>
                   )}
                 </div>
+                )}
               </div>
 
               <Button onClick={handleProfileNext} disabled={saving} className="h-12 w-full sm:w-auto">

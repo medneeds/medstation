@@ -35,7 +35,9 @@ export function HeaderUserMenu() {
 
   const displayName = profile?.full_name?.split(" ")[0] || "—";
   const crmLine =
-    profile?.crm && profile?.crm_state
+    (profile as { professional_status?: string } | null)?.professional_status === "interno" && !profile?.crm
+      ? "Interno de medicina"
+      : profile?.crm && profile?.crm_state
       ? `CRM-${profile.crm_state} ${profile.crm}`
       : profile?.specialty || "Médico";
 
