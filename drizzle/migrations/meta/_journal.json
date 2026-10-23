@@ -8,6 +8,13 @@
       "when": 1792602949380,
       "tag": "0000_allow_intern_future_graduation_year",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792774528253,
+      "tag": "0001_link_one_time_purchases_on_signup",
+      "breakpoints": true
     }
   ]
 }
