@@ -189,10 +189,10 @@ describe("métricas de recuperação", () => {
 // --- UI -------------------------------------------------------------------
 
 describe("UI de pricing", () => {
-  it("mantém CTA principal de assinatura e opção Pix secundária explícita", () => {
+  it("mantém o CTA de assinatura e não oferece mais o Pix", () => {
     expect(pricing).toContain("Assinar agora");
-    expect(pricing).toContain("Pagar 1 mês via Pix");
-    expect(pricing).toContain("30 dias de acesso, sem renovação automática");
-    expect(pricing).toContain('startCheckout("pix_monthly_30d")');
+    expect(pricing).not.toContain("Pagar 1 mês via Pix");
+    expect(pricing).not.toContain('startCheckout("pix_monthly_30d")');
+    expect(pricing).toContain("Cartão ou boleto à vista.");
   });
 });

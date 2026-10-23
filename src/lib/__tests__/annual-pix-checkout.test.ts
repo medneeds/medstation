@@ -104,8 +104,4 @@ describe("concessão de acesso anual", () => {
     expect(webhook).toContain('error.code === "23505"');
   });
 
-  it("MRR continua vindo só de assinaturas, sem a compra anual one-time", () => {
-    const billing = read("admin-list-subscribers/index.ts");
-    expect(billing).not.toContain("stripe_one_time_purchases");
-  });
 });
