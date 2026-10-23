@@ -40,6 +40,14 @@ async function attachUserToSubscription(
   });
 }
 
+/** Link do boleto (página do Stripe com código de barras e PDF). */
+function boletoVoucherUrl(intent: unknown): string | null {
+  if (!intent || typeof intent !== "object") return null;
+  const next = (intent as { next_action?: { boleto_display_details?: { hosted_voucher_url?: string } } })
+    .next_action;
+  return next?.boleto_display_details?.hosted_voucher_url ?? null;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -57,7 +65,7 @@ serve(async (req) => {
     });
 
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ["customer", "subscription"],
+      expand: ["customer", "subscription", "payment_intent"],
     });
 
     const email = session.customer_email
@@ -73,6 +81,7 @@ serve(async (req) => {
           success: true,
           pending: true,
           email: email ?? null,
+          voucherUrl: boletoVoucherUrl(session.payment_intent),
           plan: session.metadata?.plan ?? null,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },

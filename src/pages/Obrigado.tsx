@@ -57,6 +57,7 @@ export default function Obrigado() {
   const [userExists, setUserExists] = useState(false);
   const [message, setMessage] = useState("");
   const [resetSent, setResetSent] = useState(false);
+  const [voucherUrl, setVoucherUrl] = useState<string | null>(null);
   const [authenticated, setAuthenticated] = useState(false);
   const ran = useRef(false);
 
@@ -92,6 +93,7 @@ export default function Obrigado() {
         // Boleto gerado, aguardando compensação: ainda não é uma compra paga.
         if (data.pending) {
           setEmail(data.email ?? authSession?.user.email ?? "");
+          setVoucherUrl(typeof data.voucherUrl === "string" ? data.voucherUrl : null);
           setStatus("pending");
           return;
         }
@@ -335,7 +337,7 @@ export default function Obrigado() {
                 <p className="text-muted-foreground mt-3 text-sm max-w-md mx-auto leading-relaxed">
                   O boleto vence em 3 dias. Depois do pagamento, o banco leva até 3 dias úteis para
                   confirmar, e o seu plano anual é liberado automaticamente.
-                  {email ? <> Enviamos o boleto para <strong className="text-foreground">{email}</strong>.</> : null}
+                  {email ? <> A liberação vai para a conta com o e-mail <strong className="text-foreground">{email}</strong>.</> : null}
                 </p>
                 {!authenticated && (
                   <p className="text-muted-foreground mt-3 text-sm max-w-md mx-auto leading-relaxed">
@@ -345,8 +347,16 @@ export default function Obrigado() {
                 )}
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
+                {voucherUrl && (
+                  <Button asChild className="flex-1 h-12 shadow-md">
+                    <a href={voucherUrl} target="_blank" rel="noopener noreferrer">
+                      Ver e pagar o boleto
+                    </a>
+                  </Button>
+                )}
                 <Button
-                  className="flex-1 h-12 shadow-md"
+                  variant={voucherUrl ? "outline" : "default"}
+                  className="flex-1 h-12"
                   onClick={() => navigate(authenticated ? "/dashboard" : "/auth")}
                 >
                   {authenticated ? "Ir para minha estação" : "Criar minha conta"}
