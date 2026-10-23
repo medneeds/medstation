@@ -175,9 +175,9 @@ describe("métricas de recuperação", () => {
     expect(recovery).toContain("if (!initiated) return null;");
   });
 
-  it("receita avulsa não entra no MRR", () => {
+  it("recuperação de compras avulsas não soma MRR", () => {
+    // O painel de faturamento conta compras avulsas pagas (ver admin-one-time-billing.test.ts).
     expect(recovery).toContain("nunca entra no MRR");
-    expect(adminList).not.toContain("stripe_one_time_purchases");
   });
 
   it("endpoint é admin-only", () => {
