@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { summarizeOneTime, type OneTimePurchaseRow } from "./one-time.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -214,13 +215,42 @@ serve(async (req) => {
       pageNum++;
     }
 
-    const [courtesyRes, rolesRes, profilesRes, accessRes, policyRes] = await Promise.all([
+    const [courtesyRes, rolesRes, profilesRes, accessRes, policyRes, purchasesRes] = await Promise.all([
       supabaseAdmin.from("courtesy_access").select("*"),
       supabaseAdmin.from("user_roles").select("user_id, role"),
       supabaseAdmin.from("profiles").select("id, full_name, specialty, crm, crm_state, phone"),
       supabaseAdmin.from("user_access").select("user_id, trial_started_at, trial_ends_at, trial_source"),
       supabaseAdmin.from("commercial_policy").select("legacy_full_access_until").eq("id", "medstation_unified_2026").maybeSingle(),
+      supabaseAdmin
+        .from("stripe_one_time_purchases")
+        .select("user_id, email, stripe_customer_id, amount_cents, currency, access_period, paid_at, access_end")
+        .eq("status", "paid")
+        .gt("access_end", new Date().toISOString()),
     ]);
+
+    // Compras avulsas vigentes (anual e Pix 30 dias), ligadas por conta, e-mail ou cliente Stripe.
+    const purchases = (purchasesRes.data || []) as OneTimePurchaseRow[];
+    const purchaseKey = (p: OneTimePurchaseRow) =>
+      p.user_id ? `u:${p.user_id}` : p.email ? `e:${p.email.toLowerCase()}` : p.stripe_customer_id ? `c:${p.stripe_customer_id}` : null;
+    const usedPurchaseKeys = new Set<string>();
+    const purchasesFor = (u: any | null, customer: any | null): OneTimePurchaseRow[] => {
+      const keys = new Set<string>();
+      if (u?.id) keys.add(`u:${u.id}`);
+      const email = (u?.email || customer?.email || "").toLowerCase();
+      if (email) keys.add(`e:${email}`);
+      if (customer?.id) keys.add(`c:${customer.id}`);
+      const rows = purchases.filter((p) => {
+        if (p.user_id && u?.id && p.user_id === u.id) return true;
+        if (p.email && email && p.email.toLowerCase() === email) return true;
+        if (p.stripe_customer_id && customer?.id && p.stripe_customer_id === customer.id) return true;
+        return false;
+      });
+      for (const p of rows) {
+        const k = purchaseKey(p);
+        if (k) usedPurchaseKeys.add(k);
+      }
+      return rows;
+    };
 
     const courtesyMap = new Map((courtesyRes.data || []).map((c: any) => [c.user_id, c]));
     const rolesMap = new Map<string, string[]>();
@@ -237,6 +267,19 @@ serve(async (req) => {
     const buildRecord = (u: any | null, customer: any | null) => {
       const subs = customer ? subscriptionsByCustomer.get(customer.id) : undefined;
       const stripe = summarize(subs);
+      const oneTime = summarizeOneTime(purchasesFor(u, customer));
+      let billingType: "subscription" | "one_time" | null = PAYING_STATUSES.has(stripe.status) ? "subscription" : null;
+      if (oneTime && !PAYING_STATUSES.has(stripe.status)) {
+        // Pagamento único vigente conta como pagante ativo, com o anual dividido por 12.
+        stripe.status = "active";
+        stripe.interval = oneTime.interval;
+        stripe.monthlyAmountCents = oneTime.monthlyAmountCents;
+        stripe.currency = oneTime.currency || stripe.currency;
+        stripe.endDate = oneTime.endDate;
+        stripe.currentSubCreated = oneTime.startedAt;
+        stripe.productIds = [CURRENT_UNIFIED_PRODUCT_ID];
+        billingType = "one_time";
+      }
       const courtesy = u ? courtesyMap.get(u.id) : null;
       const courtesyActive = courtesy && (!courtesy.expires_at || new Date(courtesy.expires_at) > new Date());
       const roles = u ? (rolesMap.get(u.id) || []) : [];
@@ -285,7 +328,10 @@ serve(async (req) => {
         stripe_customer_id: customer?.id || null,
         stripe_status: stripe.status,
         stripe_product_ids: stripe.productIds,
-        plan_label: planLabel(stripe.productIds, stripe.interval),
+        plan_label: billingType === "one_time"
+          ? `${PRODUCT_LABELS[CURRENT_UNIFIED_PRODUCT_ID]} · ${stripe.interval === "year" ? "anual" : "Pix 30 dias"} (pagamento único)`
+          : planLabel(stripe.productIds, stripe.interval),
+        billing_type: billingType,
         subscription_end: stripe.endDate,
         subscription_created: stripe.currentSubCreated,
         monthly_amount_cents: stripe.monthlyAmountCents,
@@ -325,6 +371,18 @@ serve(async (req) => {
       if (seenCustomerIds.has(cid) || !subs?.length) continue;
       const customer = customersById.get(cid);
       if (customer) records.push(buildRecord(null, customer));
+    }
+
+    // Compras pagas sem conta na MedStation nem cliente já listado.
+    const orphanGroups = new Map<string, OneTimePurchaseRow>();
+    for (const p of purchases) {
+      const k = purchaseKey(p);
+      if (!k || usedPurchaseKeys.has(k) || orphanGroups.has(k)) continue;
+      orphanGroups.set(k, p);
+    }
+    for (const p of orphanGroups.values()) {
+      const customer = (p.stripe_customer_id && customersById.get(p.stripe_customer_id)) || { id: p.stripe_customer_id, email: p.email };
+      records.push(buildRecord(null, customer));
     }
 
     const payingStatuses = new Set(["active", "trialing", "past_due"]);
