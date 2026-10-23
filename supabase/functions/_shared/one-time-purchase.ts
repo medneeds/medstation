@@ -102,6 +102,18 @@ export type OneTimeLineItem =
     };
 
 /**
+ * Lê o Price one-time dedicado do plano. Planos sem env (Pix mensal) retornam
+ * null sem consultar o ambiente: Deno.env.get("") lança "Key is an empty string".
+ */
+export function oneTimePriceIdFromEnv(
+  plan: OneTimePlan,
+  getEnv: (key: string) => string | undefined,
+): string | null {
+  if (!plan.priceEnvVar) return null;
+  return getEnv(plan.priceEnvVar) ?? null;
+}
+
+/**
  * Usa um Price one-time configurado por env quando existir (preferido, mantém
  * relatórios do Stripe limpos). Sem env, cai para price_data one-time sobre o
  * produto existente — nunca cria produtos novos.

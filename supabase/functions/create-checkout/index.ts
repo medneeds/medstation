@@ -8,6 +8,7 @@ import {
   isPixUnavailableError,
   MONTHLY_PIX_PLAN_SLUG,
   oneTimePaymentMethodTypes,
+  oneTimePriceIdFromEnv,
 } from "../_shared/one-time-purchase.ts";
 import { recordPurchaseAttempt } from "../_shared/purchase-attempts.ts";
 
@@ -151,7 +152,7 @@ serve(async (req) => {
       ? {
         customer: reusableCustomerId,
         customer_email: reusableCustomerId ? undefined : user.email,
-        line_items: [buildOneTimeLineItem(oneTimePlan, Deno.env.get(oneTimePlan.priceEnvVar))] as
+        line_items: [buildOneTimeLineItem(oneTimePlan, oneTimePriceIdFromEnv(oneTimePlan, (k) => Deno.env.get(k)))] as
           Stripe.Checkout.SessionCreateParams.LineItem[],
         mode: "payment",
         currency: oneTimePlan.currency,
