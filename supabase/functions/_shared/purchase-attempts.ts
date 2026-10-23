@@ -44,7 +44,7 @@ export async function recordPurchaseAttempt(input: AttemptInput): Promise<boolea
       payment_category: input.plan.category,
       access_period: input.plan.accessPeriod,
       payment_method: input.paymentMethodTypes.length === 1
-        ? (input.paymentMethodTypes[0] === "pix" ? "pix" : "card")
+        ? normalizePaymentMethod(input.paymentMethodTypes[0])
         : "unknown",
       recovery_status: "not_needed",
       acquisition_source: m.acquisition ?? null,

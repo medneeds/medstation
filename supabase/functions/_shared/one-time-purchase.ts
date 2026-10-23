@@ -264,6 +264,7 @@ export function normalizePaymentMethod(value: unknown): PaymentMethod {
   if (typeof raw !== "string") return "unknown";
   const lower = raw.toLowerCase();
   if (lower === "pix") return "pix";
+  if (lower === "boleto") return "boleto";
   if (lower === "card") return "card";
   return "unknown";
 }
