@@ -40,6 +40,14 @@ async function attachUserToSubscription(
   });
 }
 
+/** Link do boleto (página do Stripe com código de barras e PDF). */
+function boletoVoucherUrl(intent: unknown): string | null {
+  if (!intent || typeof intent !== "object") return null;
+  const next = (intent as { next_action?: { boleto_display_details?: { hosted_voucher_url?: string } } })
+    .next_action;
+  return next?.boleto_display_details?.hosted_voucher_url ?? null;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -57,8 +65,28 @@ serve(async (req) => {
     });
 
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ["customer", "subscription"],
+      expand: ["customer", "subscription", "payment_intent"],
     });
+
+    const email = session.customer_email
+      || session.customer_details?.email
+      || (session.customer as { email?: string } | null)?.email;
+
+    // Boleto gerado e ainda não compensado: nada é liberado aqui. O acesso
+    // nasce no webhook (async_payment_succeeded) quando o banco confirmar.
+    if (session.status === "complete" && session.payment_status === "unpaid" && session.mode === "payment") {
+      logStep("Async payment pending", { sessionId, email: email ? maskEmail(email) : null });
+      return new Response(
+        JSON.stringify({
+          success: true,
+          pending: true,
+          email: email ?? null,
+          voucherUrl: boletoVoucherUrl(session.payment_intent),
+          plan: session.metadata?.plan ?? null,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+      );
+    }
 
     const paymentOk =
       session.payment_status === "paid" || session.payment_status === "no_payment_required";
@@ -66,7 +94,6 @@ serve(async (req) => {
       throw new Error("Pagamento não foi concluído");
     }
 
-    const email = session.customer_email || (session.customer as { email?: string } | null)?.email;
     if (!email) throw new Error("Email não encontrado na sessão");
 
     const supabaseAdmin = createClient(

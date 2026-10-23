@@ -1,6 +1,7 @@
 // Catálogo único de compras avulsas (one-time) da MedStation.
 // Mensal no cartão continua sendo ASSINATURA RECORRENTE e não passa por aqui.
-// Aqui vivem: Pix mensal (30 dias, sem renovação) e Anual à vista (12 meses).
+// Aqui vivem: Anual à vista (12 meses, cartão ou boleto) e o Pix mensal
+// (30 dias) — este último fora da vitrine: o Pix foi retirado das opções.
 
 export type PaymentCategory =
   | "recurring_card_monthly"
@@ -8,7 +9,12 @@ export type PaymentCategory =
   | "annual_one_time";
 
 export type AccessPeriod = "monthly_30d" | "annual_12m";
-export type PaymentMethod = "card" | "pix" | "unknown";
+export type PaymentMethod = "card" | "pix" | "boleto" | "unknown";
+
+/** Formas de pagamento assíncronas: o Stripe só confirma dias depois. */
+export const ASYNC_PAYMENT_METHODS = ["pix", "boleto"] as const;
+/** Prazo de vencimento do boleto, em dias corridos. */
+export const BOLETO_EXPIRES_AFTER_DAYS = 3;
 export type CheckoutStatus = "started" | "completed" | "expired";
 export type PurchaseStatus = "pending" | "paid" | "failed" | "expired";
 export type RecoveryStatus = "not_needed" | "eligible" | "contacted" | "recovered" | "dismissed";
@@ -33,6 +39,8 @@ export type OneTimePlan = {
   accessDays: number;
   /** Pix mensal é experimento Pix-first: não cai para cartão silenciosamente. */
   allowCardFallback: boolean;
+  /** false = fora das opções de compra; o checkout recusa o plano. */
+  offered: boolean;
   paymentMethodTypes: string[];
   /** Env var opcional com um Price one-time dedicado. */
   priceEnvVar: string;
@@ -50,7 +58,8 @@ export const ONE_TIME_PLANS: Record<string, OneTimePlan> = {
     accessPeriod: "annual_12m",
     accessDays: 365,
     allowCardFallback: true,
-    paymentMethodTypes: ["card", "pix"],
+    offered: true,
+    paymentMethodTypes: ["card", "boleto"],
     priceEnvVar: "STRIPE_ANNUAL_ONETIME_PRICE_ID",
     label: "MedStation Completo — 12 meses à vista",
   },
@@ -64,6 +73,8 @@ export const ONE_TIME_PLANS: Record<string, OneTimePlan> = {
     accessPeriod: "monthly_30d",
     accessDays: 30,
     allowCardFallback: false,
+    // Pix retirado das opções de pagamento: o plano fica só para histórico.
+    offered: false,
     paymentMethodTypes: ["pix"],
     // Decisão: Pix mensal usa SEMPRE price_data (5990 BRL). Um Price dedicado
     // legado de 4990 causaria divergência silenciosa de valor, então nenhum
@@ -135,21 +146,52 @@ export function buildOneTimeLineItem(
   };
 }
 
-export function oneTimePaymentMethodTypes(plan: OneTimePlan, pixEnabled: boolean): string[] {
-  if (pixEnabled) return [...plan.paymentMethodTypes];
+/**
+ * Formas de pagamento da sessão. Sem as assíncronas (Pix/boleto ainda não
+ * ativados na conta Stripe), planos com fallback seguem só no cartão.
+ */
+export function oneTimePaymentMethodTypes(plan: OneTimePlan, asyncEnabled: boolean): string[] {
+  if (asyncEnabled) return [...plan.paymentMethodTypes];
   if (!plan.allowCardFallback) return [];
-  return plan.paymentMethodTypes.filter((m) => m !== "pix");
+  return plan.paymentMethodTypes.filter(
+    (m) => !(ASYNC_PAYMENT_METHODS as readonly string[]).includes(m),
+  );
 }
 
-export function isPixUnavailableError(message: string): boolean {
-  const lower = message.toLowerCase();
-  return lower.includes("pix") && (
+/** Opções do Stripe Checkout para os métodos assíncronos presentes. */
+export function oneTimePaymentMethodOptions(methods: string[]): Record<string, unknown> | undefined {
+  if (!methods.includes("boleto")) return undefined;
+  return { boleto: { expires_after_days: BOLETO_EXPIRES_AFTER_DAYS } };
+}
+
+function mentionsUnavailable(lower: string): boolean {
+  return (
     lower.includes("invalid") ||
     lower.includes("not activated") ||
     lower.includes("not available") ||
     lower.includes("not enabled") ||
     lower.includes("does not support")
   );
+}
+
+export function isPixUnavailableError(message: string): boolean {
+  const lower = message.toLowerCase();
+  return lower.includes("pix") && mentionsUnavailable(lower);
+}
+
+export function isBoletoUnavailableError(message: string): boolean {
+  const lower = message.toLowerCase();
+  return lower.includes("boleto") && mentionsUnavailable(lower);
+}
+
+/** Pix ou boleto recusados pela conta Stripe (forma de pagamento não ativada). */
+export function isAsyncMethodUnavailableError(message: string): boolean {
+  return isPixUnavailableError(message) || isBoletoUnavailableError(message);
+}
+
+/** Plano avulso que ainda pode ser vendido (o Pix mensal saiu da vitrine). */
+export function isOfferedOneTimePlan(plan: string | undefined | null): boolean {
+  return getOneTimePlan(plan)?.offered === true;
 }
 
 export type MinimalCheckoutSession = {
@@ -222,6 +264,7 @@ export function normalizePaymentMethod(value: unknown): PaymentMethod {
   if (typeof raw !== "string") return "unknown";
   const lower = raw.toLowerCase();
   if (lower === "pix") return "pix";
+  if (lower === "boleto") return "boleto";
   if (lower === "card") return "card";
   return "unknown";
 }

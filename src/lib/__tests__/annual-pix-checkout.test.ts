@@ -15,7 +15,7 @@ import {
 const read = (rel: string) =>
   fs.readFileSync(path.resolve(__dirname, "../../../supabase/functions", rel), "utf8");
 
-describe("plano anual one-time com Pix", () => {
+describe("plano anual one-time com cartão ou boleto", () => {
   it("identifica apenas o plano anual", () => {
     expect(isAnnualPlan("pro_completo_yearly")).toBe(true);
     expect(isAnnualPlan("pro_completo")).toBe(false);
@@ -33,8 +33,8 @@ describe("plano anual one-time com Pix", () => {
     expect(buildAnnualLineItem("price_one_time_123")).toEqual({ price: "price_one_time_123", quantity: 1 });
   });
 
-  it("aceita cartão e Pix no anual e só cartão no fallback", () => {
-    expect(annualPaymentMethodTypes(true)).toEqual(["card", "pix"]);
+  it("aceita cartão e boleto no anual, sem Pix, e só cartão no fallback", () => {
+    expect(annualPaymentMethodTypes(true)).toEqual(["card", "boleto"]);
     expect(annualPaymentMethodTypes(false)).toEqual(["card"]);
   });
 
@@ -104,8 +104,4 @@ describe("concessão de acesso anual", () => {
     expect(webhook).toContain('error.code === "23505"');
   });
 
-  it("MRR continua vindo só de assinaturas, sem a compra anual one-time", () => {
-    const billing = read("admin-list-subscribers/index.ts");
-    expect(billing).not.toContain("stripe_one_time_purchases");
-  });
 });

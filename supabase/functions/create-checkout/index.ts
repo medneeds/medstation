@@ -5,8 +5,10 @@ import {
   buildOneTimeLineItem,
   getOneTimePlan,
   isAnnualPlan,
-  isPixUnavailableError,
+  isAsyncMethodUnavailableError,
+  isOfferedOneTimePlan,
   MONTHLY_PIX_PLAN_SLUG,
+  oneTimePaymentMethodOptions,
   oneTimePaymentMethodTypes,
   oneTimePriceIdFromEnv,
 } from "../_shared/one-time-purchase.ts";
@@ -95,6 +97,17 @@ serve(async (req) => {
       );
     }
 
+    // Pix retirado das opções: o plano Pix mensal não é mais vendido.
+    if (getOneTimePlan(plan) && !isOfferedOneTimePlan(plan)) {
+      return new Response(
+        JSON.stringify({
+          error: "O pagamento via Pix não está mais disponível. Assine no cartão ou escolha o plano anual no cartão ou boleto.",
+          code: "PAYMENT_OPTION_RETIRED",
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     logStep("Unified plan resolved", { plan, coupon: Boolean(couponCode) });
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
@@ -158,6 +171,8 @@ serve(async (req) => {
         currency: oneTimePlan.currency,
         payment_method_types: oneTimePaymentMethodTypes(oneTimePlan, true) as
           Stripe.Checkout.SessionCreateParams.PaymentMethodType[],
+        payment_method_options: oneTimePaymentMethodOptions(oneTimePaymentMethodTypes(oneTimePlan, true)) as
+          Stripe.Checkout.SessionCreateParams.PaymentMethodOptions | undefined,
         success_url: `${origin}/obrigado?success=true&plan=${plan}&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/pricing?canceled=true`,
         billing_address_collection: "auto",
@@ -185,7 +200,7 @@ serve(async (req) => {
       session = await stripe.checkout.sessions.create(sessionConfig);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      if (oneTimePlan && isPixUnavailableError(message)) {
+      if (oneTimePlan && isAsyncMethodUnavailableError(message)) {
         if (!oneTimePlan.allowCardFallback) {
           // Pix mensal é Pix-first: não vira cartão silenciosamente.
           logStep("PIX_UNAVAILABLE_NO_FALLBACK", { plan });
@@ -197,10 +212,11 @@ serve(async (req) => {
             { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } },
           );
         }
-        // Pix ainda não habilitado nesta conta Stripe: no anual seguimos só com cartão.
-        logStep("PIX_UNAVAILABLE_FALLBACK_CARD", { plan });
+        // Boleto/Pix ainda não ativado na conta Stripe: no anual seguimos só com cartão.
+        logStep("ASYNC_METHOD_UNAVAILABLE_FALLBACK_CARD", { plan, message });
         sessionConfig.payment_method_types = oneTimePaymentMethodTypes(oneTimePlan, false) as
           Stripe.Checkout.SessionCreateParams.PaymentMethodType[];
+        delete sessionConfig.payment_method_options;
         session = await stripe.checkout.sessions.create(sessionConfig);
       } else {
         throw error;

@@ -4,8 +4,10 @@ import {
   buildOneTimeLineItem,
   getOneTimePlan,
   isAnnualPlan,
-  isPixUnavailableError,
+  isAsyncMethodUnavailableError,
+  isOfferedOneTimePlan,
   MONTHLY_PIX_PLAN_SLUG,
+  oneTimePaymentMethodOptions,
   oneTimePaymentMethodTypes,
   oneTimePriceIdFromEnv,
 } from "../_shared/one-time-purchase.ts";
@@ -46,6 +48,17 @@ serve(async (req) => {
         JSON.stringify({
           error: "Este plano legado não está mais disponível para novas contratações. Escolha o plano único MedStation Completo.",
           code: "LEGACY_PLAN_RETIRED",
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // Pix retirado das opções: o plano Pix mensal não é mais vendido.
+    if (getOneTimePlan(plan) && !isOfferedOneTimePlan(plan)) {
+      return new Response(
+        JSON.stringify({
+          error: "O pagamento via Pix não está mais disponível. Assine no cartão ou escolha o plano anual no cartão ou boleto.",
+          code: "PAYMENT_OPTION_RETIRED",
         }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
@@ -114,6 +127,8 @@ serve(async (req) => {
         currency: oneTimePlan.currency,
         payment_method_types: oneTimePaymentMethodTypes(oneTimePlan, true) as
           Stripe.Checkout.SessionCreateParams.PaymentMethodType[],
+        payment_method_options: oneTimePaymentMethodOptions(oneTimePaymentMethodTypes(oneTimePlan, true)) as
+          Stripe.Checkout.SessionCreateParams.PaymentMethodOptions | undefined,
         success_url: `${origin}/obrigado?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/?canceled=true`,
         billing_address_collection: "auto",
@@ -142,7 +157,7 @@ serve(async (req) => {
       session = await stripe.checkout.sessions.create(sessionConfig);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      if (oneTimePlan && isPixUnavailableError(message)) {
+      if (oneTimePlan && isAsyncMethodUnavailableError(message)) {
         if (!oneTimePlan.allowCardFallback) {
           logStep("PIX_UNAVAILABLE_NO_FALLBACK", { plan });
           return new Response(
@@ -153,9 +168,10 @@ serve(async (req) => {
             { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } },
           );
         }
-        logStep("PIX_UNAVAILABLE_FALLBACK_CARD", { plan });
+        logStep("ASYNC_METHOD_UNAVAILABLE_FALLBACK_CARD", { plan, message });
         sessionConfig.payment_method_types = oneTimePaymentMethodTypes(oneTimePlan, false) as
           Stripe.Checkout.SessionCreateParams.PaymentMethodType[];
+        delete sessionConfig.payment_method_options;
         session = await stripe.checkout.sessions.create(sessionConfig);
       } else {
         throw error;

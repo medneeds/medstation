@@ -16,12 +16,13 @@ import {
   ClipboardList,
   ShieldCheck,
   HeartHandshake,
+  Receipt,
 } from "lucide-react";
 import { LogoMark } from "@/components/LogoMark";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 
-type Status = "processing" | "confirmed" | "login" | "set-password" | "error" | "idle";
+type Status = "processing" | "confirmed" | "pending" | "login" | "set-password" | "error" | "idle";
 
 const NEXT_STEPS = [
   {
@@ -56,6 +57,7 @@ export default function Obrigado() {
   const [userExists, setUserExists] = useState(false);
   const [message, setMessage] = useState("");
   const [resetSent, setResetSent] = useState(false);
+  const [voucherUrl, setVoucherUrl] = useState<string | null>(null);
   const [authenticated, setAuthenticated] = useState(false);
   const ran = useRef(false);
 
@@ -87,6 +89,14 @@ export default function Obrigado() {
         });
         if (error) throw error;
         if (!data?.success) throw new Error(data?.error || "Erro ao processar pagamento");
+
+        // Boleto gerado, aguardando compensação: ainda não é uma compra paga.
+        if (data.pending) {
+          setEmail(data.email ?? authSession?.user.email ?? "");
+          setVoucherUrl(typeof data.voucherUrl === "string" ? data.voucherUrl : null);
+          setStatus("pending");
+          return;
+        }
 
         trackPurchaseConversion({
           transactionId: sessionId,
@@ -312,6 +322,46 @@ export default function Obrigado() {
                     Suporte direto pelo Concierge dentro da plataforma sempre que precisar.
                   </p>
                 </div>
+              </div>
+            </motion.div>
+          )}
+
+          {status === "pending" && (
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 text-center">
+              <div className="inline-flex w-14 h-14 rounded-full bg-primary/10 border border-primary/30 items-center justify-center">
+                <Receipt className="w-7 h-7 text-primary" strokeWidth={1.7} />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-primary font-medium">Boleto gerado</p>
+                <h1 className="text-2xl md:text-3xl font-semibold tracking-tight mt-2">Falta só pagar o boleto</h1>
+                <p className="text-muted-foreground mt-3 text-sm max-w-md mx-auto leading-relaxed">
+                  O boleto vence em 3 dias. Depois do pagamento, o banco leva até 3 dias úteis para
+                  confirmar, e o seu plano anual é liberado automaticamente.
+                  {email ? <> A liberação vai para a conta com o e-mail <strong className="text-foreground">{email}</strong>.</> : null}
+                </p>
+                {!authenticated && (
+                  <p className="text-muted-foreground mt-3 text-sm max-w-md mx-auto leading-relaxed">
+                    Ainda não tem conta? Crie a sua com este mesmo e-mail e use os 7 dias de teste
+                    enquanto o pagamento é confirmado.
+                  </p>
+                )}
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                {voucherUrl && (
+                  <Button asChild className="flex-1 h-12 shadow-md">
+                    <a href={voucherUrl} target="_blank" rel="noopener noreferrer">
+                      Ver e pagar o boleto
+                    </a>
+                  </Button>
+                )}
+                <Button
+                  variant={voucherUrl ? "outline" : "default"}
+                  className="flex-1 h-12"
+                  onClick={() => navigate(authenticated ? "/dashboard" : "/auth")}
+                >
+                  {authenticated ? "Ir para minha estação" : "Criar minha conta"}
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
               </div>
             </motion.div>
           )}

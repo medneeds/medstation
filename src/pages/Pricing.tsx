@@ -203,7 +203,7 @@ export default function Pricing() {
               </p>
               {isYearly && (
                 <p className="text-[11px] md:text-xs text-primary mt-1">
-                  Cartão ou Pix à vista.
+                  Cartão ou boleto à vista.
                 </p>
               )}
 
@@ -236,21 +236,6 @@ export default function Pricing() {
                 )}
               </Button>
 
-              {!isYearly && (
-                <div className="mt-3 text-center">
-                  <button
-                    type="button"
-                    onClick={() => startCheckout("pix_monthly_30d")}
-                    disabled={loading || (subscribed && !isTrial && !subLoading)}
-                    className="text-xs text-primary hover:underline font-mono uppercase tracking-[0.14em] disabled:opacity-50"
-                  >
-                    Pagar 1 mês via Pix — R$ 59,90
-                  </button>
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    R$ 59,90 via Pix · 30 dias de acesso, sem renovação automática.
-                  </p>
-                </div>
-              )}
 
 
               <div className="mt-4">
@@ -335,8 +320,8 @@ export default function Pricing() {
       <GuestEmailDialog
         open={dialogOpen}
         onOpenChange={(o) => { setDialogOpen(o); if (!o) setPendingPlan(null); }}
-        planLabel={pendingPlan === "pix_monthly_30d" ? "MedStation · 30 dias via Pix" : "MedStation Completo"}
-        priceLabel={pendingPlan === "pix_monthly_30d" ? "R$ 59,90 · pagamento único, sem renovação" : `${brl(price.now)}${isYearly ? "/ano" : "/mês"}`}
+        planLabel="MedStation Completo"
+        priceLabel={`${brl(price.now)}${isYearly ? "/ano · cartão ou boleto" : "/mês"}`}
         loading={loadingPlan !== null}
         onConfirm={(email) => { if (pendingPlan) runGuestCheckout(pendingPlan, email); }}
       />
