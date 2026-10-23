@@ -60,13 +60,31 @@ serve(async (req) => {
       expand: ["customer", "subscription"],
     });
 
+    const email = session.customer_email
+      || session.customer_details?.email
+      || (session.customer as { email?: string } | null)?.email;
+
+    // Boleto gerado e ainda não compensado: nada é liberado aqui. O acesso
+    // nasce no webhook (async_payment_succeeded) quando o banco confirmar.
+    if (session.status === "complete" && session.payment_status === "unpaid" && session.mode === "payment") {
+      logStep("Async payment pending", { sessionId, email: email ? maskEmail(email) : null });
+      return new Response(
+        JSON.stringify({
+          success: true,
+          pending: true,
+          email: email ?? null,
+          plan: session.metadata?.plan ?? null,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+      );
+    }
+
     const paymentOk =
       session.payment_status === "paid" || session.payment_status === "no_payment_required";
     if (session.status !== "complete" || !paymentOk) {
       throw new Error("Pagamento não foi concluído");
     }
 
-    const email = session.customer_email || (session.customer as { email?: string } | null)?.email;
     if (!email) throw new Error("Email não encontrado na sessão");
 
     const supabaseAdmin = createClient(
