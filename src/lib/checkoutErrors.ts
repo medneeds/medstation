@@ -18,6 +18,8 @@ export function messageForCheckoutError(info: CheckoutErrorInfo): string {
       return "O pagamento via Pix ainda não está disponível. Use a assinatura mensal no cartão.";
     case "EXISTING_SUBSCRIPTION":
       return "Sua conta já possui uma assinatura ativa.";
+    case "PAYMENT_OPTION_RETIRED":
+      return "O pagamento via Pix não está mais disponível. Assine no cartão ou escolha o plano anual no cartão ou boleto.";
     case "LEGACY_PLAN_RETIRED":
       return "Este plano não está mais disponível. Escolha o plano MedStation Completo.";
     default:
