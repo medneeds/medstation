@@ -1,6 +1,7 @@
 // Catálogo único de compras avulsas (one-time) da MedStation.
 // Mensal no cartão continua sendo ASSINATURA RECORRENTE e não passa por aqui.
-// Aqui vivem: Pix mensal (30 dias, sem renovação) e Anual à vista (12 meses).
+// Aqui vivem: Anual à vista (12 meses, cartão ou boleto) e o Pix mensal
+// (30 dias) — este último fora da vitrine: o Pix foi retirado das opções.
 
 export type PaymentCategory =
   | "recurring_card_monthly"
@@ -8,7 +9,12 @@ export type PaymentCategory =
   | "annual_one_time";
 
 export type AccessPeriod = "monthly_30d" | "annual_12m";
-export type PaymentMethod = "card" | "pix" | "unknown";
+export type PaymentMethod = "card" | "pix" | "boleto" | "unknown";
+
+/** Formas de pagamento assíncronas: o Stripe só confirma dias depois. */
+export const ASYNC_PAYMENT_METHODS = ["pix", "boleto"] as const;
+/** Prazo de vencimento do boleto, em dias corridos. */
+export const BOLETO_EXPIRES_AFTER_DAYS = 3;
 export type CheckoutStatus = "started" | "completed" | "expired";
 export type PurchaseStatus = "pending" | "paid" | "failed" | "expired";
 export type RecoveryStatus = "not_needed" | "eligible" | "contacted" | "recovered" | "dismissed";
