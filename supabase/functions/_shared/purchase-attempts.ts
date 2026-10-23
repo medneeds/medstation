@@ -3,7 +3,7 @@
 // Nunca concede acesso: a linha nasce como pending/started.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-import type { OneTimePlan } from "./one-time-purchase.ts";
+import { normalizePaymentMethod, type OneTimePlan } from "./one-time-purchase.ts";
 
 function serviceClient() {
   const url = Deno.env.get("SUPABASE_URL") ?? "";
