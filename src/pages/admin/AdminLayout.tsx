@@ -250,6 +250,16 @@ export function AdminLayout({ children }: { children?: ReactNode }) {
               >
                 {isDark ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}
               </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 text-destructive"
+                onClick={async () => { await supabase.auth.signOut(); navigate("/auth"); }}
+                aria-label="Sair"
+              >
+                <LogOut className="h-[18px] w-[18px] sm:mr-1.5" />
+                <span className="hidden sm:inline">Sair</span>
+              </Button>
             </div>
           </header>
           <div className="flex-1 min-w-0">
