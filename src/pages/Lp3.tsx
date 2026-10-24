@@ -64,7 +64,7 @@ const faq = [
   },
   {
     q: "Existe diferença entre planos?",
-    a: "Não. Existe um único plano com a plataforma inteira: Documentação, Copiloto e Fluxo, por R$ 49,90 por mês ou R$ 499,90 por ano.",
+    a: "Não. Existe um único plano com a plataforma inteira: Documentação, Copiloto e Fluxo. No lançamento, sai de R$ 99,90 por R$ 49,90 por mês, ou de R$ 999,90 por R$ 499,90 por ano.",
   },
   {
     q: "Serve para qualquer especialidade?",
@@ -308,12 +308,21 @@ export default function Lp3() {
                       </span>
                     ) : null}
                   </div>
-                  <div className="mt-3 flex items-baseline gap-1.5">
+                  <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>
+                      de <span className="line-through">{brl(p.list)}</span>
+                    </span>
+                    <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[0.65rem] font-semibold text-primary">
+                      {Math.round((1 - p.now / p.list) * 100)}% off
+                    </span>
+                  </div>
+                  <div className="mt-0.5 flex items-baseline gap-1.5">
+                    <span className="text-sm text-muted-foreground">por</span>
                     <span className="text-2xl font-bold text-primary">{brl(p.now)}</span>
                     <span className="text-sm text-muted-foreground">{cycle === "monthly" ? "/mês" : "/ano"}</span>
                   </div>
                   <div className="mt-1 text-xs text-muted-foreground">
-                    Valor vigente no plano único MedStation.
+                    Preço de lançamento do plano único.
                   </div>
                   <p className="mt-3 text-xs text-muted-foreground">
                     {cycle === "monthly"
@@ -331,8 +340,9 @@ export default function Lp3() {
           </div>
 
           <div className="mt-6 max-w-xl mx-auto rounded-xl border border-primary/25 bg-background px-4 py-3 text-center text-xs md:text-sm">
-            <strong className="text-primary">Preço vigente:</strong> este é o valor atual do plano único MedStation.
-            Eventuais reajustes futuros serão definidos conforme a evolução do produto e comunicados antes de qualquer mudança na cobrança.
+            <strong className="text-primary">Preço de lançamento:</strong> o valor cheio da MedStation é{" "}
+            {brl(DISPLAY_PRICING.bundle.monthly.list)}/mês ou {brl(DISPLAY_PRICING.bundle.yearly.list)}/ano.
+            Assinando agora, você paga metade e mantém esse valor enquanto a assinatura estiver ativa.
           </div>
 
           <AnnualBonusCard className="mt-6 max-w-xl mx-auto text-left" />
