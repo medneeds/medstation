@@ -91,3 +91,6 @@ verify_jwt = false
 
 [functions.admin-grant-intern-courtesy]
 verify_jwt = false
+
+[functions.arsenal-bonus-verify]
+verify_jwt = false
