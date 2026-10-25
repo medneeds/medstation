@@ -11,6 +11,13 @@
 
 export const ARSENAL_BONUS_ENDPOINT = "https://arsenalmed.com.br/api/public/medstation-bonus";
 
+/**
+ * Endereço que o site do Arsenal Med chama para confirmar a referência.
+ * POST { reference } -> { eligible: true, email, access_until } | { eligible: false }
+ */
+export const ARSENAL_VERIFY_URL =
+  "https://rwiovxyftfbkvzbepfqi.supabase.co/functions/v1/arsenal-bonus-verify";
+
 const REFERENCE_RE = /^(cs_(live|test)_[A-Za-z0-9]{10,200}|sub_[A-Za-z0-9]{10,100})$/;
 
 export function isBonusReference(value: unknown): value is string {
