@@ -4,6 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { findUserByEmail } from "../_shared/admin-users.ts";
 import { resolveSubscriptionEnd, type MinimalSubscription } from "../_shared/stripe-access.ts";
 import { sendTemplateEmailWithLog } from "../_shared/transactional-email-templates/send-and-log.ts";
+import { notifyArsenalBonus } from "../_shared/arsenal-bonus.ts";
 import {
   computeAccessWindow,
   normalizePaymentMethod,
@@ -65,9 +66,11 @@ async function resolveUserId(
 }
 
 /**
- * Bônus do plano anual (Arsenal Med). Enviado uma única vez por e-mail:
- * o próprio email_send_log serve de trava de idempotência, porque renovações
- * anuais e reentregas de evento não devem gerar um segundo envio.
+ * Bônus do plano anual (Arsenal Med).
+ * 1) Avisa o site do Arsenal Med a cada pagamento anual confirmado (renovações
+ *    estendem o prazo lá; o Arsenal Med confere a referência antes de liberar).
+ * 2) Envia o e-mail do bônus uma única vez: o email_send_log é a trava de
+ *    idempotência, porque renovações e reentregas não geram segundo envio.
  */
 async function deliverAnnualBonus(
   supabase: ReturnType<typeof serviceClient>,
@@ -76,6 +79,17 @@ async function deliverAnnualBonus(
 ) {
   if (!email) return;
   try {
+    const registered = await notifyArsenalBonus(reference);
+    if (!registered) {
+      await supabase.rpc("create_admin_notification", {
+        p_type: "sale",
+        p_title: "Bônus anual não registrado no Arsenal Med",
+        p_message: `Assinante anual: ${email}. O site do Arsenal Med não confirmou o registro; o acesso lá pode ser recusado.`,
+        p_link: "/admin/faturamento",
+        p_severity: "warning",
+      });
+    }
+
     const { data: already } = await supabase
       .from("email_send_log")
       .select("id")
@@ -91,13 +105,15 @@ async function deliverAnnualBonus(
       idempotencyKey: `arsenal-bonus-${reference}`,
     });
 
-    await supabase.rpc("create_admin_notification", {
-      p_type: "sale",
-      p_title: "Bônus anual a liberar (Arsenal Med)",
-      p_message: `Assinante anual: ${email}. Confirmar liberação no painel do Arsenal Med.`,
-      p_link: "/admin/faturamento",
-      p_severity: "info",
-    });
+    if (registered) {
+      await supabase.rpc("create_admin_notification", {
+        p_type: "sale",
+        p_title: "Bônus anual liberado (Arsenal Med)",
+        p_message: `Assinante anual: ${email}. Registrado no Arsenal Med automaticamente.`,
+        p_link: "/admin/faturamento",
+        p_severity: "info",
+      });
+    }
   } catch (error) {
     // Falha no bônus nunca pode derrubar o processamento do pagamento.
     console.error("[stripe-webhook] annual bonus delivery failed", (error as Error)?.message);

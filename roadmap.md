@@ -56,3 +56,9 @@ ARTE FINAL — CARROSSEL CLÍNICO
 - [x] Criar 6 variações verticais para feed 4:5
 - [x] Criar 6 variações para stories 9:16
 - [x] Inspecionar textos, margens e coerência do conjunto
+
+## Bônus Arsenal Med automático
+- [x] MedStation avisa o Arsenal Med e confirma a referência (função de verificação + webhook)
+- [ ] Publicar as funções (aguardando autorização)
+- [ ] Arsenal Med: receber o aviso, pedir CPF ao criar acesso, prazo de 12 meses (feito no projeto do Arsenal Med)
+- [ ] Reenviar o bônus dos 2 anuais atuais depois que o Arsenal Med estiver pronto

@@ -63,8 +63,10 @@ const ArsenalMedBonusEmail = ({
         </Section>
 
         <Text style={p}>
-          Para acessar, crie sua senha no painel do Arsenal Med usando exatamente este e-mail
-          {email ? `: ${email}` : ' (o mesmo da sua assinatura MedStation)'}.
+          Para acessar, crie sua senha no site do Arsenal Med usando exatamente este e-mail
+          {email ? `: ${email}` : ' (o mesmo da sua assinatura MedStation)'}. Tenha seu CPF em
+          mãos: ele é impresso nos seus arquivos para identificá-los como seus. O bônus fica
+          disponível durante os 12 meses do seu plano.
         </Text>
 
         <Button style={cta} href={accessUrl}>
@@ -74,8 +76,8 @@ const ArsenalMedBonusEmail = ({
         <Hr style={hr} />
 
         <Text style={small}>
-          Se o painel não encontrar seu e-mail, responda esta mensagem ou escreva para {supportEmail}.
-          Liberamos manualmente em até 1 dia útil.
+          Se o site não encontrar seu e-mail, responda esta mensagem ou escreva para {supportEmail}.
+          Resolvemos em até 1 dia útil.
         </Text>
       </Container>
     </Body>
