@@ -94,3 +94,6 @@ verify_jwt = false
 
 [functions.arsenal-bonus-verify]
 verify_jwt = false
+
+[functions.admin-resend-arsenal-bonus]
+verify_jwt = false
