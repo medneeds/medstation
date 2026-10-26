@@ -23,6 +23,8 @@ type PostHogClient = typeof import("posthog-js").default;
 let phClient: PostHogClient | null = null;
 let phLoading: Promise<PostHogClient | null> | null = null;
 const phQueue: Array<(p: PostHogClient) => void> = [];
+/** Liberado após o evento "load" da página (ver initAnalytics). */
+let phLoadAllowed = false;
 
 function loadPostHog(): Promise<PostHogClient | null> {
   if (!TOKEN || typeof window === "undefined") return Promise.resolve(null);
