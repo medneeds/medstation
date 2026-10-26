@@ -18,6 +18,8 @@ interface GoogleAuthButtonProps {
   source?: string;
   /** Computador compartilhado marcado na tela de login. */
   sharedComputer?: boolean;
+  /** Inicia o login ao montar (toque feito no topo instantâneo da landing). */
+  autoStart?: boolean;
 }
 
 export function GoogleAuthButton({
@@ -27,6 +29,7 @@ export function GoogleAuthButton({
   trackAsSignup = false,
   source = "auth",
   sharedComputer = false,
+  autoStart = false,
 }: GoogleAuthButtonProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();

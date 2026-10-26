@@ -107,6 +107,19 @@ export function LeadForm({
     }
   };
 
+  // Repete o que o visitante fez no topo instantâneo antes do app carregar.
+  useEffect(() => {
+    const { focused } = peekLandingShellEmail();
+    clearLandingShellEmail();
+    if (consumeLandingShellAction("submitted")) {
+      void handleSubmit({ preventDefault() {} } as React.FormEvent);
+    } else if (focused) {
+      emailRef.current?.focus();
+    }
+    // Só no primeiro mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div
       className={`rounded-3xl border border-border/70 bg-card/90 backdrop-blur-sm p-5 md:p-7 shadow-[0_24px_60px_-32px_hsl(var(--primary)/0.45)] ${className}`}
@@ -158,6 +171,7 @@ export function LeadForm({
               hideDivider
               trackAsSignup
               source={source}
+              autoStart={googleAutoStart}
             />
             <div className="flex items-center gap-3">
               <span className="h-px flex-1 bg-border" />
@@ -177,6 +191,7 @@ export function LeadForm({
                 E-mail
               </Label>
               <Input
+                ref={emailRef}
                 id="lead-email"
                 type="email"
                 value={email}
