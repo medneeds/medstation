@@ -25,6 +25,7 @@ const ClinicalFlowDemo = lazy(() => importClinicalFlowDemo().then(m => ({ defaul
 const LandingToolExplorer = lazy(() => importLandingToolExplorer().then(m => ({ default: m.LandingToolExplorer })));
 
 import { trackCtaClick } from "@/lib/analytics";
+import { consumeLandingShellAction } from "@/lib/landingShell";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { DISPLAY_PRICING, brl } from "@/lib/subscription-tiers";
 import { ArrowRight, Check, Quote, Star } from "lucide-react";
@@ -93,6 +94,15 @@ export default function Lp3() {
   useEffect(() => {
     const t = window.setTimeout(() => void importSubscribeNowDialog(), 2500);
     return () => window.clearTimeout(t);
+  }, []);
+
+  // Toque em "Assinar agora" no topo instantâneo (antes do app carregar).
+  useEffect(() => {
+    if (consumeLandingShellAction("subscribe")) {
+      trackCtaClick({ cta: "hero_assinar_agora", section: "lp3", destination: "dialog" });
+      setSubscribeMounted(true);
+      setSubscribeOpen(true);
+    }
   }, []);
 
 

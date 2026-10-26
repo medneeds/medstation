@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,8 @@ interface GoogleAuthButtonProps {
   source?: string;
   /** Computador compartilhado marcado na tela de login. */
   sharedComputer?: boolean;
+  /** Inicia o login ao montar (toque feito no topo instantâneo da landing). */
+  autoStart?: boolean;
 }
 
 export function GoogleAuthButton({
@@ -27,6 +29,7 @@ export function GoogleAuthButton({
   trackAsSignup = false,
   source = "auth",
   sharedComputer = false,
+  autoStart = false,
 }: GoogleAuthButtonProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -96,6 +99,12 @@ export function GoogleAuthButton({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (autoStart) void handleGoogle();
+    // Só no primeiro mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="space-y-4">
