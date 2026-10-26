@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -99,6 +99,12 @@ export function GoogleAuthButton({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (autoStart) void handleGoogle();
+    // Só no primeiro mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="space-y-4">
