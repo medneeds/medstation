@@ -150,6 +150,8 @@ interface StoredCampaign {
 declare global {
   interface Window {
     fbq?: (...args: unknown[]) => void;
+    /** Página cujo PageView do Meta já saiu do index.html no primeiro carregamento. */
+    __msInitialPixelPageView?: string;
   }
 }
 
@@ -348,7 +350,12 @@ export async function trackPageView(path: string, referrer?: string) {
   }
 
   try {
-    window.fbq?.("track", "PageView");
+    // O primeiro PageView já saiu do index.html antes do app carregar; não duplica.
+    if (window.__msInitialPixelPageView === safePath) {
+      window.__msInitialPixelPageView = undefined;
+    } else {
+      window.fbq?.("track", "PageView");
+    }
   } catch {
     /* noop */
   }
