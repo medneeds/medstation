@@ -20,7 +20,10 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <!-- Fontes fora do caminho crítico: a página pinta com a fonte do sistema e troca
+         sozinha quando as fontes chegam (não bloqueia o primeiro paint no celular). -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" /></noscript>
 
     <meta property="og:locale" content="pt_BR" />
     <meta property="og:site_name" content="MedStation" />
@@ -38,8 +41,11 @@
     <meta name="twitter:description" content="Anamnese, exame, conduta e alta prontos em segundos. Documentação, Copiloto e Fluxo em um só lugar. Teste 7 dias grátis, sem cartão." />
     <meta name="twitter:image" content="https://medstation-ai.com.br/og-image.png" />
 
-    <!-- Meta Pixel: inicializa sem configuração/eventos automáticos. PageView e
-         conversões são emitidos explicitamente pelo app, apenas nos pontos permitidos. -->
+    <!-- Meta Pixel: inicializa sem configuração/eventos automáticos. O PageView da
+         primeira tela sai daqui, sem esperar o app carregar, para que o clique do
+         anúncio conte como visita mesmo em conexão lenta. Só nas páginas públicas
+         permitidas (mesma lista de PUBLIC_ANALYTICS_PATHS em src/lib/analytics.ts);
+         as navegações seguintes e as conversões continuam saindo do app. -->
     <script>
       !function(f,b,e,v,n,t,s)
       {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -52,6 +58,14 @@
       var META_PIXEL_ID = '1120398934987866';
       fbq('set', 'autoConfig', false, META_PIXEL_ID);
       fbq('init', META_PIXEL_ID);
+      (function () {
+        var allowed = ['/', '/pricing', '/auth', '/confirmar-email', '/obrigado', '/welcome'];
+        var path = window.location.pathname.replace(/\/+$/, '') || '/';
+        if (allowed.indexOf(path) !== -1) {
+          fbq('track', 'PageView');
+          window.__msInitialPixelPageView = path;
+        }
+      })();
     </script>
     <!-- End Meta Pixel Code -->
   </head>

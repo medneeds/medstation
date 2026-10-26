@@ -1,4 +1,4 @@
-import { lazy, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Seo } from "@/components/Seo";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,9 @@ import { DISPLAY_PRICING, brl } from "@/lib/subscription-tiers";
 import { ArrowRight, Check, Quote, Star } from "lucide-react";
 import { AnnualBonusCard } from "@/components/AnnualBonusCard";
 import { ANNUAL_BONUS } from "@/lib/annualBonus";
-import { SubscribeNowDialog } from "@/components/landing/SubscribeNowDialog";
+
+const importSubscribeNowDialog = () => import("@/components/landing/SubscribeNowDialog");
+const SubscribeNowDialog = lazy(() => importSubscribeNowDialog().then(m => ({ default: m.SubscribeNowDialog })));
 
 const proof = [
   { value: "Documentação", label: "texto clínico pronto para revisão" },
@@ -83,7 +85,15 @@ const faq = [
 export default function Lp3() {
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
   const [subscribeOpen, setSubscribeOpen] = useState(false);
+  const [subscribeMounted, setSubscribeMounted] = useState(false);
   useReferralCapture();
+
+  // A janela "Assinar agora" fica fora do carregamento inicial; baixa em segundo
+  // plano logo depois, para abrir na hora quando o médico tocar no botão.
+  useEffect(() => {
+    const t = window.setTimeout(() => void importSubscribeNowDialog(), 2500);
+    return () => window.clearTimeout(t);
+  }, []);
 
 
 
@@ -169,6 +179,7 @@ export default function Lp3() {
                   className="h-12 px-6 text-base shadow-medical"
                   onClick={() => {
                     trackCtaClick({ cta: "hero_assinar_agora", section: "lp3", destination: "dialog" });
+                    setSubscribeMounted(true);
                     setSubscribeOpen(true);
                   }}
                 >
@@ -401,7 +412,11 @@ export default function Lp3() {
         <ConciergeFab />
       </DeferredIdle>
 
-      <SubscribeNowDialog open={subscribeOpen} onOpenChange={setSubscribeOpen} />
+      {subscribeMounted && (
+        <Suspense fallback={null}>
+          <SubscribeNowDialog open={subscribeOpen} onOpenChange={setSubscribeOpen} />
+        </Suspense>
+      )}
     </div>
   );
 }

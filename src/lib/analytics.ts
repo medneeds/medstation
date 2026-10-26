@@ -23,6 +23,8 @@ type PostHogClient = typeof import("posthog-js").default;
 let phClient: PostHogClient | null = null;
 let phLoading: Promise<PostHogClient | null> | null = null;
 const phQueue: Array<(p: PostHogClient) => void> = [];
+/** Liberado após o evento "load" da página (ver initAnalytics). */
+let phLoadAllowed = false;
 
 function loadPostHog(): Promise<PostHogClient | null> {
   if (!TOKEN || typeof window === "undefined") return Promise.resolve(null);
@@ -73,7 +75,7 @@ function withPostHog(fn: (p: PostHogClient) => void) {
     return;
   }
   phQueue.push(fn);
-  void loadPostHog();
+  if (phLoadAllowed) void loadPostHog();
 }
 
 const LANDING_PATHS = new Set(["/", "/pricing"]);
@@ -150,6 +152,8 @@ interface StoredCampaign {
 declare global {
   interface Window {
     fbq?: (...args: unknown[]) => void;
+    /** Página cujo PageView do Meta já saiu do index.html no primeiro carregamento. */
+    __msInitialPixelPageView?: string;
   }
 }
 
@@ -318,13 +322,19 @@ export function initAnalytics() {
 
   if (!TOKEN) return;
 
-  // Carrega o SDK fora do caminho crítico do primeiro paint.
+  // Carrega o SDK só depois que a página terminou de abrir: assim ele não disputa
+  // a conexão do celular com a primeira tela. Eventos anteriores ficam na fila.
   const w = window as Window & { requestIdleCallback?: (cb: () => void) => number };
-  if (typeof w.requestIdleCallback === "function") {
-    w.requestIdleCallback(() => void loadPostHog());
-  } else {
-    window.setTimeout(() => void loadPostHog(), 1200);
-  }
+  const start = () => {
+    phLoadAllowed = true;
+    if (typeof w.requestIdleCallback === "function") {
+      w.requestIdleCallback(() => void loadPostHog());
+    } else {
+      window.setTimeout(() => void loadPostHog(), 1200);
+    }
+  };
+  if (document.readyState === "complete") start();
+  else window.addEventListener("load", start, { once: true });
 }
 
 export async function trackPageView(path: string, referrer?: string) {
@@ -348,7 +358,12 @@ export async function trackPageView(path: string, referrer?: string) {
   }
 
   try {
-    window.fbq?.("track", "PageView");
+    // O primeiro PageView já saiu do index.html antes do app carregar; não duplica.
+    if (window.__msInitialPixelPageView === safePath) {
+      window.__msInitialPixelPageView = undefined;
+    } else {
+      window.fbq?.("track", "PageView");
+    }
   } catch {
     /* noop */
   }
