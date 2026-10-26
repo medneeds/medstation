@@ -1,4 +1,9 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+  clearLandingShellEmail,
+  consumeLandingShellAction,
+  peekLandingShellEmail,
+} from "@/lib/landingShell";
 import { ArrowRight, Loader2, MailCheck, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,9 +44,12 @@ export function LeadForm({
   className = "",
 }: LeadFormProps) {
   const { toast } = useToast();
-  const [email, setEmail] = useState("");
+  // Na landing, herda o que já foi digitado no topo instantâneo (index.html).
+  const [email, setEmail] = useState(() => peekLandingShellEmail().email);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const [googleAutoStart] = useState(() => consumeLandingShellAction("google"));
 
   const saveLead = async (normalizedEmail: string) => {
     // Colunas legadas NOT NULL: mantidas vazias enquanto o cadastro não as pede.
