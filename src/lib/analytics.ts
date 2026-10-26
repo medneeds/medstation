@@ -73,7 +73,7 @@ function withPostHog(fn: (p: PostHogClient) => void) {
     return;
   }
   phQueue.push(fn);
-  void loadPostHog();
+  if (phLoadAllowed) void loadPostHog();
 }
 
 const LANDING_PATHS = new Set(["/", "/pricing"]);
@@ -320,13 +320,19 @@ export function initAnalytics() {
 
   if (!TOKEN) return;
 
-  // Carrega o SDK fora do caminho crítico do primeiro paint.
+  // Carrega o SDK só depois que a página terminou de abrir: assim ele não disputa
+  // a conexão do celular com a primeira tela. Eventos anteriores ficam na fila.
   const w = window as Window & { requestIdleCallback?: (cb: () => void) => number };
-  if (typeof w.requestIdleCallback === "function") {
-    w.requestIdleCallback(() => void loadPostHog());
-  } else {
-    window.setTimeout(() => void loadPostHog(), 1200);
-  }
+  const start = () => {
+    phLoadAllowed = true;
+    if (typeof w.requestIdleCallback === "function") {
+      w.requestIdleCallback(() => void loadPostHog());
+    } else {
+      window.setTimeout(() => void loadPostHog(), 1200);
+    }
+  };
+  if (document.readyState === "complete") start();
+  else window.addEventListener("load", start, { once: true });
 }
 
 export async function trackPageView(path: string, referrer?: string) {
