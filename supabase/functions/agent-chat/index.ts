@@ -3116,7 +3116,7 @@ Regras:
           : { Authorization: `Bearer ${lovableApiKey}` }),
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(isInstitutionalUti ? {
+      body: JSON.stringify(useResponsesApi ? {
           model,
           input: messagesForAI,
           stream: true,
@@ -3146,7 +3146,7 @@ Regras:
 
     // Instrumenta stream — captura usage do chunk final e loga.
     const { teeStreamWithUsage } = await import("../_shared/ai-logger.ts");
-    const clientCompatibleStream = isInstitutionalUti
+    const clientCompatibleStream = useResponsesApi
       ? responsesToChatCompletionSSE(aiResponse.body!)
       : aiResponse.body!;
     const instrumented = teeStreamWithUsage(
