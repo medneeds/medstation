@@ -2,6 +2,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { resolveUserAccess, accessDeniedResponse } from "../_shared/access-control.ts";
 import { buildProfessorPrompt, isProfessorStyle, validateProfessorRequest } from "./professor.ts";
+import { MEDISCUSS_FIDELITY_RULES } from "./mediscuss.ts";
+import { selectAgentModel } from "./model-routing.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -3025,6 +3027,7 @@ ${contextData}`;
       if (extra.length > 0) {
         systemPrompt += `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nINSTRUÇÕES ADICIONAIS DO MÉDICO SOLICITANTE:\n${extra.join("\n")}`;
       }
+      systemPrompt += MEDISCUSS_FIDELITY_RULES;
     }
 
     // Indicador de confiança / força da recomendação (assistentes baseados em evidência)
@@ -3099,22 +3102,21 @@ Regras:
     ];
 
     // Call Lovable AI with streaming
-    const isInstitutionalUti = agentType === "clinicus" && directAHEMode && aheTemplate === "uti_evolucao_v2";
-    const model = isInstitutionalUti ? "openai/gpt-6-astra" : "google/gemini-3-flash-preview";
+    const { model, useResponsesApi } = selectAgentModel({ agentType, directAHEMode, aheTemplate });
     const startedAt = Date.now();
     const aiResponse = await fetch(
-      isInstitutionalUti
+      useResponsesApi
         ? "https://ai.gateway.lovable.dev/v1/responses"
         : "https://ai.gateway.lovable.dev/v1/chat/completions",
       {
       method: "POST",
       headers: {
-        ...(isInstitutionalUti
+        ...(useResponsesApi
           ? { "Lovable-API-Key": lovableApiKey, "X-Lovable-AIG-SDK": "fetch" }
           : { Authorization: `Bearer ${lovableApiKey}` }),
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(isInstitutionalUti ? {
+      body: JSON.stringify(useResponsesApi ? {
           model,
           input: messagesForAI,
           stream: true,
@@ -3144,7 +3146,7 @@ Regras:
 
     // Instrumenta stream — captura usage do chunk final e loga.
     const { teeStreamWithUsage } = await import("../_shared/ai-logger.ts");
-    const clientCompatibleStream = isInstitutionalUti
+    const clientCompatibleStream = useResponsesApi
       ? responsesToChatCompletionSSE(aiResponse.body!)
       : aiResponse.body!;
     const instrumented = teeStreamWithUsage(
