@@ -2492,17 +2492,15 @@ HISTÓRIA CLÍNICA:
 EVOLUÇÃO MÉDICA:
 (NARRATIVA CONTÍNUA E OBJETIVA DO PERÍODO, INICIADA PELO HORÁRIO QUANDO INFORMADO. PADRÃO DE ABERTURA: "PACIENTE EM DIA ___ DE UTI POR ___. NO PERÍODO, ___. MANTÉM-SE ___." — PREENCHER SOMENTE COM DADOS DA FONTE; SE ALGUM ELEMENTO NÃO CONSTAR, COMECE DIRETO PELOS FATOS. EM SEGUIDA: INTERCORRÊNCIAS, RESPOSTA ÀS CONDUTAS, MUDANÇAS DE SUPORTE, PROCEDIMENTOS, CULTURAS E AJUSTES, EM ORDEM CRONOLÓGICA; "SEM INTERCORRÊNCIAS NO PERÍODO" QUANDO INFORMADO)
 
+${UTI_PARAMETROS_BLOCK}
+
 EXAME FÍSICO:
-(FRASE DE ABERTURA COM ESTADO GERAL, NÍVEL DE CONSCIÊNCIA E PADRÃO RESPIRATÓRIO, SEGUIDA DE)
+(FRASE DE ABERTURA COM ESTADO GERAL, NÍVEL DE CONSCIÊNCIA E PADRÃO RESPIRATÓRIO QUANDO INFORMADOS, SEGUIDA DE; SEGMENTO SEM DADO: "não informado")
 ACV:
 AR:
 ABDOME:
 EXT.:
 NEURO.:
-
-SINAIS VITAIS:
-PA ___ X ___ | FC ___ | FR ___ | SPO2 ___ | TAX ___
-(SE AUSENTES: "NÃO INFORMADOS")
 
 EXAMES COMPLEMENTARES (SOMENTE OS CITADOS NO INPUT, COM DATA E HORÁRIO)
 LABORATÓRIO (DATA/HORA): NA ___ | K ___ | CR ___ | UR ___ | GLICEMIA ___ | HB ___ | HT ___ | LEUCO ___ | PLAQ ___ | OUTROS ___
@@ -2510,14 +2508,12 @@ GASOMETRIA (DATA/HORA): PH ___ | PCO2 ___ | HCO3 ___ | BE ___ | PO2 ___ | SAT __
 CULTURAS / IMAGENS / OUTROS: (DATA E ACHADO DOCUMENTADO; PENDENTES COMO "EM ANDAMENTO")
 (NÃO LIMITE "OUTROS" AOS CAMPOS DO EXEMPLO. PRESERVE TODOS OS EXAMES, FRAÇÕES, CONTAGENS, ESCALAS E RESULTADOS INFORMADOS, SEM TROCAR RÓTULO OU VALOR.)
 
-PLANO TERAPÊUTICO: AÇÃO E PRAZO/DURAÇÃO (COM GERENCIAMENTO DIÁRIO):
-(ITENS CURTOS, UM POR LINHA, REDIGIDOS EM LINGUAGEM DIRETA DE PRESCRIÇÃO DE UTI. CADA ITEM DEVE CONTER "AÇÃO: ... | PRAZO/DURAÇÃO: ...". QUANDO O PRAZO OU A DURAÇÃO NÃO TIVER SIDO INFORMADO, USE "NÃO INFORMADO"; NÃO INVENTE. EXEMPLOS DE EIXOS: FREQUÊNCIA DE SINAIS VITAIS, CURVA TÉRMICA E GLICEMIA; SUPORTE HEMODINÂMICO E VENTILATÓRIO; ANTIBIOTICOTERAPIA COM DIA DE TRATAMENTO; DIETA E APORTE NUTRICIONAL; CONTROLE GLICÊMICO E METAS; FUNÇÃO RENAL; ACOMPANHAMENTO DE ESPECIALIDADES; PROGRAMAÇÃO DE ALTA; ACOLHIMENTO E COMUNICAÇÃO COM PACIENTE E FAMÍLIA. INCLUA APENAS OS EIXOS COM DADO INFORMADO, SEM CRIAR DADOS DO PACIENTE.)
+${utiAntibioticBlock(utiRefDate)}
 
-METAS/CONDUTAS DO DIA:
-(ITENS CURTOS, UM POR LINHA, SOMENTE AS DECISÕES DO DIA)
+${UTI_CONDUTAS_BLOCK}
 
-PENDÊNCIAS E ALERTAS CLÍNICOS:
-(PRIMEIRO, LISTE TODOS OS EXAMES, PARECERES, CULTURAS, PROCEDIMENTOS E REAVALIAÇÕES EXPRESSAMENTE PENDENTES. DEPOIS, SE HOUVER UMA LACUNA OU INCONSISTÊNCIA QUE POSSA MUDAR CONDUTA OU SEGURANÇA, REGISTRE-A DE FORMA OBJETIVA. SUGESTÕES NÃO DOCUMENTADAS DEVEM COMEÇAR POR "SUGESTÃO CONDICIONAL —" E NUNCA SER APRESENTADAS COMO ORDEM JÁ PRESCRITA.)
+PENDÊNCIAS:
+(LISTE TODOS OS EXAMES, PARECERES, CULTURAS, PROCEDIMENTOS E REAVALIAÇÕES EXPRESSAMENTE PENDENTES NA FONTE. DIVERGÊNCIAS ENTRE PARTES DA FONTE ENTRAM AQUI COMO "DIVERGÊNCIA NA FONTE: ...". NÃO INCLUA SUGESTÕES.)
 
 GERENCIAMENTO DE RISCO
 (BLOCO OBRIGATÓRIO, SEMPRE COM AS OITO LINHAS, NESTA ORDEM E COM ESTES RÓTULOS)
@@ -2540,9 +2536,9 @@ REGRAS FINAIS DE FIDELIDADE
 - Não deduza melhora, piora, resolução, estabilidade, resposta terapêutica, diagnóstico, prognóstico ou meta a partir de dados isolados. Registre essas conclusões somente quando estiverem explícitas na fonte.
 - Não converta antecedente em diagnóstico ativo. Não converta hipótese em diagnóstico confirmado.
 - Não crie metas numéricas, prazos, frequências, profilaxias ou recomendações não fornecidas pelo médico.
-- No PLANO TERAPÊUTICO, preserve cada conduta expressamente informada e associe-a, quando possível, ao problema correspondente sem alterar seu sentido. Não substitua "conforme necessidade" por uma frequência nem "conforme protocolo" por dose ou duração inventada.
+- Em CONDUTAS, preserve cada conduta expressamente informada sem alterar seu sentido. Não substitua "conforme necessidade" por uma frequência nem "conforme protocolo" por dose ou duração inventada.
 - Não classifique fenitoína ou outro anticonvulsivante como profilaxia do bloco P. Esse item é reservado às profilaxias explicitamente identificadas na fonte, como tromboembolismo venoso ou lesão aguda de mucosa gástrica.
-- Antes de responder, faça uma conferência silenciosa da ordem e presença de todos os blocos, da cobertura integral dos fatos, da fidelidade dos rótulos e valores, das oito linhas do gerenciamento de risco e da ausência de marcadores antes dos títulos.
+- Antes de responder, faça uma conferência silenciosa da ordem e presença de todos os blocos, da cobertura integral dos fatos, da fidelidade dos rótulos e valores, das sete linhas dos parâmetros clínicos, das oito linhas do gerenciamento de risco e da ausência de marcadores antes dos títulos.
 
 ${contextData}`;
 
