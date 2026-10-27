@@ -3,6 +3,7 @@ import { OutputControl } from "@/components/chat/OutputControl";
 import { AssistantGlyph } from "@/components/AssistantGlyph";
 import { ProfessorControls } from "@/components/chat/ProfessorControls";
 import { OperadorActionBar, OperadorReferrals } from "@/components/chat/OperadorControls";
+import { ChatMobileMenu } from "@/components/chat/ChatMobileMenu";
 import { DEFAULT_OPERADOR_ACTION, splitOperadorReferrals } from "@/lib/operador";
 import { clinicusModeMetadata, resolveClinicusTeachingModes, restoreClinicusTeachingMode, type ProfessorStyle } from "@/lib/clinicusProfessor";
 
