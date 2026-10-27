@@ -1,5 +1,13 @@
 # Roadmap
 
+## Modo Operador
+- [x] Escopo e 4 pilares aprovados (documentos, exames, burocracia, encaminhamento)
+- [x] Menu lateral "Central de operações" com 3 subitens e barra de 13 ações
+- [x] Regras do servidor, escolha de IA por ação e atalhos para o assistente indicado; 8 testes
+- [ ] Publicar a função do chat (aguardando autorização) e testar respostas reais
+- [ ] Conferir a tela logado (bloqueado pela confirmação do aparelho por código)
+- [ ] Publicar o site somente mediante solicitação
+
 ## Clínicus · Professor clínico
 - [x] Escopo e cinco estilos aprovados pelo usuário
 - [x] Construir contexto educativo isolado de anamnese, relatório e outros assistentes
