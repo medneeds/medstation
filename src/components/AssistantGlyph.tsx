@@ -1,11 +1,13 @@
 import { cn } from "@/lib/utils";
 
-type GlyphSize = "xs" | "sm" | "md" | "lg";
+type GlyphSize = "xs" | "sm" | "md" | "orb" | "lg";
 
 const PAD: Record<GlyphSize, string> = {
   xs: "p-1",
   sm: "p-1.5 md:p-2",
   md: "p-2.5 md:p-3",
+  // Compact round orb for empty chat states (~48 px with a 24 px icon)
+  orb: "p-3 [&_svg]:h-6 [&_svg]:w-6",
   lg: "p-4 md:p-6",
 };
 
@@ -13,6 +15,7 @@ const RADIUS: Record<GlyphSize, string> = {
   xs: "rounded-[0.45rem]",
   sm: "rounded-xl",
   md: "rounded-xl",
+  orb: "rounded-full",
   lg: "rounded-full",
 };
 
