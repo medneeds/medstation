@@ -6,7 +6,7 @@ import { OperadorActionBar, OperadorReferrals } from "@/components/chat/Operador
 import { DEFAULT_OPERADOR_ACTION, splitOperadorReferrals } from "@/lib/operador";
 import { clinicusModeMetadata, resolveClinicusTeachingModes, restoreClinicusTeachingMode, type ProfessorStyle } from "@/lib/clinicusProfessor";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPortal, flushSync } from "react-dom";
 import { Button } from "@/components/ui/button";
@@ -556,6 +556,8 @@ export function AgentChat({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [inputExpanded, setInputExpanded] = useState(false);
+  // Prompts longos enviados aparecem recolhidos; ids aqui ficam abertos
+  const [expandedPrompts, setExpandedPrompts] = useState<Set<string>>(() => new Set());
   const [focusMode, setFocusMode] = useState(false);
   const [workflowMode, setWorkflowMode] = useState(false);
   const [readingMessage, setReadingMessage] = useState<Message | null>(null);
@@ -1891,12 +1893,20 @@ export function AgentChat({
     }
   };
 
+  // Desktop: o campo começa fino e cresce com o texto (os limites vêm do CSS min/max-height)
+  useLayoutEffect(() => {
+    const el = textareaRef.current;
+    if (!el || isMobile) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [message, isMobile, inputExpanded, workflowMode]);
+
   return (
     <div 
       className={
         focusMode || workflowMode
           ? "fixed inset-x-0 bottom-0 top-14 z-[60] bg-background flex flex-col p-4 md:p-6 overflow-hidden animate-fade-in"
-          : "flex flex-col h-full p-3 md:p-6"
+          : "flex flex-col h-full p-3 md:p-4"
       }
 
       onDragOver={handleDragOver}
@@ -2214,30 +2224,30 @@ export function AgentChat({
               subtitle: "Pode começar — eu cuido do resto.",
             };
             return (
-              <div className="text-center py-8 md:py-12 text-muted-foreground max-w-xl mx-auto px-4">
-                <div className="relative inline-flex items-center justify-center mb-6 animate-orb-float" style={{ willChange: "transform" }}>
+              <div className="text-center py-8 md:py-6 text-muted-foreground max-w-xl mx-auto px-4">
+                <div className="relative inline-flex items-center justify-center mb-6 md:mb-4 animate-orb-float" style={{ willChange: "transform" }}>
                   {/* Subtle expanding ring */}
                   <span className="pointer-events-none absolute inset-0 rounded-full bg-primary/15 animate-orb-ring" />
                   {/* Slow rotating conic shimmer — discreet */}
                   <span
-                    className="pointer-events-none absolute -inset-2 rounded-full opacity-40 blur-md animate-orb-spin-slow"
+                    className="pointer-events-none absolute -inset-1.5 rounded-full opacity-30 blur-md animate-orb-spin-slow"
                     style={{
                       background:
                         "conic-gradient(from 0deg, hsl(var(--primary) / 0.0), hsl(var(--primary) / 0.25), hsl(var(--primary) / 0.0), hsl(var(--primary) / 0.2), hsl(var(--primary) / 0.0))",
                     }}
                   />
                   {/* Soft outer glow */}
-                  <span className="pointer-events-none absolute -inset-3 rounded-full bg-primary/8 blur-2xl animate-orb-shimmer" />
-                  {/* Core orb with the icon, glass depth + gentle breathing */}
-                  <AssistantGlyph size="lg" className={agentColor}>
+                  <span className="pointer-events-none absolute -inset-2 rounded-full bg-primary/8 blur-xl animate-orb-shimmer" />
+                  {/* Core orb: big on mobile, compact on desktop to free room for the chat */}
+                  <AssistantGlyph size={isMobile ? "lg" : "orb"} className={agentColor}>
                     {agentIcon}
                   </AssistantGlyph>
 
                 </div>
-                <p className="text-base md:text-xl font-medium text-foreground tracking-tight">{g.title}</p>
-                <p className="text-xs md:text-sm mt-2 leading-relaxed">{g.subtitle}</p>
+                <p className="text-base md:text-lg font-medium text-foreground tracking-tight">{g.title}</p>
+                <p className="text-xs md:text-sm mt-2 md:mt-1.5 leading-relaxed">{g.subtitle}</p>
                 {!professorMode && getAgentSuggestions(agentType).length > 0 && (
-                  <div className="mt-5 flex flex-wrap justify-center gap-2">
+                  <div className="mt-5 md:mt-4 flex flex-wrap justify-center gap-2">
                     {getAgentSuggestions(agentType).map((s) => (
                       <button
                         key={s}
@@ -2285,10 +2295,10 @@ export function AgentChat({
                         ? "max-w-[96%] md:max-w-[96%]"
                         : msg.role === "assistant"
                           ? "max-w-[96%] md:max-w-[92%]"
-                          : "max-w-[90%] md:max-w-[72%]"
+                          : "max-w-[90%] md:max-w-[92%]"
                   } rounded-2xl px-3 md:px-4 relative group ${
                     msg.role === "user"
-                      ? "bg-primary text-primary-foreground py-2 md:py-3"
+                      ? "bg-primary text-primary-foreground py-2 md:py-3 md:bg-primary/[0.07] md:text-foreground md:border md:border-primary/25"
                       : isThinking
                         ? "bg-muted/60 py-2 md:py-2.5"
                         : workflowMode
@@ -2326,6 +2336,11 @@ export function AgentChat({
                     </>
                   ) : (
                     <>
+                      {msg.role === "user" && (
+                        <p className="hidden md:block text-[10px] uppercase tracking-[0.16em] text-primary/80 font-medium mb-1">
+                          Sua solicitação
+                        </p>
+                      )}
                       {msg.role === "user" && (() => {
                         const rxInfo = describeRadiologyMessage(msg.metadata);
                         const ecgInfo = describeEcgMessage(msg.metadata);
@@ -2346,20 +2361,51 @@ export function AgentChat({
                                 src={a.previewUrl}
                                 alt={a.name}
                                 loading="lazy"
-                                className="h-14 w-14 md:h-16 md:w-16 rounded-lg object-cover border border-primary-foreground/30 bg-black/20"
+                                className="h-14 w-14 md:h-16 md:w-16 rounded-lg object-cover border border-primary-foreground/30 md:border-primary/25 bg-black/20"
                               />
                             ))}
-                            <span className="inline-flex items-center gap-1 rounded-full bg-primary-foreground/15 px-2 py-0.5 text-[11px] font-medium">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-primary-foreground/15 md:bg-primary/10 md:text-primary px-2 py-0.5 text-[11px] font-medium">
                               <ChipIcon className="h-3 w-3" />
                               {label}
                             </span>
                           </div>
                         );
                       })()}
-                      <p className={`whitespace-pre-wrap leading-relaxed ${focusMode ? "text-base md:text-lg" : "text-sm"}`}>
-                        {msg.content}
-                        {isStreaming && <StreamCursor />}
-                      </p>
+                      {(() => {
+                        const isLongPrompt =
+                          msg.role === "user" &&
+                          (msg.content.split("\n").length > 18 || msg.content.length > 1400);
+                        const collapsed = isLongPrompt && !expandedPrompts.has(msg.id);
+                        return (
+                          <>
+                            <p
+                              className={`whitespace-pre-wrap leading-relaxed ${focusMode ? "text-base md:text-lg" : "text-sm"} ${
+                                collapsed ? "max-h-[18rem] overflow-hidden [mask-image:linear-gradient(to_bottom,black_70%,transparent)]" : ""
+                              }`}
+                            >
+                              {msg.content}
+                              {isStreaming && <StreamCursor />}
+                            </p>
+                            {isLongPrompt && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setExpandedPrompts((prev) => {
+                                    const next = new Set(prev);
+                                    if (next.has(msg.id)) next.delete(msg.id);
+                                    else next.add(msg.id);
+                                    return next;
+                                  })
+                                }
+                                className="mt-1 inline-flex items-center gap-1 text-xs font-medium underline-offset-2 hover:underline md:text-primary"
+                                aria-expanded={!collapsed}
+                              >
+                                {collapsed ? "Mostrar texto completo" : "Recolher"}
+                              </button>
+                            )}
+                          </>
+                        );
+                      })()}
                     </>
                   )}
 
@@ -2792,10 +2838,10 @@ export function AgentChat({
 
         {/* Barra de ajustes de saída (desktop) */}
         {!isMobile && AGENTS_WITH_CONTROLS.has(agentType) && (
-          <div className={`flex flex-nowrap gap-2 items-center mb-3 px-3 py-2.5 rounded-2xl bg-muted/35 border border-border/50 overflow-x-auto scrollbar-none ${workflowMode ? "mb-2 py-1.5" : ""}`}>
-            <span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground/70 mr-1 shrink-0">
-              Ajustes de saída
-            </span>
+          <div
+            aria-label="Ajustes de saída"
+            className="flex flex-nowrap gap-1.5 items-center mb-2 px-0.5 py-0.5 overflow-x-auto scrollbar-none [&>button]:h-7 [&>button]:px-2.5 [&>button]:text-xs"
+          >
 
             {agentType === "clinicus" && (
               <>
@@ -3004,6 +3050,7 @@ export function AgentChat({
               <>
                 <div className="w-px h-6 bg-border/70 mx-0.5 shrink-0" />
                 <OutputControl
+                  compact
                   icon={Lightbulb}
                   tone="violet"
                   label="Consultor"
@@ -3012,6 +3059,7 @@ export function AgentChat({
                   onPressedChange={(v) => setExaminusModes({ consultor: v })}
                 />
                 <OutputControl
+                  compact
                   icon={ScanLine}
                   tone="cyan"
                   label="Interpretador"
@@ -3021,6 +3069,7 @@ export function AgentChat({
                 />
                 {!examSuggestMode && !radiologyInterpretMode && (<>
                 <OutputControl
+                  compact
                   icon={SeparatorVertical}
                   tone="primary"
                   label="Separar com |"
@@ -3029,6 +3078,7 @@ export function AgentChat({
                   onPressedChange={setUsePipeSeparator}
                 />
                 <OutputControl
+                  compact
                   icon={Clock}
                   tone="primary"
                   label="Incluir horário"
@@ -3038,6 +3088,7 @@ export function AgentChat({
                 />
                 <div className="w-px h-6 bg-border/70 mx-0.5 shrink-0" />
                 <OutputControl
+                  compact
                   icon={AlertTriangle}
                   tone="amber"
                   label="Só alterados"
@@ -3046,6 +3097,7 @@ export function AgentChat({
                   onPressedChange={setOnlyAltered}
                 />
                 <OutputControl
+                  compact
                   icon={Stethoscope}
                   tone="blue"
                   label="Impressão clínica"
@@ -3054,6 +3106,7 @@ export function AgentChat({
                   onPressedChange={setClinicalImpression}
                 />
                 <OutputControl
+                  compact
                   icon={Minimize2}
                   tone="green"
                   label="Compacto"
@@ -3182,8 +3235,14 @@ export function AgentChat({
             </Button>
           </div>
         ) : (
-          /* Desktop: textarea dominante com ações flutuantes */
-          <div className="relative group">
+          /* Desktop: campo compacto que cresce com o texto, ações numa linha fina abaixo */
+          <div
+            className={`relative group rounded-2xl border-2 transition-colors duration-200 ${
+              (message.length > 0 && !message.trim()) || overLimit
+                ? "border-destructive bg-muted/25"
+                : "border-border/40 bg-muted/25 focus-within:border-primary/60 focus-within:bg-background"
+            }`}
+          >
             <Textarea
               ref={textareaRef}
               value={message}
@@ -3201,54 +3260,56 @@ export function AgentChat({
                   : placeholder}
               maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
               aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
-              className={`w-full resize-none rounded-2xl text-base leading-relaxed p-5 pb-16 bg-muted/25 border-2 transition-colors duration-200 ${
+              rows={1}
+              className={`w-full resize-none rounded-2xl border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 leading-relaxed pl-4 pr-11 pt-3 pb-1 ${
                 workflowMode
-                  ? "min-h-[72px] max-h-44 p-3.5 pb-12 text-sm"
+                  ? "min-h-[44px] max-h-44 text-sm"
                   : inputExpanded
-                    ? "min-h-[240px] max-h-[45vh]"
-                    : "min-h-[132px] max-h-64"
-              } ${
-                (message.length > 0 && !message.trim()) || overLimit
-                  ? "border-destructive focus:border-destructive"
-                  : "border-border/40 focus:border-primary/60 focus:bg-background"
+                    ? "min-h-[240px] max-h-[45vh] text-base"
+                    : "min-h-[56px] max-h-[40vh] text-base"
               }`}
               disabled={isLoading}
             />
             <button
               type="button"
               onClick={() => setInputExpanded((v) => !v)}
-              className="absolute right-3.5 top-3.5 h-7 w-7 rounded-lg inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              className="absolute right-2.5 top-2.5 h-7 w-7 rounded-lg inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
               title={inputExpanded ? "Reduzir campo" : "Expandir campo"}
               aria-label={inputExpanded ? "Reduzir campo de mensagem" : "Expandir campo de mensagem"}
             >
               {inputExpanded ? <ChevronDown className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
             </button>
-            <div className="absolute bottom-3.5 right-3.5 flex items-center gap-2">
+            <div className="flex items-center justify-between gap-2 px-2 pb-2">
+            <div className="flex items-center gap-1">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="icon"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingFile || isLoading}
-                className="h-11 w-11 shrink-0 rounded-xl bg-background/90 hover:bg-primary/10 hover:border-primary/50 transition-colors duration-200"
+                className="h-9 w-9 shrink-0 rounded-full hover:bg-primary/10 transition-colors duration-200"
                 title="Anexar foto, PDF ou documento"
+                aria-label="Anexar foto, PDF ou documento"
               >
                 {uploadingFile ? (
-                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  <Loader2 className="h-[18px] w-[18px] animate-spin text-primary" />
                 ) : (
-                  <Paperclip className="h-5 w-5 text-primary" />
+                  <Paperclip className="h-[18px] w-[18px] text-primary" />
                 )}
               </Button>
               <AgentVoiceInput
                 onTranscription={handleVoiceTranscription}
                 disabled={isLoading}
                 context={agentType}
+                compact
               />
+            </div>
+            <div className="flex items-center gap-2">
               {caseSuggestionsAvailable && (
                 <Button
                   variant="outline"
                   onClick={runCaseSuggestions}
                   disabled={isLoading || suggestionsLoading}
-                  className="h-11 px-4 rounded-xl font-medium bg-background/90 hover:bg-primary/10 hover:border-primary/50"
+                  className="h-9 px-3 rounded-xl text-sm font-medium bg-background/90 hover:bg-primary/10 hover:border-primary/50"
                   title="Analisar o caso: lacunas da história, hipóteses diagnósticas e sugestões de conduta"
                 >
                   {suggestionsLoading ? (
@@ -3267,7 +3328,7 @@ export function AgentChat({
                     <Button
                       variant="outline"
                       disabled={isLoading}
-                      className="h-11 px-4 rounded-xl font-medium bg-background/90 hover:bg-primary/10 hover:border-primary/50"
+                      className="h-9 px-3 rounded-xl text-sm font-medium bg-background/90 hover:bg-primary/10 hover:border-primary/50"
                       title="Comprimir a última resposta em resumo do caso com abreviações médicas"
                     >
                       <Shrink className="h-4 w-4 mr-1.5 text-primary" />
@@ -3294,11 +3355,11 @@ export function AgentChat({
               <Button
                 onClick={sendMessage}
                 disabled={!canSend || isLoading || overLimit}
-                className="h-11 px-7 rounded-xl font-semibold transition-[opacity,box-shadow] duration-200 hover:opacity-90 active:scale-95"
+                className="h-9 px-5 rounded-xl font-semibold transition-[opacity,box-shadow] duration-200 hover:opacity-90 active:scale-95"
                 title={!canSend ? (radiologyActive ? copy.sendEmptyTitle : "Digite uma mensagem para enviar") : radiologyActive ? copy.sendTitle : "Enviar mensagem"}
               >
                 {isLoading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <>
                     <Send className="h-3.5 w-3.5 mr-1.5" />
@@ -3306,6 +3367,7 @@ export function AgentChat({
                   </>
                 )}
               </Button>
+            </div>
             </div>
           </div>
         )}

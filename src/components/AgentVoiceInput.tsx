@@ -30,6 +30,8 @@ interface AgentVoiceInputProps {
    * false: entrega o texto completo uma única vez, ao tocar em ✓.
    */
   incremental?: boolean;
+  /** Botão menor (36 px) para a barra de entrada compacta do desktop. */
+  compact?: boolean;
 }
 
 type LiveHealth = "connecting" | "live" | "reconnecting" | "backup";
@@ -50,7 +52,8 @@ const vibrate = (pattern: number | number[]) => {
 const withTimeout = <T,>(p: Promise<T>, ms: number) =>
   Promise.race<T>([p, new Promise<T>((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
 
-export function AgentVoiceInput({ onTranscription, disabled = false, context, incremental = true }: AgentVoiceInputProps) {
+export function AgentVoiceInput({ onTranscription, disabled = false, context, incremental = true, compact = false }: AgentVoiceInputProps) {
+  const micSize = compact ? "h-9 w-9" : "h-10 w-10";
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -519,7 +522,7 @@ export function AgentVoiceInput({ onTranscription, disabled = false, context, in
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button size="icon" variant="ghost" disabled className="h-10 w-10 rounded-full opacity-50 cursor-not-allowed relative">
+            <Button size="icon" variant="ghost" disabled className={`${micSize} rounded-full opacity-50 cursor-not-allowed relative`}>
               <MicOff className="h-4 w-4" />
               <Sparkles className="h-2.5 w-2.5 absolute -top-0.5 -right-0.5 text-primary" />
             </Button>
@@ -648,7 +651,7 @@ export function AgentVoiceInput({ onTranscription, disabled = false, context, in
               disabled={isProcessing || disabled}
               aria-label={isRecording ? "Parar gravação" : isProcessing ? "Transcrevendo áudio" : "Gravar áudio"}
               aria-pressed={isRecording}
-              className={`relative h-10 w-10 rounded-full transition-all active:scale-95 ${
+              className={`relative ${micSize} rounded-full transition-all active:scale-95 ${
                 isRecording ? "shadow-lg shadow-destructive/40" : "hover:bg-primary/10 hover:text-primary"
               }`}
             >
