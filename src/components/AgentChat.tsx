@@ -3050,6 +3050,7 @@ export function AgentChat({
               <>
                 <div className="w-px h-6 bg-border/70 mx-0.5 shrink-0" />
                 <OutputControl
+                  compact
                   icon={Lightbulb}
                   tone="violet"
                   label="Consultor"
@@ -3058,6 +3059,7 @@ export function AgentChat({
                   onPressedChange={(v) => setExaminusModes({ consultor: v })}
                 />
                 <OutputControl
+                  compact
                   icon={ScanLine}
                   tone="cyan"
                   label="Interpretador"
@@ -3067,6 +3069,7 @@ export function AgentChat({
                 />
                 {!examSuggestMode && !radiologyInterpretMode && (<>
                 <OutputControl
+                  compact
                   icon={SeparatorVertical}
                   tone="primary"
                   label="Separar com |"
@@ -3075,6 +3078,7 @@ export function AgentChat({
                   onPressedChange={setUsePipeSeparator}
                 />
                 <OutputControl
+                  compact
                   icon={Clock}
                   tone="primary"
                   label="Incluir horário"
@@ -3084,6 +3088,7 @@ export function AgentChat({
                 />
                 <div className="w-px h-6 bg-border/70 mx-0.5 shrink-0" />
                 <OutputControl
+                  compact
                   icon={AlertTriangle}
                   tone="amber"
                   label="Só alterados"
@@ -3092,6 +3097,7 @@ export function AgentChat({
                   onPressedChange={setOnlyAltered}
                 />
                 <OutputControl
+                  compact
                   icon={Stethoscope}
                   tone="blue"
                   label="Impressão clínica"
@@ -3100,6 +3106,7 @@ export function AgentChat({
                   onPressedChange={setClinicalImpression}
                 />
                 <OutputControl
+                  compact
                   icon={Minimize2}
                   tone="green"
                   label="Compacto"
