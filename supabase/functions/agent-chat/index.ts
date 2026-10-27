@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { resolveUserAccess, accessDeniedResponse } from "../_shared/access-control.ts";
 import { buildProfessorPrompt, isProfessorStyle, validateProfessorRequest } from "./professor.ts";
 import { MEDISCUSS_FIDELITY_RULES } from "./mediscuss.ts";
+import { UTI_CONDUTAS_BLOCK, UTI_PARAMETROS_BLOCK, isUtiEvolucaoTemplate, utiAntibioticBlock, utiEvolucaoFidelityRules, utiReferenceDate } from "./uti-evolucao.ts";
 import { selectAgentModel } from "./model-routing.ts";
 import { buildOperadorPrompt, isOperadorAction, validateOperadorRequest } from "./operador.ts";
 
@@ -2374,12 +2375,13 @@ EQUIPE MULTIPROFISSIONAL CIENTE.
 ${contextData}`;
 
     // UTI — EVOLUÇÃO / ATUALIZAÇÃO DIÁRIA
+    const utiRefDate = utiReferenceDate();
     const utiEvolucaoPrompt = `${utiSharedRules}
 
 DOCUMENTO SOLICITADO: EVOLUÇÃO MÉDICA EM UTI ADULTO (ATUALIZAÇÃO DE PLANTÃO / DIÁRIO / REAVALIAÇÃO).
-Foco: as ÚLTIMAS 24 HORAS e o delta em relação ao dia anterior. NÃO reescrever a história admissional completa: resumir o motivo da internação em uma linha e concentrar o documento na evolução, nos parâmetros atuais e nas pendências.
+Foco: as ÚLTIMAS 24 HORAS e o delta em relação ao dia anterior. NÃO reescrever a história admissional completa: resumir o motivo da internação em uma linha e concentrar o documento na evolução, nos parâmetros atuais e nas condutas registradas.
 
-ESTRUTURA OBRIGATÓRIA (OMITA BLOCOS SEM DADOS)
+ESTRUTURA OBRIGATÓRIA (OMITA BLOCOS SEM DADOS, EXCETO PARÂMETROS CLÍNICOS, ANTIBIOTICOTERAPIA E CONDUTAS, QUE APARECEM SEMPRE)
 
 EVOLUÇÃO MÉDICA UTI ADULTO
 | DIA DE UTI:
@@ -2388,58 +2390,44 @@ EVOLUÇÃO MÉDICA UTI ADULTO
 RESUMO DO CASO (UMA A DUAS LINHAS)
 (PACIENTE EM UTI POR ___, DESDE ___)
 
+HIPÓTESES DIAGNÓSTICAS:
+(SOMENTE AS REGISTRADAS PELO MÉDICO, UMA POR LINHA; NÃO FORMULE NOVAS)
+
 EVOLUÇÃO NAS ÚLTIMAS 24 HORAS:
-(NARRATIVA CONTÍNUA E OBJETIVA: INTERCORRÊNCIAS, RESPOSTA ÀS CONDUTAS, MUDANÇAS DE SUPORTE, DESMAME OU ESCALONAMENTO, PROCEDIMENTOS, TRANSFUSÕES, CULTURAS E AJUSTES ANTIMICROBIANOS; EXPLICITAR "SEM INTERCORRÊNCIAS NO PERÍODO" QUANDO INFORMADO)
+(NARRATIVA CONTÍNUA E OBJETIVA: INTERCORRÊNCIAS, RESPOSTA ÀS CONDUTAS QUANDO INFORMADA, MUDANÇAS DE SUPORTE, DESMAME OU ESCALONAMENTO, PROCEDIMENTOS, TRANSFUSÕES E CULTURAS; "SEM INTERCORRÊNCIAS NO PERÍODO" SOMENTE QUANDO O MÉDICO INFORMAR)
 
-SUPORTES ATUAIS:
-HEMODINÂMICO: (DVA, DOSE, TENDÊNCIA DE DESMAME)
-VENTILATÓRIO: (MODO, DISPOSITIVO, PARÂMETROS)
-SEDOANALGESIA: (REGIME E ESCALA)
-RENAL / METABÓLICO: (TERAPIA DIALÍTICA, INSULINOTERAPIA)
-NUTRIÇÃO: (VIA E ACEITAÇÃO)
-
-DISPOSITIVOS / SUPORTES:
-(ACESSOS, SONDAS, CATETERES, TUBOS, DRENOS, COM DATA DE INSERÇÃO QUANDO INFORMADA)
-
-CONTROLES DAS ÚLTIMAS 24 HORAS:
-(TAX, DIURESE, BALANÇO HÍDRICO, GLICEMIAS, EVACUAÇÕES, ESCALAS)
+${UTI_PARAMETROS_BLOCK}
 
 EXAME FÍSICO ATUAL:
-(FRASE DE ABERTURA COM ESTADO GERAL, NÍVEL DE CONSCIÊNCIA E PADRÃO RESPIRATÓRIO, SEGUIDA DE)
+(FRASE DE ABERTURA COM ESTADO GERAL, NÍVEL DE CONSCIÊNCIA E PADRÃO RESPIRATÓRIO QUANDO INFORMADOS, SEGUIDA DE; SEGMENTO SEM DADO: "não informado")
 ACV:
 AR:
 ABDOME:
 EXT.:
 NEURO.:
 
-SINAIS VITAIS:
-PA ___ X ___ | FC ___ | FR ___ | SPO2 ___ | TAX ___
-(SE AUSENTES: "NÃO INFORMADOS")
-
 EXAMES COMPLEMENTARES (SOMENTE OS CITADOS NO INPUT, COM DATA E HORÁRIO)
 LABORATÓRIO (DATA/HORA): NA ___ | K ___ | CR ___ | UR ___ | GLICEMIA ___ | HB ___ | HT ___ | LEUCO ___ | PLAQ ___ | OUTROS ___
 GASOMETRIA (DATA/HORA): PH ___ | PCO2 ___ | HCO3 ___ | BE ___ | PO2 ___ | SAT ___ | LACTATO ___
 CULTURAS / IMAGENS / OUTROS: (DATA E ACHADO DOCUMENTADO; PENDENTES COMO "EM ANDAMENTO")
-(QUANDO HOUVER SÉRIE, SINALIZAR A TENDÊNCIA: EM QUEDA, EM ELEVAÇÃO OU ESTÁVEL, SEM INVENTAR VALORES)
+(TENDÊNCIA EM QUEDA, EM ELEVAÇÃO OU ESTÁVEL SOMENTE COM DOIS OU MAIS VALORES DATADOS NA FONTE)
+
+${utiAntibioticBlock(utiRefDate)}
 
 PROBLEMAS ATIVOS E STATUS:
+(SOMENTE PROBLEMAS E STATUS INFORMADOS PELO MÉDICO)
 ___ | STATUS: ATIVO / EM INVESTIGAÇÃO / CONTROLADO / RESOLVIDO.
 
-IMPRESSÃO DO PLANTÃO:
-(AVALIAÇÃO SINTÉTICA DA TRAJETÓRIA: MELHORA, ESTABILIDADE OU PIORA, SUSTENTADA PELOS DADOS ACIMA)
+IMPRESSÃO DO MÉDICO:
+(SOMENTE SE O MÉDICO TIVER REGISTRADO SUA AVALIAÇÃO DA TRAJETÓRIA; CASO CONTRÁRIO, OMITA ESTE BLOCO)
 
-PLANO PARA AS PRÓXIMAS 24 HORAS E PENDÊNCIAS:
-(ITENS CURTOS, UM POR LINHA)
-MANTER / AJUSTAR ___
-DESMAME DE ___ (SE APLICÁVEL)
-ANTIBIOTICOTERAPIA ___ (DIA DE TRATAMENTO, SE INFORMADO)
-VIGILÂNCIA ELETROLÍTICA E CONTROLE GLICÊMICO (SE APLICÁVEL)
-ACOMPANHAR EXAMES ___
-PENDÊNCIAS / AVALIAÇÃO DE ESPECIALIDADE ___
+${UTI_CONDUTAS_BLOCK}
+
+PENDÊNCIAS:
+(SOMENTE EXAMES, PARECERES, CULTURAS, PROCEDIMENTOS E REAVALIAÇÕES EXPRESSAMENTE PENDENTES NA FONTE)
 
 COMUNICAÇÃO:
-FAMÍLIA ATUALIZADA SOBRE EVOLUÇÃO, CONDUTA E EXPECTATIVAS PROGNÓSTICAS.
-EQUIPE MULTIPROFISSIONAL CIENTE.
+(SOMENTE SE INFORMADA: COM QUEM, O QUE FOI COMUNICADO; SEM DADO: "não informado")
 
 ${contextData}`;
 
@@ -2447,7 +2435,7 @@ ${contextData}`;
     const utiEvolucaoV2Prompt = `${utiSharedRules}
 
 DOCUMENTO SOLICITADO: EVOLUÇÃO MÉDICA EM UTI ADULTO — MODELO INSTITUCIONAL.
-Foco: ficha diária completa do leito, com plano terapêutico por ação e prazo, metas do dia e gerenciamento de risco.
+Foco: ficha diária completa do leito, com parâmetros clínicos fixos, controle da antibioticoterapia, condutas registradas pelo médico e gerenciamento de risco.
 
 ESTE MODELO TEM PRIORIDADE SOBRE QUALQUER ESTRUTURA GENÉRICA DO CLÍNICUS.
 Retorne exclusivamente a ficha abaixo. Não use títulos alternativos, não mude a ordem, não acrescente blocos e não transforme a ficha em anamnese, admissão ou passagem de caso.
@@ -2460,10 +2448,10 @@ Antes de redigir, execute silenciosamente três passagens:
 
 RACIOCÍNIO CLÍNICO SEGURO
 - Organize e correlacione os dados, mas diferencie fato documentado de interpretação clínica.
-- Diagnóstico confirmado exige que a fonte o declare como diagnóstico ativo/estabelecido ou traga confirmação objetiva inequívoca. Expressões "a esclarecer", "suspeita", "provável", "?", "a afastar" e exames solicitados permanecem em HIPÓTESES DIAGNÓSTICAS ou PENDÊNCIAS E ALERTAS CLÍNICOS.
+- Diagnóstico confirmado exige que a fonte o declare como diagnóstico ativo/estabelecido ou traga confirmação objetiva inequívoca. Expressões "a esclarecer", "suspeita", "provável", "?", "a afastar" e exames solicitados permanecem em HIPÓTESES DIAGNÓSTICAS ou PENDÊNCIAS.
 - Não transforme crise convulsiva em epilepsia; episódio descrito em tônico-clônico; pressão limítrofe em estabilidade hemodinâmica; agitação em risco de queda; anticonvulsivante em profilaxia geral; consolidação em pneumonia; nem qualquer associação plausível em fato documentado.
 - Preserve literalmente rótulos e valores de exames. SEG/SEGMENTADOS nunca pode virar BASTÕES. Não corrija, converta, arredonde ou reinterpretе separadores decimais.
-- Uma sugestão clinicamente pertinente que não esteja decidida na fonte nunca entra como conduta realizada, prescrição ou meta. Registre-a somente em PENDÊNCIAS E ALERTAS CLÍNICOS, iniciada por "SUGESTÃO CONDICIONAL —", seguida do dado que precisa ser confirmado. Não sugira rotinas genéricas; inclua apenas o que possa mudar conduta ou segurança neste caso.
+- Não acrescente sugestões, recomendações ou condutas que não estejam decididas na fonte. CONDUTAS refletem exclusivamente decisões registradas ou expressamente validadas pelo médico assistente.
 
 ESTILO DE REDAÇÃO
 - Narrativa contínua, organizada e técnica, em linguagem de terapia intensiva, com liberdade apenas para otimizar a linguagem médica — nunca para acrescentar fatos, doses, horários ou conclusões.
@@ -2482,13 +2470,13 @@ IDENTIFICAÇÃO CLÍNICA:
 (NOME, IDADE, SEXO, ORIGEM, LEITO E NÚMEROS ASSISTENCIAIS SOMENTE QUANDO CONSTAREM NA FONTE; OMITIR CONVÊNIO, TELEFONE, TEMPO DE PLANO E DADOS SEM UTILIDADE CLÍNICA)
 
 DIAGNÓSTICOS:
-(SOMENTE DIAGNÓSTICOS SUSTENTADOS POR DADO OBJETIVO, UM POR LINHA)
+(SOMENTE OS DIAGNÓSTICOS REGISTRADOS PELO MÉDICO COMO ESTABELECIDOS, UM POR LINHA; NÃO CRIE DIAGNÓSTICO A PARTIR DE EXAMES OU ACHADOS)
 
 PROBLEMAS ATIVOS:
 ___ | STATUS: ATIVO / EM INVESTIGAÇÃO / CONTROLADO / RESOLVIDO.
 
 HIPÓTESES DIAGNÓSTICAS:
-(SOMENTE POSSIBILIDADES AINDA EM INVESTIGAÇÃO, UM POR LINHA, COM O DADO INFORMADO QUE AS SUSTENTA; SE NÃO HOUVER, ESCREVA "DADOS INSUFICIENTES PARA FORMULAÇÃO")
+(SOMENTE AS HIPÓTESES REGISTRADAS PELO MÉDICO, UMA POR LINHA; NÃO FORMULE NOVAS. SE NÃO HOUVER, ESCREVA "NÃO INFORMADO")
 
 HPP:
 (ANTECEDENTES PESSOAIS RELEVANTES)
@@ -2505,17 +2493,15 @@ HISTÓRIA CLÍNICA:
 EVOLUÇÃO MÉDICA:
 (NARRATIVA CONTÍNUA E OBJETIVA DO PERÍODO, INICIADA PELO HORÁRIO QUANDO INFORMADO. PADRÃO DE ABERTURA: "PACIENTE EM DIA ___ DE UTI POR ___. NO PERÍODO, ___. MANTÉM-SE ___." — PREENCHER SOMENTE COM DADOS DA FONTE; SE ALGUM ELEMENTO NÃO CONSTAR, COMECE DIRETO PELOS FATOS. EM SEGUIDA: INTERCORRÊNCIAS, RESPOSTA ÀS CONDUTAS, MUDANÇAS DE SUPORTE, PROCEDIMENTOS, CULTURAS E AJUSTES, EM ORDEM CRONOLÓGICA; "SEM INTERCORRÊNCIAS NO PERÍODO" QUANDO INFORMADO)
 
+${UTI_PARAMETROS_BLOCK}
+
 EXAME FÍSICO:
-(FRASE DE ABERTURA COM ESTADO GERAL, NÍVEL DE CONSCIÊNCIA E PADRÃO RESPIRATÓRIO, SEGUIDA DE)
+(FRASE DE ABERTURA COM ESTADO GERAL, NÍVEL DE CONSCIÊNCIA E PADRÃO RESPIRATÓRIO QUANDO INFORMADOS, SEGUIDA DE; SEGMENTO SEM DADO: "não informado")
 ACV:
 AR:
 ABDOME:
 EXT.:
 NEURO.:
-
-SINAIS VITAIS:
-PA ___ X ___ | FC ___ | FR ___ | SPO2 ___ | TAX ___
-(SE AUSENTES: "NÃO INFORMADOS")
 
 EXAMES COMPLEMENTARES (SOMENTE OS CITADOS NO INPUT, COM DATA E HORÁRIO)
 LABORATÓRIO (DATA/HORA): NA ___ | K ___ | CR ___ | UR ___ | GLICEMIA ___ | HB ___ | HT ___ | LEUCO ___ | PLAQ ___ | OUTROS ___
@@ -2523,14 +2509,12 @@ GASOMETRIA (DATA/HORA): PH ___ | PCO2 ___ | HCO3 ___ | BE ___ | PO2 ___ | SAT __
 CULTURAS / IMAGENS / OUTROS: (DATA E ACHADO DOCUMENTADO; PENDENTES COMO "EM ANDAMENTO")
 (NÃO LIMITE "OUTROS" AOS CAMPOS DO EXEMPLO. PRESERVE TODOS OS EXAMES, FRAÇÕES, CONTAGENS, ESCALAS E RESULTADOS INFORMADOS, SEM TROCAR RÓTULO OU VALOR.)
 
-PLANO TERAPÊUTICO: AÇÃO E PRAZO/DURAÇÃO (COM GERENCIAMENTO DIÁRIO):
-(ITENS CURTOS, UM POR LINHA, REDIGIDOS EM LINGUAGEM DIRETA DE PRESCRIÇÃO DE UTI. CADA ITEM DEVE CONTER "AÇÃO: ... | PRAZO/DURAÇÃO: ...". QUANDO O PRAZO OU A DURAÇÃO NÃO TIVER SIDO INFORMADO, USE "NÃO INFORMADO"; NÃO INVENTE. EXEMPLOS DE EIXOS: FREQUÊNCIA DE SINAIS VITAIS, CURVA TÉRMICA E GLICEMIA; SUPORTE HEMODINÂMICO E VENTILATÓRIO; ANTIBIOTICOTERAPIA COM DIA DE TRATAMENTO; DIETA E APORTE NUTRICIONAL; CONTROLE GLICÊMICO E METAS; FUNÇÃO RENAL; ACOMPANHAMENTO DE ESPECIALIDADES; PROGRAMAÇÃO DE ALTA; ACOLHIMENTO E COMUNICAÇÃO COM PACIENTE E FAMÍLIA. INCLUA APENAS OS EIXOS COM DADO INFORMADO, SEM CRIAR DADOS DO PACIENTE.)
+${utiAntibioticBlock(utiRefDate)}
 
-METAS/CONDUTAS DO DIA:
-(ITENS CURTOS, UM POR LINHA, SOMENTE AS DECISÕES DO DIA)
+${UTI_CONDUTAS_BLOCK}
 
-PENDÊNCIAS E ALERTAS CLÍNICOS:
-(PRIMEIRO, LISTE TODOS OS EXAMES, PARECERES, CULTURAS, PROCEDIMENTOS E REAVALIAÇÕES EXPRESSAMENTE PENDENTES. DEPOIS, SE HOUVER UMA LACUNA OU INCONSISTÊNCIA QUE POSSA MUDAR CONDUTA OU SEGURANÇA, REGISTRE-A DE FORMA OBJETIVA. SUGESTÕES NÃO DOCUMENTADAS DEVEM COMEÇAR POR "SUGESTÃO CONDICIONAL —" E NUNCA SER APRESENTADAS COMO ORDEM JÁ PRESCRITA.)
+PENDÊNCIAS:
+(LISTE TODOS OS EXAMES, PARECERES, CULTURAS, PROCEDIMENTOS E REAVALIAÇÕES EXPRESSAMENTE PENDENTES NA FONTE. DIVERGÊNCIAS ENTRE PARTES DA FONTE ENTRAM AQUI COMO "DIVERGÊNCIA NA FONTE: ...". NÃO INCLUA SUGESTÕES.)
 
 GERENCIAMENTO DE RISCO
 (BLOCO OBRIGATÓRIO, SEMPRE COM AS OITO LINHAS, NESTA ORDEM E COM ESTES RÓTULOS)
@@ -2553,9 +2537,9 @@ REGRAS FINAIS DE FIDELIDADE
 - Não deduza melhora, piora, resolução, estabilidade, resposta terapêutica, diagnóstico, prognóstico ou meta a partir de dados isolados. Registre essas conclusões somente quando estiverem explícitas na fonte.
 - Não converta antecedente em diagnóstico ativo. Não converta hipótese em diagnóstico confirmado.
 - Não crie metas numéricas, prazos, frequências, profilaxias ou recomendações não fornecidas pelo médico.
-- No PLANO TERAPÊUTICO, preserve cada conduta expressamente informada e associe-a, quando possível, ao problema correspondente sem alterar seu sentido. Não substitua "conforme necessidade" por uma frequência nem "conforme protocolo" por dose ou duração inventada.
+- Em CONDUTAS, preserve cada conduta expressamente informada sem alterar seu sentido. Não substitua "conforme necessidade" por uma frequência nem "conforme protocolo" por dose ou duração inventada.
 - Não classifique fenitoína ou outro anticonvulsivante como profilaxia do bloco P. Esse item é reservado às profilaxias explicitamente identificadas na fonte, como tromboembolismo venoso ou lesão aguda de mucosa gástrica.
-- Antes de responder, faça uma conferência silenciosa da ordem e presença de todos os blocos, da cobertura integral dos fatos, da fidelidade dos rótulos e valores, das oito linhas do gerenciamento de risco e da ausência de marcadores antes dos títulos.
+- Antes de responder, faça uma conferência silenciosa da ordem e presença de todos os blocos, da cobertura integral dos fatos, da fidelidade dos rótulos e valores, das sete linhas dos parâmetros clínicos, das oito linhas do gerenciamento de risco e da ausência de marcadores antes dos títulos.
 
 ${contextData}`;
 
@@ -2893,9 +2877,9 @@ DECISÃO FINAL É DO MÉDICO ASSISTENTE — sugestões não substituem julgament
       } else if (aheTemplate === "desfecho_obito") {
         systemPrompt = sumarioObitoPrompt;
       } else if (aheTemplate === "uti_evolucao_v2") {
-        systemPrompt = utiEvolucaoV2Prompt;
+        systemPrompt = utiEvolucaoV2Prompt + utiEvolucaoFidelityRules(utiRefDate);
       } else if (aheTemplate === "uti_evolucao") {
-        systemPrompt = utiEvolucaoPrompt;
+        systemPrompt = utiEvolucaoPrompt + utiEvolucaoFidelityRules(utiRefDate);
       } else if (aheTemplate === "uti_admissao" || aheTemplate === "uti" || aheTemplate === "v3") {
         systemPrompt = aheV3AdmissaoUTIPrompt;
       }
@@ -2903,7 +2887,7 @@ DECISÃO FINAL É DO MÉDICO ASSISTENTE — sugestões não substituem julgament
 
       // Bloco comum a TODOS os modelos de anamnese: hipóteses diagnósticas explícitas,
       // sem confundir com diagnósticos ativos nem com antecedentes prévios.
-      if (aheTemplate !== "uti_evolucao_v2" && aheTemplate !== "desfecho_alta") systemPrompt += `
+      if (!isUtiEvolucaoTemplate(aheTemplate) && aheTemplate !== "desfecho_alta") systemPrompt += `
 
 REGRA OBRIGATÓRIA — HIPÓTESES DIAGNÓSTICAS
 Todo documento deve conter um bloco próprio de HIPÓTESES DIAGNÓSTICAS, posicionado logo após os diagnósticos ativos (ou, quando o modelo não tiver esse campo, após a história/impressão).
