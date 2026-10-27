@@ -1948,10 +1948,10 @@ export function AgentChat({
       {assistantHeaderSlot && createPortal(
         <div className="flex min-w-0 flex-1 items-center gap-1.5 md:gap-2">
           <div className="flex min-w-0 items-center gap-2">
-            <AssistantGlyph size="xs" className={agentColor}>
+            <AssistantGlyph size="xs" className={`shrink-0 ${agentColor}`}>
               <span className="block [&>svg]:h-4 [&>svg]:w-4">{agentIcon}</span>
             </AssistantGlyph>
-            <div className="hidden min-w-0 sm:block">
+            <div className="min-w-0">
               <p className="truncate text-sm font-semibold leading-tight text-foreground">{agentName}</p>
               {currentConversation && (
                 <p className="hidden max-w-32 truncate text-[10px] leading-tight text-muted-foreground lg:block xl:max-w-40">
@@ -1961,7 +1961,7 @@ export function AgentChat({
             </div>
           </div>
 
-          {cases.length > 0 && (
+          {cases.length > 0 && !isMobile && (
             <Select
               value={selectedCaseId || "none"}
               onValueChange={(value) => setSelectedCaseId(value === "none" ? undefined : value)}
@@ -2006,6 +2006,7 @@ export function AgentChat({
               </Tooltip>
             )}
 
+            {!isMobile && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -2020,6 +2021,7 @@ export function AgentChat({
               </TooltipTrigger>
               <TooltipContent>{focusMode ? "Sair do foco" : "Foco"}</TooltipContent>
             </Tooltip>
+            )}
 
             <Tooltip>
               <TooltipTrigger asChild>
@@ -2036,7 +2038,19 @@ export function AgentChat({
               <TooltipContent>Nova conversa</TooltipContent>
             </Tooltip>
 
+            {isMobile && (
+              <ChatMobileMenu
+                focusMode={focusMode}
+                onToggleFocus={() => setFocusMode((value) => !value)}
+                onOpenHistory={() => setHistoryOpen(true)}
+                cases={cases}
+                selectedCaseId={selectedCaseId}
+                onSelectCase={setSelectedCaseId}
+              />
+            )}
+
             <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
+              {!isMobile && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <SheetTrigger asChild>
@@ -2047,6 +2061,7 @@ export function AgentChat({
                 </TooltipTrigger>
                 <TooltipContent>Histórico</TooltipContent>
               </Tooltip>
+              )}
               <SheetContent className="w-full sm:max-w-md">
                 <SheetHeader>
                   <SheetTitle>Histórico de Conversas</SheetTitle>
