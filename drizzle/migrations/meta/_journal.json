@@ -29,6 +29,13 @@
       "when": 1793128357297,
       "tag": "0003_cofre_inteligente_folders",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793128670840,
+      "tag": "0004_cofre_files",
+      "breakpoints": true
     }
   ]
 }

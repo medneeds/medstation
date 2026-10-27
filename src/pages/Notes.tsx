@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { VAULT_BUCKET, VAULT_MAX_FILE_BYTES, vaultStoragePath } from "@/lib/vault";
 import {
-  Plus, Search, Pin, Trash2, Clock, StickyNote, Star, Folder, FolderPlus, Vault, Layers,
+  Plus, Search, Pin, Trash2, Clock, StickyNote, Star, Folder, FolderPlus, Vault, Layers, Upload, FileText, Image as ImageIcon, Paperclip,
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
@@ -28,6 +29,18 @@ interface Note {
   content: string;
   pinned: boolean;
   folder_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface VaultFile {
+  id: string;
+  name: string;
+  storage_path: string;
+  mime_type: string | null;
+  size_bytes: number | null;
+  folder_id: string | null;
+  pinned: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -51,6 +64,10 @@ export default function Notes() {
   const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
+  const [files, setFiles] = useState<VaultFile[]>([]);
+  const [fileToDelete, setFileToDelete] = useState<VaultFile | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchAll();
@@ -60,12 +77,14 @@ export default function Notes() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const [n, f] = await Promise.all([
+      const [n, f, fl] = await Promise.all([
         supabase.from("notes").select("*").eq("user_id", user.id)
           .order("pinned", { ascending: false }).order("updated_at", { ascending: false }),
         supabase.from("vault_folders").select("*").eq("user_id", user.id)
           .order("is_favorite", { ascending: false }).order("sort_order").order("created_at"),
+        supabase.from("vault_files").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
       ]);
+      if (!fl.error) setFiles((fl.data as VaultFile[]) || []);
       if (n.error) throw n.error;
       if (f.error) throw f.error;
       setNotes((n.data as Note[]) || []);
@@ -130,6 +149,64 @@ export default function Notes() {
     setNotes((prev) => prev.map((n) => (n.id === noteId ? { ...n, folder_id: folderId } : n)));
   };
 
+  const uploadFiles = async (list: FileList | null) => {
+    if (!list?.length) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    setUploading(true);
+    const folderId = activeFolder === "all" ? null : activeFolder;
+    for (const file of Array.from(list)) {
+      if (file.size > VAULT_MAX_FILE_BYTES) {
+        toast({ title: `${file.name} é maior que 50 MB`, variant: "destructive" });
+        continue;
+      }
+      const path = vaultStoragePath(user.id, file.name);
+      const up = await supabase.storage.from(VAULT_BUCKET).upload(path, file, { contentType: file.type || undefined });
+      if (up.error) {
+        toast({ title: `Erro ao enviar ${file.name}`, description: up.error.message, variant: "destructive" });
+        continue;
+      }
+      const { data, error } = await supabase.from("vault_files").insert({
+        user_id: user.id, folder_id: folderId, name: file.name.slice(0, 200), storage_path: path,
+        mime_type: file.type || null, size_bytes: file.size,
+      }).select().single();
+      if (error) toast({ title: `Erro ao registrar ${file.name}`, description: error.message, variant: "destructive" });
+      else setFiles((prev) => [data as VaultFile, ...prev]);
+    }
+    setUploading(false);
+    if (fileInput.current) fileInput.current.value = "";
+  };
+
+  const openFile = async (file: VaultFile) => {
+    const win = window.open("", "_blank");
+    const { data, error } = await supabase.storage.from(VAULT_BUCKET).createSignedUrl(file.storage_path, 300);
+    if (error || !data) {
+      win?.close();
+      return toast({ title: "Não foi possível abrir o arquivo", variant: "destructive" });
+    }
+    if (win) win.location.href = data.signedUrl; else window.location.href = data.signedUrl;
+  };
+
+  const moveFile = async (id: string, folderId: string | null) => {
+    const { error } = await supabase.from("vault_files").update({ folder_id: folderId }).eq("id", id);
+    if (error) return toast({ title: "Erro ao mover arquivo", variant: "destructive" });
+    setFiles((prev) => prev.map((f) => (f.id === id ? { ...f, folder_id: folderId } : f)));
+  };
+
+  const toggleFilePin = async (file: VaultFile) => {
+    const { error } = await supabase.from("vault_files").update({ pinned: !file.pinned }).eq("id", file.id);
+    if (!error) setFiles((prev) => prev.map((f) => (f.id === file.id ? { ...f, pinned: !file.pinned } : f)));
+  };
+
+  const deleteFile = async () => {
+    if (!fileToDelete) return;
+    await supabase.storage.from(VAULT_BUCKET).remove([fileToDelete.storage_path]);
+    const { error } = await supabase.from("vault_files").delete().eq("id", fileToDelete.id);
+    if (error) toast({ title: "Erro ao excluir arquivo", variant: "destructive" });
+    else setFiles((prev) => prev.filter((f) => f.id !== fileToDelete.id));
+    setFileToDelete(null);
+  };
+
   const deleteNote = async () => {
     if (!noteToDelete) return;
     const { error } = await supabase.from("notes").delete().eq("id", noteToDelete);
@@ -142,7 +219,8 @@ export default function Notes() {
     () => [...folders].sort((a, b) => Number(b.is_favorite) - Number(a.is_favorite) || a.sort_order - b.sort_order),
     [folders],
   );
-  const countFor = (id: string) => notes.filter((n) => n.folder_id === id).length;
+  const countFor = (id: string) =>
+    notes.filter((n) => n.folder_id === id).length + files.filter((f) => f.folder_id === id).length;
   const folderName = (id: string | null) => folders.find((f) => f.id === id)?.name;
 
   const q = searchQuery.toLowerCase();
@@ -151,6 +229,17 @@ export default function Notes() {
       (activeFolder === "all" || n.folder_id === activeFolder) &&
       (n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q)),
   );
+
+  const filteredFiles = files.filter(
+    (f) => (activeFolder === "all" || f.folder_id === activeFolder) && f.name.toLowerCase().includes(q),
+  );
+  type Item = { kind: "note"; data: Note } | { kind: "file"; data: VaultFile };
+  const items: Item[] = [
+    ...filteredNotes.map((d) => ({ kind: "note" as const, data: d })),
+    ...filteredFiles.map((d) => ({ kind: "file" as const, data: d })),
+  ].sort((a, b) => Number(b.data.pinned) - Number(a.data.pinned) || b.data.updated_at.localeCompare(a.data.updated_at));
+  const formatSize = (b: number | null) =>
+    !b ? "" : b > 1048576 ? `${(b / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(b / 1024))} KB`;
 
   const getPreviewText = (content: string) => {
     const s = content.replace(/<[^>]*>/g, "").trim();
@@ -177,13 +266,17 @@ export default function Notes() {
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Cofre Inteligente</h1>
             <p className="text-sm md:text-base text-muted-foreground">
-              Suas notas, condutas e anotações organizadas em pastas
+              Suas notas, condutas e arquivos organizados em pastas
             </p>
           </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => setNewFolderOpen(true)}>
             <FolderPlus className="mr-2 h-4 w-4" /> Nova pasta
+          </Button>
+          <input ref={fileInput} type="file" multiple hidden accept=".pdf,image/*,.doc,.docx,.xls,.xlsx,.csv,.txt" onChange={(e) => uploadFiles(e.target.files)} />
+          <Button variant="outline" size="sm" onClick={() => fileInput.current?.click()} disabled={uploading}>
+            <Upload className="mr-2 h-4 w-4" /> {uploading ? "Enviando..." : "Enviar arquivo"}
           </Button>
           <Button size="sm" onClick={createNewNote}>
             <Plus className="mr-2 h-4 w-4" /> Nova nota
@@ -203,7 +296,7 @@ export default function Notes() {
         >
           <Layers className="h-5 w-5 text-primary mb-3" />
           <div className="font-semibold text-sm">Todas as notas</div>
-          <div className="text-xs text-muted-foreground">{notes.length} itens</div>
+          <div className="text-xs text-muted-foreground">{notes.length + files.length} itens</div>
         </button>
         {sortedFolders.map((f) => (
           <div
@@ -248,13 +341,13 @@ export default function Notes() {
         <div className="flex justify-center py-12">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
         </div>
-      ) : filteredNotes.length === 0 ? (
+      ) : items.length === 0 ? (
         <Card>
           <CardContent className="py-2">
             <EmptyState
               icon={StickyNote}
-              title={searchQuery ? "Nada por aqui com esse termo" : "Nenhuma nota aqui ainda"}
-              description={searchQuery ? "Tente outras palavras-chave." : "Guarde condutas, lembretes e rascunhos clínicos em segundos."}
+              title={searchQuery ? "Nada por aqui com esse termo" : "Nada guardado aqui ainda"}
+              description={searchQuery ? "Tente outras palavras-chave." : "Guarde condutas, lembretes, PDFs e imagens em segundos."}
               actionLabel={searchQuery ? undefined : "Criar nota"}
               actionIcon={searchQuery ? undefined : Plus}
               onAction={searchQuery ? undefined : createNewNote}
@@ -263,7 +356,43 @@ export default function Notes() {
         </Card>
       ) : (
         <div className="divide-y rounded-xl border bg-card">
-          {filteredNotes.map((note) => (
+          {items.map((item) => item.kind === "file" ? (
+            <div
+              key={`f-${item.data.id}`}
+              onClick={() => openFile(item.data)}
+              className="group flex cursor-pointer flex-col gap-2 p-3 md:flex-row md:items-center md:gap-4 md:p-4 hover:bg-muted/40"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  {item.data.pinned && <Pin className="h-3.5 w-3.5 fill-primary text-primary shrink-0" />}
+                  {item.data.mime_type?.startsWith("image/") ? <ImageIcon className="h-4 w-4 text-primary shrink-0" /> : item.data.mime_type === "application/pdf" ? <FileText className="h-4 w-4 text-primary shrink-0" /> : <Paperclip className="h-4 w-4 text-primary shrink-0" />}
+                  <h3 className="font-semibold text-sm md:text-base line-clamp-1">{item.data.name}</h3>
+                </div>
+                <p className="text-xs md:text-sm text-muted-foreground">Arquivo {formatSize(item.data.size_bytes)}</p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+                {folderName(item.data.folder_id) && activeFolder === "all" && (
+                  <Badge variant="secondary" className="text-xs">{folderName(item.data.folder_id)}</Badge>
+                )}
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Clock className="h-3 w-3" /> {formatDate(item.data.created_at)}
+                </span>
+                <Select value={item.data.folder_id ?? "none"} onValueChange={(v) => moveFile(item.data.id, v === "none" ? null : v)}>
+                  <SelectTrigger className="h-8 w-[130px] text-xs" aria-label="Mover para pasta"><SelectValue placeholder="Mover" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Sem pasta</SelectItem>
+                    {sortedFolders.map((f) => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => toggleFilePin(item.data)} aria-label="Fixar">
+                  <Pin className={cn("h-4 w-4", item.data.pinned && "fill-primary text-primary")} />
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive hover:text-destructive" onClick={() => setFileToDelete(item.data)} aria-label="Excluir">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ) : ((note) => (
             <div
               key={note.id}
               onClick={() => navigate(`/notes/${note.id}`)}
@@ -304,9 +433,22 @@ export default function Notes() {
                 </Button>
               </div>
             </div>
-          ))}
+          ))(item.data))}
         </div>
       )}
+
+      <AlertDialog open={!!fileToDelete} onOpenChange={(o) => !o && setFileToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir arquivo?</AlertDialogTitle>
+            <AlertDialogDescription>{fileToDelete?.name} será removido do Cofre. Esta ação não pode ser desfeita.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={deleteFile} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={newFolderOpen} onOpenChange={setNewFolderOpen}>
         <DialogContent>
