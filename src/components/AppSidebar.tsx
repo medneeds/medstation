@@ -1,4 +1,9 @@
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
+
+const MODULES_KEY = "ms_sidebar_closed_modules";
+const MODULE_HEADER = "w-full text-left flex items-center gap-3 rounded-md px-3 h-9 text-sm font-semibold text-foreground border-l-2 border-primary/60 bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer";
 import { supabase } from "@/integrations/supabase/client";
 import { AssistantGlyph } from "@/components/AssistantGlyph";
 
@@ -130,6 +135,17 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const [closedModules, setClosedModules] = useState<Record<string, boolean>>(() => {
+    try { return JSON.parse(localStorage.getItem(MODULES_KEY) || "{}"); } catch { return {}; }
+  });
+  const toggleModule = (key: string) => {
+    setClosedModules((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      try { localStorage.setItem(MODULES_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+      return next;
+    });
+  };
+
   
 
   const handleLogout = async () => {
@@ -212,20 +228,19 @@ export function AppSidebar() {
             <SidebarMenu className="gap-1.5">
               {!collapsed && (
                 <SidebarMenuItem>
-                  <div className="flex items-center gap-3 rounded-md px-3 h-9 text-sm font-semibold text-foreground border-l-2 border-primary/60 bg-primary/5">
+                  <button type="button" onClick={() => toggleModule("escuta")} aria-expanded={!closedModules.escuta} className={MODULE_HEADER}>
                     <AssistantGlyph size="xs" animate={false} interactive>
                       <consultorioModule.icon className="h-4 w-4 shrink-0" />
                     </AssistantGlyph>
-
                     <span className="flex-1">{consultorioModule.title}</span>
                     <span className="font-mono text-2xs text-primary/80">{consultorioModule.code}</span>
-                  </div>
+                    <ChevronDown className={cn("h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform", closedModules.escuta && "-rotate-90")} />
+                  </button>
                 </SidebarMenuItem>
               )}
 
-
               {/* Subitens hierarquizados */}
-              {consultorioSubItems.map((sub) => {
+              {(collapsed || !closedModules.escuta) && consultorioSubItems.map((sub) => {
                 const isActive = pathname === sub.url;
                 return (
                 <SidebarMenuItem key={sub.url}>
@@ -260,17 +275,18 @@ export function AppSidebar() {
             <SidebarMenu className="gap-1.5">
               {!collapsed && (
                 <SidebarMenuItem>
-                  <div className="flex items-center gap-3 rounded-md px-3 h-9 text-sm font-semibold text-foreground border-l-2 border-primary/60 bg-primary/5">
+                  <button type="button" onClick={() => toggleModule("rotina")} aria-expanded={!closedModules.rotina} className={MODULE_HEADER}>
                     <AssistantGlyph size="xs" animate={false} interactive>
                       <rotinaModule.icon className="h-4 w-4 shrink-0" />
                     </AssistantGlyph>
                     <span className="flex-1">{rotinaModule.title}</span>
                     <span className="font-mono text-2xs text-primary/80">{rotinaModule.code}</span>
-                  </div>
+                    <ChevronDown className={cn("h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform", closedModules.rotina && "-rotate-90")} />
+                  </button>
                 </SidebarMenuItem>
               )}
 
-              {rotinaSubItems.map((sub) => {
+              {(collapsed || !closedModules.rotina) && rotinaSubItems.map((sub) => {
                 const isActive = pathname === sub.url;
                 return (
                   <SidebarMenuItem key={sub.url}>
@@ -304,17 +320,18 @@ export function AppSidebar() {
             <SidebarMenu className="gap-1.5">
               {!collapsed && (
                 <SidebarMenuItem>
-                  <div className="flex items-center gap-3 rounded-md px-3 h-9 text-sm font-semibold text-foreground border-l-2 border-primary/60 bg-primary/5">
+                  <button type="button" onClick={() => toggleModule("operador")} aria-expanded={!closedModules.operador} className={MODULE_HEADER}>
                     <AssistantGlyph size="xs" animate={false} interactive>
                       <operadorModule.icon className="h-4 w-4 shrink-0" />
                     </AssistantGlyph>
                     <span className="flex-1">{operadorModule.title}</span>
                     <span className="font-mono text-2xs text-primary/80">{operadorModule.code}</span>
-                  </div>
+                    <ChevronDown className={cn("h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform", closedModules.operador && "-rotate-90")} />
+                  </button>
                 </SidebarMenuItem>
               )}
 
-              {operadorSubItems.map((sub) => {
+              {(collapsed || !closedModules.operador) && operadorSubItems.map((sub) => {
                 const isActive = pathname === sub.url;
                 return (
                   <SidebarMenuItem key={sub.url}>
