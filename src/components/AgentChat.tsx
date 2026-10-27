@@ -1894,7 +1894,6 @@ export function AgentChat({
   };
 
   // Desktop: o campo começa fino e cresce com o texto (os limites vêm do CSS min/max-height)
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useLayoutEffect(() => {
     const el = textareaRef.current;
     if (!el || isMobile) return;
