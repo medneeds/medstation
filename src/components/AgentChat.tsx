@@ -122,8 +122,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -2570,7 +2568,7 @@ export function AgentChat({
 
         {/* Mobile: Examinus toggles row above input */}
         {isMobile && agentType === "examinus" && (
-          <div className="flex items-center gap-1.5 mb-2 overflow-x-auto scrollbar-none pb-0.5 -mx-1 px-1 pr-6 [mask-image:linear-gradient(to_right,black_calc(100%-28px),transparent)]">
+          <div className="flex items-center gap-1.5 mb-2 overflow-x-auto no-scrollbar pb-0.5 -mx-1 px-1 pr-6 [mask-image:linear-gradient(to_right,black_calc(100%-28px),transparent)]">
             <Toggle
               pressed={examSuggestMode}
               onPressedChange={(v) => setExaminusModes({ consultor: v })}
