@@ -619,6 +619,7 @@ const KNOWN_AGENT_TYPES = new Set([
   "codexus",
   "mediscuss",
   "legalis",
+  "operador",
   "protocolus",
   "atestus",
   "orientus",
