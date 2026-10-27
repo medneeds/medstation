@@ -29,6 +29,7 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { MedStationDiscovery, AllToolsSection } from "@/components/MedStationDiscovery";
 import { FreeExaminusSpotlight } from "@/components/FreeExaminusSpotlight";
 import { AnnualBonusCard } from "@/components/AnnualBonusCard";
+import { VaultSpotlight } from "@/components/VaultSpotlight";
 
 interface Stats {
   totalPatients: number;
@@ -256,6 +257,8 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
+      <VaultSpotlight />
+
       {/* Descoberta orientada a 3 caminhos — dominante */}
       <MedStationDiscovery />
 
