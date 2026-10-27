@@ -333,7 +333,7 @@ export default function Notes() {
       </div>
 
       {/* Painel de pastas: no celular, faixa deslizante; no computador, grade */}
-      <div className="-mx-3 flex gap-2 overflow-x-auto no-scrollbar px-3 md:mx-0 md:grid md:gap-3 md:overflow-visible md:px-0 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      <div className="-mx-4 flex gap-2 overflow-x-auto no-scrollbar px-4 md:mx-0 md:grid md:gap-3 md:overflow-visible md:px-0 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         <button
           type="button"
           onClick={() => setActiveFolder("all")}

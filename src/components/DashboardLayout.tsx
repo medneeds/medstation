@@ -195,7 +195,7 @@ function DashboardLayoutInner({ children }: DashboardLayoutProps) {
               </div>
             </header>
 
-            <main className="flex-1 overflow-x-hidden bg-background p-3 md:p-6 lg:p-8">
+            <main className="flex-1 overflow-x-hidden bg-background p-4 md:p-6 lg:p-8">
               <AnnouncementsBanner />
               <TrialCountdownBanner />
               <AccessContentGate><Suspense fallback={<PageFallback />}>{children}</Suspense></AccessContentGate>

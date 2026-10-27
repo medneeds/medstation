@@ -1906,7 +1906,7 @@ export function AgentChat({
       className={
         focusMode || workflowMode
           ? "fixed inset-x-0 bottom-0 top-14 z-[60] bg-background flex flex-col p-4 md:p-6 overflow-hidden animate-fade-in"
-          : "flex flex-col h-full px-0 pt-0 pb-1 md:p-4"
+          : "flex flex-col h-full px-3 pt-0 pb-1.5 md:p-4"
       }
 
       onDragOver={handleDragOver}
