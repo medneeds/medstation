@@ -98,7 +98,7 @@ const operadorSubItems = [
 ];
 
 const recordsModules = [
-  { title: "Notas", url: "/notes", icon: NotebookPen },
+  { title: "Cofre Inteligente", url: "/notes", icon: NotebookPen },
 ];
 
 const COLLAPSED_ITEM = "justify-center gap-0 px-0 mx-auto border-l-0 hover:border-l-0 hover:translate-x-0 w-full";
@@ -359,7 +359,7 @@ export function AppSidebar() {
         <SidebarGroup className="py-3 group-data-[collapsible=icon]:px-1 hairline-t">
           {!collapsed && (
             <SidebarGroupLabel className="label-mono px-4 mb-2 h-auto">
-              <span>Notas</span>
+              <span>Acervo pessoal</span>
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
