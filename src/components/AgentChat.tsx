@@ -3294,7 +3294,7 @@ export function AgentChat({
                   variant="outline"
                   onClick={runCaseSuggestions}
                   disabled={isLoading || suggestionsLoading}
-                  className="h-11 px-4 rounded-xl font-medium bg-background/90 hover:bg-primary/10 hover:border-primary/50"
+                  className="h-9 px-3 rounded-xl text-sm font-medium bg-background/90 hover:bg-primary/10 hover:border-primary/50"
                   title="Analisar o caso: lacunas da história, hipóteses diagnósticas e sugestões de conduta"
                 >
                   {suggestionsLoading ? (
@@ -3313,7 +3313,7 @@ export function AgentChat({
                     <Button
                       variant="outline"
                       disabled={isLoading}
-                      className="h-11 px-4 rounded-xl font-medium bg-background/90 hover:bg-primary/10 hover:border-primary/50"
+                      className="h-9 px-3 rounded-xl text-sm font-medium bg-background/90 hover:bg-primary/10 hover:border-primary/50"
                       title="Comprimir a última resposta em resumo do caso com abreviações médicas"
                     >
                       <Shrink className="h-4 w-4 mr-1.5 text-primary" />
@@ -3340,11 +3340,11 @@ export function AgentChat({
               <Button
                 onClick={sendMessage}
                 disabled={!canSend || isLoading || overLimit}
-                className="h-11 px-7 rounded-xl font-semibold transition-[opacity,box-shadow] duration-200 hover:opacity-90 active:scale-95"
+                className="h-9 px-5 rounded-xl font-semibold transition-[opacity,box-shadow] duration-200 hover:opacity-90 active:scale-95"
                 title={!canSend ? (radiologyActive ? copy.sendEmptyTitle : "Digite uma mensagem para enviar") : radiologyActive ? copy.sendTitle : "Enviar mensagem"}
               >
                 {isLoading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <>
                     <Send className="h-3.5 w-3.5 mr-1.5" />
@@ -3352,6 +3352,7 @@ export function AgentChat({
                   </>
                 )}
               </Button>
+            </div>
             </div>
           </div>
         )}
