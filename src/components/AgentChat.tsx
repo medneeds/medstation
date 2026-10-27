@@ -1966,7 +1966,7 @@ export function AgentChat({
               onValueChange={(value) => setSelectedCaseId(value === "none" ? undefined : value)}
             >
               <SelectTrigger
-                className="h-8 w-8 shrink-0 justify-center gap-0 px-0 text-xs sm:w-40 sm:justify-between sm:px-2.5 lg:w-48"
+                className="h-8 w-8 min-w-0 shrink justify-center gap-0 px-0 text-xs sm:w-40 sm:justify-between sm:px-2.5 lg:w-48"
                 aria-label="Selecionar caso"
                 title="Selecionar caso"
               >
