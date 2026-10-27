@@ -3390,7 +3390,14 @@ export function AgentChat({
           </div>
         )}
 
-        <div className="flex items-center justify-between gap-2 mt-2">
+        {/* Celular: a linha de contagem só aparece quando há algo a avisar */}
+        <div
+          className={
+            isMobile && !((message.length > 0 && !message.trim()) || overLimit || nearLimit || (!subscribed && message.length > 0))
+              ? "sr-only"
+              : "flex items-center justify-between gap-2 mt-1.5 md:mt-2"
+          }
+        >
           <div className="min-w-0 flex-1">
             {message.length > 0 && !message.trim() ? (
               <p
