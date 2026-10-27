@@ -30,6 +30,10 @@ import {
   Scale,
   BedDouble,
   Archive,
+  Workflow,
+  Sparkles,
+  ListChecks,
+  FileCog,
 
   Play,
 } from "lucide-react";
@@ -78,6 +82,14 @@ const rotinaModule = { title: "Modo Rotineiro", url: "/rotina", icon: Sun, code:
 const rotinaSubItems = [
   { title: "Mapa de leitos", url: "/rotina", icon: BedDouble },
   { title: "Arquivo de altas", url: "/rotina/arquivo", icon: Archive },
+];
+
+const operadorModule = { title: "Modo Operador", url: "/operador", icon: Workflow, code: "OP" };
+
+const operadorSubItems = [
+  { title: "Central livre", url: "/operador", icon: Sparkles },
+  { title: "Converter documento", url: "/operador/converter", icon: FileCog },
+  { title: "Organizar exames", url: "/operador/exames", icon: ListChecks },
 ];
 
 const recordsModules = [
@@ -282,6 +294,49 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
+
+        {/* Modo Operador */}
+        <SidebarGroup className="py-3 group-data-[collapsible=icon]:px-1 hairline-t">
+          {!collapsed && (
+            <SidebarGroupLabel className="label-mono px-4 mb-2 h-auto">Central de operações</SidebarGroupLabel>
+          )}
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-1.5">
+              {!collapsed && (
+                <SidebarMenuItem>
+                  <div className="flex items-center gap-3 rounded-md px-3 h-9 text-sm font-semibold text-foreground border-l-2 border-primary/60 bg-primary/5">
+                    <AssistantGlyph size="xs" animate={false} interactive>
+                      <operadorModule.icon className="h-4 w-4 shrink-0" />
+                    </AssistantGlyph>
+                    <span className="flex-1">{operadorModule.title}</span>
+                    <span className="font-mono text-2xs text-primary/80">{operadorModule.code}</span>
+                  </div>
+                </SidebarMenuItem>
+              )}
+
+              {operadorSubItems.map((sub) => {
+                const isActive = pathname === sub.url;
+                return (
+                  <SidebarMenuItem key={sub.url}>
+                    <SidebarMenuButton asChild tooltip={sub.title} isActive={isActive} className={cn("p-0 h-auto bg-transparent hover:bg-transparent", COLLAPSED_BTN)}>
+                      <NavLink
+                        to={sub.url}
+                        end
+                        className={cn(subItemClass({ isActive }), collapsed && cn("ml-0 pr-0", COLLAPSED_ITEM))}
+                      >
+                        {!collapsed && (
+                          <span className="absolute left-0 top-1/2 h-px w-2 -translate-y-1/2 bg-border" aria-hidden />
+                        )}
+                        <sub.icon className="h-3.5 w-3.5 shrink-0" />
+                        {!collapsed && <span className="flex-1">{sub.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
         {/* Notas */}
         <SidebarGroup className="py-3 group-data-[collapsible=icon]:px-1 hairline-t">

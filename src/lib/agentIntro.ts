@@ -53,6 +53,11 @@ export const AGENT_SUGGESTIONS: Record<string, string[]> = {
     "Blindagem do prontuário em evasão hospitalar",
     "Aspectos éticos da alta a pedido",
   ],
+  operador: [
+    "Transforme esta anotação solta em evolução SOAP",
+    "Organize estes exames por data e destaque o que está alterado",
+    "Qual assistente uso para justificar uma vaga de UTI?",
+  ],
   numerus: [
     "Clearance de creatinina deste paciente",
     "Dose de noradrenalina para 70 kg",

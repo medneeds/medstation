@@ -2,6 +2,8 @@ import { getAgentSuggestions } from "@/lib/agentIntro";
 import { OutputControl } from "@/components/chat/OutputControl";
 import { AssistantGlyph } from "@/components/AssistantGlyph";
 import { ProfessorControls } from "@/components/chat/ProfessorControls";
+import { OperadorActionBar, OperadorReferrals } from "@/components/chat/OperadorControls";
+import { DEFAULT_OPERADOR_ACTION, splitOperadorReferrals } from "@/lib/operador";
 import { clinicusModeMetadata, resolveClinicusTeachingModes, restoreClinicusTeachingMode, type ProfessorStyle } from "@/lib/clinicusProfessor";
 
 import { useState, useEffect, useRef } from "react";
@@ -246,6 +248,8 @@ interface AgentChatProps {
   agentType: string;
   caseId?: string;
   placeholder?: string;
+  /** Modo Operador: ação já selecionada ao abrir (vem do subitem do menu). */
+  initialOperadorAction?: string;
   actionButtons?: Array<{
     label: string;
     icon: React.ReactNode;
@@ -400,6 +404,7 @@ export function AgentChat({
   agentType,
   caseId,
   placeholder = "Digite sua mensagem...",
+  initialOperadorAction,
   actionButtons = []
 }: AgentChatProps) {
   const { toast } = useToast();
@@ -539,6 +544,13 @@ export function AgentChat({
   const [legalisMode, setLegalisMode] = useState("auto");
   const [legalisScenario, setLegalisScenario] = useState("auto");
   const [legalisTopic, setLegalisTopic] = useState("auto");
+  const [operadorAction, setOperadorAction] = useState(initialOperadorAction ?? DEFAULT_OPERADOR_ACTION);
+  useEffect(() => {
+    if (initialOperadorAction) setOperadorAction(initialOperadorAction);
+  }, [initialOperadorAction]);
+  // No Modo Operador, as linhas de indicação viram botões e ficam fora do texto copiado.
+  const visibleContent = (content: string) =>
+    agentType === "operador" ? splitOperadorReferrals(content).body : content;
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -1341,7 +1353,8 @@ export function AgentChat({
           ...(agentType === "gasometrus" && { directLIMode }),
           ...(agentType === "codexus" && { quickCIDMode }),
           ...(agentType === "mediscuss" && { mediscussMode, mediscussSpecialty }),
-          ...(agentType === "legalis" && { legalisMode, legalisScenario, legalisTopic })
+          ...(agentType === "legalis" && { legalisMode, legalisScenario, legalisTopic }),
+          ...(agentType === "operador" && { operadorAction })
 
         }),
       });
@@ -2301,12 +2314,16 @@ export function AgentChat({
                   ) : workflowMode && msg.role === "assistant" ? (
                     <WorkflowAnswerChip content={msg.content} streaming={isStreaming} />
                   ) : msg.role === "assistant" ? (
-                    <StructuredResponse
-                      content={msg.content}
-                      size={focusMode ? "focus" : "chat"}
-                      
-                      trailing={isStreaming ? <StreamCursor /> : undefined}
-                    />
+                    <>
+                      <StructuredResponse
+                        content={visibleContent(msg.content)}
+                        size={focusMode ? "focus" : "chat"}
+                        trailing={isStreaming ? <StreamCursor /> : undefined}
+                      />
+                      {agentType === "operador" && !isStreaming && (
+                        <OperadorReferrals referrals={splitOperadorReferrals(msg.content).referrals} />
+                      )}
+                    </>
                   ) : (
                     <>
                       {msg.role === "user" && (() => {
@@ -2377,7 +2394,7 @@ export function AgentChat({
                         variant="ghost"
                         size="sm"
                         onClick={() => {
-                          const upperText = msg.content.toUpperCase();
+                          const upperText = visibleContent(msg.content).toUpperCase();
                           navigator.clipboard.writeText(upperText);
                           toast({
                             description: "Texto em caixa alta copiado!",
@@ -2392,7 +2409,7 @@ export function AgentChat({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => copyToClipboard(msg.content, msg.id)}
+                        onClick={() => copyToClipboard(visibleContent(msg.content), msg.id)}
                         className="h-7 px-2 gap-1.5 text-xs"
                         title="Copiar texto"
                       >
@@ -2768,6 +2785,10 @@ export function AgentChat({
 
 
 
+
+        {agentType === "operador" && (
+          <OperadorActionBar value={operadorAction} onChange={setOperadorAction} compact={isMobile} />
+        )}
 
         {/* Barra de ajustes de saída (desktop) */}
         {!isMobile && AGENTS_WITH_CONTROLS.has(agentType) && (
@@ -3354,7 +3375,7 @@ export function AgentChat({
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        navigator.clipboard.writeText(lastAnswer.content.replace(/\*\*/g, "").toUpperCase());
+                        navigator.clipboard.writeText(visibleContent(lastAnswer.content).replace(/\*\*/g, "").toUpperCase());
                         toast({ title: "Texto em caixa alta copiado", description: "Documento pronto para colar no prontuário." });
                       }}
                       title="Copiar tudo em MAIÚSCULAS"
@@ -3366,7 +3387,7 @@ export function AgentChat({
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        navigator.clipboard.writeText(lastAnswer.content.replace(/\*\*/g, ""));
+                        navigator.clipboard.writeText(visibleContent(lastAnswer.content).replace(/\*\*/g, ""));
                         toast({ title: "Texto copiado", description: "Documento pronto para colar no prontuário." });
                       }}
                     >
@@ -3378,7 +3399,7 @@ export function AgentChat({
               </div>
               <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6">
                 {lastAnswer ? (
-                  <StructuredResponse content={lastAnswer.content} size="reading"  className="mx-auto" />
+                  <StructuredResponse content={visibleContent(lastAnswer.content)} size="reading"  className="mx-auto" />
                 ) : (
                   <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground gap-2">
                     <LayoutPanelLeft className="h-8 w-8 opacity-30" />
@@ -3448,7 +3469,7 @@ export function AgentChat({
           {readingMessage && (
             <>
               <div className="flex-1 min-h-0 overflow-y-auto pr-2 rounded-lg bg-muted/30 p-4 md:p-6">
-                <StructuredResponse content={readingMessage.content} size="reading"  className="mx-auto" />
+                <StructuredResponse content={visibleContent(readingMessage.content)} size="reading"  className="mx-auto" />
               </div>
 
               <div className="flex justify-end gap-2 pt-2 border-t">
@@ -3456,7 +3477,7 @@ export function AgentChat({
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    navigator.clipboard.writeText(readingMessage.content.toUpperCase());
+                    navigator.clipboard.writeText(visibleContent(readingMessage.content).toUpperCase());
                     toast({ description: "Texto em caixa alta copiado!" });
                   }}
                   className="gap-1.5"
@@ -3466,7 +3487,7 @@ export function AgentChat({
                 </Button>
                 <Button
                   size="sm"
-                  onClick={() => copyToClipboard(readingMessage.content, readingMessage.id)}
+                  onClick={() => copyToClipboard(visibleContent(readingMessage.content), readingMessage.id)}
                   className="gap-1.5"
                 >
                   {copiedMessageId === readingMessage.id ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}

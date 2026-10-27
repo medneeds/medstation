@@ -102,6 +102,7 @@ export const DISCOVERY_PATHS: DiscoveryPath[] = [
     tools: [
       { slug: "modo_escuta", title: "Modo Escuta", description: "Consulta por voz → anamnese estruturada", url: "/consultorio", icon: Mic },
       { slug: "modo_rotineiro", title: "Modo Rotineiro", description: "Evolua leitos sem reconstruir tudo todo dia", url: "/rotina", icon: Layers },
+      { slug: "modo_operador", title: "Modo Operador", description: "Converta documentos, organize exames e resolva a burocracia", url: "/operador", icon: Layers },
       { slug: "consultas_salvas", title: "Consultas salvas", description: "Retome atendimentos já gravados", url: "/consultorio/historico", icon: FileCheck },
     ],
   },

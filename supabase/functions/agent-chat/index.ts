@@ -4,6 +4,7 @@ import { resolveUserAccess, accessDeniedResponse } from "../_shared/access-contr
 import { buildProfessorPrompt, isProfessorStyle, validateProfessorRequest } from "./professor.ts";
 import { MEDISCUSS_FIDELITY_RULES } from "./mediscuss.ts";
 import { selectAgentModel } from "./model-routing.ts";
+import { buildOperadorPrompt, isOperadorAction, validateOperadorRequest } from "./operador.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -294,11 +295,18 @@ serve(async (req) => {
 
     console.log(`Rate limit check passed for user ${user.id}`);
 
-    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, aheTemplate, bulaInteligenteMode, receitaMode, casoTerapeuticoMode, directLIMode, onlyAltered, clinicalImpression, examSuggestMode, quickCIDMode, compactMode, mediscussMode, mediscussSpecialty, reportMode, reportType, reportPurpose, reportSpecialty, legalisMode, legalisScenario, legalisTopic, caseSuggestMode, professorMode, professorStyle } = await req.json();
+    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, aheTemplate, bulaInteligenteMode, receitaMode, casoTerapeuticoMode, directLIMode, onlyAltered, clinicalImpression, examSuggestMode, quickCIDMode, compactMode, mediscussMode, mediscussSpecialty, reportMode, reportType, reportPurpose, reportSpecialty, legalisMode, legalisScenario, legalisTopic, caseSuggestMode, professorMode, professorStyle, operadorAction } = await req.json();
 
     const professorError = validateProfessorRequest({ agentType, professorMode, professorStyle, directAHEMode, reportMode, caseSuggestMode });
     if (professorError) {
       return new Response(JSON.stringify({ error: professorError }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const operadorError = validateOperadorRequest({ agentType, operadorAction });
+    if (operadorError) {
+      return new Response(JSON.stringify({ error: operadorError }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -365,7 +373,7 @@ serve(async (req) => {
     }
 
 
-    const validAgentTypes = ["clinicus", "examinus", "scorius", "numerus", "prescriptus", "codexus", "gasometrus", "atestus", "protocolus", "orientus", "mediscuss", "legalis"];
+    const validAgentTypes = ["clinicus", "examinus", "scorius", "numerus", "prescriptus", "codexus", "gasometrus", "atestus", "protocolus", "orientus", "mediscuss", "legalis", "operador"];
     if (agentType && !validAgentTypes.includes(agentType)) {
       return new Response(
         JSON.stringify({ error: "Tipo de agente inválido" }),
@@ -3061,6 +3069,11 @@ Regras:
       systemPrompt = buildProfessorPrompt(isProfessorStyle(professorStyle) ? professorStyle : "formal", contextData, latestQuestion);
     }
 
+    // Modo Operador: instruções próprias, independentes dos modelos de texto dos assistentes.
+    if (agentType === "operador") {
+      systemPrompt = buildOperadorPrompt(isOperadorAction(operadorAction) ? operadorAction : "livre", contextData);
+    }
+
     // SHIELD: blinda o system prompt com regras absolutas anti-extração
     systemPrompt = PROMPT_SHIELD_PREAMBLE + systemPrompt;
 
@@ -3102,7 +3115,7 @@ Regras:
     ];
 
     // Call Lovable AI with streaming
-    const { model, useResponsesApi } = selectAgentModel({ agentType, directAHEMode, aheTemplate });
+    const { model, useResponsesApi } = selectAgentModel({ agentType, directAHEMode, aheTemplate, operadorAction });
     const startedAt = Date.now();
     const aiResponse = await fetch(
       useResponsesApi

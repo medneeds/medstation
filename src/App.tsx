@@ -40,6 +40,7 @@ const Consultorio = lazy(() => import("./pages/Consultorio"));
 const ConsultorioHistorico = lazy(() => import("./pages/ConsultorioHistorico"));
 const Rotina = lazy(() => import("./pages/Rotina"));
 const RotinaArquivo = lazy(() => import("./pages/RotinaArquivo"));
+const Operador = lazy(() => import("./pages/Operador"));
 
 const Examinus = lazy(() => import("./pages/Examinus"));
 const Scorius = lazy(() => import("./pages/Scorius"));
@@ -157,6 +158,19 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            {["/operador", "/operador/converter", "/operador/exames"].map((path) => (
+              <Route
+                key={path}
+                path={path}
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <Operador />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+            ))}
 
             <Route path="/obrigado" element={<Obrigado />} />
             <Route path="/welcome" element={<Obrigado />} />
