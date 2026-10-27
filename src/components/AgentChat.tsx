@@ -1895,10 +1895,10 @@ export function AgentChat({
     }
   };
 
-  // Desktop: o campo começa fino e cresce com o texto (os limites vêm do CSS min/max-height)
+  // O campo começa fino e cresce com o texto (os limites vêm do CSS min/max-height)
   useLayoutEffect(() => {
     const el = textareaRef.current;
-    if (!el || isMobile) return;
+    if (!el) return;
     el.style.height = "auto";
     el.style.height = `${el.scrollHeight}px`;
   }, [message, isMobile, inputExpanded, workflowMode]);
@@ -1908,7 +1908,7 @@ export function AgentChat({
       className={
         focusMode || workflowMode
           ? "fixed inset-x-0 bottom-0 top-14 z-[60] bg-background flex flex-col p-4 md:p-6 overflow-hidden animate-fade-in"
-          : "flex flex-col h-full p-3 md:p-4"
+          : "flex flex-col h-full px-0 pt-0 pb-1 md:p-4"
       }
 
       onDragOver={handleDragOver}
@@ -2501,7 +2501,7 @@ export function AgentChat({
       </ScrollArea>
 
       {/* Input area */}
-      <div className="border-t pt-3 md:pt-4 sticky bottom-0 bg-background z-10 pb-[env(safe-area-inset-bottom)] md:static md:pb-0">
+      <div className="md:border-t pt-1.5 md:pt-4 sticky bottom-0 bg-background z-10 pb-[env(safe-area-inset-bottom)] md:static md:pb-0">
         {/* Interpretador (Examinus): modalidade sempre visível e corrigível antes do envio */}
         {radiologyActive && (
           <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -3168,6 +3168,12 @@ export function AgentChat({
               ref={textareaRef}
               value={message}
               onChange={(e) => setMessage(subscribed ? e.target.value : e.target.value.slice(0, FREE_CHAR_LIMIT))}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage();
+                }
+              }}
               placeholder={radiologyActive
                 ? copy.placeholder
                 : agentType === "examinus" && examSuggestMode
@@ -3175,7 +3181,7 @@ export function AgentChat({
                   : "Escreva ou dite o caso…"}
               maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
               rows={1}
-              enterKeyHint="enter"
+              enterKeyHint="send"
               aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
               className="min-h-[36px] max-h-[40vh] flex-1 resize-none rounded-none border-0 bg-transparent px-1.5 py-[7px] text-base leading-snug shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
               disabled={isLoading}
