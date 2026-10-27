@@ -30,7 +30,8 @@ export function OperadorActionBar({ value, onChange, compact = false }: Operador
         role="radiogroup"
         aria-label="Ação do Modo Operador"
         className={cn(
-          "flex flex-nowrap items-center gap-1.5 overflow-x-auto scrollbar-none -mx-1 px-1 pb-1",
+          "flex flex-nowrap items-center gap-1.5 overflow-x-auto no-scrollbar -mx-1 px-1 pb-1",
+          compact && "pr-6 [mask-image:linear-gradient(to_right,black_calc(100%-28px),transparent)]",
           !compact && "px-3 py-2.5 mx-0 rounded-2xl bg-muted/35 border border-border/50",
         )}
       >
@@ -67,7 +68,7 @@ export function OperadorActionBar({ value, onChange, compact = false }: Operador
           </div>
         ))}
       </div>
-      {current && (
+      {current && !compact && (
         <p className="mt-1 px-1 text-[11px] text-muted-foreground">{current.hint}</p>
       )}
     </div>

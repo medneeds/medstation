@@ -19,6 +19,7 @@ import { ConciergeInternal } from "@/components/ConciergeInternal";
 import { AccessContentGate, TrialWelcomeDialog } from "@/components/AccessExperienceGate";
 import { FirstAccessGate } from "@/components/FirstAccessGate";
 import { AssistantHeaderSlotProvider } from "@/components/AssistantHeaderSlot";
+import { OPEN_CONCIERGE_EVENT } from "@/components/chat/ChatMobileMenu";
 
 
 /** Placeholder discreto exibido enquanto o chunk da página carrega. */
@@ -82,8 +83,8 @@ function DashboardLayoutInner({ children }: DashboardLayoutProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [conciergeOpen, setConciergeOpen] = useState(false);
   const [assistantHeaderTarget, setAssistantHeaderTarget] = useState<HTMLDivElement | null>(null);
-  const isAssistant = Object.prototype.hasOwnProperty.call(ROUTE_LABELS, pathname.split("/").filter(Boolean)[0] || "") &&
-    ["clinicus", "examinus", "gasometrus", "scorius", "numerus", "prescriptus", "atestus", "protocolus", "orientus", "codexus", "mediscuss", "legalis"].includes(pathname.split("/").filter(Boolean)[0] || "");
+  const isAssistant =
+    ["clinicus", "examinus", "gasometrus", "scorius", "numerus", "prescriptus", "atestus", "protocolus", "orientus", "codexus", "mediscuss", "legalis", "operador"].includes(pathname.split("/").filter(Boolean)[0] || "");
   const isEmbed =
     typeof window !== "undefined" &&
     new URLSearchParams(search || window.location.search).get("embed") === "1";
@@ -123,8 +124,13 @@ function DashboardLayoutInner({ children }: DashboardLayoutProps) {
         setSearchOpen((o) => !o);
       }
     };
+    const onConcierge = () => setConciergeOpen(true);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener(OPEN_CONCIERGE_EVENT, onConcierge);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener(OPEN_CONCIERGE_EVENT, onConcierge);
+    };
   }, []);
 
   return (
@@ -171,16 +177,19 @@ function DashboardLayoutInner({ children }: DashboardLayoutProps) {
               </div>
 
               <div className="flex items-center gap-2 md:gap-3 hairline-l pl-2 md:pl-4 ml-2 md:ml-4">
+                {/* Celular nos assistentes: ajuda e tema ficam no menu "⋯" do chat */}
                 <button
                   type="button"
                   onClick={() => setConciergeOpen(true)}
                   aria-label="Como usar a plataforma"
                   title="Como usar"
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-sm border border-hairline text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors"
+                  className={`${isAssistant ? "hidden md:inline-flex" : "inline-flex"} h-8 w-8 items-center justify-center rounded-sm border border-hairline text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors`}
                 >
                   <HelpCircle className="h-3.5 w-3.5" />
                 </button>
-                <HeaderThemeToggle />
+                <span className={isAssistant ? "hidden md:contents" : "contents"}>
+                  <HeaderThemeToggle />
+                </span>
                 <NotificationBell />
                 <HeaderUserMenu />
               </div>

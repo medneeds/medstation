@@ -22,6 +22,54 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuRadioGroup, DropdownMenuRadioItem,
+  DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, FolderInput } from "lucide-react";
+
+/** Celular: mover, fixar e excluir reunidos num único botão "⋯" por item. */
+function MobileItemMenu({
+  folders, folderId, pinned, onMove, onTogglePin, onDelete,
+}: {
+  folders: { id: string; name: string }[];
+  folderId: string | null;
+  pinned: boolean;
+  onMove: (folderId: string | null) => void;
+  onTogglePin: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 md:hidden" aria-label="Opções do item">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-52">
+        <DropdownMenuItem onSelect={onTogglePin}>
+          <Pin className={cn("mr-2 h-4 w-4", pinned && "fill-primary text-primary")} />
+          {pinned ? "Desafixar" : "Fixar no topo"}
+        </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <FolderInput className="mr-2 h-4 w-4" /> Mover para pasta
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent className="max-h-72 overflow-y-auto">
+            <DropdownMenuRadioGroup value={folderId ?? "none"} onValueChange={(v) => onMove(v === "none" ? null : v)}>
+              <DropdownMenuRadioItem value="none">Sem pasta</DropdownMenuRadioItem>
+              {folders.map((f) => <DropdownMenuRadioItem key={f.id} value={f.id}>{f.name}</DropdownMenuRadioItem>)}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={onDelete} className="text-destructive focus:text-destructive">
+          <Trash2 className="mr-2 h-4 w-4" /> Excluir
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 interface Note {
   id: string;
@@ -257,44 +305,44 @@ export default function Notes() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
         <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-primary/10 p-2.5 text-primary">
-            <Vault className="h-6 w-6" />
+          <div className="rounded-xl bg-primary/10 p-2 md:p-2.5 text-primary">
+            <Vault className="h-5 w-5 md:h-6 md:w-6" />
           </div>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Cofre Inteligente</h1>
-            <p className="text-sm md:text-base text-muted-foreground">
+          <div className="min-w-0">
+            <h1 className="text-xl md:text-3xl font-bold tracking-tight leading-tight">Cofre Inteligente</h1>
+            <p className="text-xs md:text-base text-muted-foreground">
               Suas notas, condutas e arquivos organizados em pastas
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => setNewFolderOpen(true)}>
-            <FolderPlus className="mr-2 h-4 w-4" /> Nova pasta
+        <div className="grid grid-cols-3 gap-2 md:flex">
+          <Button variant="outline" size="sm" className="px-2 md:px-3" onClick={() => setNewFolderOpen(true)}>
+            <FolderPlus className="mr-1 md:mr-2 h-4 w-4" /> <span className="md:hidden">Pasta</span><span className="hidden md:inline">Nova pasta</span>
           </Button>
           <input ref={fileInput} type="file" multiple hidden accept=".pdf,image/*,.doc,.docx,.xls,.xlsx,.csv,.txt" onChange={(e) => uploadFiles(e.target.files)} />
-          <Button variant="outline" size="sm" onClick={() => fileInput.current?.click()} disabled={uploading}>
-            <Upload className="mr-2 h-4 w-4" /> {uploading ? "Enviando..." : "Enviar arquivo"}
+          <Button variant="outline" size="sm" className="px-2 md:px-3" onClick={() => fileInput.current?.click()} disabled={uploading}>
+            <Upload className="mr-1 md:mr-2 h-4 w-4" /> {uploading ? "Enviando..." : <><span className="md:hidden">Arquivo</span><span className="hidden md:inline">Enviar arquivo</span></>}
           </Button>
-          <Button size="sm" onClick={createNewNote}>
-            <Plus className="mr-2 h-4 w-4" /> Nova nota
+          <Button size="sm" className="px-2 md:px-3" onClick={createNewNote}>
+            <Plus className="mr-1 md:mr-2 h-4 w-4" /> Nova nota
           </Button>
         </div>
       </div>
 
-      {/* Painel de pastas */}
-      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      {/* Painel de pastas: no celular, faixa deslizante; no computador, grade */}
+      <div className="-mx-4 flex gap-2 overflow-x-auto no-scrollbar px-4 md:mx-0 md:grid md:gap-3 md:overflow-visible md:px-0 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         <button
           type="button"
           onClick={() => setActiveFolder("all")}
           className={cn(
-            "rounded-xl border p-4 text-left transition-all hover:border-primary/60 hover:shadow-sm",
+            "w-36 shrink-0 md:w-auto rounded-xl border p-3 md:p-4 text-left transition-all hover:border-primary/60 hover:shadow-sm",
             activeFolder === "all" ? "border-primary bg-primary/10" : "bg-card",
           )}
         >
-          <Layers className="h-5 w-5 text-primary mb-3" />
+          <Layers className="h-5 w-5 text-primary mb-2 md:mb-3" />
           <div className="font-semibold text-sm">Todas as notas</div>
           <div className="text-xs text-muted-foreground">{notes.length + files.length} itens</div>
         </button>
@@ -306,7 +354,7 @@ export default function Notes() {
             onClick={() => setActiveFolder(f.id)}
             onKeyDown={(e) => e.key === "Enter" && setActiveFolder(f.id)}
             className={cn(
-              "group relative cursor-pointer rounded-xl border p-4 text-left transition-all hover:border-primary/60 hover:shadow-sm",
+              "group relative w-36 shrink-0 md:w-auto cursor-pointer rounded-xl border p-3 md:p-4 text-left transition-all hover:border-primary/60 hover:shadow-sm",
               activeFolder === f.id ? "border-primary bg-primary/10" : "bg-card",
               f.is_favorite && activeFolder !== f.id && "border-primary/30",
             )}
@@ -319,7 +367,7 @@ export default function Notes() {
             >
               <Star className={cn("h-4 w-4", f.is_favorite ? "fill-primary text-primary" : "text-muted-foreground")} />
             </button>
-            <Folder className="h-5 w-5 text-primary mb-3" />
+            <Folder className="h-5 w-5 text-primary mb-2 md:mb-3" />
             <div className="font-semibold text-sm line-clamp-1 pr-6">{f.name}</div>
             <div className="text-xs text-muted-foreground">{countFor(f.id)} itens</div>
           </div>
@@ -360,7 +408,7 @@ export default function Notes() {
             <div
               key={`f-${item.data.id}`}
               onClick={() => openFile(item.data)}
-              className="group flex cursor-pointer flex-col gap-2 p-3 md:flex-row md:items-center md:gap-4 md:p-4 hover:bg-muted/40"
+              className="group flex cursor-pointer items-center gap-2 p-3 md:gap-4 md:p-4 hover:bg-muted/40"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
@@ -368,9 +416,24 @@ export default function Notes() {
                   {item.data.mime_type?.startsWith("image/") ? <ImageIcon className="h-4 w-4 text-primary shrink-0" /> : item.data.mime_type === "application/pdf" ? <FileText className="h-4 w-4 text-primary shrink-0" /> : <Paperclip className="h-4 w-4 text-primary shrink-0" />}
                   <h3 className="font-semibold text-sm md:text-base line-clamp-1">{item.data.name}</h3>
                 </div>
-                <p className="text-xs md:text-sm text-muted-foreground">Arquivo {formatSize(item.data.size_bytes)}</p>
+                <p className="text-xs md:text-sm text-muted-foreground truncate">
+                  Arquivo {formatSize(item.data.size_bytes)}
+                  <span className="md:hidden">
+                    {folderName(item.data.folder_id) && activeFolder === "all" && <> · {folderName(item.data.folder_id)}</>} · {formatDate(item.data.created_at)}
+                  </span>
+                </p>
               </div>
-              <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+              <div className="shrink-0 md:hidden" onClick={(e) => e.stopPropagation()}>
+                <MobileItemMenu
+                  folders={sortedFolders}
+                  folderId={item.data.folder_id}
+                  pinned={item.data.pinned}
+                  onMove={(id) => moveFile(item.data.id, id)}
+                  onTogglePin={() => toggleFilePin(item.data)}
+                  onDelete={() => setFileToDelete(item.data)}
+                />
+              </div>
+              <div className="hidden md:flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                 {folderName(item.data.folder_id) && activeFolder === "all" && (
                   <Badge variant="secondary" className="text-xs">{folderName(item.data.folder_id)}</Badge>
                 )}
@@ -396,7 +459,7 @@ export default function Notes() {
             <div
               key={note.id}
               onClick={() => navigate(`/notes/${note.id}`)}
-              className="group flex cursor-pointer flex-col gap-2 p-3 md:flex-row md:items-center md:gap-4 md:p-4 hover:bg-muted/40"
+              className="group flex cursor-pointer items-center gap-2 p-3 md:gap-4 md:p-4 hover:bg-muted/40"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
@@ -406,8 +469,21 @@ export default function Notes() {
                 <p className="text-xs md:text-sm text-muted-foreground line-clamp-1">
                   {getPreviewText(note.content) || "Nota vazia"}
                 </p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground/80 md:hidden">
+                  {folderName(note.folder_id) && activeFolder === "all" && <>{folderName(note.folder_id)} · </>}{formatDate(note.updated_at)}
+                </p>
               </div>
-              <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+              <div className="shrink-0 md:hidden" onClick={(e) => e.stopPropagation()}>
+                <MobileItemMenu
+                  folders={sortedFolders}
+                  folderId={note.folder_id}
+                  pinned={note.pinned}
+                  onMove={(id) => moveNote(note.id, id)}
+                  onTogglePin={() => togglePin(note.id, note.pinned)}
+                  onDelete={() => setNoteToDelete(note.id)}
+                />
+              </div>
+              <div className="hidden md:flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                 {folderName(note.folder_id) && activeFolder === "all" && (
                   <Badge variant="secondary" className="text-xs">{folderName(note.folder_id)}</Badge>
                 )}

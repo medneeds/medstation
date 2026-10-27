@@ -42,50 +42,54 @@ function RotinaInner() {
   const openUnit = ward.units.find((u) => u.id === openAdmission?.unit_id) || null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <Helmet>
         <title>Modo Rotineiro | MedStation</title>
         <meta name="description" content="Mapa de leitos, evolução diária e alta de pacientes de enfermaria e UTI com o assistente Carpe Diem." />
       </Helmet>
 
-      <header className="flex flex-wrap items-start justify-between gap-4">
+      <header className="flex flex-wrap items-start justify-between gap-3 md:gap-4">
         <div className="flex items-start gap-3">
           <AssistantGlyph size="md">
             <Sun className="h-5 w-5" />
           </AssistantGlyph>
           <div>
-            <h1 className="font-display text-2xl font-semibold tracking-tight">Modo Rotineiro</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="font-display text-xl md:text-2xl font-semibold tracking-tight">Modo Rotineiro</h1>
+            <p className="text-xs md:text-sm text-muted-foreground">
               Seus leitos, sua visita e a evolução do dia com o Carpe Diem.
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button onClick={() => setQuickOpen(true)}>
+        <div className="grid w-full grid-cols-2 gap-2 md:flex md:w-auto md:flex-wrap md:items-center">
+          <Button onClick={() => setQuickOpen(true)} className="col-span-2 md:col-span-1">
             <Sparkles className="h-4 w-4 mr-2" /> Evolução avulsa
           </Button>
-          <Button variant="outline" asChild>
-            <Link to="/rotina/arquivo"><Archive className="h-4 w-4 mr-2" /> Arquivo de altas</Link>
+          <Button variant="outline" asChild className="px-2 md:px-4">
+            <Link to="/rotina/arquivo"><Archive className="h-4 w-4 mr-1.5 md:mr-2" /> <span className="md:hidden">Altas</span><span className="hidden md:inline">Arquivo de altas</span></Link>
           </Button>
-          <Button variant="outline" onClick={() => setUnitsOpen(true)}>
-            <Settings2 className="h-4 w-4 mr-2" /> Gerenciar unidades
+          <Button variant="outline" onClick={() => setUnitsOpen(true)} className="px-2 md:px-4">
+            <Settings2 className="h-4 w-4 mr-1.5 md:mr-2" /> <span className="md:hidden">Unidades</span><span className="hidden md:inline">Gerenciar unidades</span>
           </Button>
         </div>
       </header>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* Celular: os 4 números numa faixa fina; computador: 4 cards */}
+      <div className="grid grid-cols-4 gap-1.5 md:gap-3">
         {[
-          { label: "Leitos", value: totalBeds, icon: BedDouble },
-          { label: "Ocupados", value: occupied, icon: CheckCircle2 },
-          { label: "Livres", value: Math.max(0, totalBeds - occupied), icon: CircleDashed },
-          { label: "Evoluções pendentes", value: pending, icon: Clock },
+          { label: "Leitos", short: "Leitos", value: totalBeds, icon: BedDouble },
+          { label: "Ocupados", short: "Ocupados", value: occupied, icon: CheckCircle2 },
+          { label: "Livres", short: "Livres", value: Math.max(0, totalBeds - occupied), icon: CircleDashed },
+          { label: "Evoluções pendentes", short: "Pendentes", value: pending, icon: Clock },
         ].map((s) => (
-          <div key={s.label} className="rounded-lg border border-hairline bg-card p-4">
+          <div key={s.label} className="min-w-0 rounded-lg border border-hairline bg-card px-2 py-2 md:p-4">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-2xs uppercase tracking-mono text-muted-foreground">{s.label}</span>
-              <s.icon className="h-4 w-4 text-primary/70" />
+              <span className="truncate font-mono text-[9px] md:text-2xs uppercase tracking-normal md:tracking-mono text-muted-foreground">
+                <span className="md:hidden">{s.short}</span>
+                <span className="hidden md:inline">{s.label}</span>
+              </span>
+              <s.icon className="hidden md:block h-4 w-4 text-primary/70" />
             </div>
-            <p className="mt-2 font-display text-2xl font-semibold">{s.value}</p>
+            <p className="mt-0.5 md:mt-2 font-display text-xl md:text-2xl font-semibold leading-tight">{s.value}</p>
           </div>
         ))}
       </div>

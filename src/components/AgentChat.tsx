@@ -3,6 +3,7 @@ import { OutputControl } from "@/components/chat/OutputControl";
 import { AssistantGlyph } from "@/components/AssistantGlyph";
 import { ProfessorControls } from "@/components/chat/ProfessorControls";
 import { OperadorActionBar, OperadorReferrals } from "@/components/chat/OperadorControls";
+import { ChatMobileMenu } from "@/components/chat/ChatMobileMenu";
 import { DEFAULT_OPERADOR_ACTION, splitOperadorReferrals } from "@/lib/operador";
 import { clinicusModeMetadata, resolveClinicusTeachingModes, restoreClinicusTeachingMode, type ProfessorStyle } from "@/lib/clinicusProfessor";
 
@@ -121,8 +122,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -1894,10 +1893,10 @@ export function AgentChat({
     }
   };
 
-  // Desktop: o campo começa fino e cresce com o texto (os limites vêm do CSS min/max-height)
+  // O campo começa fino e cresce com o texto (os limites vêm do CSS min/max-height)
   useLayoutEffect(() => {
     const el = textareaRef.current;
-    if (!el || isMobile) return;
+    if (!el) return;
     el.style.height = "auto";
     el.style.height = `${el.scrollHeight}px`;
   }, [message, isMobile, inputExpanded, workflowMode]);
@@ -1907,7 +1906,7 @@ export function AgentChat({
       className={
         focusMode || workflowMode
           ? "fixed inset-x-0 bottom-0 top-14 z-[60] bg-background flex flex-col p-4 md:p-6 overflow-hidden animate-fade-in"
-          : "flex flex-col h-full p-3 md:p-4"
+          : "flex flex-col h-full px-3 pt-0 pb-1.5 md:p-4"
       }
 
       onDragOver={handleDragOver}
@@ -1947,11 +1946,11 @@ export function AgentChat({
       <>
       {assistantHeaderSlot && createPortal(
         <div className="flex min-w-0 flex-1 items-center gap-1.5 md:gap-2">
-          <div className="flex min-w-0 items-center gap-2">
-            <AssistantGlyph size="xs" className={agentColor}>
+          <div className="flex shrink-0 items-center gap-2">
+            <AssistantGlyph size="xs" className={`shrink-0 ${agentColor}`}>
               <span className="block [&>svg]:h-4 [&>svg]:w-4">{agentIcon}</span>
             </AssistantGlyph>
-            <div className="hidden min-w-0 sm:block">
+            <div className="min-w-0 max-w-[9rem] lg:max-w-[11rem]">
               <p className="truncate text-sm font-semibold leading-tight text-foreground">{agentName}</p>
               {currentConversation && (
                 <p className="hidden max-w-32 truncate text-[10px] leading-tight text-muted-foreground lg:block xl:max-w-40">
@@ -1961,13 +1960,13 @@ export function AgentChat({
             </div>
           </div>
 
-          {cases.length > 0 && (
+          {cases.length > 0 && !isMobile && (
             <Select
               value={selectedCaseId || "none"}
               onValueChange={(value) => setSelectedCaseId(value === "none" ? undefined : value)}
             >
               <SelectTrigger
-                className="h-8 w-8 shrink-0 justify-center gap-0 px-0 text-xs sm:w-40 sm:justify-between sm:px-2.5 lg:w-48"
+                className="h-8 w-8 min-w-0 shrink justify-center gap-0 px-0 text-xs sm:w-40 sm:justify-between sm:px-2.5 lg:w-48"
                 aria-label="Selecionar caso"
                 title="Selecionar caso"
               >
@@ -2006,6 +2005,7 @@ export function AgentChat({
               </Tooltip>
             )}
 
+            {!isMobile && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -2020,6 +2020,7 @@ export function AgentChat({
               </TooltipTrigger>
               <TooltipContent>{focusMode ? "Sair do foco" : "Foco"}</TooltipContent>
             </Tooltip>
+            )}
 
             <Tooltip>
               <TooltipTrigger asChild>
@@ -2036,7 +2037,19 @@ export function AgentChat({
               <TooltipContent>Nova conversa</TooltipContent>
             </Tooltip>
 
+            {isMobile && (
+              <ChatMobileMenu
+                focusMode={focusMode}
+                onToggleFocus={() => setFocusMode((value) => !value)}
+                onOpenHistory={() => setHistoryOpen(true)}
+                cases={cases}
+                selectedCaseId={selectedCaseId}
+                onSelectCase={setSelectedCaseId}
+              />
+            )}
+
             <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
+              {!isMobile && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <SheetTrigger asChild>
@@ -2047,6 +2060,7 @@ export function AgentChat({
                 </TooltipTrigger>
                 <TooltipContent>Histórico</TooltipContent>
               </Tooltip>
+              )}
               <SheetContent className="w-full sm:max-w-md">
                 <SheetHeader>
                   <SheetTitle>Histórico de Conversas</SheetTitle>
@@ -2225,8 +2239,8 @@ export function AgentChat({
               subtitle: "Pode começar — eu cuido do resto.",
             };
             return (
-              <div className="text-center py-8 md:py-6 text-muted-foreground max-w-xl mx-auto px-4">
-                <div className="relative inline-flex items-center justify-center mb-6 md:mb-4 animate-orb-float" style={{ willChange: "transform" }}>
+              <div className="text-center py-5 md:py-6 text-muted-foreground max-w-xl mx-auto px-3 md:px-4">
+                <div className="relative inline-flex items-center justify-center mb-4 animate-orb-float" style={{ willChange: "transform" }}>
                   {/* Subtle expanding ring */}
                   <span className="pointer-events-none absolute inset-0 rounded-full bg-primary/15 animate-orb-ring" />
                   {/* Slow rotating conic shimmer — discreet */}
@@ -2240,15 +2254,15 @@ export function AgentChat({
                   {/* Soft outer glow */}
                   <span className="pointer-events-none absolute -inset-2 rounded-full bg-primary/8 blur-xl animate-orb-shimmer" />
                   {/* Core orb: big on mobile, compact on desktop to free room for the chat */}
-                  <AssistantGlyph size={isMobile ? "lg" : "orb"} className={agentColor}>
+                  <AssistantGlyph size="orb" className={agentColor}>
                     {agentIcon}
                   </AssistantGlyph>
 
                 </div>
-                <p className="text-base md:text-lg font-medium text-foreground tracking-tight">{g.title}</p>
-                <p className="text-xs md:text-sm mt-2 md:mt-1.5 leading-relaxed">{g.subtitle}</p>
+                <p className="text-[15px] md:text-lg font-medium leading-snug text-foreground tracking-tight">{g.title}</p>
+                <p className="text-xs md:text-sm mt-1.5 leading-relaxed">{g.subtitle}</p>
                 {!professorMode && getAgentSuggestions(agentType).length > 0 && (
-                  <div className="mt-5 md:mt-4 flex flex-wrap justify-center gap-2">
+                  <div className="mt-4 flex flex-wrap justify-center gap-1.5 md:gap-2">
                     {getAgentSuggestions(agentType).map((s) => (
                       <button
                         key={s}
@@ -2485,7 +2499,7 @@ export function AgentChat({
       </ScrollArea>
 
       {/* Input area */}
-      <div className="border-t pt-3 md:pt-4 sticky bottom-0 bg-background z-10 pb-[env(safe-area-inset-bottom)] md:static md:pb-0">
+      <div className="md:border-t pt-1.5 md:pt-4 sticky bottom-0 bg-background z-10 pb-[env(safe-area-inset-bottom)] md:static md:pb-0">
         {/* Interpretador (Examinus): modalidade sempre visível e corrigível antes do envio */}
         {radiologyActive && (
           <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -2554,7 +2568,7 @@ export function AgentChat({
 
         {/* Mobile: Examinus toggles row above input */}
         {isMobile && agentType === "examinus" && (
-          <div className="flex items-center gap-1.5 mb-2 overflow-x-auto pb-1 -mx-1 px-1">
+          <div className="flex items-center gap-1.5 mb-2 overflow-x-auto no-scrollbar pb-0.5 -mx-1 px-1 pr-6 [mask-image:linear-gradient(to_right,black_calc(100%-28px),transparent)]">
             <Toggle
               pressed={examSuggestMode}
               onPressedChange={(v) => setExaminusModes({ consultor: v })}
@@ -2584,20 +2598,18 @@ export function AgentChat({
               title="Separar com |"
             >
               <SeparatorVertical className="w-3 h-3 mr-1" />
-              <span>|</span>
+              <span>Separar</span>
             </Toggle>
-            <div className="flex items-center gap-1 px-2 py-0.5 bg-muted/50 rounded-full h-7 shrink-0">
-              <Switch
-                id="include-time-mobile-agent"
-                checked={includeTime}
-                onCheckedChange={setIncludeTime}
-                className="data-[state=checked]:bg-primary scale-75"
-              />
-              <Label htmlFor="include-time-mobile-agent" className="text-[10px] cursor-pointer flex items-center gap-0.5">
-                <Clock className="w-2.5 h-2.5" />
-                Hora
-              </Label>
-            </div>
+            <Toggle
+              pressed={includeTime}
+              onPressedChange={setIncludeTime}
+              size="sm"
+              className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-primary/20"
+              title="Mostrar horário da coleta"
+            >
+              <Clock className="w-3 h-3 mr-1" />
+              <span>Hora</span>
+            </Toggle>
             <Toggle
               pressed={onlyAltered}
               onPressedChange={setOnlyAltered}
@@ -3125,66 +3137,64 @@ export function AgentChat({
 
         {/* Composer */}
         {isMobile ? (
-          <div className="flex gap-1.5 items-end">
+          /* Celular: uma única cápsula — anexar, texto que cresce, ditar e enviar */
+          <div
+            className={`flex items-end gap-0.5 rounded-[1.4rem] border px-1 py-1 transition-colors ${
+              (message.length > 0 && !message.trim()) || overLimit
+                ? "border-destructive bg-muted/25"
+                : "border-border/60 bg-muted/25 focus-within:border-primary/60 focus-within:bg-background"
+            }`}
+          >
             <Button
               variant="ghost"
               size="icon"
-              className="shrink-0 h-10 w-10 rounded-full hover:bg-primary/10"
+              className="shrink-0 h-9 w-9 rounded-full hover:bg-primary/10"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadingFile}
               title="Anexar arquivo"
+              aria-label="Anexar foto, PDF ou documento"
             >
               {uploadingFile ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Paperclip className="h-4 w-4 text-primary" />
+                <Paperclip className="h-[18px] w-[18px] text-primary" />
               )}
             </Button>
-            <div className="relative flex-1">
-              <Textarea
-                ref={textareaRef}
-                value={message}
-                onChange={(e) => setMessage(subscribed ? e.target.value : e.target.value.slice(0, FREE_CHAR_LIMIT))}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
-                  }
-                }}
-                placeholder={radiologyActive ? copy.placeholder : "Mensagem... (Shift+Enter para nova linha)"}
-                maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
-                rows={1}
-                aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
-                className={`w-full resize-none pr-10 py-2.5 text-base leading-relaxed min-h-[44px] rounded-2xl transition-all ${
-                  (message.length > 0 && !message.trim()) || overLimit
-                    ? "border-destructive focus-visible:ring-destructive"
-                    : ""
-                }`}
-                style={{ maxHeight: inputExpanded ? 400 : 200 }}
-                disabled={isLoading}
-              />
-              <button
-                type="button"
-                onClick={() => setInputExpanded((v) => !v)}
-                className="absolute right-2 top-2 h-6 w-6 rounded-md inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
-                title={inputExpanded ? "Reduzir campo" : "Expandir campo"}
-                aria-label={inputExpanded ? "Reduzir campo de mensagem" : "Expandir campo de mensagem"}
-              >
-                {inputExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
-              </button>
-            </div>
+            <Textarea
+              ref={textareaRef}
+              value={message}
+              onChange={(e) => setMessage(subscribed ? e.target.value : e.target.value.slice(0, FREE_CHAR_LIMIT))}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage();
+                }
+              }}
+              placeholder={radiologyActive
+                ? copy.placeholder
+                : agentType === "examinus" && examSuggestMode
+                  ? "Peça um painel ou cole um caso"
+                  : "Escreva ou dite o caso…"}
+              maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
+              rows={1}
+              enterKeyHint="send"
+              aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
+              className="min-h-[36px] max-h-[40vh] flex-1 resize-none rounded-none border-0 bg-transparent px-1.5 py-[7px] text-base leading-snug shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              disabled={isLoading}
+            />
             <AgentVoiceInput
               onTranscription={handleVoiceTranscription}
               disabled={isLoading}
               context={agentType}
+              compact
             />
             {caseSuggestionsAvailable && (
               <Button
-                variant="outline"
+                variant="ghost"
                 size="icon"
                 onClick={runCaseSuggestions}
                 disabled={isLoading || suggestionsLoading}
-                className="shrink-0 h-10 w-10 rounded-full"
+                className="shrink-0 h-9 w-9 rounded-full hover:bg-primary/10"
                 title="Sugestões para o caso"
                 aria-label="Sugestões para o caso"
               >
@@ -3199,10 +3209,10 @@ export function AgentChat({
               <Popover open={compressOpen} onOpenChange={setCompressOpen}>
                 <PopoverTrigger asChild>
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
                     disabled={isLoading}
-                    className="shrink-0 h-10 w-10 rounded-full"
+                    className="shrink-0 h-9 w-9 rounded-full hover:bg-primary/10"
                     title="Comprimir a última resposta"
                     aria-label="Comprimir a última resposta"
                   >
@@ -3230,8 +3240,9 @@ export function AgentChat({
               onClick={sendMessage}
               disabled={!canSend || isLoading || overLimit}
               size="icon"
-              className="shrink-0 h-10 w-10 rounded-full"
+              className="shrink-0 h-9 w-9 rounded-full"
               title={!canSend ? (radiologyActive ? copy.sendEmptyTitle : "Digite uma mensagem para enviar") : radiologyActive ? copy.sendTitle : "Enviar mensagem"}
+              aria-label="Enviar mensagem"
             >
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
@@ -3374,7 +3385,14 @@ export function AgentChat({
           </div>
         )}
 
-        <div className="flex items-center justify-between gap-2 mt-2">
+        {/* Celular: a linha de contagem só aparece quando há algo a avisar */}
+        <div
+          className={
+            isMobile && !((message.length > 0 && !message.trim()) || overLimit || nearLimit || (!subscribed && message.length > 0))
+              ? "sr-only"
+              : "flex items-center justify-between gap-2 mt-1.5 md:mt-2"
+          }
+        >
           <div className="min-w-0 flex-1">
             {message.length > 0 && !message.trim() ? (
               <p
