@@ -2287,9 +2287,7 @@ export function AgentChat({
                         ? "max-w-[96%] md:max-w-[96%]"
                         : msg.role === "assistant"
                           ? "max-w-[96%] md:max-w-[92%]"
-                          : workflowMode
-                            ? "max-w-[90%] md:max-w-[92%]"
-                            : "max-w-[90%] md:max-w-[92%]"
+                          : "max-w-[90%] md:max-w-[92%]"
                   } rounded-2xl px-3 md:px-4 relative group ${
                     msg.role === "user"
                       ? "bg-primary text-primary-foreground py-2 md:py-3 md:bg-primary/[0.07] md:text-foreground md:border md:border-primary/25"
@@ -3222,8 +3220,14 @@ export function AgentChat({
             </Button>
           </div>
         ) : (
-          /* Desktop: textarea dominante com ações flutuantes */
-          <div className="relative group">
+          /* Desktop: campo compacto que cresce com o texto, ações numa linha fina abaixo */
+          <div
+            className={`relative group rounded-2xl border-2 transition-colors duration-200 ${
+              (message.length > 0 && !message.trim()) || overLimit
+                ? "border-destructive bg-muted/25"
+                : "border-border/40 bg-muted/25 focus-within:border-primary/60 focus-within:bg-background"
+            }`}
+          >
             <Textarea
               ref={textareaRef}
               value={message}
@@ -3241,48 +3245,50 @@ export function AgentChat({
                   : placeholder}
               maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
               aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
-              className={`w-full resize-none rounded-2xl text-base leading-relaxed p-5 pb-16 bg-muted/25 border-2 transition-colors duration-200 ${
+              rows={1}
+              className={`w-full resize-none rounded-2xl border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 leading-relaxed pl-4 pr-11 pt-3 pb-1 ${
                 workflowMode
-                  ? "min-h-[72px] max-h-44 p-3.5 pb-12 text-sm"
+                  ? "min-h-[44px] max-h-44 text-sm"
                   : inputExpanded
-                    ? "min-h-[240px] max-h-[45vh]"
-                    : "min-h-[132px] max-h-64"
-              } ${
-                (message.length > 0 && !message.trim()) || overLimit
-                  ? "border-destructive focus:border-destructive"
-                  : "border-border/40 focus:border-primary/60 focus:bg-background"
+                    ? "min-h-[240px] max-h-[45vh] text-base"
+                    : "min-h-[56px] max-h-[40vh] text-base"
               }`}
               disabled={isLoading}
             />
             <button
               type="button"
               onClick={() => setInputExpanded((v) => !v)}
-              className="absolute right-3.5 top-3.5 h-7 w-7 rounded-lg inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              className="absolute right-2.5 top-2.5 h-7 w-7 rounded-lg inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
               title={inputExpanded ? "Reduzir campo" : "Expandir campo"}
               aria-label={inputExpanded ? "Reduzir campo de mensagem" : "Expandir campo de mensagem"}
             >
               {inputExpanded ? <ChevronDown className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
             </button>
-            <div className="absolute bottom-3.5 right-3.5 flex items-center gap-2">
+            <div className="flex items-center justify-between gap-2 px-2 pb-2">
+            <div className="flex items-center gap-1">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="icon"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingFile || isLoading}
-                className="h-11 w-11 shrink-0 rounded-xl bg-background/90 hover:bg-primary/10 hover:border-primary/50 transition-colors duration-200"
+                className="h-9 w-9 shrink-0 rounded-full hover:bg-primary/10 transition-colors duration-200"
                 title="Anexar foto, PDF ou documento"
+                aria-label="Anexar foto, PDF ou documento"
               >
                 {uploadingFile ? (
-                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  <Loader2 className="h-[18px] w-[18px] animate-spin text-primary" />
                 ) : (
-                  <Paperclip className="h-5 w-5 text-primary" />
+                  <Paperclip className="h-[18px] w-[18px] text-primary" />
                 )}
               </Button>
               <AgentVoiceInput
                 onTranscription={handleVoiceTranscription}
                 disabled={isLoading}
                 context={agentType}
+                compact
               />
+            </div>
+            <div className="flex items-center gap-2">
               {caseSuggestionsAvailable && (
                 <Button
                   variant="outline"
