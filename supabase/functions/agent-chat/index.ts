@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { resolveUserAccess, accessDeniedResponse } from "../_shared/access-control.ts";
 import { buildProfessorPrompt, isProfessorStyle, validateProfessorRequest } from "./professor.ts";
 import { MEDISCUSS_FIDELITY_RULES } from "./mediscuss.ts";
+import { UTI_CONDUTAS_BLOCK, UTI_PARAMETROS_BLOCK, isUtiEvolucaoTemplate, utiAntibioticBlock, utiEvolucaoFidelityRules, utiReferenceDate } from "./uti-evolucao.ts";
 import { selectAgentModel } from "./model-routing.ts";
 import { buildOperadorPrompt, isOperadorAction, validateOperadorRequest } from "./operador.ts";
 
@@ -2434,7 +2435,7 @@ ${contextData}`;
     const utiEvolucaoV2Prompt = `${utiSharedRules}
 
 DOCUMENTO SOLICITADO: EVOLUÇÃO MÉDICA EM UTI ADULTO — MODELO INSTITUCIONAL.
-Foco: ficha diária completa do leito, com plano terapêutico por ação e prazo, metas do dia e gerenciamento de risco.
+Foco: ficha diária completa do leito, com parâmetros clínicos fixos, controle da antibioticoterapia, condutas registradas pelo médico e gerenciamento de risco.
 
 ESTE MODELO TEM PRIORIDADE SOBRE QUALQUER ESTRUTURA GENÉRICA DO CLÍNICUS.
 Retorne exclusivamente a ficha abaixo. Não use títulos alternativos, não mude a ordem, não acrescente blocos e não transforme a ficha em anamnese, admissão ou passagem de caso.
@@ -2447,10 +2448,10 @@ Antes de redigir, execute silenciosamente três passagens:
 
 RACIOCÍNIO CLÍNICO SEGURO
 - Organize e correlacione os dados, mas diferencie fato documentado de interpretação clínica.
-- Diagnóstico confirmado exige que a fonte o declare como diagnóstico ativo/estabelecido ou traga confirmação objetiva inequívoca. Expressões "a esclarecer", "suspeita", "provável", "?", "a afastar" e exames solicitados permanecem em HIPÓTESES DIAGNÓSTICAS ou PENDÊNCIAS E ALERTAS CLÍNICOS.
+- Diagnóstico confirmado exige que a fonte o declare como diagnóstico ativo/estabelecido ou traga confirmação objetiva inequívoca. Expressões "a esclarecer", "suspeita", "provável", "?", "a afastar" e exames solicitados permanecem em HIPÓTESES DIAGNÓSTICAS ou PENDÊNCIAS.
 - Não transforme crise convulsiva em epilepsia; episódio descrito em tônico-clônico; pressão limítrofe em estabilidade hemodinâmica; agitação em risco de queda; anticonvulsivante em profilaxia geral; consolidação em pneumonia; nem qualquer associação plausível em fato documentado.
 - Preserve literalmente rótulos e valores de exames. SEG/SEGMENTADOS nunca pode virar BASTÕES. Não corrija, converta, arredonde ou reinterpretе separadores decimais.
-- Uma sugestão clinicamente pertinente que não esteja decidida na fonte nunca entra como conduta realizada, prescrição ou meta. Registre-a somente em PENDÊNCIAS E ALERTAS CLÍNICOS, iniciada por "SUGESTÃO CONDICIONAL —", seguida do dado que precisa ser confirmado. Não sugira rotinas genéricas; inclua apenas o que possa mudar conduta ou segurança neste caso.
+- Não acrescente sugestões, recomendações ou condutas que não estejam decididas na fonte. CONDUTAS refletem exclusivamente decisões registradas ou expressamente validadas pelo médico assistente.
 
 ESTILO DE REDAÇÃO
 - Narrativa contínua, organizada e técnica, em linguagem de terapia intensiva, com liberdade apenas para otimizar a linguagem médica — nunca para acrescentar fatos, doses, horários ou conclusões.
@@ -2475,7 +2476,7 @@ PROBLEMAS ATIVOS:
 ___ | STATUS: ATIVO / EM INVESTIGAÇÃO / CONTROLADO / RESOLVIDO.
 
 HIPÓTESES DIAGNÓSTICAS:
-(SOMENTE POSSIBILIDADES AINDA EM INVESTIGAÇÃO, UM POR LINHA, COM O DADO INFORMADO QUE AS SUSTENTA; SE NÃO HOUVER, ESCREVA "DADOS INSUFICIENTES PARA FORMULAÇÃO")
+(SOMENTE AS HIPÓTESES REGISTRADAS PELO MÉDICO, UMA POR LINHA; NÃO FORMULE NOVAS. SE NÃO HOUVER, ESCREVA "NÃO INFORMADO")
 
 HPP:
 (ANTECEDENTES PESSOAIS RELEVANTES)
@@ -2876,9 +2877,9 @@ DECISÃO FINAL É DO MÉDICO ASSISTENTE — sugestões não substituem julgament
       } else if (aheTemplate === "desfecho_obito") {
         systemPrompt = sumarioObitoPrompt;
       } else if (aheTemplate === "uti_evolucao_v2") {
-        systemPrompt = utiEvolucaoV2Prompt;
+        systemPrompt = utiEvolucaoV2Prompt + utiEvolucaoFidelityRules(utiRefDate);
       } else if (aheTemplate === "uti_evolucao") {
-        systemPrompt = utiEvolucaoPrompt;
+        systemPrompt = utiEvolucaoPrompt + utiEvolucaoFidelityRules(utiRefDate);
       } else if (aheTemplate === "uti_admissao" || aheTemplate === "uti" || aheTemplate === "v3") {
         systemPrompt = aheV3AdmissaoUTIPrompt;
       }
@@ -2886,7 +2887,7 @@ DECISÃO FINAL É DO MÉDICO ASSISTENTE — sugestões não substituem julgament
 
       // Bloco comum a TODOS os modelos de anamnese: hipóteses diagnósticas explícitas,
       // sem confundir com diagnósticos ativos nem com antecedentes prévios.
-      if (aheTemplate !== "uti_evolucao_v2" && aheTemplate !== "desfecho_alta") systemPrompt += `
+      if (!isUtiEvolucaoTemplate(aheTemplate) && aheTemplate !== "desfecho_alta") systemPrompt += `
 
 REGRA OBRIGATÓRIA — HIPÓTESES DIAGNÓSTICAS
 Todo documento deve conter um bloco próprio de HIPÓTESES DIAGNÓSTICAS, posicionado logo após os diagnósticos ativos (ou, quando o modelo não tiver esse campo, após a história/impressão).
