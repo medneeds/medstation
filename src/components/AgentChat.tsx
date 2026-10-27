@@ -3141,66 +3141,58 @@ export function AgentChat({
 
         {/* Composer */}
         {isMobile ? (
-          <div className="flex gap-1.5 items-end">
+          /* Celular: uma única cápsula — anexar, texto que cresce, ditar e enviar */
+          <div
+            className={`flex items-end gap-0.5 rounded-[1.4rem] border px-1 py-1 transition-colors ${
+              (message.length > 0 && !message.trim()) || overLimit
+                ? "border-destructive bg-muted/25"
+                : "border-border/60 bg-muted/25 focus-within:border-primary/60 focus-within:bg-background"
+            }`}
+          >
             <Button
               variant="ghost"
               size="icon"
-              className="shrink-0 h-10 w-10 rounded-full hover:bg-primary/10"
+              className="shrink-0 h-9 w-9 rounded-full hover:bg-primary/10"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadingFile}
               title="Anexar arquivo"
+              aria-label="Anexar foto, PDF ou documento"
             >
               {uploadingFile ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Paperclip className="h-4 w-4 text-primary" />
+                <Paperclip className="h-[18px] w-[18px] text-primary" />
               )}
             </Button>
-            <div className="relative flex-1">
-              <Textarea
-                ref={textareaRef}
-                value={message}
-                onChange={(e) => setMessage(subscribed ? e.target.value : e.target.value.slice(0, FREE_CHAR_LIMIT))}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
-                  }
-                }}
-                placeholder={radiologyActive ? copy.placeholder : "Mensagem... (Shift+Enter para nova linha)"}
-                maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
-                rows={1}
-                aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
-                className={`w-full resize-none pr-10 py-2.5 text-base leading-relaxed min-h-[44px] rounded-2xl transition-all ${
-                  (message.length > 0 && !message.trim()) || overLimit
-                    ? "border-destructive focus-visible:ring-destructive"
-                    : ""
-                }`}
-                style={{ maxHeight: inputExpanded ? 400 : 200 }}
-                disabled={isLoading}
-              />
-              <button
-                type="button"
-                onClick={() => setInputExpanded((v) => !v)}
-                className="absolute right-2 top-2 h-6 w-6 rounded-md inline-flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
-                title={inputExpanded ? "Reduzir campo" : "Expandir campo"}
-                aria-label={inputExpanded ? "Reduzir campo de mensagem" : "Expandir campo de mensagem"}
-              >
-                {inputExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
-              </button>
-            </div>
+            <Textarea
+              ref={textareaRef}
+              value={message}
+              onChange={(e) => setMessage(subscribed ? e.target.value : e.target.value.slice(0, FREE_CHAR_LIMIT))}
+              placeholder={radiologyActive
+                ? copy.placeholder
+                : agentType === "examinus" && examSuggestMode
+                  ? "Peça um painel ou cole um caso"
+                  : "Escreva ou dite o caso…"}
+              maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
+              rows={1}
+              enterKeyHint="enter"
+              aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
+              className="min-h-[36px] max-h-[40vh] flex-1 resize-none rounded-none border-0 bg-transparent px-1.5 py-[7px] text-base leading-snug shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              disabled={isLoading}
+            />
             <AgentVoiceInput
               onTranscription={handleVoiceTranscription}
               disabled={isLoading}
               context={agentType}
+              compact
             />
             {caseSuggestionsAvailable && (
               <Button
-                variant="outline"
+                variant="ghost"
                 size="icon"
                 onClick={runCaseSuggestions}
                 disabled={isLoading || suggestionsLoading}
-                className="shrink-0 h-10 w-10 rounded-full"
+                className="shrink-0 h-9 w-9 rounded-full hover:bg-primary/10"
                 title="Sugestões para o caso"
                 aria-label="Sugestões para o caso"
               >
@@ -3215,10 +3207,10 @@ export function AgentChat({
               <Popover open={compressOpen} onOpenChange={setCompressOpen}>
                 <PopoverTrigger asChild>
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
                     disabled={isLoading}
-                    className="shrink-0 h-10 w-10 rounded-full"
+                    className="shrink-0 h-9 w-9 rounded-full hover:bg-primary/10"
                     title="Comprimir a última resposta"
                     aria-label="Comprimir a última resposta"
                   >
@@ -3246,8 +3238,9 @@ export function AgentChat({
               onClick={sendMessage}
               disabled={!canSend || isLoading || overLimit}
               size="icon"
-              className="shrink-0 h-10 w-10 rounded-full"
+              className="shrink-0 h-9 w-9 rounded-full"
               title={!canSend ? (radiologyActive ? copy.sendEmptyTitle : "Digite uma mensagem para enviar") : radiologyActive ? copy.sendTitle : "Enviar mensagem"}
+              aria-label="Enviar mensagem"
             >
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
