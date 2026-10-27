@@ -1040,6 +1040,7 @@ export type Database = {
           content: string
           created_at: string
           folder: string | null
+          folder_id: string | null
           id: string
           locked: boolean
           pinned: boolean
@@ -1051,6 +1052,7 @@ export type Database = {
           content?: string
           created_at?: string
           folder?: string | null
+          folder_id?: string | null
           id?: string
           locked?: boolean
           pinned?: boolean
@@ -1062,6 +1064,7 @@ export type Database = {
           content?: string
           created_at?: string
           folder?: string | null
+          folder_id?: string | null
           id?: string
           locked?: boolean
           pinned?: boolean
@@ -1069,7 +1072,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "notes_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "vault_folders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -2082,6 +2093,39 @@ export type Database = {
           created_at?: string | null
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vault_folders: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          is_favorite: boolean
+          name: string
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          is_favorite?: boolean
+          name: string
+          sort_order?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          is_favorite?: boolean
+          name?: string
+          sort_order?: number
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
