@@ -2241,8 +2241,8 @@ export function AgentChat({
               subtitle: "Pode começar — eu cuido do resto.",
             };
             return (
-              <div className="text-center py-8 md:py-6 text-muted-foreground max-w-xl mx-auto px-4">
-                <div className="relative inline-flex items-center justify-center mb-6 md:mb-4 animate-orb-float" style={{ willChange: "transform" }}>
+              <div className="text-center py-5 md:py-6 text-muted-foreground max-w-xl mx-auto px-3 md:px-4">
+                <div className="relative inline-flex items-center justify-center mb-4 animate-orb-float" style={{ willChange: "transform" }}>
                   {/* Subtle expanding ring */}
                   <span className="pointer-events-none absolute inset-0 rounded-full bg-primary/15 animate-orb-ring" />
                   {/* Slow rotating conic shimmer — discreet */}
@@ -2256,15 +2256,15 @@ export function AgentChat({
                   {/* Soft outer glow */}
                   <span className="pointer-events-none absolute -inset-2 rounded-full bg-primary/8 blur-xl animate-orb-shimmer" />
                   {/* Core orb: big on mobile, compact on desktop to free room for the chat */}
-                  <AssistantGlyph size={isMobile ? "lg" : "orb"} className={agentColor}>
+                  <AssistantGlyph size="orb" className={agentColor}>
                     {agentIcon}
                   </AssistantGlyph>
 
                 </div>
-                <p className="text-base md:text-lg font-medium text-foreground tracking-tight">{g.title}</p>
-                <p className="text-xs md:text-sm mt-2 md:mt-1.5 leading-relaxed">{g.subtitle}</p>
+                <p className="text-[15px] md:text-lg font-medium leading-snug text-foreground tracking-tight">{g.title}</p>
+                <p className="text-xs md:text-sm mt-1.5 leading-relaxed">{g.subtitle}</p>
                 {!professorMode && getAgentSuggestions(agentType).length > 0 && (
-                  <div className="mt-5 md:mt-4 flex flex-wrap justify-center gap-2">
+                  <div className="mt-4 flex flex-wrap justify-center gap-1.5 md:gap-2">
                     {getAgentSuggestions(agentType).map((s) => (
                       <button
                         key={s}
@@ -2570,7 +2570,7 @@ export function AgentChat({
 
         {/* Mobile: Examinus toggles row above input */}
         {isMobile && agentType === "examinus" && (
-          <div className="flex items-center gap-1.5 mb-2 overflow-x-auto pb-1 -mx-1 px-1">
+          <div className="flex items-center gap-1.5 mb-2 overflow-x-auto scrollbar-none pb-0.5 -mx-1 px-1 pr-6 [mask-image:linear-gradient(to_right,black_calc(100%-28px),transparent)]">
             <Toggle
               pressed={examSuggestMode}
               onPressedChange={(v) => setExaminusModes({ consultor: v })}
@@ -2600,20 +2600,18 @@ export function AgentChat({
               title="Separar com |"
             >
               <SeparatorVertical className="w-3 h-3 mr-1" />
-              <span>|</span>
+              <span>Separar</span>
             </Toggle>
-            <div className="flex items-center gap-1 px-2 py-0.5 bg-muted/50 rounded-full h-7 shrink-0">
-              <Switch
-                id="include-time-mobile-agent"
-                checked={includeTime}
-                onCheckedChange={setIncludeTime}
-                className="data-[state=checked]:bg-primary scale-75"
-              />
-              <Label htmlFor="include-time-mobile-agent" className="text-[10px] cursor-pointer flex items-center gap-0.5">
-                <Clock className="w-2.5 h-2.5" />
-                Hora
-              </Label>
-            </div>
+            <Toggle
+              pressed={includeTime}
+              onPressedChange={setIncludeTime}
+              size="sm"
+              className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-primary/20"
+              title="Mostrar horário da coleta"
+            >
+              <Clock className="w-3 h-3 mr-1" />
+              <span>Hora</span>
+            </Toggle>
             <Toggle
               pressed={onlyAltered}
               onPressedChange={setOnlyAltered}
