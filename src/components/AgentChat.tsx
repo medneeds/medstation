@@ -1946,11 +1946,11 @@ export function AgentChat({
       <>
       {assistantHeaderSlot && createPortal(
         <div className="flex min-w-0 flex-1 items-center gap-1.5 md:gap-2">
-          <div className="flex min-w-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <AssistantGlyph size="xs" className={`shrink-0 ${agentColor}`}>
               <span className="block [&>svg]:h-4 [&>svg]:w-4">{agentIcon}</span>
             </AssistantGlyph>
-            <div className="min-w-0">
+            <div className="min-w-0 max-w-[9rem] lg:max-w-[11rem]">
               <p className="truncate text-sm font-semibold leading-tight text-foreground">{agentName}</p>
               {currentConversation && (
                 <p className="hidden max-w-32 truncate text-[10px] leading-tight text-muted-foreground lg:block xl:max-w-40">
