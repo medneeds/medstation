@@ -88,8 +88,14 @@ export function clearFreshLogin() {
 export function isSharedDevice() {
   return safe(() => localStorage.getItem(SHARED_KEY) === "1", false);
 }
+/**
+ * Regra do login: a tela sempre abre como "computador compartilhado".
+ * Não herda a escolha anterior, para um computador de hospital nunca abrir
+ * como pessoal só porque outro médico desmarcou antes.
+ */
+export const SHARED_BY_DEFAULT = true;
 export function getSharedPreference() {
-  return isSharedDevice();
+  return SHARED_BY_DEFAULT;
 }
 
 /** Abas abertas renovam este sinal; se ficar parado, o navegador foi fechado. */

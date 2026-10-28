@@ -14,7 +14,7 @@ import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { Logo } from "@/components/Logo";
 import { trackLifecycleEvent } from "@/lib/analytics";
 import { Eye, EyeOff, MailCheck, Lock } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { SharedComputerToggle } from "@/components/auth/SharedComputerToggle";
 import { markFreshLogin, getSharedPreference } from "@/lib/deviceGuard";
 
 const AssistantOrbit = lazy(() =>
@@ -282,6 +282,8 @@ export default function Auth() {
                     transition={{ duration: 0.4 }}
                     className="mt-6 lg:mt-8 space-y-4 lg:space-y-5"
                   >
+                    <SharedComputerToggle checked={sharedComputer} onCheckedChange={setSharedComputer} />
+
                     <GoogleAuthButton label="Continuar com Google" sharedComputer={sharedComputer} />
 
                     <form onSubmit={handleSignIn} className="space-y-4" autoComplete="off">
@@ -356,18 +358,6 @@ export default function Auth() {
                           </button>
                         </div>
                       </div>
-                      <label htmlFor="shared-computer" className="flex items-start gap-2.5 cursor-pointer select-none">
-                        <Checkbox
-                          id="shared-computer"
-                          checked={sharedComputer}
-                          onCheckedChange={(v) => setSharedComputer(v === true)}
-                          className="mt-0.5"
-                        />
-                        <span className="text-sm text-muted-foreground leading-snug">
-                          Computador compartilhado (hospital)
-                          <span className="block text-xs">Sai sozinho ao fechar o navegador ou após 30 min sem uso.</span>
-                        </span>
-                      </label>
                       <Button
                         type="submit"
                         className="w-full h-12 rounded-xl text-base font-medium transition-all hover:translate-y-[-1px] active:translate-y-0"
