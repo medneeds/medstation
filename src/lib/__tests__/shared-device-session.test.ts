@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from "vitest";
-import { markFreshLogin, sharedSessionExpired, SHARED_STALE_MS } from "@/lib/deviceGuard";
+import { markFreshLogin, sharedSessionExpired, SHARED_STALE_MS, getSharedPreference } from "@/lib/deviceGuard";
 
 describe("computador compartilhado", () => {
   beforeEach(() => { localStorage.clear(); sessionStorage.clear(); });
@@ -22,5 +22,18 @@ describe("computador compartilhado", () => {
     markFreshLogin(false);
     sessionStorage.clear();
     expect(sharedSessionExpired()).toBe(false);
+  });
+});
+
+describe("regra do login: compartilhado por padrão", () => {
+  beforeEach(() => { localStorage.clear(); sessionStorage.clear(); });
+
+  it("a tela de login abre como computador compartilhado", () => {
+    expect(getSharedPreference()).toBe(true);
+  });
+
+  it("não herda a escolha pessoal de quem entrou antes neste computador", () => {
+    markFreshLogin(false);
+    expect(getSharedPreference()).toBe(true);
   });
 });
