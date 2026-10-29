@@ -19,6 +19,7 @@ import {
   Clock,
   Download,
   Plus,
+  Mic,
 } from "lucide-react";
 import jsPDF from "jspdf";
 
@@ -346,6 +347,22 @@ export default function PatientDetail() {
     return null;
   }
 
+  const startConsultation = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const today = new Date().toLocaleDateString("pt-BR");
+    const { data, error } = await supabase
+      .from("cases")
+      .insert({ user_id: user.id, patient_id: patient.id, title: `Atendimento ${today} · ${patient.name}`, status: "active" })
+      .select("id")
+      .single();
+    if (error || !data) {
+      toast({ variant: "destructive", title: "Não foi possível abrir o atendimento", description: "Tente novamente em instantes." });
+      return;
+    }
+    navigate(`/consultorio?caseId=${data.id}`);
+  };
+
   const age = patient.date_of_birth
     ? Math.floor(
         (new Date().getTime() - new Date(patient.date_of_birth).getTime()) /
@@ -366,7 +383,11 @@ export default function PatientDetail() {
             <p className="text-muted-foreground">Histórico Completo do Paciente</p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Button onClick={startConsultation}>
+            <Mic className="h-4 w-4 mr-2" />
+            Iniciar atendimento
+          </Button>
           <Button onClick={exportHistoryToPDF} variant="outline">
             <Download className="h-4 w-4 mr-2" />
             Exportar Histórico
