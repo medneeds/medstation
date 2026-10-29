@@ -282,7 +282,6 @@ export default function Auth() {
                     transition={{ duration: 0.4 }}
                     className="mt-6 lg:mt-8 space-y-4 lg:space-y-5"
                   >
-                    <SharedComputerToggle checked={sharedComputer} onCheckedChange={setSharedComputer} />
 
                     <GoogleAuthButton label="Continuar com Google" sharedComputer={sharedComputer} />
 
@@ -372,6 +371,8 @@ export default function Auth() {
                         </span>
                       </p>
                     </form>
+
+                    <SharedComputerToggle checked={sharedComputer} onCheckedChange={setSharedComputer} />
                   </motion.div>
                 </TabsContent>
 
