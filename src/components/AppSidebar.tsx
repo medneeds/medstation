@@ -100,6 +100,8 @@ const operadorSubItems = [
 const recordsModules = [
   { title: "Meus Pacientes", url: "/patients", icon: UsersRound, hint: "Casos e histórico" },
   { title: "Cofre Inteligente", url: "/notes", icon: NotebookPen, hint: "Notas e arquivos" },
+  { title: "Minhas Prescrições", url: "/prescricoes", icon: Pill, hint: "Receitas simples e controle especial" },
+  { title: "Minhas Requisições", url: "/exames", icon: FlaskConical, hint: "Pedidos de exame" },
 ];
 
 const COLLAPSED_ITEM = "justify-center gap-0 px-0 mx-auto border-l-0 hover:border-l-0 hover:translate-x-0 w-full";
