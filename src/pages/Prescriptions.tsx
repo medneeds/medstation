@@ -161,7 +161,7 @@ export default function Prescriptions() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Banco de Prescrições</h1>
             <p className="text-muted-foreground">
-              Seu acervo pessoal — guarde modelos prontos para reutilizar quando precisar.
+              Seu acervo clínico — guarde modelos prontos para reutilizar quando precisar.
             </p>
           </div>
           <Button onClick={openNew} size="lg">

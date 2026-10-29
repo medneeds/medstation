@@ -278,7 +278,7 @@ export default function Patients() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="label-mono text-primary mb-1">Acervo pessoal</p>
+          <p className="label-mono text-primary mb-1">Acervo clínico</p>
           <h1 className="text-2xl md:text-3xl font-bold">Meus Pacientes</h1>
           <p className="text-sm md:text-base text-muted-foreground">Seu banco de pacientes, com os casos clínicos vinculados a cada um</p>
         </div>
