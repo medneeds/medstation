@@ -40,6 +40,8 @@ interface Patient {
 
 export default function Patients() {
   const [patients, setPatients] = useState<Patient[]>([]);
+  const [caseStats, setCaseStats] = useState<Record<string, { count: number; last: string }>>({});
+  const [casesThisMonth, setCasesThisMonth] = useState(0);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -88,6 +90,27 @@ export default function Patients() {
       });
     } else {
       setPatients(data || []);
+      const { data: cases } = await supabase
+        .from("cases")
+        .select("patient_id, consultation_date, created_at")
+        .eq("user_id", user.id)
+        .not("patient_id", "is", null);
+      const stats: Record<string, { count: number; last: string }> = {};
+      const monthStart = new Date();
+      monthStart.setDate(1);
+      monthStart.setHours(0, 0, 0, 0);
+      let month = 0;
+      (cases || []).forEach((c) => {
+        if (!c.patient_id) return;
+        const when = c.consultation_date || c.created_at;
+        const cur = stats[c.patient_id] || { count: 0, last: when };
+        cur.count += 1;
+        if (when > cur.last) cur.last = when;
+        stats[c.patient_id] = cur;
+        if (new Date(c.created_at) >= monthStart) month += 1;
+      });
+      setCaseStats(stats);
+      setCasesThisMonth(month);
     }
     setLoading(false);
   };
@@ -211,8 +234,9 @@ export default function Patients() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Pacientes</h1>
-          <p className="text-sm md:text-base text-muted-foreground">Gerencie seus pacientes e históricos clínicos</p>
+          <p className="label-mono text-primary mb-1">Acervo pessoal</p>
+          <h1 className="text-2xl md:text-3xl font-bold">Meus Pacientes</h1>
+          <p className="text-sm md:text-base text-muted-foreground">Seu banco de pacientes, com os casos clínicos vinculados a cada um</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
@@ -298,6 +322,19 @@ export default function Patients() {
         </Dialog>
       </div>
 
+      <div className="grid grid-cols-3 gap-2 md:gap-4">
+        {[
+          { label: "Pacientes ativos", value: patients.length },
+          { label: "Com casos vinculados", value: Object.keys(caseStats).length },
+          { label: "Casos neste mês", value: casesThisMonth },
+        ].map((m) => (
+          <div key={m.label} className="rounded-lg border bg-card px-3 py-2 md:px-4 md:py-3">
+            <p className="text-xl md:text-2xl font-bold tabular-nums">{loading ? "–" : m.value}</p>
+            <p className="text-2xs md:text-xs text-muted-foreground leading-tight">{m.label}</p>
+          </div>
+        ))}
+      </div>
+
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -341,6 +378,11 @@ export default function Patients() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <h3 className="font-semibold text-base md:text-lg truncate">{patient.name}</h3>
+                              <p className="text-xs text-muted-foreground">
+                                {caseStats[patient.id]
+                                  ? `${caseStats[patient.id].count} caso(s) · último em ${new Date(caseStats[patient.id].last).toLocaleDateString("pt-BR")}`
+                                  : "Nenhum caso vinculado"}
+                              </p>
                               {age && (
                                 <Badge variant="secondary" className="text-xs mt-1">
                                   {age} anos
