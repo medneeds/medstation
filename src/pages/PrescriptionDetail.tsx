@@ -22,6 +22,9 @@ import {
   Clock,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Printer } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { buildPrescriptionHtml, type PrescriptionKind } from "@/lib/prescriptionPrint";
 
 interface Medication {
   name: string;
@@ -177,6 +180,50 @@ export default function PrescriptionDetail() {
     }
   };
 
+  const handlePrint = async (kind: PrescriptionKind) => {
+    if (!prescription) return;
+    const win = window.open("", "_blank");
+    if (!win) {
+      toast({ title: "Permita a abertura de janelas", description: "O navegador bloqueou a janela de impressão.", variant: "destructive" });
+      return;
+    }
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data: prof } = await supabase
+      .from("profiles")
+      .select("full_name, gender, crm, crm_state, rqe, specialty, address, city, state, phone, clinic_name, clinic_phone, letterhead_logo_url")
+      .eq("id", user?.id ?? "")
+      .maybeSingle();
+    const html = buildPrescriptionHtml(
+      kind,
+      {
+        fullName: prof?.full_name || prescription.profiles?.full_name || "",
+        gender: prof?.gender,
+        crm: prof?.crm,
+        crmState: prof?.crm_state,
+        rqe: prof?.rqe,
+        specialty: prof?.specialty,
+        address: prof?.address,
+        city: prof?.city,
+        state: prof?.state,
+        phone: prof?.phone,
+        clinicName: prof?.clinic_name,
+        clinicPhone: prof?.clinic_phone,
+        logoUrl: prof?.letterhead_logo_url,
+      },
+      {
+        number: prescription.prescription_number,
+        createdAt: prescription.created_at,
+        patientName: prescription.patients?.name || "",
+        patientCpf: prescription.patients?.cpf,
+        medications: prescription.medications,
+        observations: prescription.observations,
+      },
+    );
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+  };
+
   const handleDownloadPDF = () => {
     if (!prescription) return;
 
@@ -250,7 +297,19 @@ export default function PrescriptionDetail() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-wrap gap-2">
-            <Button onClick={handleDownloadPDF} variant="default">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="default">
+                  <Printer className="h-4 w-4 mr-2" />
+                  Imprimir receita
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handlePrint("simples")}>Receita simples (1 via)</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handlePrint("controle_especial")}>Controle especial (2 vias)</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button onClick={handleDownloadPDF} variant="outline">
               <Download className="h-4 w-4 mr-2" />
               Baixar PDF
             </Button>
