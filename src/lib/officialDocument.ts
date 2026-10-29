@@ -33,8 +33,8 @@ const CONTROLE_ESPECIAL = [
   "ziprasidona", "clozapina", "paliperidona", "lurasidona", "carbamazepina", "oxcarbazepina",
   "valproato", "valproico", "divalproato", "lamotrigina", "topiramato", "gabapentina", "pregabalina",
   "levetiracetam", "lacosamida", "fenitoina", "litio", "tramadol", "codeina", "biperideno",
-  "dissulfiram", "naltrexona", "testosterona", "oxandrolona", "nandrolona", "metoclopramida_x",
-].filter((n) => !n.endsWith("_x"));
+  "dissulfiram", "naltrexona", "testosterona", "oxandrolona", "nandrolona",
+];
 const ANTIMICROBIANOS = [
   "amoxicilina", "ampicilina", "penicilina", "benzilpenicilina", "azitromicina", "claritromicina",
   "eritromicina", "cefalexina", "cefadroxila", "cefuroxima", "ceftriaxona", "cefaclor", "ciprofloxacino",
