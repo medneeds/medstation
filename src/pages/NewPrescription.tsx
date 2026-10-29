@@ -27,6 +27,8 @@ import {
 import { ArrowLeft, Plus, Trash2, Save, FileSignature, AlertCircle, User, Stethoscope, UserPlus, Mic } from "lucide-react";
 import { z } from "zod";
 import VoiceRecorder from "@/components/VoiceRecorder";
+import { PrescriptionTemplatesBar } from "@/components/prescriptions/PrescriptionTemplatesBar";
+import { allergyHits } from "@/lib/patientClinical";
 
 const medicationSchema = z.object({
   name: z.string().min(1, "Nome do medicamento é obrigatório").max(200),
@@ -41,6 +43,7 @@ interface Patient {
   name: string;
   cpf: string;
   date_of_birth: string;
+  allergies?: string | null;
 }
 
 interface Medication {
@@ -172,7 +175,7 @@ export default function NewPrescription() {
 
       const { data, error } = await supabase
         .from("patients")
-        .select("id, name, cpf, date_of_birth")
+        .select("id, name, cpf, date_of_birth, allergies")
         .eq("user_id", user.id)
         .eq("archived", false)
         .order("name");
@@ -265,6 +268,16 @@ export default function NewPrescription() {
     setMedications(updated);
   };
 
+  const applyTemplate = (meds: Medication[], templateObs: string | null) => {
+    const current = medications.filter((m) => m.name.trim());
+    setMedications(current.length ? [...current, ...meds] : meds);
+    if (templateObs && !observations.trim()) setObservations(templateObs);
+  };
+
+  const allergyWarnings = medications
+    .map((m, i) => ({ index: i, hits: allergyHits(m.name, selectedPatientData?.allergies) }))
+    .filter((w) => w.hits.length > 0);
+
   const validateForm = () => {
     // Validate profile data for digital signature
     if (!profile?.crm || !profile?.crm_state) {
@@ -301,6 +314,14 @@ export default function NewPrescription() {
         variant: "destructive",
       });
       return false;
+    }
+
+    if (allergyWarnings.length > 0) {
+      const list = allergyWarnings.map((w) => `Medicamento ${w.index + 1}: ${w.hits.join(", ")}`).join("\n");
+      const ok = window.confirm(
+        `Atenção: o paciente tem alergia registrada que aparece nesta receita.\n\n${list}\n\nDeseja manter a prescrição mesmo assim?`
+      );
+      if (!ok) return false;
     }
 
     // Validate medications
@@ -602,6 +623,14 @@ export default function NewPrescription() {
               </SelectContent>
             </Select>
           </div>
+          {selectedPatientData?.allergies && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Alergias do paciente:</strong> {selectedPatientData.allergies}
+              </AlertDescription>
+            </Alert>
+          )}
           {selectedPatientData && (
             <div className="grid md:grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
               <div>
@@ -667,15 +696,22 @@ export default function NewPrescription() {
       {/* Medications */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle>Medicamentos</CardTitle>
-              <CardDescription>Adicione os medicamentos prescritos</CardDescription>
+              <CardDescription>Adicione os medicamentos ou use um dos seus modelos</CardDescription>
             </div>
-            <Button variant="outline" size="sm" onClick={addMedication}>
-              <Plus className="h-4 w-4 mr-2" />
-              Adicionar
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <PrescriptionTemplatesBar
+                medications={medications}
+                observations={observations}
+                onApply={applyTemplate}
+              />
+              <Button variant="outline" size="sm" onClick={addMedication}>
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -703,6 +739,12 @@ export default function NewPrescription() {
                     onChange={(e) => updateMedication(index, "name", e.target.value)}
                     maxLength={200}
                   />
+                  {allergyHits(medication.name, selectedPatientData?.allergies).length > 0 && (
+                    <p className="flex items-center gap-1.5 text-sm font-medium text-destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      Possível alergia: {allergyHits(medication.name, selectedPatientData?.allergies).join(", ")}. Confira antes de prescrever.
+                    </p>
+                  )}
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">

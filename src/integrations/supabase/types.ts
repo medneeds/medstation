@@ -1156,7 +1156,9 @@ export type Database = {
       }
       patients: {
         Row: {
+          allergies: string | null
           archived: boolean | null
+          clinical_tags: string[]
           cpf: string | null
           created_at: string
           date_of_birth: string | null
@@ -1169,7 +1171,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          allergies?: string | null
           archived?: boolean | null
+          clinical_tags?: string[]
           cpf?: string | null
           created_at?: string
           date_of_birth?: string | null
@@ -1182,7 +1186,9 @@ export type Database = {
           user_id: string
         }
         Update: {
+          allergies?: string | null
           archived?: boolean | null
+          clinical_tags?: string[]
           cpf?: string | null
           created_at?: string
           date_of_birth?: string | null
@@ -1238,6 +1244,39 @@ export type Database = {
           source_assistant?: string | null
           tags?: string[] | null
           title?: string
+          updated_at?: string
+          use_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      prescription_templates: {
+        Row: {
+          created_at: string
+          id: string
+          medications: Json
+          name: string
+          observations: string | null
+          updated_at: string
+          use_count: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          medications?: Json
+          name: string
+          observations?: string | null
+          updated_at?: string
+          use_count?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          medications?: Json
+          name?: string
+          observations?: string | null
           updated_at?: string
           use_count?: number
           user_id?: string

@@ -20,6 +20,7 @@ import {
   Download,
   Plus,
   Mic,
+  AlertTriangle,
 } from "lucide-react";
 import jsPDF from "jspdf";
 
@@ -32,6 +33,8 @@ interface Patient {
   email: string | null;
   notes: string | null;
   created_at: string;
+  clinical_tags?: string[] | null;
+  allergies?: string | null;
 }
 
 interface TimelineItem {
@@ -404,6 +407,19 @@ export default function PatientDetail() {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {patient.allergies && (
+            <div className="mb-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm">
+              <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+              <p><span className="font-semibold text-destructive">Alergias:</span> {patient.allergies}</p>
+            </div>
+          )}
+          {(patient.clinical_tags || []).length > 0 && (
+            <div className="mb-4 flex flex-wrap gap-1.5">
+              {(patient.clinical_tags || []).map((t) => (
+                <Badge key={t} variant="outline" className="font-normal">{t}</Badge>
+              ))}
+            </div>
+          )}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">CPF</p>
