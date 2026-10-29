@@ -1,7 +1,9 @@
 import { createClient, type SupabaseClient, type User } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
 
-export const TRUST_DAYS = 7
+import { trustExpiresIso } from './device-trust.ts'
+
+export * from './device-trust.ts'
 export const CODE_TTL_MS = 10 * 60 * 1000
 export const RESEND_COOLDOWN_MS = 60 * 1000
 export const MAX_ATTEMPTS = 5
@@ -44,7 +46,13 @@ export async function markActive(admin: SupabaseClient, userId: string, deviceHa
   if (error) throw error
 }
 
-export async function trustDevice(admin: SupabaseClient, userId: string, deviceHash: string, label: string | null) {
+export async function trustDevice(
+  admin: SupabaseClient,
+  userId: string,
+  deviceHash: string,
+  label: string | null,
+  shared: boolean,
+) {
   const now = new Date()
   const { error } = await admin.from('trusted_devices').upsert(
     {
@@ -52,7 +60,7 @@ export async function trustDevice(admin: SupabaseClient, userId: string, deviceH
       device_hash: deviceHash,
       label,
       last_used_at: now.toISOString(),
-      expires_at: new Date(now.getTime() + TRUST_DAYS * 86400000).toISOString(),
+      expires_at: trustExpiresIso(shared, now.getTime()),
     },
     { onConflict: 'user_id,device_hash' },
   )

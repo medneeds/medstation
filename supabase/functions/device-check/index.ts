@@ -9,7 +9,8 @@ import {
   markActive,
   RESEND_COOLDOWN_MS,
   sha256,
-  TRUST_DAYS,
+  trustCutoffIso,
+  trustExpiresIso,
 } from '../_shared/device-guard.ts'
 
 function maskEmail(email: string) {
@@ -18,7 +19,8 @@ function maskEmail(email: string) {
 }
 
 // Decide se este aparelho pode entrar direto ou precisa de código por e-mail.
-// Body: { device_id, label?, fresh?: boolean, shared?: boolean, resend?: boolean }
+// O código só volta depois de 12 h (pessoal) ou 6 h (compartilhado) sem uso neste aparelho.
+// Body: { device_id, label?, fresh?: boolean, shared?: boolean, resend?: boolean, touch?: boolean }
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
@@ -40,19 +42,30 @@ Deno.serve(async (req) => {
   const shared = body.shared === true
   const resend = body.resend === true
 
+  // Movimento no sistema: renova a marca de uso, sem reviver aparelho já vencido.
+  if (body.touch === true) {
+    const now = Date.now()
+    const { error } = await admin
+      .from('trusted_devices')
+      .update({ last_used_at: new Date(now).toISOString(), expires_at: trustExpiresIso(shared, now) })
+      .eq('user_id', user.id)
+      .eq('device_hash', deviceHash)
+      .gt('last_used_at', trustCutoffIso(shared, now))
+    if (error) console.error('[device-check] touch', error.message.slice(0, 200))
+    return json({ status: 'ok' })
+  }
+
   try {
     const nowIso = new Date().toISOString()
     const [{ data: active }, { data: trusted }] = await Promise.all([
       admin.from('active_sessions').select('device_hash').eq('user_id', user.id).maybeSingle(),
-      shared
-        ? Promise.resolve({ data: null })
-        : admin
-            .from('trusted_devices')
-            .select('id')
-            .eq('user_id', user.id)
-            .eq('device_hash', deviceHash)
-            .gt('expires_at', nowIso)
-            .maybeSingle(),
+      admin
+        .from('trusted_devices')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('device_hash', deviceHash)
+        .gt('last_used_at', trustCutoffIso(shared))
+        .maybeSingle(),
     ])
 
     // Já é o acesso ativo (ex.: recarregou a página) e não é um login novo.
@@ -62,7 +75,10 @@ Deno.serve(async (req) => {
 
     // Aparelho reconhecido: entra direto e vira o único acesso ativo.
     if (!resend && trusted) {
-      await admin.from('trusted_devices').update({ last_used_at: nowIso, label }).eq('id', trusted.id)
+      await admin
+        .from('trusted_devices')
+        .update({ last_used_at: nowIso, label, expires_at: trustExpiresIso(shared) })
+        .eq('id', trusted.id)
       await markActive(admin, user.id, deviceHash)
       return json({ status: 'ok', revoke_others: true })
     }
@@ -75,7 +91,7 @@ Deno.serve(async (req) => {
           device_hash: deviceHash,
           label,
           last_used_at: nowIso,
-          expires_at: new Date(Date.now() + TRUST_DAYS * 86400000).toISOString(),
+          expires_at: trustExpiresIso(false),
         },
         { onConflict: 'user_id,device_hash' },
       )
