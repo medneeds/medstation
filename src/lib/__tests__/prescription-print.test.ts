@@ -32,3 +32,24 @@ describe("impressão de receita", () => {
     expect(html).not.toContain("João <script>");
   });
 });
+
+import { buildExamRequestHtml } from "../prescriptionPrint";
+
+describe("impressão de requisição de exames", () => {
+  it("lista os exames, indicação e CID em uma via", () => {
+    const html = buildExamRequestHtml(doctor, {
+      number: "EX-1",
+      createdAt: "2026-10-29T12:00:00Z",
+      patientName: "Maria",
+      exams: [{ name: "Hemograma" }, { name: "TSH" }],
+      clinicalIndication: "Fadiga",
+      cidCode: "R53",
+      priority: "urgent",
+    });
+    expect(count(html, '<section class="via">')).toBe(1);
+    expect(html).toContain("1. Hemograma");
+    expect(html).toContain("2. TSH");
+    expect(html).toContain("R53");
+    expect(html).toContain("URGENTE");
+  });
+});
