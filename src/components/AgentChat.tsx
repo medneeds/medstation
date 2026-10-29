@@ -5,6 +5,8 @@ import { ProfessorControls } from "@/components/chat/ProfessorControls";
 import { OperadorActionBar, OperadorReferrals } from "@/components/chat/OperadorControls";
 import { ChatMobileMenu } from "@/components/chat/ChatMobileMenu";
 import { DEFAULT_OPERADOR_ACTION, splitOperadorReferrals } from "@/lib/operador";
+import { AtestusShortcut } from "@/components/chat/AtestusShortcut";
+import { isAfastamentoResponse } from "@/lib/codexusAfastamento";
 import { clinicusModeMetadata, resolveClinicusTeachingModes, restoreClinicusTeachingMode, type ProfessorStyle } from "@/lib/clinicusProfessor";
 
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
@@ -103,6 +105,7 @@ import {
   ScrollText,
   ListChecks,
   Zap,
+  CalendarDays,
   Minimize2,
   Lightbulb,
   Maximize2,
@@ -539,6 +542,10 @@ export function AgentChat({
   const [casoTerapeuticoMode, setCasoTerapeuticoMode] = useState(false);
   const [directLIMode, setDirectLIMode] = useState(false);
   const [quickCIDMode, setQuickCIDMode] = useState(false);
+  /** CODexus D.A.: CIDs do atestado + dias por tipo de trabalho. Exclusivo com o C.R. */
+  const [afastamentoMode, setAfastamentoMode] = useState(false);
+  const toggleQuickCID = (on: boolean) => { setQuickCIDMode(on); if (on) setAfastamentoMode(false); };
+  const toggleAfastamento = (on: boolean) => { setAfastamentoMode(on); if (on) setQuickCIDMode(false); };
   const [mediscussMode, setMediscussMode] = useState("auto");
   const [mediscussSpecialty, setMediscussSpecialty] = useState("auto");
   const [legalisMode, setLegalisMode] = useState("auto");
@@ -1353,7 +1360,7 @@ export function AgentChat({
           ...(agentType === "clinicus" && { professorMode, professorStyle }),
           ...(agentType === "prescriptus" && { bulaInteligenteMode, receitaMode, casoTerapeuticoMode }),
           ...(agentType === "gasometrus" && { directLIMode }),
-          ...(agentType === "codexus" && { quickCIDMode }),
+          ...(agentType === "codexus" && { quickCIDMode, afastamentoMode }),
           ...(agentType === "mediscuss" && { mediscussMode, mediscussSpecialty }),
           ...(agentType === "legalis" && { legalisMode, legalisScenario, legalisTopic }),
           ...(agentType === "operador" && { operadorAction })
@@ -2348,6 +2355,12 @@ export function AgentChat({
                       {agentType === "operador" && !isStreaming && (
                         <OperadorReferrals referrals={splitOperadorReferrals(msg.content).referrals} />
                       )}
+                      {agentType === "codexus" && !isStreaming && isAfastamentoResponse(msg.content) && (() => {
+                        const all = currentConversation.messages;
+                        const idx = all.findIndex((m) => m.id === msg.id);
+                        const caseText = all.slice(0, idx).reverse().find((m) => m.role === "user")?.content ?? "";
+                        return <AtestusShortcut caseText={caseText} content={msg.content} />;
+                      })()}
                     </>
                   ) : (
                     <>
@@ -2774,13 +2787,23 @@ export function AgentChat({
           <div className="flex items-center gap-1.5 mb-2">
             <Toggle
               pressed={quickCIDMode}
-              onPressedChange={setQuickCIDMode}
+              onPressedChange={toggleQuickCID}
               size="sm"
               className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-primary/20 gap-1"
               title="Modo C.R.: CID Rápido — sugere até 10 CIDs sem perguntas"
             >
               <Zap className="h-3 w-3" />
               <span>C.R.</span>
+            </Toggle>
+            <Toggle
+              pressed={afastamentoMode}
+              onPressedChange={toggleAfastamento}
+              size="sm"
+              className="h-7 px-2 text-xs rounded-full shrink-0 data-[state=on]:bg-primary/20 gap-1"
+              title="Modo D.A.: Dias & Afastamento — CID do atestado e dias para trabalho administrativo e braçal"
+            >
+              <CalendarDays className="h-3 w-3" />
+              <span>D.A.</span>
             </Toggle>
           </div>
         )}
@@ -2985,16 +3008,28 @@ export function AgentChat({
               </Toggle>
             )}
             {agentType === "codexus" && (
-              <Toggle
-                pressed={quickCIDMode}
-                onPressedChange={setQuickCIDMode}
-                size="sm"
-                className="shrink-0 h-8 data-[state=on]:bg-primary/20 gap-1 rounded-full"
-                title="Modo C.R.: CID Rápido"
-              >
-                <Zap className="h-4 w-4" />
-                <span className="text-xs">C.R.</span>
-              </Toggle>
+              <>
+                <Toggle
+                  pressed={quickCIDMode}
+                  onPressedChange={toggleQuickCID}
+                  size="sm"
+                  className="shrink-0 h-8 data-[state=on]:bg-primary/20 gap-1 rounded-full"
+                  title="Modo C.R.: CID Rápido"
+                >
+                  <Zap className="h-4 w-4" />
+                  <span className="text-xs">C.R.</span>
+                </Toggle>
+                <Toggle
+                  pressed={afastamentoMode}
+                  onPressedChange={toggleAfastamento}
+                  size="sm"
+                  className="shrink-0 h-8 data-[state=on]:bg-primary/20 gap-1 rounded-full"
+                  title="Modo D.A.: Dias & Afastamento — CID do atestado e dias para trabalho administrativo e braçal"
+                >
+                  <CalendarDays className="h-4 w-4" />
+                  <span className="text-xs">D.A.</span>
+                </Toggle>
+              </>
             )}
             {agentType === "mediscuss" && (
               <>

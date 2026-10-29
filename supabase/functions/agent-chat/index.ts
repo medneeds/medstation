@@ -6,6 +6,7 @@ import { MEDISCUSS_FIDELITY_RULES } from "./mediscuss.ts";
 import { UTI_CONDUTAS_BLOCK, UTI_PARAMETROS_BLOCK, isUtiEvolucaoTemplate, utiAntibioticBlock, utiEvolucaoFidelityRules, utiReferenceDate } from "./uti-evolucao.ts";
 import { selectAgentModel } from "./model-routing.ts";
 import { buildOperadorPrompt, isOperadorAction, validateOperadorRequest } from "./operador.ts";
+import { buildAfastamentoPrompt, validateCodexusRequest } from "./codexus-afastamento.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -296,11 +297,18 @@ serve(async (req) => {
 
     console.log(`Rate limit check passed for user ${user.id}`);
 
-    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, aheTemplate, bulaInteligenteMode, receitaMode, casoTerapeuticoMode, directLIMode, onlyAltered, clinicalImpression, examSuggestMode, quickCIDMode, compactMode, mediscussMode, mediscussSpecialty, reportMode, reportType, reportPurpose, reportSpecialty, legalisMode, legalisScenario, legalisTopic, caseSuggestMode, professorMode, professorStyle, operadorAction } = await req.json();
+    const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, aheTemplate, bulaInteligenteMode, receitaMode, casoTerapeuticoMode, directLIMode, onlyAltered, clinicalImpression, examSuggestMode, quickCIDMode, afastamentoMode, compactMode, mediscussMode, mediscussSpecialty, reportMode, reportType, reportPurpose, reportSpecialty, legalisMode, legalisScenario, legalisTopic, caseSuggestMode, professorMode, professorStyle, operadorAction } = await req.json();
 
     const professorError = validateProfessorRequest({ agentType, professorMode, professorStyle, directAHEMode, reportMode, caseSuggestMode });
     if (professorError) {
       return new Response(JSON.stringify({ error: professorError }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const codexusError = validateCodexusRequest({ agentType, quickCIDMode, afastamentoMode });
+    if (codexusError) {
+      return new Response(JSON.stringify({ error: codexusError }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -3058,6 +3066,11 @@ Regras:
       systemPrompt = buildOperadorPrompt(isOperadorAction(operadorAction) ? operadorAction : "livre", contextData);
     }
 
+    // CODexus D.A.: CIDs do atestado e dias por tipo de trabalho, com instruções próprias.
+    if (agentType === "codexus" && afastamentoMode === true) {
+      systemPrompt = buildAfastamentoPrompt(contextData);
+    }
+
     // SHIELD: blinda o system prompt com regras absolutas anti-extração
     systemPrompt = PROMPT_SHIELD_PREAMBLE + systemPrompt;
 
@@ -3099,7 +3112,7 @@ Regras:
     ];
 
     // Call Lovable AI with streaming
-    const { model, useResponsesApi } = selectAgentModel({ agentType, directAHEMode, aheTemplate, operadorAction });
+    const { model, useResponsesApi } = selectAgentModel({ agentType, directAHEMode, aheTemplate, operadorAction, afastamentoMode });
     const startedAt = Date.now();
     const aiResponse = await fetch(
       useResponsesApi
