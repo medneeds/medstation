@@ -20,6 +20,8 @@ describe("official prescription rules", () => {
     expect(classifyMedication("Clonazepam 2 mg").talonario).toBe("B");
     expect(classifyMedication("Metilfenidato 10 mg").talonario).toBe("A");
     expect(classifyMedication("Isotretinoína 20 mg").talonario).toBe("especial");
+    expect(classifyMedication("Rivotril 2 mg").talonario).toBe("B");
+    expect(classifyMedication("Ritalina LA 20 mg").talonario).toBe("A");
   });
 
   it("detects controle especial and antimicrobiano", () => {

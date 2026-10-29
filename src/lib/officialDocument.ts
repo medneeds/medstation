@@ -18,13 +18,15 @@ const fold = (s: string) =>
 const NOTIFICACAO_A = [
   "morfina", "metadona", "oxicodona", "fentanil", "petidina", "meperidina", "hidromorfona",
   "metilfenidato", "lisdexanfetamina", "dexanfetamina", "anfetamina", "modafinila", "tapentadol",
+  "dimorf", "ritalina", "concerta", "venvanse", "stavigile", "oxycontin", "durogesic",
 ];
 const NOTIFICACAO_B = [
   "clonazepam", "diazepam", "alprazolam", "lorazepam", "bromazepam", "midazolam", "flunitrazepam",
   "clobazam", "cloxazolam", "nitrazepam", "flurazepam", "estazolam", "zolpidem", "zopiclona",
   "eszopiclona", "fenobarbital", "sibutramina", "anfepramona", "femproporex", "mazindol",
+  "rivotril", "valium", "frontal", "lexotan", "dormonid", "rohypnol", "stilnox", "patz", "gardenal", "urbanil",
 ];
-const NOTIFICACAO_ESPECIAL = ["isotretinoina", "acitretina", "talidomida"];
+const NOTIFICACAO_ESPECIAL = ["isotretinoina", "acitretina", "talidomida", "roacutan", "neotigason"];
 const CONTROLE_ESPECIAL = [
   "fluoxetina", "sertralina", "paroxetina", "citalopram", "escitalopram", "fluvoxamina", "venlafaxina",
   "desvenlafaxina", "duloxetina", "bupropiona", "mirtazapina", "trazodona", "amitriptilina",
@@ -34,13 +36,15 @@ const CONTROLE_ESPECIAL = [
   "valproato", "valproico", "divalproato", "lamotrigina", "topiramato", "gabapentina", "pregabalina",
   "levetiracetam", "lacosamida", "fenitoina", "litio", "tramadol", "codeina", "biperideno",
   "dissulfiram", "naltrexona", "testosterona", "oxandrolona", "nandrolona",
+  "zoloft", "lexapro", "prozac", "pristiq", "cymbalta", "wellbutrin", "seroquel", "risperdal", "zyprexa",
+  "tegretol", "depakote", "depakene", "lamictal", "lyrica", "tramal", "tylex",
 ];
 const ANTIMICROBIANOS = [
   "amoxicilina", "ampicilina", "penicilina", "benzilpenicilina", "azitromicina", "claritromicina",
   "eritromicina", "cefalexina", "cefadroxila", "cefuroxima", "ceftriaxona", "cefaclor", "ciprofloxacino",
   "levofloxacino", "moxifloxacino", "norfloxacino", "ofloxacino", "nitrofurantoina", "sulfametoxazol",
   "trimetoprima", "metronidazol", "secnidazol", "tinidazol", "clindamicina", "doxiciclina", "tetraciclina",
-  "minociclina", "linezolida", "fosfomicina",
+  "minociclina", "linezolida", "fosfomicina", "amoxil", "clavulin", "zitromax", "cipro", "bactrim", "keflex", "flagyl",
 ];
 
 const hasWord = (name: string, list: string[]) => {
