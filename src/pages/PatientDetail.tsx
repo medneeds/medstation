@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import {
   ArrowLeft,
   User,
@@ -21,6 +21,9 @@ import {
   Plus,
   Mic,
   AlertTriangle,
+  Bot,
+  Copy,
+  Trash2,
 } from "lucide-react";
 import jsPDF from "jspdf";
 
@@ -39,7 +42,7 @@ interface Patient {
 
 interface TimelineItem {
   id: string;
-  type: "case" | "prescription" | "exam";
+  type: "case" | "prescription" | "exam" | "record";
   date: string;
   title: string;
   subtitle?: string;
@@ -54,6 +57,7 @@ export default function PatientDetail() {
   const [patient, setPatient] = useState<Patient | null>(null);
   const [timeline, setTimeline] = useState<TimelineItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [openRecord, setOpenRecord] = useState<TimelineItem | null>(null);
   const [stats, setStats] = useState({
     totalCases: 0,
     totalPrescriptions: 0,
@@ -109,6 +113,13 @@ export default function PatientDetail() {
 
       if (examsError) throw examsError;
 
+      // Fetch assistant replies saved to this patient
+      const { data: records } = await supabase
+        .from("patient_records")
+        .select("id, title, content, source_assistant, created_at")
+        .eq("patient_id", id)
+        .eq("user_id", user.id);
+
       // Build timeline
       const timelineItems: TimelineItem[] = [
         ...(cases || []).map((c) => ({
@@ -137,6 +148,14 @@ export default function PatientDetail() {
           subtitle: e.clinical_indication,
           status: e.status,
           data: e,
+        })),
+        ...(records || []).map((rec) => ({
+          id: rec.id,
+          type: "record" as const,
+          date: rec.created_at,
+          title: rec.title,
+          subtitle: rec.content.slice(0, 220),
+          data: rec,
         })),
       ];
 
@@ -169,6 +188,8 @@ export default function PatientDetail() {
         return <Pill className="h-4 w-4" />;
       case "exam":
         return <TestTube className="h-4 w-4" />;
+      case "record":
+        return <Bot className="h-4 w-4" />;
       default:
         return <Clock className="h-4 w-4" />;
     }
@@ -182,6 +203,8 @@ export default function PatientDetail() {
         return "Prescrição";
       case "exam":
         return "Exame";
+      case "record":
+        return "Salvo do assistente";
       default:
         return type;
     }
@@ -210,6 +233,9 @@ export default function PatientDetail() {
         break;
       case "exam":
         navigate(`/exames/${item.id}`);
+        break;
+      case "record":
+        setOpenRecord(item);
         break;
     }
   };
@@ -364,6 +390,18 @@ export default function PatientDetail() {
       return;
     }
     navigate(`/consultorio?caseId=${data.id}`);
+  };
+
+  const deleteRecord = async (item: TimelineItem) => {
+    if (!window.confirm("Remover este registro da ficha do paciente?")) return;
+    const { error } = await supabase.from("patient_records").delete().eq("id", item.id);
+    if (error) {
+      toast({ variant: "destructive", title: "Não foi possível remover", description: error.message });
+      return;
+    }
+    setTimeline((t) => t.filter((x) => !(x.type === "record" && x.id === item.id)));
+    setOpenRecord(null);
+    toast({ description: "Registro removido da ficha." });
   };
 
   const age = patient.date_of_birth
@@ -574,6 +612,35 @@ export default function PatientDetail() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={!!openRecord} onOpenChange={(o) => !o && setOpenRecord(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="pr-6">{openRecord?.title}</DialogTitle>
+            <DialogDescription>
+              {openRecord?.data?.source_assistant ? `${openRecord.data.source_assistant} · ` : ""}
+              salvo em {openRecord ? new Date(openRecord.date).toLocaleString("pt-BR") : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto rounded-md border bg-muted/30 p-3 text-sm whitespace-pre-wrap">
+            {openRecord?.data?.content}
+          </div>
+          <div className="flex justify-between gap-2">
+            <Button variant="ghost" size="sm" className="text-destructive" onClick={() => openRecord && deleteRecord(openRecord)}>
+              <Trash2 className="h-4 w-4 mr-1.5" /> Remover
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => {
+                navigator.clipboard.writeText(openRecord?.data?.content || "");
+                toast({ description: "Texto copiado!" });
+              }}
+            >
+              <Copy className="h-4 w-4 mr-1.5" /> Copiar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
