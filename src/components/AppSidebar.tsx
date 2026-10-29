@@ -188,14 +188,24 @@ export function AppSidebar() {
         {/* Assistentes */}
         <SidebarGroup className="py-3 group-data-[collapsible=icon]:px-1 hairline-t">
           {!collapsed && (
-            <SidebarGroupLabel className="label-mono px-4 mb-2 h-auto flex items-center justify-between">
-              <span>Assistentes</span>
-              <span className="font-mono text-2xs text-muted-foreground/60">{agentModules.length.toString().padStart(2, "0")}</span>
+            <SidebarGroupLabel asChild className="label-mono px-4 mb-2 h-auto">
+              <button
+                type="button"
+                onClick={() => toggleModule("assistentes")}
+                aria-expanded={!closedModules.assistentes}
+                className="w-full flex items-center justify-between gap-2 hover:text-foreground transition-colors"
+              >
+                <span>Assistentes</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="font-mono text-2xs text-muted-foreground/60">{agentModules.length.toString().padStart(2, "0")}</span>
+                  <ChevronDown className={cn("h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform", closedModules.assistentes && "-rotate-90")} />
+                </span>
+              </button>
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
             <SidebarMenu className="gap-1.5">
-              {agentModules.map((item) => (
+              {(collapsed || !closedModules.assistentes) && agentModules.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title} className={cn("p-0 h-auto bg-transparent hover:bg-transparent", COLLAPSED_BTN)}>
                     <NavLink to={item.url} className={(p) => cn(navItemClass(p), collapsed && COLLAPSED_ITEM)}>
