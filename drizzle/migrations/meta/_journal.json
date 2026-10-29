@@ -57,6 +57,13 @@
       "when": 1793302590811,
       "tag": "0007_patient_address_and_sex",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793306077563,
+      "tag": "0008_patient_records",
+      "breakpoints": true
     }
   ]
 }
