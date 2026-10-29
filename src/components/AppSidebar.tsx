@@ -372,7 +372,7 @@ export function AppSidebar() {
         <SidebarGroup className="py-3 group-data-[collapsible=icon]:px-1 hairline-t">
           {!collapsed && (
             <SidebarGroupLabel className="label-mono px-4 mb-2 h-auto text-primary">
-              <span>Acervo clínico</span>
+              <span className="flex items-center gap-2">Acervo clínico<span className="rounded-full border border-primary/40 bg-primary/10 px-1.5 py-px text-[9px] font-semibold tracking-wider text-primary">BETA</span></span>
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
