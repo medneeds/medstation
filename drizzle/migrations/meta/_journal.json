@@ -43,6 +43,13 @@
       "when": 1793287929594,
       "tag": "0005_profile_letterhead_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793289943138,
+      "tag": "0006_patient_tags_and_prescription_templates",
+      "breakpoints": true
     }
   ]
 }
