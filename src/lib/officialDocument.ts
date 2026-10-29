@@ -103,8 +103,17 @@ export function legalValidityDays(category: RxCategory): number | null {
   return null;
 }
 
-export function effectiveValidityDays(category: RxCategory, chosen: number | null | undefined): number | null {
-  return legalValidityDays(category) ?? (chosen && chosen > 0 ? chosen : null);
+export function effectiveValidityDays(category: RxCategory, chosen: number | null | undefined, medicationNames: string[] = []): number | null {
+  const legal = [category, ...medicationNames.map((n) => classifyMedication(n).category)]
+    .map(legalValidityDays)
+    .filter((d): d is number => d !== null);
+  if (legal.length) return Math.min(...legal);
+  return chosen && chosen > 0 ? chosen : null;
+}
+
+/** True when any medication is an antimicrobial (RDC 471/2021 needs age and sex). */
+export function hasAntimicrobial(names: string[]): boolean {
+  return names.some((n) => classifyMedication(n).category === "antimicrobiano");
 }
 
 /** gov.br (advanced) signature is accepted only where Lei 14.063 does not require ICP-Brasil. */
@@ -160,10 +169,10 @@ export function showSpecialty(d: DoctorData): boolean {
   return !empty(d.specialty) && !empty(d.rqe);
 }
 
-export function patientIssues(p: PatientData, doc: "prescription" | "exam", category: RxCategory = "simples"): Issue[] {
+export function patientIssues(p: PatientData, doc: "prescription" | "exam", category: RxCategory = "simples", withAntimicrobial = false): Issue[] {
   const out: Issue[] = [];
   if (empty(p.name)) out.push({ field: "name", message: "Nome completo do paciente", blocking: true });
-  if (doc === "prescription" && category === "antimicrobiano") {
+  if (doc === "prescription" && (category === "antimicrobiano" || withAntimicrobial)) {
     if (empty(p.dateOfBirth)) out.push({ field: "dateOfBirth", message: "Data de nascimento (idade obrigatória para antimicrobiano)", blocking: true });
     if (empty(p.sex)) out.push({ field: "sex", message: "Sexo (obrigatório para antimicrobiano)", blocking: true });
   }

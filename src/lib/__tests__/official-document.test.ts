@@ -46,6 +46,12 @@ describe("official prescription rules", () => {
     expect(effectiveValidityDays("simples", 60)).toBe(60);
   });
 
+  it("an antibiotic inside a controle especial receita limits validity to 10 days and requires age and sex", () => {
+    expect(effectiveValidityDays("controle_especial", 60, ["Sertralina", "Amoxicilina"])).toBe(10);
+    const f = patientIssues({ name: "João", address: "Rua B", city: "X", state: "SP" }, "prescription", "controle_especial", true).filter((i) => i.blocking).map((i) => i.field);
+    expect(f).toEqual(expect.arrayContaining(["dateOfBirth", "sex"]));
+  });
+
   it("gov.br signature only for simples and exams", () => {
     expect(allowedSignatureMethods("prescription", "simples")).toContain("govbr");
     expect(allowedSignatureMethods("exam")).toContain("govbr");

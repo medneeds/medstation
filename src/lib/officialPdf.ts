@@ -255,7 +255,7 @@ export function buildPrescriptionPdf(input: PdfPrescriptionInput): jsPDF {
   const special = category === "controle_especial";
   const sigTop = special ? H - 98 : H - 58;
   const vias = copiesFor(category);
-  const validity = effectiveValidityDays(category, input.validityDays);
+  const validity = effectiveValidityDays(category, input.validityDays, input.medications.map((m) => m.name));
   vias.forEach((label, idx) => {
     if (idx > 0) doc.addPage();
     let y = header(doc, d);

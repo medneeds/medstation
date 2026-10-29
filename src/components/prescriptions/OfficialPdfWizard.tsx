@@ -17,6 +17,7 @@ import {
   classifyPrescription,
   doctorIssues,
   effectiveValidityDays,
+  hasAntimicrobial,
   medicationIssues,
   patientIssues,
   printableCid,
@@ -187,7 +188,8 @@ export function OfficialPdfWizard({ open, onOpenChange, record }: Props) {
   }, [open, record.patientId]);
 
   const dIssues = doctorIssues(doctor);
-  const pIssues = patientIssues(patient, record.kind, category);
+  const medNames = record.kind === "prescription" ? record.medications.map((m) => m.name) : [];
+  const pIssues = patientIssues(patient, record.kind, category, hasAntimicrobial(medNames));
   const mIssues = record.kind === "prescription" ? medicationIssues(record.medications) : [];
   const blocked = (list: Issue[]) => list.some((i) => i.blocking);
   const bad = (list: Issue[], f: string) => list.some((i) => i.blocking && i.field === f);
@@ -301,7 +303,7 @@ export function OfficialPdfWizard({ open, onOpenChange, record }: Props) {
     }
   };
 
-  const validity = effectiveValidityDays(category, record.kind === "prescription" ? record.validityDays : null);
+  const validity = effectiveValidityDays(category, record.kind === "prescription" ? record.validityDays : null, medNames);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -476,7 +478,7 @@ function DocumentStep(props: {
               <p className="text-xs text-destructive">Você alterou o tipo identificado pela MedStation ({CATEGORY_LABEL[detected]}). Confira antes de assinar.</p>
             )}
             {category === "antimicrobiano" && <p className="text-xs text-muted-foreground">2 vias (uma fica na farmácia), validade de 10 dias, com idade e sexo do paciente.</p>}
-            {category === "controle_especial" && <p className="text-xs text-muted-foreground">2 vias com quadros do comprador e do fornecedor, validade de 30 dias e endereço do paciente. Quantidade para até 60 dias de tratamento (antiepilépticos até 6 meses).</p>}
+            {category === "controle_especial" && <p className="text-xs text-muted-foreground">2 vias com quadros do comprador e do fornecedor, validade de {props.validity ?? 30} dias e endereço do paciente. Quantidade para até 60 dias de tratamento (antiepilépticos até 6 meses).</p>}
             {category === "simples" && <p className="text-xs text-muted-foreground">1 via.{props.validity ? ` Validade de ${props.validity} dias.` : ""}</p>}
           </div>)}
 
