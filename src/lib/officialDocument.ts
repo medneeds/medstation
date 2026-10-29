@@ -44,7 +44,7 @@ const ANTIMICROBIANOS = [
   "eritromicina", "cefalexina", "cefadroxila", "cefuroxima", "ceftriaxona", "cefaclor", "ciprofloxacino",
   "levofloxacino", "moxifloxacino", "norfloxacino", "ofloxacino", "nitrofurantoina", "sulfametoxazol",
   "trimetoprima", "metronidazol", "secnidazol", "tinidazol", "clindamicina", "doxiciclina", "tetraciclina",
-  "minociclina", "linezolida", "fosfomicina", "amoxil", "clavulin", "zitromax", "cipro", "bactrim", "keflex", "flagyl",
+  "minociclina", "linezolida", "fosfomicina", "amoxil", "clavulin", "zitromax", "bactrim", "keflex", "flagyl",
 ];
 
 const hasWord = (name: string, list: string[]) => {

@@ -29,6 +29,7 @@ describe("official prescription rules", () => {
     expect(classifyMedication("Paracetamol + codeína").category).toBe("controle_especial");
     expect(classifyMedication("Amoxicilina 500 mg").category).toBe("antimicrobiano");
     expect(classifyMedication("Dipirona 1 g").category).toBe("simples");
+    expect(classifyMedication("Ciproeptadina 4 mg").category).toBe("simples");
   });
 
   it("strictest medication decides the document", () => {
