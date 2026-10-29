@@ -1325,6 +1325,8 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           city: string | null
+          clinic_name: string | null
+          clinic_phone: string | null
           cpf: string | null
           created_at: string
           crm: string | null
@@ -1335,6 +1337,7 @@ export type Database = {
           gender: string | null
           graduation_year: number | null
           id: string
+          letterhead_logo_url: string | null
           medical_school: string | null
           phone: string | null
           postal_code: string | null
@@ -1349,6 +1352,8 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           city?: string | null
+          clinic_name?: string | null
+          clinic_phone?: string | null
           cpf?: string | null
           created_at?: string
           crm?: string | null
@@ -1359,6 +1364,7 @@ export type Database = {
           gender?: string | null
           graduation_year?: number | null
           id: string
+          letterhead_logo_url?: string | null
           medical_school?: string | null
           phone?: string | null
           postal_code?: string | null
@@ -1373,6 +1379,8 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           city?: string | null
+          clinic_name?: string | null
+          clinic_phone?: string | null
           cpf?: string | null
           created_at?: string
           crm?: string | null
@@ -1383,6 +1391,7 @@ export type Database = {
           gender?: string | null
           graduation_year?: number | null
           id?: string
+          letterhead_logo_url?: string | null
           medical_school?: string | null
           phone?: string | null
           postal_code?: string | null
