@@ -1154,6 +1154,44 @@ export type Database = {
         }
         Relationships: []
       }
+      patient_records: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          patient_id: string
+          source_assistant: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          patient_id: string
+          source_assistant?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          patient_id?: string
+          source_assistant?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_records_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patients: {
         Row: {
           address: string | null
