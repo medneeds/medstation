@@ -84,10 +84,7 @@ function via(kind: PrescriptionKind, label: string, d: PrintDoctor, p: PrintPres
   return `<section class="via">${header(d)}<div class="tt">${title}${label ? `<span class="vl">${esc(label)}</span>` : ""}</div><div class="pt"><div><b>Paciente:</b> ${esc(p.patientName)}</div>${p.patientCpf ? `<div><b>CPF:</b> ${esc(p.patientCpf)}</div>` : ""}${special ? `<div><b>Endereço:</b> ${esc(p.patientAddress || "________________________________")}</div>` : ""}</div><ol class="rx">${meds(p.medications)}</ol>${p.observations?.trim() ? `<div class="ob"><b>Observações:</b> ${esc(p.observations)}</div>` : ""}<div class="sg"><div class="ln"></div><div>${esc(doctorTitle(d.gender))} ${esc(d.fullName)}${d.crm ? ` · CRM ${esc(d.crm)}${d.crmState ? `/${esc(d.crmState)}` : ""}` : ""}</div><div class="dt">${esc(date)} · Nº ${esc(p.number)}</div></div>${buyer}${footer(d)}</section>`;
 }
 
-export function buildPrescriptionHtml(kind: PrescriptionKind, d: PrintDoctor, p: PrintPrescription): string {
-  const vias = COPY_LABELS[kind].map((l) => via(kind, l, d, p)).join("");
-  const landscape = kind === "controle_especial";
-  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"/><title>Receita ${esc(p.number)}</title><style>
+const baseStyle = (landscape: boolean) => `
 @page{size:A4 ${landscape ? "landscape" : "portrait"};margin:10mm}
 *{box-sizing:border-box}body{font-family:Georgia,'Times New Roman',serif;color:#1d2420;margin:0}
 .wrap{display:flex;gap:10mm}.via{flex:1;display:flex;flex-direction:column;min-height:${landscape ? "188mm" : "275mm"};${landscape ? "border-right:1px dashed #b9c2bc;padding-right:5mm" : ""}}
@@ -100,5 +97,52 @@ export function buildPrescriptionHtml(kind: PrescriptionKind, d: PrintDoctor, p:
 .sg{text-align:center;font-size:11px;margin:16px 0 8px}.ln{border-top:1px solid #1d2420;width:60%;margin:0 auto 4px}.dt{color:#55605a}
 .box2{display:flex;gap:6px;margin-bottom:6px}.box{flex:1;border:1px solid #9aa59f;padding:4px 6px;font-size:9.5px}.box p{margin:2px 0}.bt{font:700 9px Arial,sans-serif;margin-bottom:3px}
 .ft{font-size:10px;color:#55605a;border-top:1px solid #d5ddd8;padding-top:4px;text-align:center}
-</style></head><body><div class="wrap">${vias}</div><script>window.onload=function(){setTimeout(function(){window.print()},300)}</script></body></html>`;
+`;
+
+export function buildPrescriptionHtml(kind: PrescriptionKind, d: PrintDoctor, p: PrintPrescription): string {
+  const vias = COPY_LABELS[kind].map((l) => via(kind, l, d, p)).join("");
+  const landscape = kind === "controle_especial";
+  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"/><title>Receita ${esc(p.number)}</title><style>${baseStyle(landscape)}</style></head><body><div class="wrap">${vias}</div><script>window.onload=function(){setTimeout(function(){window.print()},300)}</script></body></html>`;
+}
+
+export interface PrintExam {
+  name: string;
+  type?: string;
+  instructions?: string;
+}
+
+export interface PrintExamRequest {
+  number: string;
+  createdAt: string;
+  patientName: string;
+  patientCpf?: string | null;
+  exams: PrintExam[];
+  clinicalIndication?: string | null;
+  cidCode?: string | null;
+  priority?: string | null;
+  observations?: string | null;
+}
+
+const PRIORITY_LABEL: Record<string, string> = { urgent: "URGENTE", urgente: "URGENTE", high: "PRIORITÁRIO" };
+
+export function buildExamRequestHtml(d: PrintDoctor, r: PrintExamRequest): string {
+  const date = new Date(r.createdAt).toLocaleDateString("pt-BR");
+  const list = r.exams
+    .filter((e) => e.name?.trim())
+    .map((e, i) => `<li><div class="mn">${i + 1}. ${esc(e.name)}</div>${e.instructions?.trim() ? `<div class="md">${esc(e.instructions)}</div>` : ""}</li>`)
+    .join("");
+  const prio = r.priority ? PRIORITY_LABEL[r.priority.toLowerCase()] : undefined;
+  const body = `<section class="via">${header(d)}<div class="tt">SOLICITAÇÃO DE EXAMES${prio ? `<span class="vl">${prio}</span>` : ""}</div><div class="pt"><div><b>Paciente:</b> ${esc(r.patientName)}</div>${r.patientCpf ? `<div><b>CPF:</b> ${esc(r.patientCpf)}</div>` : ""}${r.clinicalIndication?.trim() ? `<div><b>Indicação clínica:</b> ${esc(r.clinicalIndication)}</div>` : ""}${r.cidCode?.trim() ? `<div><b>CID:</b> ${esc(r.cidCode)}</div>` : ""}</div><ol class="rx">${list}</ol>${r.observations?.trim() ? `<div class="ob"><b>Observações:</b> ${esc(r.observations)}</div>` : ""}<div class="sg"><div class="ln"></div><div>${esc(doctorTitle(d.gender))} ${esc(d.fullName)}${d.crm ? ` · CRM ${esc(d.crm)}${d.crmState ? `/${esc(d.crmState)}` : ""}` : ""}</div><div class="dt">${esc(date)} · Nº ${esc(r.number)}</div></div>${footer(d)}</section>`;
+  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"/><title>Requisição ${esc(r.number)}</title><style>${baseStyle(false)}</style></head><body><div class="wrap">${body}</div><script>window.onload=function(){setTimeout(function(){window.print()},300)}</script></body></html>`;
+}
+
+/** Opens a print window synchronously (to avoid popup blockers) and fills it once the HTML is ready. */
+export function openPrintWindow(): Window | null {
+  return window.open("", "_blank");
+}
+
+export function writePrintWindow(win: Window, html: string) {
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
 }

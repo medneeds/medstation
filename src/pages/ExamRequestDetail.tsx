@@ -28,6 +28,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Printer } from "lucide-react";
+import { buildExamRequestHtml, openPrintWindow, writePrintWindow } from "@/lib/prescriptionPrint";
+import { loadLetterhead } from "@/lib/letterhead";
 
 interface ExamRequest {
   id: string;
@@ -173,6 +176,30 @@ export default function ExamRequestDetail() {
     }
   };
 
+  const handlePrint = async () => {
+    if (!examRequest) return;
+    const win = openPrintWindow();
+    if (!win) {
+      toast({ title: "Permita a abertura de janelas", description: "O navegador bloqueou a janela de impressão.", variant: "destructive" });
+      return;
+    }
+    const doctor = await loadLetterhead(examRequest.profiles?.full_name || "");
+    writePrintWindow(
+      win,
+      buildExamRequestHtml(doctor, {
+        number: examRequest.request_number,
+        createdAt: examRequest.requested_date || examRequest.created_at,
+        patientName: examRequest.patients?.name || "",
+        patientCpf: examRequest.patients?.cpf,
+        exams: examRequest.exams || [],
+        clinicalIndication: examRequest.clinical_indication,
+        cidCode: examRequest.cid_code,
+        priority: examRequest.priority,
+        observations: examRequest.observations,
+      }),
+    );
+  };
+
   const handleDownloadPDF = () => {
     if (!examRequest) return;
 
@@ -266,6 +293,10 @@ export default function ExamRequestDetail() {
               </Select>
             </div>
             <div className="flex items-end">
+              <Button onClick={handlePrint}>
+                <Printer className="h-4 w-4 mr-2" />
+                Imprimir requisição
+              </Button>
               <Button onClick={handleDownloadPDF} variant="outline">
                 <Download className="h-4 w-4 mr-2" />
                 Baixar PDF

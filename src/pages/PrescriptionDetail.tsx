@@ -25,6 +25,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Printer } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { buildPrescriptionHtml, type PrescriptionKind } from "@/lib/prescriptionPrint";
+import { loadLetterhead } from "@/lib/letterhead";
 
 interface Medication {
   name: string;
@@ -187,29 +188,10 @@ export default function PrescriptionDetail() {
       toast({ title: "Permita a abertura de janelas", description: "O navegador bloqueou a janela de impressão.", variant: "destructive" });
       return;
     }
-    const { data: { user } } = await supabase.auth.getUser();
-    const { data: prof } = await supabase
-      .from("profiles")
-      .select("full_name, gender, crm, crm_state, rqe, specialty, address, city, state, phone, clinic_name, clinic_phone, letterhead_logo_url")
-      .eq("id", user?.id ?? "")
-      .maybeSingle();
+    const doctor = await loadLetterhead(prescription.profiles?.full_name || "");
     const html = buildPrescriptionHtml(
       kind,
-      {
-        fullName: prof?.full_name || prescription.profiles?.full_name || "",
-        gender: prof?.gender,
-        crm: prof?.crm,
-        crmState: prof?.crm_state,
-        rqe: prof?.rqe,
-        specialty: prof?.specialty,
-        address: prof?.address,
-        city: prof?.city,
-        state: prof?.state,
-        phone: prof?.phone,
-        clinicName: prof?.clinic_name,
-        clinicPhone: prof?.clinic_phone,
-        logoUrl: prof?.letterhead_logo_url,
-      },
+      doctor,
       {
         number: prescription.prescription_number,
         createdAt: prescription.created_at,
