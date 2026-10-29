@@ -70,3 +70,13 @@ ARTE FINAL — CARROSSEL CLÍNICO
 - [ ] Publicar as funções (aguardando autorização)
 - [ ] Arsenal Med: receber o aviso, pedir CPF ao criar acesso, prazo de 12 meses (feito no projeto do Arsenal Med)
 - [ ] Reenviar o bônus dos 2 anuais atuais depois que o Arsenal Med estiver pronto
+
+## Acervo pessoal · Pacientes e documentos
+- [x] Sidebar com 4 cartões (Pacientes, Cofre, Prescrições, Requisições)
+- [x] Meus Pacientes: resumo, casos por paciente, iniciar atendimento
+- [x] Cabeçalho profissional nas Configurações; impressão de receita (simples e controle especial) e requisição
+- [x] Etiquetas clínicas, alergias, filtro Ativos/Arquivados; alerta de alergia e modelos de receita
+- [ ] Vincular resposta de assistente a um paciente
+- [ ] Bloco de assinatura com QR Code de validação
+- [ ] Conferir telas logado (bloqueado pela confirmação do aparelho por código)
+- [ ] Publicar somente mediante solicitação
