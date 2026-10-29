@@ -86,6 +86,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useSubscription } from "@/contexts/SubscriptionContext";
 
 import { SaveToVaultButton } from "@/components/chat/SaveToVaultButton";
+import { SaveToPatientButton } from "@/components/chat/SaveToPatientButton";
 import { 
   Send, 
   Paperclip, 
@@ -2481,6 +2482,7 @@ export function AgentChat({
                         <span className="hidden md:inline">Maiúscula</span>
                       </Button>
                       <SaveToVaultButton content={visibleContent(msg.content)} assistantLabel={agentName} />
+                      <SaveToPatientButton content={visibleContent(msg.content)} assistantLabel={agentName} />
                       <Button
                         variant="ghost"
                         size="sm"
