@@ -130,9 +130,10 @@ export function OfficialPdfWizard({ open, onOpenChange, record }: Props) {
   const talonario: TalonarioKind | undefined = categoryOverride ? (categoryOverride === "talonario" ? detected.talonario ?? "B" : undefined) : detected.talonario;
   const allowedSig = allowedSignatureMethods(record.kind, category);
 
+  const sigKey = allowedSig.join(",");
   useEffect(() => {
-    if (!allowedSig.includes(signature)) setSignature("manual");
-  }, [allowedSig, signature]);
+    if (!sigKey.split(",").includes(signature)) setSignature("manual");
+  }, [sigKey, signature]);
 
   useEffect(() => {
     if (!open) return;
@@ -462,7 +463,7 @@ function DocumentStep(props: {
             </ul>
           </div>
 
-          <div className="space-y-2">
+          {detected !== "talonario" && (<div className="space-y-2">
             <Label>Tipo de receita</Label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {(["simples", "antimicrobiano", "controle_especial"] as RxCategory[]).map((c) => (
@@ -477,7 +478,7 @@ function DocumentStep(props: {
             {category === "antimicrobiano" && <p className="text-xs text-muted-foreground">2 vias (uma fica na farmácia), validade de 10 dias, com idade e sexo do paciente.</p>}
             {category === "controle_especial" && <p className="text-xs text-muted-foreground">2 vias com quadros do comprador e do fornecedor, validade de 30 dias e endereço do paciente. Quantidade para até 60 dias de tratamento (antiepilépticos até 6 meses).</p>}
             {category === "simples" && <p className="text-xs text-muted-foreground">1 via.{props.validity ? ` Validade de ${props.validity} dias.` : ""}</p>}
-          </div>
+          </div>)}
 
           {category === "talonario" && (
             <Alert variant="destructive">

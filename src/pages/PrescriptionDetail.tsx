@@ -26,6 +26,7 @@ import { Printer } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { buildPrescriptionHtml, type PrescriptionKind } from "@/lib/prescriptionPrint";
 import { loadLetterhead } from "@/lib/letterhead";
+import { OfficialPdfWizard } from "@/components/prescriptions/OfficialPdfWizard";
 
 interface Medication {
   name: string;
@@ -65,6 +66,7 @@ export default function PrescriptionDetail() {
   const { toast } = useToast();
   const [prescription, setPrescription] = useState<Prescription | null>(null);
   const [loading, setLoading] = useState(true);
+  const [pdfOpen, setPdfOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -257,6 +259,19 @@ export default function PrescriptionDetail() {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
+      <OfficialPdfWizard
+        open={pdfOpen}
+        onOpenChange={setPdfOpen}
+        record={{
+          kind: "prescription",
+          id: prescription.id,
+          number: prescription.prescription_number,
+          patientId: prescription.patient_id,
+          medications: prescription.medications || [],
+          validityDays: prescription.validity_days,
+          observations: prescription.observations,
+        }}
+      />
       {/* Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-4">
@@ -279,9 +294,13 @@ export default function PrescriptionDetail() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-wrap gap-2">
+            <Button onClick={() => setPdfOpen(true)}>
+              <Download className="h-4 w-4 mr-2" />
+              Gerar PDF oficial
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="default">
+                <Button variant="outline">
                   <Printer className="h-4 w-4 mr-2" />
                   Imprimir receita
                 </Button>
@@ -291,10 +310,6 @@ export default function PrescriptionDetail() {
                 <DropdownMenuItem onClick={() => handlePrint("controle_especial")}>Controle especial (2 vias)</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button onClick={handleDownloadPDF} variant="outline">
-              <Download className="h-4 w-4 mr-2" />
-              Baixar PDF
-            </Button>
             <Button onClick={handleCopy} variant="outline">
               <Copy className="h-4 w-4 mr-2" />
               Copiar
