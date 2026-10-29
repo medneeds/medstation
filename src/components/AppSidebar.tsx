@@ -368,11 +368,11 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Acervo pessoal */}
+        {/* Acervo clínico */}
         <SidebarGroup className="py-3 group-data-[collapsible=icon]:px-1 hairline-t">
           {!collapsed && (
             <SidebarGroupLabel className="label-mono px-4 mb-2 h-auto text-primary">
-              <span>Acervo pessoal</span>
+              <span>Acervo clínico</span>
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
