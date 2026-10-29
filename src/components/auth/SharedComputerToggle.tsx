@@ -9,13 +9,13 @@ interface SharedComputerToggleProps {
 
 const SHARED_POINTS = [
   "Sai sozinho ao fechar o navegador",
-  "Pede o código por e-mail a cada entrada",
+  "Só pede o código de novo após 6 horas sem uso",
   "Não guarda este computador na sua conta",
 ];
 
 const PERSONAL_POINTS = [
   "Continua conectado ao fechar o navegador",
-  "Lembra este aparelho por 7 dias, sem pedir código",
+  "Só pede o código de novo após 12 horas sem uso",
   "Use só no seu computador ou celular",
 ];
 

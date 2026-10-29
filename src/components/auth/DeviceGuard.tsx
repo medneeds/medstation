@@ -21,6 +21,9 @@ import {
 } from "@/lib/deviceGuard";
 
 const HEARTBEAT_MS = 60 * 1000;
+/** Movimento no sistema renova o tempo sem código (12 h pessoal, 6 h compartilhado). */
+const TRUST_TOUCH_MS = 5 * 60 * 1000;
+const ACTIVITY_EVENTS = ["pointerdown", "keydown", "wheel", "touchstart"] as const;
 
 type Phase = "checking" | "ok" | "code";
 
@@ -123,6 +126,31 @@ export function DeviceGuard({ children }: { children: React.ReactNode }) {
     return () => window.clearInterval(t);
   }, [phase]);
 
+  // Movimento no sistema: adia o próximo pedido de código neste aparelho
+  useEffect(() => {
+    if (phase !== "ok") return;
+    let lastActivity = Date.now();
+    let lastTouch = Date.now();
+    const onActivity = () => {
+      lastActivity = Date.now();
+    };
+    const touch = () => {
+      if (document.visibilityState === "hidden" || lastActivity <= lastTouch) return;
+      lastTouch = Date.now();
+      void supabase.functions
+        .invoke("device-check", {
+          body: { device_id: getDeviceId(), shared: isSharedDevice(), touch: true },
+        })
+        .catch(() => {});
+    };
+    ACTIVITY_EVENTS.forEach((ev) => window.addEventListener(ev, onActivity, { passive: true }));
+    const t = window.setInterval(touch, TRUST_TOUCH_MS);
+    return () => {
+      window.clearInterval(t);
+      ACTIVITY_EVENTS.forEach((ev) => window.removeEventListener(ev, onActivity));
+    };
+  }, [phase]);
+
   // Batimento: este aparelho ainda é o acesso ativo?
   useEffect(() => {
     if (phase !== "ok" || !userId) return;
@@ -209,7 +237,7 @@ export function DeviceGuard({ children }: { children: React.ReactNode }) {
         <div className="space-y-2">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">Confirme que é você</h1>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Este aparelho é novo para a sua conta. Enviamos um código de 6 dígitos para{" "}
+            Para proteger sua conta, confirmamos o acesso quando o aparelho é novo ou ficou um tempo sem uso. Enviamos um código de 6 dígitos para{" "}
             <span className="text-foreground">{maskedEmail || "seu e-mail"}</span>.
           </p>
         </div>
