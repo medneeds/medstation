@@ -31,6 +31,7 @@ import { Label } from "@/components/ui/label";
 import { Printer } from "lucide-react";
 import { buildExamRequestHtml, openPrintWindow, writePrintWindow } from "@/lib/prescriptionPrint";
 import { loadLetterhead } from "@/lib/letterhead";
+import { OfficialPdfWizard } from "@/components/prescriptions/OfficialPdfWizard";
 
 interface ExamRequest {
   id: string;
@@ -66,6 +67,7 @@ export default function ExamRequestDetail() {
   const [examRequest, setExamRequest] = useState<ExamRequest | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [pdfOpen, setPdfOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -251,6 +253,21 @@ export default function ExamRequestDetail() {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
+      <OfficialPdfWizard
+        open={pdfOpen}
+        onOpenChange={setPdfOpen}
+        record={{
+          kind: "exam",
+          id: examRequest.id,
+          number: examRequest.request_number,
+          patientId: examRequest.patient_id,
+          exams: examRequest.exams || [],
+          clinicalIndication: examRequest.clinical_indication,
+          cid: examRequest.cid_code,
+          priority: examRequest.priority,
+          observations: examRequest.observations,
+        }}
+      />
       {/* Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-4">
@@ -292,14 +309,14 @@ export default function ExamRequestDetail() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-end">
-              <Button onClick={handlePrint}>
+            <div className="flex items-end flex-wrap gap-2">
+              <Button onClick={() => setPdfOpen(true)}>
+                <Download className="h-4 w-4 mr-2" />
+                Gerar PDF oficial
+              </Button>
+              <Button onClick={handlePrint} variant="outline">
                 <Printer className="h-4 w-4 mr-2" />
                 Imprimir requisição
-              </Button>
-              <Button onClick={handleDownloadPDF} variant="outline">
-                <Download className="h-4 w-4 mr-2" />
-                Baixar PDF
               </Button>
             </div>
           </div>

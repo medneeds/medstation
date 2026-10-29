@@ -38,6 +38,10 @@ interface Patient {
   archived: boolean | null;
   clinical_tags: string[] | null;
   allergies: string | null;
+  sex?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
   created_at: string;
 }
 
@@ -63,6 +67,10 @@ export default function Patients() {
     email: "",
     notes: "",
     allergies: "",
+    sex: "",
+    address: "",
+    city: "",
+    state: "",
     clinical_tags: [] as string[],
   });
 
@@ -133,6 +141,10 @@ export default function Patients() {
       const validated = {
         ...base,
         allergies: formData.allergies.trim().slice(0, 300) || null,
+        sex: formData.sex === "F" || formData.sex === "M" ? formData.sex : null,
+        address: formData.address.trim().slice(0, 200) || null,
+        city: formData.city.trim().slice(0, 80) || null,
+        state: formData.state.trim().toUpperCase().slice(0, 2) || null,
         clinical_tags: normalizeTags(formData.clinical_tags),
       };
 
@@ -191,6 +203,10 @@ export default function Patients() {
       email: "",
       notes: "",
       allergies: "",
+      sex: "",
+      address: "",
+      city: "",
+      state: "",
       clinical_tags: [],
     });
     setCustomTag("");
@@ -208,6 +224,10 @@ export default function Patients() {
       email: patient.email || "",
       notes: patient.notes || "",
       allergies: patient.allergies || "",
+      sex: patient.sex || "",
+      address: patient.address || "",
+      city: patient.city || "",
+      state: patient.state || "",
       clinical_tags: patient.clinical_tags || [],
     });
     setCustomTag("");
@@ -343,6 +363,35 @@ export default function Patients() {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
                 </div>
+                <div className="col-span-2 space-y-2">
+                  <Label>Sexo</Label>
+                  <div className="flex gap-2">
+                    {[["F", "Feminino"], ["M", "Masculino"]].map(([v, l]) => (
+                      <Button key={v} type="button" size="sm" variant={formData.sex === v ? "default" : "outline"} onClick={() => setFormData({ ...formData, sex: formData.sex === v ? "" : v })}>
+                        {l}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label htmlFor="address">Endereço residencial</Label>
+                  <Input
+                    id="address"
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    placeholder="Rua, número, bairro"
+                    maxLength={200}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="city">Cidade</Label>
+                  <Input id="city" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} maxLength={80} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="state">UF</Label>
+                  <Input id="state" value={formData.state} onChange={(e) => setFormData({ ...formData, state: e.target.value.toUpperCase().slice(0, 2) })} placeholder="SP" />
+                </div>
+                <p className="col-span-2 -mt-2 text-xs text-muted-foreground">Endereço, idade e sexo são usados nas receitas de antimicrobiano e de controle especial.</p>
                 <div className="col-span-2 space-y-2">
                   <Label htmlFor="allergies">Alergias</Label>
                   <Input
