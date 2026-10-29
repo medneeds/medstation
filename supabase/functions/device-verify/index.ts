@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
 
   await admin.from('login_challenges').update({ consumed_at: new Date().toISOString() }).eq('id', challenge.id)
   try {
-    if (!shared) await trustDevice(admin, user.id, deviceHash, cleanLabel(body.label))
+    await trustDevice(admin, user.id, deviceHash, cleanLabel(body.label), shared)
     await markActive(admin, user.id, deviceHash)
   } catch (e) {
     console.error('[device-verify] falha ao gravar aparelho', e instanceof Error ? e.message : e)
