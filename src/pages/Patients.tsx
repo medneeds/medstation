@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Search, User, Calendar, Phone, Mail, MoreVertical, Folder } from "lucide-react";
+import { Plus, Search, User, Calendar, Phone, Mail, MoreVertical, Folder, AlertTriangle, X } from "lucide-react";
+import { PRESET_CLINICAL_TAGS, MAX_CLINICAL_TAGS, normalizeTags, foldText } from "@/lib/patientClinical";
 import { useToast } from "@/hooks/use-toast";
 import { EmptyState } from "@/components/EmptyState";
 import { patientSchema } from "@/lib/validations";
@@ -34,7 +35,9 @@ interface Patient {
   phone: string | null;
   email: string | null;
   notes: string | null;
-  archived: boolean;
+  archived: boolean | null;
+  clinical_tags: string[] | null;
+  allergies: string | null;
   created_at: string;
 }
 
@@ -44,6 +47,9 @@ export default function Patients() {
   const [casesThisMonth, setCasesThisMonth] = useState(0);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showArchived, setShowArchived] = useState(false);
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
+  const [customTag, setCustomTag] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
   const { toast } = useToast();
@@ -56,11 +62,14 @@ export default function Patients() {
     phone: "",
     email: "",
     notes: "",
+    allergies: "",
+    clinical_tags: [] as string[],
   });
 
   useEffect(() => {
     fetchPatients();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showArchived]);
 
   const fetchPatients = async () => {
     setLoading(true);
@@ -79,7 +88,7 @@ export default function Patients() {
       .from("patients")
       .select("*")
       .eq("user_id", user.id)
-      .eq("archived", false)
+      .eq("archived", showArchived)
       .order("name");
 
     if (error) {
@@ -120,7 +129,12 @@ export default function Patients() {
     
     try {
       // Validate input
-      const validated = patientSchema.parse(formData);
+      const base = patientSchema.parse(formData);
+      const validated = {
+        ...base,
+        allergies: formData.allergies.trim().slice(0, 300) || null,
+        clinical_tags: normalizeTags(formData.clinical_tags),
+      };
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -176,7 +190,10 @@ export default function Patients() {
       phone: "",
       email: "",
       notes: "",
+      allergies: "",
+      clinical_tags: [],
     });
+    setCustomTag("");
     setEditingPatient(null);
     setDialogOpen(false);
   };
@@ -190,14 +207,31 @@ export default function Patients() {
       phone: patient.phone || "",
       email: patient.email || "",
       notes: patient.notes || "",
+      allergies: patient.allergies || "",
+      clinical_tags: patient.clinical_tags || [],
     });
+    setCustomTag("");
     setDialogOpen(true);
   };
 
-  const handleArchive = async (patientId: string) => {
+  const toggleFormTag = (tag: string) => {
+    const has = formData.clinical_tags.some((t) => foldText(t) === foldText(tag));
+    const next = has
+      ? formData.clinical_tags.filter((t) => foldText(t) !== foldText(tag))
+      : normalizeTags([...formData.clinical_tags, tag]);
+    setFormData({ ...formData, clinical_tags: next });
+  };
+
+  const addCustomTag = () => {
+    if (!customTag.trim()) return;
+    setFormData({ ...formData, clinical_tags: normalizeTags([...formData.clinical_tags, customTag]) });
+    setCustomTag("");
+  };
+
+  const handleArchive = async (patientId: string, archived = true) => {
     const { error } = await supabase
       .from("patients")
-      .update({ archived: true })
+      .update({ archived })
       .eq("id", patientId);
 
     if (error) {
@@ -207,16 +241,26 @@ export default function Patients() {
         description: error.message,
       });
     } else {
-      toast({ title: "Paciente arquivado" });
+      toast({ title: archived ? "Paciente arquivado" : "Paciente reativado" });
       fetchPatients();
     }
   };
 
-  const filteredPatients = patients.filter((p) =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.cpf?.includes(searchQuery) ||
-    p.email?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const q = foldText(searchQuery);
+  const filteredPatients = patients.filter((p) => {
+    if (tagFilter && !(p.clinical_tags || []).some((t) => foldText(t) === foldText(tagFilter))) return false;
+    if (!q) return true;
+    return (
+      foldText(p.name).includes(q) ||
+      !!p.cpf?.includes(searchQuery.trim()) ||
+      foldText(p.email || "").includes(q) ||
+      (p.clinical_tags || []).some((t) => foldText(t).includes(q))
+    );
+  });
+
+  const usedTags = Array.from(
+    new Map(patients.flatMap((p) => p.clinical_tags || []).map((t) => [foldText(t), t])).values()
+  ).sort((a, b) => a.localeCompare(b, "pt-BR"));
 
   const calculateAge = (dob: string | null) => {
     if (!dob) return null;
@@ -300,6 +344,65 @@ export default function Patients() {
                   />
                 </div>
                 <div className="col-span-2 space-y-2">
+                  <Label htmlFor="allergies">Alergias</Label>
+                  <Input
+                    id="allergies"
+                    value={formData.allergies}
+                    onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}
+                    placeholder="Ex: dipirona, penicilina (separe por vírgula)"
+                    maxLength={300}
+                  />
+                  <p className="text-xs text-muted-foreground">Aparece em destaque na ficha e avisa você ao prescrever.</p>
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label>Etiquetas clínicas</Label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {PRESET_CLINICAL_TAGS.map((tag) => {
+                      const active = formData.clinical_tags.some((t) => foldText(t) === foldText(tag));
+                      return (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => toggleFormTag(tag)}
+                          aria-pressed={active}
+                          className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                            active ? "border-primary bg-primary/15 text-foreground" : "border-border text-muted-foreground hover:border-primary/50"
+                          }`}
+                        >
+                          {tag}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {formData.clinical_tags.filter((t) => !PRESET_CLINICAL_TAGS.some((p) => foldText(p) === foldText(t))).length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {formData.clinical_tags
+                        .filter((t) => !PRESET_CLINICAL_TAGS.some((p) => foldText(p) === foldText(t)))
+                        .map((t) => (
+                          <Badge key={t} variant="secondary" className="gap-1">
+                            {t}
+                            <button type="button" onClick={() => toggleFormTag(t)} aria-label={`Remover ${t}`}>
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <Input
+                      value={customTag}
+                      onChange={(e) => setCustomTag(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomTag(); } }}
+                      placeholder="Outra etiqueta (ex: Asmático)"
+                      maxLength={30}
+                      disabled={formData.clinical_tags.length >= MAX_CLINICAL_TAGS}
+                    />
+                    <Button type="button" variant="outline" onClick={addCustomTag} disabled={!customTag.trim() || formData.clinical_tags.length >= MAX_CLINICAL_TAGS}>
+                      Adicionar
+                    </Button>
+                  </div>
+                </div>
+                <div className="col-span-2 space-y-2">
                   <Label htmlFor="notes">Observações</Label>
                   <Textarea
                     id="notes"
@@ -324,7 +427,7 @@ export default function Patients() {
 
       <div className="grid grid-cols-3 gap-2 md:gap-4">
         {[
-          { label: "Pacientes ativos", value: patients.length },
+          { label: showArchived ? "Pacientes arquivados" : "Pacientes ativos", value: patients.length },
           { label: "Com casos vinculados", value: Object.keys(caseStats).length },
           { label: "Casos neste mês", value: casesThisMonth },
         ].map((m) => (
@@ -336,16 +439,52 @@ export default function Patients() {
       </div>
 
       <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Search className="h-5 w-5 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por nome, CPF ou email..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="max-w-md"
-            />
+        <CardHeader className="space-y-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="flex flex-1 items-center gap-2">
+              <Search className="h-5 w-5 text-muted-foreground shrink-0" />
+              <Input
+                placeholder="Buscar por nome, CPF, email ou etiqueta..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="max-w-md"
+              />
+            </div>
+            <div className="inline-flex rounded-md border p-0.5 text-xs self-start sm:self-auto" role="tablist" aria-label="Filtrar pacientes">
+              {[{ v: false, l: "Ativos" }, { v: true, l: "Arquivados" }].map((o) => (
+                <button
+                  key={o.l}
+                  type="button"
+                  role="tab"
+                  aria-selected={showArchived === o.v}
+                  onClick={() => { setShowArchived(o.v); setTagFilter(null); }}
+                  className={`rounded px-3 py-1.5 transition-colors ${showArchived === o.v ? "bg-primary/15 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {o.l}
+                </button>
+              ))}
+            </div>
           </div>
+          {usedTags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {usedTags.map((t) => {
+                const active = tagFilter !== null && foldText(tagFilter) === foldText(t);
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTagFilter(active ? null : t)}
+                    aria-pressed={active}
+                    className={`rounded-full border px-2.5 py-0.5 text-xs transition-colors ${
+                      active ? "border-primary bg-primary/15 text-foreground" : "border-border text-muted-foreground hover:border-primary/50"
+                    }`}
+                  >
+                    {t}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -353,15 +492,17 @@ export default function Patients() {
           ) : filteredPatients.length === 0 ? (
             <EmptyState
               icon={User}
-              title={searchQuery ? "Nenhum paciente bate com a busca" : "Nenhum paciente ainda"}
+              title={searchQuery || tagFilter ? "Nenhum paciente bate com a busca" : showArchived ? "Nenhum paciente arquivado" : "Nenhum paciente ainda"}
               description={
-                searchQuery
-                  ? "Tente outro nome, CPF ou email."
+                searchQuery || tagFilter
+                  ? "Tente outro nome, CPF, email ou etiqueta."
+                  : showArchived
+                  ? "Pacientes arquivados aparecem aqui e podem ser reativados."
                   : "Cadastre seu primeiro paciente — leva menos de 1 minuto."
               }
-              actionLabel={searchQuery ? undefined : "Cadastrar primeiro paciente"}
-              actionIcon={searchQuery ? undefined : Plus}
-              onAction={searchQuery ? undefined : () => { resetForm(); setDialogOpen(true); }}
+              actionLabel={searchQuery || tagFilter || showArchived ? undefined : "Cadastrar primeiro paciente"}
+              actionIcon={searchQuery || tagFilter || showArchived ? undefined : Plus}
+              onAction={searchQuery || tagFilter || showArchived ? undefined : () => { resetForm(); setDialogOpen(true); }}
             />
           ) : (
             <div className="grid gap-4">
@@ -383,11 +524,24 @@ export default function Patients() {
                                   ? `${caseStats[patient.id].count} caso(s) · último em ${new Date(caseStats[patient.id].last).toLocaleDateString("pt-BR")}`
                                   : "Nenhum caso vinculado"}
                               </p>
-                              {age && (
-                                <Badge variant="secondary" className="text-xs mt-1">
-                                  {age} anos
-                                </Badge>
-                              )}
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {age !== null && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    {age} anos
+                                  </Badge>
+                                )}
+                                {(patient.clinical_tags || []).map((t) => (
+                                  <Badge key={t} variant="outline" className="text-xs font-normal">
+                                    {t}
+                                  </Badge>
+                                ))}
+                                {patient.allergies && (
+                                  <Badge variant="outline" className="text-xs font-normal border-destructive/40 text-destructive gap-1">
+                                    <AlertTriangle className="h-3 w-3" />
+                                    Alergia: {patient.allergies.length > 40 ? `${patient.allergies.slice(0, 40)}…` : patient.allergies}
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 ml-8 md:ml-12 text-xs md:text-sm text-muted-foreground">
@@ -432,8 +586,8 @@ export default function Patients() {
                               <DropdownMenuItem onClick={() => handleEdit(patient)}>
                                 Editar
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleArchive(patient.id)}>
-                                Arquivar
+                              <DropdownMenuItem onClick={() => handleArchive(patient.id, !patient.archived)}>
+                                {patient.archived ? "Reativar" : "Arquivar"}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
