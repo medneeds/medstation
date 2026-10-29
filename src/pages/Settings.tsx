@@ -20,6 +20,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { AdminUserManagement } from "@/components/AdminUserManagement";
 import { AccountSecurityCard } from "@/components/AccountSecurityCard";
+import { LetterheadCard } from "@/components/settings/LetterheadCard";
 
 const BRAZILIAN_STATES = [
   "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG",
@@ -821,6 +822,19 @@ export default function Settings() {
           </div>
         </CardContent>
       </Card>
+
+      <LetterheadCard
+        userId={userId}
+        fullName={profile.full_name}
+        gender={profile.gender}
+        crm={profile.crm}
+        crmState={profile.crm_state}
+        rqe={profile.rqe}
+        specialty={profile.specialty}
+        address={profile.address}
+        city={profile.city}
+        state={profile.state}
+      />
 
       {/* Botão Salvar */}
       <div className="flex justify-end">

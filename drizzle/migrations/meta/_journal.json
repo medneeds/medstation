@@ -36,6 +36,13 @@
       "when": 1793128670840,
       "tag": "0004_cofre_files",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793287929594,
+      "tag": "0005_profile_letterhead_fields",
+      "breakpoints": true
     }
   ]
 }
