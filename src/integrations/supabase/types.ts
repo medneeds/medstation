@@ -1156,8 +1156,10 @@ export type Database = {
       }
       patients: {
         Row: {
+          address: string | null
           allergies: string | null
           archived: boolean | null
+          city: string | null
           clinical_tags: string[]
           cpf: string | null
           created_at: string
@@ -1167,12 +1169,17 @@ export type Database = {
           name: string
           notes: string | null
           phone: string | null
+          postal_code: string | null
+          sex: string | null
+          state: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          address?: string | null
           allergies?: string | null
           archived?: boolean | null
+          city?: string | null
           clinical_tags?: string[]
           cpf?: string | null
           created_at?: string
@@ -1182,12 +1189,17 @@ export type Database = {
           name: string
           notes?: string | null
           phone?: string | null
+          postal_code?: string | null
+          sex?: string | null
+          state?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          address?: string | null
           allergies?: string | null
           archived?: boolean | null
+          city?: string | null
           clinical_tags?: string[]
           cpf?: string | null
           created_at?: string
@@ -1197,6 +1209,9 @@ export type Database = {
           name?: string
           notes?: string | null
           phone?: string | null
+          postal_code?: string | null
+          sex?: string | null
+          state?: string | null
           updated_at?: string
           user_id?: string
         }
