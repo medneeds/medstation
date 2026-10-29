@@ -98,7 +98,8 @@ const operadorSubItems = [
 ];
 
 const recordsModules = [
-  { title: "Cofre Inteligente", url: "/notes", icon: NotebookPen },
+  { title: "Meus Pacientes", url: "/patients", icon: UsersRound, hint: "Casos e histórico" },
+  { title: "Cofre Inteligente", url: "/notes", icon: NotebookPen, hint: "Notas e arquivos" },
 ];
 
 const COLLAPSED_ITEM = "justify-center gap-0 px-0 mx-auto border-l-0 hover:border-l-0 hover:translate-x-0 w-full";
@@ -365,21 +366,44 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Notas */}
+        {/* Acervo pessoal */}
         <SidebarGroup className="py-3 group-data-[collapsible=icon]:px-1 hairline-t">
           {!collapsed && (
-            <SidebarGroupLabel className="label-mono px-4 mb-2 h-auto">
+            <SidebarGroupLabel className="label-mono px-4 mb-2 h-auto text-primary">
               <span>Acervo pessoal</span>
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
-            <SidebarMenu className="gap-1.5">
+            <SidebarMenu className={cn("gap-1.5", !collapsed && "px-2")}>
               {recordsModules.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title} className={cn("p-0 h-auto bg-transparent hover:bg-transparent", COLLAPSED_BTN)}>
-                    <NavLink to={item.url} className={(p) => cn(navItemClass(p), collapsed && COLLAPSED_ITEM)}>
-                      <item.icon className="h-4 w-4 shrink-0" />
-                      {!collapsed && <span className="flex-1">{item.title}</span>}
+                    <NavLink
+                      to={item.url}
+                      className={({ isActive }) =>
+                        collapsed
+                          ? cn(navItemClass({ isActive }), COLLAPSED_ITEM)
+                          : cn(
+                              "flex items-center gap-3 rounded-md border px-3 py-2 transition-colors",
+                              isActive
+                                ? "border-primary/50 bg-primary/10 text-foreground"
+                                : "border-border bg-card/60 text-sidebar-foreground hover:border-primary/40 hover:bg-primary/5",
+                            )
+                      }
+                    >
+                      {collapsed ? (
+                        <item.icon className="h-4 w-4 shrink-0" />
+                      ) : (
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                          <item.icon className="h-4 w-4" />
+                        </span>
+                      )}
+                      {!collapsed && (
+                        <span className="flex min-w-0 flex-1 flex-col leading-tight">
+                          <span className="text-sm font-semibold">{item.title}</span>
+                          <span className="truncate text-2xs text-muted-foreground">{item.hint}</span>
+                        </span>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
