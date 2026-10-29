@@ -11,9 +11,10 @@ export interface AgentModelRequest {
   directAHEMode?: boolean;
   aheTemplate?: string;
   operadorAction?: string;
+  afastamentoMode?: boolean;
 }
 
-export function selectAgentModel({ agentType, directAHEMode, aheTemplate, operadorAction }: AgentModelRequest): {
+export function selectAgentModel({ agentType, directAHEMode, aheTemplate, operadorAction, afastamentoMode }: AgentModelRequest): {
   model: string;
   useResponsesApi: boolean;
 } {
@@ -24,7 +25,9 @@ export function selectAgentModel({ agentType, directAHEMode, aheTemplate, operad
   const operadorDocument = agentType === "operador"
     && isOperadorAction(operadorAction)
     && !OPERADOR_FAST_ACTIONS.includes(operadorAction);
-  const strong = utiEvolucao || agentType === "mediscuss" || operadorDocument;
+  // CODexus D.A.: CID e dias de afastamento vão para o atestado; mesma fidelidade.
+  const codexusAfastamento = agentType === "codexus" && afastamentoMode === true;
+  const strong = utiEvolucao || agentType === "mediscuss" || operadorDocument || codexusAfastamento;
   return strong
     ? { model: STRONG_AGENT_MODEL, useResponsesApi: true }
     : { model: FAST_AGENT_MODEL, useResponsesApi: false };
