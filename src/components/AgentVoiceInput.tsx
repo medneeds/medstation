@@ -9,6 +9,7 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useNavigate } from "react-router-dom";
 import { useScribe, CommitStrategy } from "@elevenlabs/react";
 import { canUseVoice } from "@/lib/voiceAccess";
+import { isLiveVoicePaused, isPermanentLiveError, markLiveVoiceUnavailable } from "@/lib/liveVoiceStatus";
 import {
   Tooltip,
   TooltipContent,
@@ -107,6 +108,19 @@ export function AgentVoiceInput({ onTranscription, disabled = false, context, in
     if (incremental && isRecordingRef.current) onTranscriptionRef.current(text);
   };
 
+  // Saldo da legenda ao vivo acabou: segue só com a cópia gravada, sem reconectar.
+  const goBackupForGood = () => {
+    markLiveVoiceUnavailable();
+    liveGapRef.current = true;
+    if (partialRef.current.trim()) handleCommitted(partialRef.current);
+    try {
+      scribeRef.current.disconnect();
+    } catch {
+      /* no-op */
+    }
+    if (isRecordingRef.current) setHealthBoth("backup");
+  };
+
   const scribe = useScribe({
     modelId: "scribe_v2_realtime",
     commitStrategy: CommitStrategy.VAD,
@@ -116,18 +130,25 @@ export function AgentVoiceInput({ onTranscription, disabled = false, context, in
       setLivePartial(partialRef.current);
     },
     onCommittedTranscript: (d: { text: string }) => handleCommitted(d?.text || ""),
+    onQuotaExceededError: () => goBackupForGood(),
+    onAuthError: () => goBackupForGood(),
     onError: (err: unknown) => {
       console.warn("[voz ao vivo] erro:", err);
+      if (isPermanentLiveError(err) || isLiveVoicePaused()) {
+        goBackupForGood();
+        return;
+      }
       if (isRecordingRef.current) void reconnectLive();
     },
     onDisconnect: () => {
-      if (isRecordingRef.current && healthRef.current === "live") void reconnectLive();
+      if (isRecordingRef.current && healthRef.current === "live" && !isLiveVoicePaused()) void reconnectLive();
     },
   });
   const scribeRef = useRef(scribe);
   scribeRef.current = scribe;
 
   const connectLive = useCallback(async () => {
+    if (isLiveVoicePaused()) throw new Error("live-paused");
     const { data, error } = await withTimeout(supabase.functions.invoke("elevenlabs-scribe-token"), LIVE_CONNECT_TIMEOUT_MS);
     if (error || !data?.token) throw new Error("token");
     await withTimeout(
@@ -155,7 +176,7 @@ export function AgentVoiceInput({ onTranscription, disabled = false, context, in
     while (reconnectsRef.current < MAX_RECONNECTS && isRecordingRef.current) {
       reconnectsRef.current += 1;
       await new Promise((r) => setTimeout(r, 800 * reconnectsRef.current));
-      if (!isRecordingRef.current) break;
+      if (!isRecordingRef.current || isLiveVoicePaused()) break;
       try {
         await connectLive();
         setHealthBoth("live");
