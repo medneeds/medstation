@@ -474,7 +474,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     } finally {
       setIsConnecting(false);
     }
-  }, [connectScribe, startAudioLevelMonitor, stopAudioLevelMonitor, startTimer, startBlockRecorder]);
+  }, [connectScribe, tryConnectLive, startAudioLevelMonitor, stopAudioLevelMonitor, startTimer, startBlockRecorder]);
 
   const pauseRecording = useCallback(() => {
     isPausedRef.current = true;
@@ -528,7 +528,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
         setIsConnecting(false);
       }
     })();
-  }, [connectScribe, startAudioLevelMonitor, startBlockRecorder, startTimer]);
+  }, [connectScribe, tryConnectLive, startAudioLevelMonitor, startBlockRecorder, startTimer]);
 
   const stopMediaResources = useCallback(() => {
     audioStreamRef.current?.getTracks().forEach((t) => t.stop());
