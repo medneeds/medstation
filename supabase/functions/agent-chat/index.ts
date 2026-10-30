@@ -4,6 +4,7 @@ import { resolveUserAccess, accessDeniedResponse } from "../_shared/access-contr
 import { buildProfessorPrompt, isProfessorStyle, validateProfessorRequest } from "./professor.ts";
 import { MEDISCUSS_FIDELITY_RULES } from "./mediscuss.ts";
 import { UTI_CONDUTAS_BLOCK, UTI_PARAMETROS_BLOCK, isUtiEvolucaoTemplate, utiAntibioticBlock, utiEvolucaoFidelityRules, utiReferenceDate } from "./uti-evolucao.ts";
+import { isReceitaRequest, RECEITA_FINAL_RULES } from "./receita.ts";
 import { selectAgentModel } from "./model-routing.ts";
 import { buildOperadorPrompt, isOperadorAction, validateOperadorRequest } from "./operador.ts";
 import { buildAfastamentoPrompt, validateCodexusRequest } from "./codexus-afastamento.ts";
@@ -298,6 +299,8 @@ serve(async (req) => {
     console.log(`Rate limit check passed for user ${user.id}`);
 
     const { messages, agentType, caseId, usePipeSeparator, includeTime, directAHEMode, aheTemplate, bulaInteligenteMode, receitaMode, casoTerapeuticoMode, directLIMode, onlyAltered, clinicalImpression, examSuggestMode, quickCIDMode, afastamentoMode, compactMode, mediscussMode, mediscussSpecialty, reportMode, reportType, reportPurpose, reportSpecialty, legalisMode, legalisScenario, legalisTopic, caseSuggestMode, professorMode, professorStyle, operadorAction } = await req.json();
+    const latestUserText = [...(Array.isArray(messages) ? messages : [])].reverse().find((m: { role?: string }) => m?.role === "user")?.content;
+    const receitaActive = agentType === "prescriptus" && isReceitaRequest(receitaMode, typeof latestUserText === "string" ? latestUserText : "");
 
     const professorError = validateProfessorRequest({ agentType, professorMode, professorStyle, directAHEMode, reportMode, caseSuggestMode });
     if (professorError) {
@@ -987,12 +990,12 @@ VOCÊ É O PRESCRIPTUS, ASSISTENTE ESPECIALIZADO EM PRESCRIÇÕES MÉDICAS E FAR
 Sua função: auxiliar na escolha racional de medicamentos, verificar interações, sugerir posologias baseadas em evidências e alertar sobre riscos.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️ MODO DE OPERAÇÃO: ${receitaMode ? "RECEITA" : casoTerapeuticoMode ? "PRESCRIÇÃO POR CASO" : bulaInteligenteMode ? "BULA INTELIGENTE (B.I.)" : "DISCUSSÃO"}
+⚠️ MODO DE OPERAÇÃO: ${receitaActive ? "RECEITA" : casoTerapeuticoMode ? "PRESCRIÇÃO POR CASO" : bulaInteligenteMode ? "BULA INTELIGENTE (B.I.)" : "DISCUSSÃO"}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 GATILHO DE TEXTO: se a mensagem do médico começar com "MODO RECEITA:" (ou "MODO RECEITA -"), trate aquela mensagem como MODO RECEITA, mesmo que o modo esteja desligado. O que vem depois dos dois pontos é o medicamento solicitado.
 
-${receitaMode ? `MODO RECEITA ATIVADO
+${receitaActive ? `MODO RECEITA ATIVADO
 
 Neste modo você escreve uma RECEITA MÉDICA REAL, pronta para ser transcrita no receituário. Nada de discussão farmacológica.
 
@@ -3031,7 +3034,7 @@ ${contextData}`;
     }
 
     // Indicador de confiança / força da recomendação (assistentes baseados em evidência)
-    if (["prescriptus", "gasometrus", "protocolus"].includes(agentType)) {
+    if (["prescriptus", "gasometrus", "protocolus"].includes(agentType) && !receitaActive) {
       systemPrompt += `
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -3054,6 +3057,8 @@ Regras:
 • Mantenha a formatação sem markdown: títulos em CAIXA ALTA sem marcadores e sem asteriscos`;
     }
 
+
+    if (receitaActive) systemPrompt += RECEITA_FINAL_RULES;
 
     // Educational mode replaces document instructions while retaining the same model and history.
     if (agentType === "clinicus" && professorMode === true) {
