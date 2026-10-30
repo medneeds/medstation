@@ -705,13 +705,20 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               "relative flex items-center gap-2 px-3 py-1.5 border-t text-xs",
               listeningHealth === 'reconnecting'
                 ? "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400"
-                : "border-destructive/30 bg-destructive/10 text-destructive"
+                : listeningHealth === 'backup'
+                  ? "border-primary/30 bg-primary/10 text-foreground"
+                  : "border-destructive/30 bg-destructive/10 text-destructive"
             )}
           >
             {listeningHealth === 'reconnecting' ? (
               <>
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 <span>Reconectando a escuta… o que já foi transcrito está guardado.</span>
+              </>
+            ) : listeningHealth === 'backup' ? (
+              <>
+                <span className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
+                <span>Gravando a consulta. O texto ao vivo está indisponível agora; o texto completo aparece ao encerrar.</span>
               </>
             ) : (
               <>
