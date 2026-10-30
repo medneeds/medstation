@@ -378,7 +378,9 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     while (
       isRecordingRef.current &&
       !isPausedRef.current &&
-      reconnectAttemptsRef.current < MAX_RECONNECT_ATTEMPTS
+      reconnectAttemptsRef.current < MAX_RECONNECT_ATTEMPTS &&
+      !backupModeRef.current &&
+      !isLiveVoicePaused()
     ) {
       reconnectAttemptsRef.current += 1;
       const wait = 1000 * reconnectAttemptsRef.current;
@@ -426,13 +428,16 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
       reconnectAttemptsRef.current = 0;
       startBlockRecorder(stream);
 
-      await connectScribe();
+      // Se o texto ao vivo falhar, a consulta segue gravada mesmo assim.
+      const live = await tryConnectLive();
+      backupModeRef.current = !live;
 
       setIsRecording(true);
       setIsPaused(false);
-      setListeningHealth('live');
+      setListeningHealth(live ? 'live' : 'backup');
       startTimer();
-      toast.success('Modo Escuta ativado — transcrevendo em tempo real');
+      if (live) toast.success('Modo Escuta ativado — transcrevendo em tempo real');
+      else toast.info('Gravando a consulta. O texto ao vivo está indisponível agora; o texto completo aparece ao encerrar.');
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Erro ao iniciar gravação';
       console.error('[useConsultation] start error:', err);
@@ -483,14 +488,15 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
 
         isPausedRef.current = false;
         reconnectAttemptsRef.current = 0;
-        await connectScribe();
+        const live = await tryConnectLive();
+        backupModeRef.current = !live;
         startBlockRecorder(audioStreamRef.current!);
 
         setIsPaused(false);
-        setListeningHealth('live');
+        setListeningHealth(live ? 'live' : 'backup');
         setError(null);
         startTimer();
-        toast.info('Gravação retomada');
+        toast.info(live ? 'Gravação retomada' : 'Gravação retomada. O texto completo aparece ao encerrar.');
       } catch (err) {
         console.error('[useConsultation] resume error:', err);
         isPausedRef.current = true;
@@ -572,6 +578,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
   const stopRecordingInner = useCallback(async () => {
     isRecordingRef.current = false;
     isPausedRef.current = false;
+    backupModeRef.current = false;
     stopTimer();
 
     try { await scribeRef.current.disconnect(); } catch { /* ignore */ }
@@ -627,7 +634,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
         return;
       }
 
-      if (!scribeRef.current.isConnected && !reconnectingRef.current) {
+      if (!scribeRef.current.isConnected && !reconnectingRef.current && !backupModeRef.current) {
         void attemptReconnect();
       }
     }, 5000);
