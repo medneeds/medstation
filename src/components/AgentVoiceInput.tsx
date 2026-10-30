@@ -9,7 +9,7 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useNavigate } from "react-router-dom";
 import { useScribe, CommitStrategy } from "@elevenlabs/react";
 import { canUseVoice } from "@/lib/voiceAccess";
-import { isLiveVoicePaused, isPermanentLiveError, markLiveVoiceUnavailable } from "@/lib/voiceLiveStatus";
+import { isLiveVoicePaused, isPermanentLiveError, markLiveVoiceUnavailable } from "@/lib/liveVoiceStatus";
 import {
   Tooltip,
   TooltipContent,
