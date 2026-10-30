@@ -928,6 +928,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     setStructure(EMPTY_ANAMNESIS);
     setChangedFields(new Set());
     setSmartSummary('');
+    setClinicalDocument('');
     setReviewedTranscript('');
     setLastStructuredAt(null);
     lastLiveCountRef.current = 0;
