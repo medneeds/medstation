@@ -176,7 +176,7 @@ export function AgentVoiceInput({ onTranscription, disabled = false, context, in
     while (reconnectsRef.current < MAX_RECONNECTS && isRecordingRef.current) {
       reconnectsRef.current += 1;
       await new Promise((r) => setTimeout(r, 800 * reconnectsRef.current));
-      if (!isRecordingRef.current) break;
+      if (!isRecordingRef.current || isLiveVoicePaused()) break;
       try {
         await connectLive();
         setHealthBoth("live");
