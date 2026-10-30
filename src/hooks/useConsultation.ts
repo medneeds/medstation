@@ -370,8 +370,22 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     });
   }, []);
 
+  /** Tenta o texto ao vivo; devolve false (sem lançar) se não der. */
+  const tryConnectLive = useCallback(async (): Promise<boolean> => {
+    if (isLiveVoicePaused()) return false;
+    try {
+      await connectScribe();
+      return !backupModeRef.current;
+    } catch (err) {
+      console.warn('[useConsultation] texto ao vivo indisponível:', err);
+      if (isPermanentLiveError(err)) markLiveVoiceUnavailable();
+      try { await scribeRef.current.disconnect(); } catch { /* ignore */ }
+      return false;
+    }
+  }, [connectScribe]);
+
   const attemptReconnect = useCallback(async () => {
-    if (reconnectingRef.current) return;
+    if (reconnectingRef.current || backupModeRef.current) return;
     reconnectingRef.current = true;
     setListeningHealth('reconnecting');
 
@@ -389,6 +403,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
       try {
         try { await scribeRef.current.disconnect(); } catch { /* ignore */ }
         await connectScribe();
+        if (backupModeRef.current) break;
         reconnectAttemptsRef.current = 0;
         reconnectingRef.current = false;
         setListeningHealth('live');
@@ -401,9 +416,15 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     }
 
     reconnectingRef.current = false;
+    // A gravação continua: o que for dito daqui em diante entra na revisão final.
     if (isRecordingRef.current && !isPausedRef.current) {
-      setListeningHealth('down');
-      setError('A escuta parou. Pause e retome a gravação para reconectar.');
+      const wasBackup = backupModeRef.current;
+      backupModeRef.current = true;
+      setListeningHealth('backup');
+      setError(null);
+      if (!wasBackup) {
+        toast.info('O texto ao vivo parou, mas a consulta segue gravada. O texto completo aparece ao encerrar.');
+      }
     }
   }, [connectScribe]);
 
