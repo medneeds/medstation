@@ -26,6 +26,8 @@ export const MODEL_PRICING: Record<string, ModelPrice> = {
   "openai/gpt-5":                    { input: 1.25,  output: 10.0, provider: "lovable_ai" },
   // OpenAI direto (STT — cobrado por minuto)
   "openai/whisper-1":                { input: 0, output: 0, perMinute: 0.006, provider: "openai" },
+  // Transcrição pela IA da plataforma (estimativa por minuto)
+  "openai/gpt-transcribe":           { input: 0, output: 0, perMinute: 0.006, provider: "lovable_ai" },
   // ElevenLabs direto (STT — cobrado por minuto; ~US$0.40/hora do Scribe v2)
   "elevenlabs/scribe_v2":            { input: 0, output: 0, perMinute: 0.0067, provider: "elevenlabs" },
   "elevenlabs/scribe_v2_realtime":   { input: 0, output: 0, perMinute: 0.0083, provider: "elevenlabs" },
