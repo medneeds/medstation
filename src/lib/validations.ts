@@ -1,29 +1,56 @@
 import { z } from "zod";
 
 // Patient validation
+// Campos opcionais vazios viram null: o banco recusa "" em colunas de data.
+const blankToNull = (v: unknown) => (typeof v === "string" && v.trim() === "" ? null : typeof v === "string" ? v.trim() : v);
+const digitsOf = (v: string) => v.replace(/\D/g, "");
+
+/** Aceita CPF com ou sem pontuação e devolve no formato 000.000.000-00. */
+export function formatCpf(value: string): string | null {
+  const d = digitsOf(value);
+  if (d.length !== 11) return null;
+  return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+}
+
+/** Aceita telefone com ou sem pontuação (DDD + 8 ou 9 dígitos, com ou sem +55). */
+export function formatPhone(value: string): string | null {
+  let d = digitsOf(value);
+  if ((d.length === 12 || d.length === 13) && d.startsWith("55")) d = d.slice(2);
+  if (d.length !== 10 && d.length !== 11) return null;
+  const end = d.length - 4;
+  return `(${d.slice(0, 2)}) ${d.slice(2, end)}-${d.slice(end)}`;
+}
+
 export const patientSchema = z.object({
   name: z.string()
     .trim()
     .min(1, "Nome é obrigatório")
     .max(100, "Nome deve ter no máximo 100 caracteres"),
-  cpf: z.string()
-    .regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, "CPF inválido (formato: 000.000.000-00)")
-    .optional()
-    .or(z.literal("")),
-  date_of_birth: z.string().optional().or(z.literal("")),
-  phone: z.string()
-    .regex(/^\(\d{2}\) \d{4,5}-\d{4}$/, "Telefone inválido (formato: (00) 00000-0000)")
-    .optional()
-    .or(z.literal("")),
-  email: z.string()
-    .email("Email inválido")
-    .max(255, "Email deve ter no máximo 255 caracteres")
-    .optional()
-    .or(z.literal("")),
-  notes: z.string()
-    .max(2000, "Notas devem ter no máximo 2000 caracteres")
-    .optional()
-    .or(z.literal("")),
+  cpf: z.preprocess(blankToNull, z.string().nullable().optional())
+    .transform((v, ctx) => {
+      if (!v) return null;
+      const f = formatCpf(v);
+      if (!f) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "CPF deve ter 11 números" });
+      return f;
+    }),
+  date_of_birth: z.preprocess(blankToNull, z.string().nullable().optional())
+    .transform((v, ctx) => {
+      if (!v) return null;
+      const ok = /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v)) && v <= new Date().toISOString().slice(0, 10) && v >= "1900-01-01";
+      if (!ok) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Data de nascimento inválida" });
+      return v;
+    }),
+  phone: z.preprocess(blankToNull, z.string().nullable().optional())
+    .transform((v, ctx) => {
+      if (!v) return null;
+      const f = formatPhone(v);
+      if (!f) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Telefone deve ter DDD + número" });
+      return f;
+    }),
+  email: z.preprocess(blankToNull, z.string().email("Email inválido").max(255, "Email deve ter no máximo 255 caracteres").nullable().optional())
+    .transform((v) => v || null),
+  notes: z.preprocess(blankToNull, z.string().max(2000, "Notas devem ter no máximo 2000 caracteres").nullable().optional())
+    .transform((v) => v || null),
 });
 
 // Case validation
