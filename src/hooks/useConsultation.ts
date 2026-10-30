@@ -2,9 +2,11 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useScribe, CommitStrategy } from '@elevenlabs/react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { isLiveVoicePaused, isPermanentLiveError, markLiveVoiceUnavailable } from '@/lib/liveVoiceStatus';
 
 export type SpeakerType = 'doctor' | 'patient' | 'companion';
-export type ListeningHealth = 'idle' | 'live' | 'reconnecting' | 'down';
+/** backup = sem texto ao vivo; a consulta segue gravada e o texto vem ao encerrar. */
+export type ListeningHealth = 'idle' | 'live' | 'reconnecting' | 'down' | 'backup';
 
 export interface TranscriptionSegment {
   id: string;
