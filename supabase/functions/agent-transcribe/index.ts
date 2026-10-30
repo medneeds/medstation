@@ -78,7 +78,7 @@ serve(async (req) => {
     const { mime, ext } = audioFileInfo(clientMimeType);
     const langMap: Record<string, string> = { pt: "por", en: "eng", es: "spa" };
     const formData = new FormData();
-    formData.append("file", new Blob([audioBytes], { type: mime }), `audio.${ext}`);
+    formData.append("file", new Blob([audioBytes as BlobPart], { type: mime }), `audio.${ext}`);
     formData.append("model_id", "scribe_v2");
     formData.append("language_code", langMap[language] || "por");
     formData.append("tag_audio_events", "false");

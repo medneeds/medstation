@@ -72,7 +72,7 @@ export async function transcribeWithGateway(
   const { mime, ext } = audioFileInfo(clientMime);
   const form = new FormData();
   form.append("model", GATEWAY_STT_MODEL);
-  form.append("file", new File([bytes], `audio.${ext}`, { type: mime }));
+  form.append("file", new File([bytes as BlobPart], `audio.${ext}`, { type: mime }));
   form.append("response_format", "json");
   form.append("stream", "true");
   form.append("prompt", MEDICAL_STT_PROMPT);
