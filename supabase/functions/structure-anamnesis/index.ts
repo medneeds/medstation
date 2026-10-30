@@ -1,6 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { logAIUsage } from "../_shared/ai-logger.ts";
 import { accessDeniedResponse, requirePlatformAccess } from "../_shared/access-control.ts";
+import { cleanDocument, documentPromptFor, liveContextHint, parseClinicalContext, readResponsesText } from "./clinical-context.ts";
+
+const DOCUMENT_MODEL = "openai/gpt-6-astra";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,7 +17,8 @@ serve(async (req) => {
 
   try {
     const { user } = await requirePlatformAccess(req);
-    const { transcription, mode, specialty } = await req.json();
+    const { transcription, mode, specialty, context } = await req.json();
+    const clinicalContext = parseClinicalContext(context);
 
     const specialtyRaw = typeof specialty === 'string' ? specialty.slice(0, 60).trim() : '';
     const isAutoSpecialty = !specialtyRaw || specialtyRaw === 'auto';
@@ -29,6 +33,48 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY não configurada');
+    }
+
+    if (typeof transcription === 'string' && transcription.length > 200_000) {
+      return new Response(JSON.stringify({ error: 'Consulta longa demais para estruturar de uma vez.' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (mode === 'document') {
+      const today = new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+      const system = documentPromptFor(clinicalContext)
+        + `\n\nDATA DE HOJE (Brasília): ${today}.`
+        + (isAutoSpecialty ? '' : `\n\nESPECIALIDADE DO ATENDIMENTO: ${specialtyRaw}.`);
+      const started = Date.now();
+      const dres = await fetch('https://ai.gateway.lovable.dev/v1/responses', {
+        method: 'POST',
+        headers: { 'Lovable-API-Key': LOVABLE_API_KEY, 'X-Lovable-AIG-SDK': 'fetch', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: DOCUMENT_MODEL,
+          input: [
+            { role: 'system', content: system },
+            { role: 'user', content: `Transcrição da consulta (Médico / Paciente / Acompanhante):\n\n${transcription}` },
+          ],
+          reasoning: { effort: 'low' },
+          store: false,
+        }),
+      });
+      if (!dres.ok) {
+        console.error('Document error:', dres.status, await dres.text());
+        void logAIUsage({ userId: user.id, assistant: 'consultorio', functionName: 'structure-anamnesis:document', model: DOCUMENT_MODEL, latencyMs: Date.now() - started, status: 'error' });
+        const status = dres.status === 429 || dres.status === 402 ? dres.status : 500;
+        const msg = status === 429 ? 'Limite de requisições excedido. Tente novamente em alguns segundos.' : status === 402 ? 'Créditos de IA esgotados.' : 'Não foi possível montar o documento agora.';
+        return new Response(JSON.stringify({ error: msg }), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+      const ddata = await dres.json();
+      void logAIUsage({
+        userId: user.id, assistant: 'consultorio', functionName: 'structure-anamnesis:document', model: DOCUMENT_MODEL,
+        inputTokens: ddata.usage?.input_tokens, outputTokens: ddata.usage?.output_tokens, totalTokens: ddata.usage?.total_tokens,
+        latencyMs: Date.now() - started, status: 'ok',
+      });
+      const document = cleanDocument(readResponsesText(ddata));
+      return new Response(JSON.stringify({ document, context: clinicalContext }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     if (mode === 'summary') {
@@ -134,7 +180,7 @@ SEÇÕES PARA ESTRUTURAR:
 - physicalExam: Exame físico (se mencionado)
 - diagnosticHypotheses: Hipóteses diagnósticas (se mencionadas)
 - plan: Conduta proposta (se mencionada)
-- detectedSpecialty: Especialidade médica do atendimento (nome curto em português)${specialtyBlock}`;
+- detectedSpecialty: Especialidade médica do atendimento (nome curto em português)${specialtyBlock}${liveContextHint(clinicalContext)}`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',

@@ -43,6 +43,7 @@ import { toast } from "sonner";
 import { useConsultation } from "@/hooks/useConsultation";
 import { TranscriptionPane } from "@/components/consultation/TranscriptionPane";
 import { StructuredPane } from "@/components/consultation/StructuredPane";
+import { ClinicalContextSelector, CLINICAL_CONTEXT_TITLES } from "@/components/consultation/ClinicalContextSelector";
 import { FinalizeFlow, type FinalizePhase } from "@/components/consultation/FinalizeFlow";
 import { useCaseFolders } from "@/hooks/useCaseFolders";
 
@@ -143,6 +144,11 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     smartSummary,
     isSummarizing,
     generateSummary,
+    clinicalContext,
+    setClinicalContext,
+    clinicalDocument,
+    setClinicalDocument,
+    isDocumenting,
     startRecording,
     stopRecording,
     waitForStop,
@@ -259,7 +265,10 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     onExit();
   }, [isRecording, stopRecording, stopTimer, reset, onExit]);
 
-  const buildStructuredText = useCallback(() => buildAnamnesisText(structure), [structure]);
+  const buildStructuredText = useCallback(
+    () => clinicalDocument.trim() || buildAnamnesisText(structure),
+    [clinicalDocument, structure]
+  );
 
   const handleCopyToClipboard = useCallback(async () => {
     const text = buildStructuredText();
@@ -741,6 +750,18 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
         )}
       </header>
 
+      {/* Contexto do atendimento: define o modelo do documento final */}
+      <div className="shrink-0 flex items-center gap-2 px-2 md:px-4 py-1.5 border-b border-border/40 overflow-x-auto">
+        <ClinicalContextSelector value={clinicalContext} onChange={setClinicalContext} />
+        <span className="hidden md:inline text-[11px] text-muted-foreground truncate">
+          {clinicalContext === 'consultorio'
+            ? 'Anamnese completa de consultório'
+            : clinicalContext === 'emergencia_rapida'
+              ? 'Registro curto de pronto-socorro, com sinais de alarme e destino'
+              : 'Admissão de emergência completa, com indicação de internação'}
+        </span>
+      </div>
+
 
       {/* Main Content */}
       {isMobile ? (
@@ -781,6 +802,10 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               isSummarizing={isSummarizing}
               onGenerateSummary={generateSummary}
               onSendToAssistant={() => handleSendToAssistant('/clinicus')}
+              clinicalDocument={clinicalDocument}
+              onChangeDocument={setClinicalDocument}
+              isDocumenting={isDocumenting}
+              documentTitle={CLINICAL_CONTEXT_TITLES[clinicalContext]}
             />
           </TabsContent>
         </Tabs>
@@ -816,6 +841,10 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                     isSummarizing={isSummarizing}
                     onGenerateSummary={generateSummary}
                     onSendToAssistant={() => handleSendToAssistant('/clinicus')}
+                    clinicalDocument={clinicalDocument}
+                    onChangeDocument={setClinicalDocument}
+                    isDocumenting={isDocumenting}
+                    documentTitle={CLINICAL_CONTEXT_TITLES[clinicalContext]}
                   />
                 </Card>
               </ResizablePanel>

@@ -8,6 +8,16 @@ export type SpeakerType = 'doctor' | 'patient' | 'companion';
 /** backup = sem texto ao vivo; a consulta segue gravada e o texto vem ao encerrar. */
 export type ListeningHealth = 'idle' | 'live' | 'reconnecting' | 'down' | 'backup';
 
+export type ClinicalContext = 'consultorio' | 'emergencia_rapida' | 'emergencia_admissao';
+const CONTEXT_KEY = 'consultorio-clinical-context';
+function readContext(): ClinicalContext {
+  try {
+    const v = localStorage.getItem(CONTEXT_KEY);
+    if (v === 'emergencia_rapida' || v === 'emergencia_admissao') return v;
+  } catch { /* ignore */ }
+  return 'consultorio';
+}
+
 export interface TranscriptionSegment {
   id: string;
   speaker: SpeakerType;
@@ -64,6 +74,7 @@ interface ConsultationDraft {
   structure: AnamnesisStructure;
   reviewedTranscript: string;
   smartSummary: string;
+  clinicalDocument?: string;
 }
 
 function readDraft(): ConsultationDraft | null {
@@ -114,6 +125,15 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
   const [changedFields, setChangedFields] = useState<Set<keyof AnamnesisStructure>>(new Set());
   const [lastStructuredAt, setLastStructuredAt] = useState<Date | null>(null);
   const [smartSummary, setSmartSummary] = useState('');
+  const [clinicalContext, setClinicalContextState] = useState<ClinicalContext>(readContext);
+  const clinicalContextRef = useRef<ClinicalContext>(clinicalContext);
+  clinicalContextRef.current = clinicalContext;
+  const setClinicalContext = useCallback((c: ClinicalContext) => {
+    setClinicalContextState(c);
+    try { localStorage.setItem(CONTEXT_KEY, c); } catch { /* ignore */ }
+  }, []);
+  const [clinicalDocument, setClinicalDocument] = useState('');
+  const [isDocumenting, setIsDocumenting] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [reviewedTranscript, setReviewedTranscript] = useState('');
   const [isRecording, setIsRecording] = useState(false);
@@ -694,7 +714,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
       setIsStructuring(true);
       try {
         const { data, error: fnError } = await supabase.functions.invoke('structure-anamnesis', {
-          body: { transcription: transcriptionText, specialty: specialtyRef.current },
+          body: { transcription: transcriptionText, specialty: specialtyRef.current, context: clinicalContextRef.current },
         });
         if (fnError) throw fnError;
         if (data?.structure) {
@@ -729,9 +749,30 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     [buildTranscriptForAI]
   );
 
+  // Documento final no padrão do Clínicus (consultório, emergência rápida ou admissão)
+  const generateDocument = useCallback(async (opts?: { silent?: boolean }) => {
+    const transcriptionText = buildTranscriptForAI({ preferReviewed: true });
+    if (!transcriptionText.trim()) return;
+    setIsDocumenting(true);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('structure-anamnesis', {
+        body: { transcription: transcriptionText, mode: 'document', specialty: specialtyRef.current, context: clinicalContextRef.current },
+      });
+      if (fnError) throw fnError;
+      const text = (data?.document || '').trim();
+      if (!text) throw new Error('Documento vazio');
+      setClinicalDocument(text);
+    } catch (err) {
+      console.error('Error generating document:', err);
+      if (!opts?.silent) toast.error('Não foi possível montar o documento agora. Os campos abaixo seguem disponíveis.');
+    } finally {
+      setIsDocumenting(false);
+    }
+  }, [buildTranscriptForAI]);
+
   const updateStructure = useCallback(
-    () => runStructuring({ preferReviewed: true }),
-    [runStructuring]
+    () => Promise.all([runStructuring({ preferReviewed: true }), generateDocument()]).then(() => undefined),
+    [runStructuring, generateDocument]
   );
 
   // ---- Estruturação ao vivo, com ritmo adaptativo --------------------------
@@ -788,13 +829,14 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
       structure,
       reviewedTranscript,
       smartSummary,
+      clinicalDocument,
     };
     try {
       localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
     } catch (e) {
       console.warn('[useConsultation] draft save failed', e);
     }
-  }, [segments, structure, reviewedTranscript, smartSummary]);
+  }, [segments, structure, reviewedTranscript, smartSummary, clinicalDocument]);
 
   useEffect(() => {
     const t = setTimeout(persistDraft, 800);
@@ -825,6 +867,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     setStructure({ ...EMPTY_ANAMNESIS, ...draft.structure });
     setReviewedTranscript(draft.reviewedTranscript || '');
     setSmartSummary(draft.smartSummary || '');
+    setClinicalDocument(draft.clinicalDocument || '');
     accumulatedRef.current = draft.elapsedSeconds || 0;
     runningSinceRef.current = null;
     setElapsedTime(Math.floor(draft.elapsedSeconds || 0));
@@ -885,6 +928,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     setStructure(EMPTY_ANAMNESIS);
     setChangedFields(new Set());
     setSmartSummary('');
+    setClinicalDocument('');
     setReviewedTranscript('');
     setLastStructuredAt(null);
     lastLiveCountRef.current = 0;
@@ -983,6 +1027,12 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     resumeRecording,
     updateStructure,
     generateSummary,
+    clinicalContext,
+    setClinicalContext,
+    clinicalDocument,
+    setClinicalDocument,
+    isDocumenting,
+    generateDocument,
     buildTranscriptForAI,
     changeSpeaker,
     editSegmentText,

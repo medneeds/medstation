@@ -64,7 +64,10 @@ serve(async (req) => {
       'hipótese diagnóstica, exame físico, ausculta, palpação, inspeção, percussão, ' +
       'pressão arterial, frequência cardíaca, saturação, temperatura, hemograma, ' +
       'glicemia, colesterol, creatinina, ureia, TGO, TGP, omeprazol, losartana, ' +
-      'metformina, sinvastatina, dipirona, paracetamol, amoxicilina, azitromicina.'
+      'metformina, sinvastatina, dipirona, paracetamol, amoxicilina, azitromicina, ' +
+      'pronto-socorro, Glasgow, SatO2, dispneia, síncope, precordialgia, dor torácica, ' +
+      'troponina, D-dímero, lactato, gasometria, ECG, tomografia, AAS, clopidogrel, ' +
+      'morfina, tramadol, ondansetrona, ceftriaxona, soro fisiológico, Ringer lactato.'
     );
 
     const sttStart = Date.now();
