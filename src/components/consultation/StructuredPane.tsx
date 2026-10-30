@@ -44,6 +44,11 @@ interface StructuredPaneProps {
   isSummarizing?: boolean;
   onGenerateSummary?: () => void;
   onSendToAssistant?: () => void;
+  /** Documento final no padrão do Clínicus (texto pronto para o prontuário). */
+  clinicalDocument?: string;
+  onChangeDocument?: (value: string) => void;
+  isDocumenting?: boolean;
+  documentTitle?: string;
 }
 
 interface SectionConfig {
@@ -144,7 +149,14 @@ export function StructuredPane({
   isSummarizing,
   onGenerateSummary,
   onSendToAssistant,
+  clinicalDocument = "",
+  onChangeDocument,
+  isDocumenting,
+  documentTitle,
 }: StructuredPaneProps) {
+  const [editingDocument, setEditingDocument] = useState(false);
+  const [showFields, setShowFields] = useState(false);
+  const hasDocument = clinicalDocument.trim().length > 0;
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(['chiefComplaint', 'historyPresentIllness'])
   );
@@ -167,7 +179,7 @@ export function StructuredPane({
   const progress = Math.round((filledSections.length / sections.length) * 100);
 
   const handleCopyStructure = async () => {
-    const text = buildAnamnesisText(structure);
+    const text = hasDocument ? clinicalDocument.trim() : buildAnamnesisText(structure);
     if (!text) {
       toast.error("Gere a estruturação antes de copiar.");
       return;
@@ -208,7 +220,7 @@ export function StructuredPane({
         <div className="flex items-center gap-2 min-w-0">
           <h3 className="font-semibold text-xs md:text-sm shrink-0">Anamnese estruturada</h3>
           <AnimatePresence>
-            {isStructuring && (
+            {(isStructuring || isDocumenting) && (
               <motion.span
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -216,7 +228,7 @@ export function StructuredPane({
                 className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 ring-1 ring-primary/20 text-primary text-[10px] md:text-xs"
               >
                 <Loader2 className="h-3 w-3 animate-spin" />
-                <span>Organizando…</span>
+                <span>{isDocumenting ? "Montando documento…" : "Organizando…"}</span>
               </motion.span>
             )}
           </AnimatePresence>
@@ -228,7 +240,7 @@ export function StructuredPane({
               variant="ghost"
               size="sm"
               onClick={onGenerateSummary}
-              disabled={isSummarizing || filledSections.length === 0}
+              disabled={isSummarizing || (filledSections.length === 0 && !hasDocument)}
               className="h-7 gap-1.5 px-2 text-[11px] md:text-xs text-muted-foreground hover:text-primary"
             >
               {isSummarizing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
@@ -240,7 +252,7 @@ export function StructuredPane({
               variant="ghost"
               size="sm"
               onClick={onSendToAssistant}
-              disabled={filledSections.length === 0}
+              disabled={filledSections.length === 0 && !hasDocument}
               className="h-7 gap-1.5 px-2 text-[11px] md:text-xs text-muted-foreground hover:text-primary"
             >
               <Send className="h-3.5 w-3.5" />
@@ -251,7 +263,7 @@ export function StructuredPane({
             variant="ghost"
             size="sm"
             onClick={handleCopyStructure}
-            disabled={filledSections.length === 0}
+            disabled={filledSections.length === 0 && !hasDocument}
             className="h-7 gap-1.5 px-2 text-[11px] md:text-xs text-muted-foreground hover:text-foreground"
           >
             {copied ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />}
@@ -313,8 +325,61 @@ export function StructuredPane({
             )}
           </AnimatePresence>
 
+          {/* Documento final no padrão do Clínicus */}
+          {(hasDocument || isDocumenting) && (
+            <div className="mb-2 rounded-lg border border-border/70 bg-card overflow-hidden">
+              <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border/60 bg-muted/30">
+                <span className="text-[11px] md:text-xs font-semibold tracking-wide text-primary uppercase truncate">
+                  {documentTitle || "Documento clínico"}
+                </span>
+                {hasDocument && onChangeDocument && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setEditingDocument((v) => !v)}
+                    className="h-6 px-2 text-[11px] text-muted-foreground hover:text-primary"
+                  >
+                    {editingDocument ? "Concluir" : "Editar"}
+                  </Button>
+                )}
+              </div>
+              {!hasDocument ? (
+                <div className="flex items-center gap-2 px-3 py-6 text-xs md:text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  Montando o documento com a inteligência do Clínicus…
+                </div>
+              ) : editingDocument ? (
+                <Textarea
+                  value={clinicalDocument}
+                  onChange={(e) => onChangeDocument?.(e.target.value)}
+                  className="min-h-[320px] rounded-none border-0 font-sans text-xs md:text-sm leading-relaxed focus-visible:ring-0"
+                  autoFocus
+                />
+              ) : (
+                <pre
+                  onClick={() => onChangeDocument && setEditingDocument(true)}
+                  className="whitespace-pre-wrap font-sans text-xs md:text-sm leading-relaxed text-foreground/90 px-3 py-3 cursor-text"
+                >
+                  {clinicalDocument}
+                </pre>
+              )}
+            </div>
+          )}
+
+          {hasDocument && filledSections.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowFields((v) => !v)}
+              className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[11px] md:text-xs text-muted-foreground hover:text-foreground"
+            >
+              {showFields ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+              Ver por campos
+            </button>
+          )}
+
+          {(!hasDocument || showFields) && (<>
           {/* Estado vazio */}
-          {filledSections.length === 0 && !isStructuring && (
+          {filledSections.length === 0 && !isStructuring && !isDocumenting && (
             <div className="flex flex-col items-center justify-center text-center gap-2 py-10 px-6 text-muted-foreground">
               <div className="p-3 rounded-full bg-muted">
                 <FileText className="h-6 w-6" />
@@ -445,6 +510,8 @@ export function StructuredPane({
               </div>
             </div>
           )}
+
+          </>)}
 
           {lastStructuredAt && (
             <p className="px-3 pt-2 text-[10px] text-muted-foreground/70">
