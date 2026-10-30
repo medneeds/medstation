@@ -206,13 +206,38 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
         },
       ]);
     },
+    onQuotaExceededError: () => enterBackupRef.current(),
+    onAuthError: () => enterBackupRef.current(),
     onError: (err: unknown) => {
       console.error('[Scribe] error:', err);
-      if (isRecordingRef.current && !isPausedRef.current) {
+      if (isPermanentLiveError(err) || isLiveVoicePaused()) {
+        enterBackupRef.current();
+        return;
+      }
+      if (isRecordingRef.current && !isPausedRef.current && !backupModeRef.current) {
         setListeningHealth('reconnecting');
       }
     },
   });
+
+  // Sem texto ao vivo (ex.: saldo do serviço acabou): a gravação continua e a
+  // revisão final transcreve tudo ao encerrar. Não fica tentando reconectar.
+  const backupModeRef = useRef(false);
+  const enterBackupRef = useRef<() => void>(() => {});
+  enterBackupRef.current = () => {
+    markLiveVoiceUnavailable();
+    const already = backupModeRef.current;
+    backupModeRef.current = true;
+    try { void scribeRef.current.disconnect(); } catch { /* ignore */ }
+    setPartialTranscription('');
+    if (isRecordingRef.current && !isPausedRef.current) {
+      setListeningHealth('backup');
+      setError(null);
+      if (!already) {
+        toast.info('O texto ao vivo está indisponível agora. A consulta segue gravada e o texto completo aparece ao encerrar.');
+      }
+    }
+  };
 
   const scribeRef = useRef(scribe);
   useEffect(() => {
