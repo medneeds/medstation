@@ -229,7 +229,7 @@ serve(async (req) => {
 
     let session: Stripe.Checkout.Session;
     try {
-      session = await stripe.checkout.sessions.create(sessionConfig).catch((error) => {
+      session = await stripe.checkout.sessions.create(sessionConfig).catch((error: unknown) => {
         const message = error instanceof Error ? error.message : String(error);
         if (!sessionConfig.after_expiration || !/after_expiration|recovery|expires_at/i.test(message)) throw error;
         // Recuperação é bônus: nunca impede a venda.
