@@ -31,12 +31,11 @@ import { DISPLAY_PRICING, HAS_LAUNCH_DISCOUNT, brl } from "@/lib/subscription-ti
 import { BlackFridayBanner } from "@/components/landing/BlackFridayBanner";
 import { BLACK_OFFER, isBlackActive } from "@/lib/pricingSchedule";
 
-
-const BLACK_PRICE_LABEL = brl(BLACK_OFFER.amountCents / 100);
-
 import { ArrowRight, Check, Quote, Star } from "lucide-react";
 import { AnnualBonusCard } from "@/components/AnnualBonusCard";
 import { ANNUAL_BONUS } from "@/lib/annualBonus";
+
+const BLACK_PRICE_LABEL = brl(BLACK_OFFER.amountCents / 100);
 
 /** Frase do topo; a cópia estática em index.html troca o mesmo texto em dezembro. */
 const HERO_PER_DAY = HAS_LAUNCH_DISCOUNT ? "Menos de R$ 2 por dia" : "Menos de R$ 3 por dia";
