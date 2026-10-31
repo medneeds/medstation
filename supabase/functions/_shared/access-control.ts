@@ -1,6 +1,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient, User } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { summarizeSubscriptions, type MinimalSubscription } from "./stripe-access.ts";
+import { collectCustomerIds } from "./payment-link.ts";
 
 export type AccessStatus =
   | "admin"
@@ -244,9 +245,9 @@ export async function resolveUserAccess(user: Pick<User, "id" | "email" | "creat
   const annual = await annualPurchaseAccess(supabase, user.id, user.email ?? undefined);
   if (annual) {
     // Assinatura anual no cartão + compra avulsa ativa: mantém o status de anual
-    if (!annual.isAnnual && user.email) {
+    if (!annual.isAnnual) {
       try {
-        const paid = await stripeAccess(user.email);
+        const paid = await stripeAccess(user.email ?? null, supabase, user.id);
         if (paid?.isAnnual) annual.isAnnual = true;
       } catch {
         /* sem impacto no acesso */
@@ -256,9 +257,9 @@ export async function resolveUserAccess(user: Pick<User, "id" | "email" | "creat
   }
 
   let billingDegraded = false;
-  if (user.email) {
+  {
     try {
-      const paid = await stripeAccess(user.email);
+      const paid = await stripeAccess(user.email ?? null, supabase, user.id);
       if (paid) return applyCommercialPolicy(supabase, paid);
     } catch (err) {
       // Falha temporária da Stripe NÃO pode virar paywall automaticamente.
