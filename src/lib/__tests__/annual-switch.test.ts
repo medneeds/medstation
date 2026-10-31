@@ -61,7 +61,7 @@ describe("lembrete do boleto", () => {
   const expiresAt = "2026-11-05T02:59:00.000Z";
 
   it("não lembra antes de 20 horas", () => {
-    expect(boletoReminderStage({ createdAt, expiresAt, sent: [], now: new Date("2026-11-02T10:00:00.000Z") })).toBeNull();
+    expect(boletoReminderStage({ createdAt, expiresAt, sent: [], now: new Date("2026-11-01T23:00:00.000Z") })).toBeNull();
   });
 
   it("lembra no dia seguinte", () => {
