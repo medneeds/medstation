@@ -30,9 +30,9 @@ import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { DISPLAY_PRICING, HAS_LAUNCH_DISCOUNT, brl } from "@/lib/subscription-tiers";
 import { BlackFridayBanner } from "@/components/landing/BlackFridayBanner";
 import { BLACK_OFFER, isBlackActive } from "@/lib/pricingSchedule";
-import { brl as brlBlack } from "@/lib/subscription-tiers";
 
-const BLACK_PRICE_LABEL = brlBlack(BLACK_OFFER.amountCents / 100);
+
+const BLACK_PRICE_LABEL = brl(BLACK_OFFER.amountCents / 100);
 
 import { ArrowRight, Check, Quote, Star } from "lucide-react";
 import { AnnualBonusCard } from "@/components/AnnualBonusCard";
