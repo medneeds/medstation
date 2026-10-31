@@ -109,6 +109,11 @@ export default function Lp3() {
   // Toque em "Assinar agora" no topo instantâneo (antes do app carregar).
   useEffect(() => {
     if (consumeLandingShellAction("subscribe")) {
+      if (isBlackActive()) {
+        trackCtaClick({ cta: "hero_assinar_agora", section: "lp3", destination: "/black" });
+        window.location.assign("/black");
+        return;
+      }
       trackCtaClick({ cta: "hero_assinar_agora", section: "lp3", destination: "dialog" });
       setSubscribeMounted(true);
       setSubscribeOpen(true);
@@ -215,12 +220,18 @@ export default function Lp3() {
                   size="lg"
                   className="h-12 px-6 text-base shadow-medical"
                   onClick={() => {
+                    // Em novembro, "Assinar agora" leva direto para a oferta Black.
+                    if (isBlackActive()) {
+                      trackCtaClick({ cta: "hero_assinar_agora", section: "lp3", destination: "/black" });
+                      window.location.assign("/black");
+                      return;
+                    }
                     trackCtaClick({ cta: "hero_assinar_agora", section: "lp3", destination: "dialog" });
                     setSubscribeMounted(true);
                     setSubscribeOpen(true);
                   }}
                 >
-                  Assinar agora <ArrowRight className="w-4 h-4 ml-1.5" />
+                  {blackOn ? "Assinar Black anual" : "Assinar agora"} <ArrowRight className="w-4 h-4 ml-1.5" />
                 </Button>
                 <span className="text-sm text-muted-foreground">
                   {HERO_PER_DAY} · <span className="text-foreground font-medium">7 dias de garantia</span>

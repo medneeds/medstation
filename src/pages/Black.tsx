@@ -20,7 +20,6 @@ const ANCHOR = BLACK_OFFER.anchorCents / 100;
 const MONTHLY_FULL = PRICE_TABLE.full.monthlyCents / 100;
 const DISCOUNT_PCT = Math.round((1 - PRICE / ANCHOR) * 100);
 const PER_DAY = PRICE / 365;
-const PER_MONTH = PRICE / 12;
 const SAVINGS = ANCHOR - PRICE;
 
 const CTA_LABEL = "Assinar plano Black anual";
