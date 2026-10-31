@@ -67,6 +67,7 @@ const AdminSubscribers = lazy(() => import("./pages/AdminSubscribers"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
 const AdminBilling = lazy(() => import("./pages/admin/AdminBilling"));
+const AdminBlack = lazy(() => import("./pages/admin/AdminBlack"));
 const AdminSupport = lazy(() => import("./pages/admin/AdminSupport"));
 const AdminAIUsage = lazy(() => import("./pages/admin/AdminAIUsage"));
 const AdminFeedback = lazy(() => import("./pages/admin/AdminFeedback"));
@@ -385,6 +386,7 @@ const App = () => (
               <Route index element={<AdminDashboard />} />
               <Route path="usuarios" element={<AdminUsers />} />
               <Route path="faturamento" element={<AdminRoute requireAdmin><AdminBilling /></AdminRoute>} />
+              <Route path="black" element={<AdminRoute requireAdmin><AdminBlack /></AdminRoute>} />
               <Route path="internos" element={<AdminRoute requireAdmin><AdminInternos /></AdminRoute>} />
               <Route path="indicacoes" element={<AdminRoute requireAdmin><AdminReferrals /></AdminRoute>} />
               <Route path="suporte" element={<AdminSupport />} />

@@ -1,0 +1,18 @@
+{
+  "id": "baba2226-5095-4166-a0ae-c0a14f2a1518",
+  "prevId": "fc4e24aa-1f06-4b6d-aba4-a42347ca7061",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {},
+  "enums": {},
+  "schemas": {},
+  "views": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

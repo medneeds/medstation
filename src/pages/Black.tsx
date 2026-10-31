@@ -55,7 +55,7 @@ const faq = [
   },
   {
     q: "Já sou assinante mensal. Como faço?",
-    a: "A Black é para novas assinaturas anuais. Se você já assina o mensal e quer migrar, fale com a gente pelo suporte dentro da plataforma.",
+    a: "Pode trocar pela Black aqui mesmo, com o e-mail da sua conta. Seu mensal é encerrado sozinho no fim do mês que você já pagou, sem cobrança dupla, e os 12 meses começam a contar depois desse dia.",
   },
   {
     q: "E depois de novembro?",

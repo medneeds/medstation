@@ -11,6 +11,7 @@ import { HeaderThemeToggle } from "@/components/HeaderThemeToggle";
 import { SupportChat } from "@/components/SupportChat";
 import { FloatingConsultationButton } from "@/components/FloatingConsultationButton";
 import { AnnouncementsBanner } from "@/components/AnnouncementsBanner";
+import { BlackInAppOffer } from "@/components/BlackInAppOffer";
 import { TrialCountdownBanner } from "@/components/TrialCountdownBanner";
 import { LegacyTrialInviteDialog } from "@/components/LegacyTrialInviteDialog";
 import { NpsWidget } from "@/components/NpsWidget";
@@ -197,7 +198,7 @@ function DashboardLayoutInner({ children }: DashboardLayoutProps) {
 
             <main className="flex-1 overflow-x-hidden bg-background p-4 md:p-6 lg:p-8">
               <AnnouncementsBanner />
-              <TrialCountdownBanner />
+              <BlackInAppOffer fallback={<TrialCountdownBanner />} />
               <AccessContentGate><Suspense fallback={<PageFallback />}>{children}</Suspense></AccessContentGate>
             </main>
           </div>

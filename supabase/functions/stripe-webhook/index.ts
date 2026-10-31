@@ -5,6 +5,7 @@ import { findUserByEmail } from "../_shared/admin-users.ts";
 import { resolveSubscriptionEnd, type MinimalSubscription } from "../_shared/stripe-access.ts";
 import { sendTemplateEmailWithLog } from "../_shared/transactional-email-templates/send-and-log.ts";
 import { notifyArsenalBonus } from "../_shared/arsenal-bonus.ts";
+import { laterDate, planMonthlyHandoff, type MonthlySubLite } from "../_shared/annual-switch.ts";
 import {
   computeAccessWindow,
   normalizePaymentMethod,
@@ -273,6 +274,104 @@ async function ensureAccountForPayment(
   return userId;
 }
 
+/** Mensais ativos do comprador (espelho local + Stripe), para trocar pelo anual sem cobrança dupla. */
+async function collectMonthlySubs(
+  supabase: ReturnType<typeof serviceClient>,
+  stripe: Stripe,
+  userId: string,
+  customerId: string | null,
+  hinted: string | null,
+): Promise<MonthlySubLite[]> {
+  const byId = new Map<string, MonthlySubLite>();
+  try {
+    const { data } = await supabase.from("stripe_subscriptions")
+      .select("stripe_subscription_id, status, current_period_end, cancel_at_period_end")
+      .eq("user_id", userId)
+      .in("status", ["active", "trialing", "past_due", "unpaid", "incomplete"]);
+    for (const row of data ?? []) {
+      byId.set(row.stripe_subscription_id, {
+        id: row.stripe_subscription_id,
+        status: row.status,
+        currentPeriodEnd: row.current_period_end,
+        cancelAtPeriodEnd: row.cancel_at_period_end,
+      });
+    }
+  } catch (error) {
+    console.error("[stripe-webhook] local subs lookup failed", (error as Error)?.message);
+  }
+  const fresh: Stripe.Subscription[] = [];
+  try {
+    if (customerId) {
+      const list = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 20 });
+      fresh.push(...list.data);
+    }
+    for (const id of [hinted, ...byId.keys()]) {
+      if (!id || fresh.some((sub) => sub.id === id)) continue;
+      fresh.push(await stripe.subscriptions.retrieve(id));
+    }
+  } catch (error) {
+    console.error("[stripe-webhook] stripe subs lookup failed", (error as Error)?.message);
+  }
+  for (const sub of fresh) {
+    byId.set(sub.id, {
+      id: sub.id,
+      status: sub.status,
+      currentPeriodEnd: resolveSubscriptionEnd(sub as unknown as MinimalSubscription),
+      cancelAtPeriodEnd: sub.cancel_at_period_end,
+    });
+  }
+  return [...byId.values()];
+}
+
+/** Boleto gerado e ainda não pago: guarda o link e o vencimento para os lembretes. */
+async function recordBoletoPending(
+  supabase: ReturnType<typeof serviceClient>,
+  stripe: Stripe,
+  session: Stripe.Checkout.Session,
+  eventId: string,
+) {
+  const intentId = objectId(session.payment_intent);
+  if (!intentId) return { recorded: false, reason: "no_intent" };
+  const intent = await stripe.paymentIntents.retrieve(intentId);
+  const details = (intent.next_action as { boleto_display_details?: { hosted_voucher_url?: string; expires_at?: number } } | null)
+    ?.boleto_display_details;
+  if (!details?.hosted_voucher_url) return { recorded: false, reason: "not_boleto" };
+
+  const plan = planFromSession(session as unknown as MinimalCheckoutSession);
+  const accessPeriod = plan?.accessPeriod
+    ?? (session.metadata?.access_period === "monthly_30d" ? "monthly_30d" : "annual_12m");
+  const patch = {
+    payment_intent_id: intentId,
+    stripe_customer_id: objectId(session.customer),
+    email: session.customer_details?.email ?? session.customer_email ?? null,
+    checkout_status: "completed",
+    payment_method: "boleto",
+    boleto_voucher_url: details.hosted_voucher_url,
+    boleto_expires_at: details.expires_at ? new Date(details.expires_at * 1000).toISOString() : null,
+    last_event_id: eventId,
+  };
+  const { data: existing } = await supabase.from("stripe_one_time_purchases")
+    .select("id, status").eq("checkout_session_id", session.id).maybeSingle();
+  if (existing?.status === "paid") return { recorded: false, reason: "already_paid" };
+  if (existing?.id) {
+    await supabase.from("stripe_one_time_purchases").update(patch).eq("id", existing.id);
+  } else {
+    await supabase.from("stripe_one_time_purchases").insert({
+      checkout_session_id: session.id,
+      plan: session.metadata?.plan ?? plan?.slug ?? "pro_completo_yearly",
+      amount_cents: session.amount_total ?? plan?.amountCents ?? null,
+      currency: session.currency ?? null,
+      status: "pending",
+      payment_category: plan?.category ?? "annual_one_time",
+      access_period: accessPeriod,
+      recovery_status: "not_needed",
+      ...utmFromMetadata(session.metadata as Record<string, string> | null),
+      ...patch,
+    });
+  }
+  return { recorded: true };
+}
+
 /**
  * Compra avulsa (Pix mensal 30 dias ou anual 12 meses, cartão ou Pix).
  * Idempotente: a unicidade de `checkout_session_id` garante que a reentrega do
@@ -329,6 +428,19 @@ async function grantOneTimeAccess(
     currentAccessEnd = latest?.access_end ?? null;
   }
 
+  // Quem já tinha o mensal: o anual começa depois do último dia pago e o mensal
+  // é encerrado no fim do período, sem cobrança dupla.
+  const handoff = userId && accessPeriod === "annual_12m"
+    ? planMonthlyHandoff(await collectMonthlySubs(
+      supabase,
+      stripe,
+      userId,
+      customerId,
+      session.metadata?.replaces_subscription?.trim() || null,
+    ))
+    : null;
+  if (handoff?.accessFrom) currentAccessEnd = laterDate(currentAccessEnd, handoff.accessFrom);
+
   const paidAt = new Date();
   const { accessStart, accessEnd } = computeAccessWindow(paidAt, currentAccessEnd, accessPeriod);
   const paymentMethod = await resolvePaymentMethod(stripe, session);
@@ -382,6 +494,46 @@ async function grantOneTimeAccess(
       .in("recovery_status", ["eligible", "contacted"]);
   }
 
+  if (handoff && (handoff.cancelAtPeriodEnd.length || handoff.cancelNow.length)) {
+    const done: string[] = [];
+    const failed: string[] = [];
+    for (const id of handoff.cancelAtPeriodEnd) {
+      try {
+        await stripe.subscriptions.update(id, {
+          cancel_at_period_end: true,
+          metadata: { replaced_by_annual: session.id },
+        });
+        done.push(id);
+      } catch (error) {
+        console.error("[stripe-webhook] monthly handoff failed", id, (error as Error)?.message);
+        failed.push(id);
+      }
+    }
+    for (const id of handoff.cancelNow) {
+      try {
+        await stripe.subscriptions.cancel(id);
+        done.push(id);
+      } catch (error) {
+        console.error("[stripe-webhook] monthly cancel failed", id, (error as Error)?.message);
+        failed.push(id);
+      }
+    }
+    if (done.length) {
+      await supabase.from("stripe_one_time_purchases")
+        .update({ replaced_subscription_ids: done })
+        .eq("checkout_session_id", session.id);
+    }
+    if (failed.length) {
+      await supabase.rpc("create_admin_notification", {
+        p_type: "sale",
+        p_title: "Mensal não encerrado após compra do anual",
+        p_message: `${email ?? "Comprador"} comprou o anual, mas o mensal ${failed.join(", ")} não foi encerrado. Encerre no Stripe para evitar cobrança dupla.`,
+        p_link: "/admin/black",
+        p_severity: "critical",
+      });
+    }
+  }
+
   // A Black MedStation (anual a R$ 399,90) não dá direito ao Arsenal Med.
   const bonusExcluded = planExcludesArsenalBonus(session.metadata?.plan ?? plan?.slug);
   if (accessPeriod === "annual_12m" && !bonusExcluded) {
@@ -430,6 +582,7 @@ async function recordOneTimeFailure(
     access_period: accessPeriod,
     recovery_status: recoveryStatusForOutcome(outcome),
     last_event_id: eventId,
+    ...(session.after_expiration?.recovery?.url ? { recovery_url: session.after_expiration.recovery.url } : {}),
   };
 
   const { data: existing } = await supabase
@@ -594,9 +747,13 @@ serve(async (req) => {
           const result = await grantOneTimeAccess(supabase, stripe, session, event.id);
           console.log("[stripe-webhook] one-time access", { type: event.type, ...result });
         } else {
+          const boleto = event.type === "checkout.session.completed" && session.mode === "payment"
+            ? await recordBoletoPending(supabase, stripe, session, event.id)
+            : null;
           console.log("[stripe-webhook] one-time payment not confirmed yet", {
             type: event.type,
             payment_status: session.payment_status,
+            boleto,
           });
         }
         break;
