@@ -65,6 +65,7 @@ const MARQUEE_ITEMS = [
   `${DISCOUNT_PCT}% off no anual`,
   `de ${brl(ANCHOR)} por ${brl(PRICE)}`,
   "Só em novembro",
+  "24 a 40 horas a menos de burocracia",
   `${brl(PER_DAY)} por dia`,
   "7 dias de garantia",
 ];
@@ -115,26 +116,53 @@ function Reveal({ children, className, delay = 0 }: { children: ReactNode; class
   );
 }
 
-function Marquee({ className }: { className?: string }) {
+function Marquee({ tone = "gold", className }: { tone?: "gold" | "dark"; className?: string }) {
   const row = [...MARQUEE_ITEMS, ...MARQUEE_ITEMS];
+  const dark = tone === "dark";
   return (
-    <div className={cn("overflow-hidden bg-offer-gold text-offer-gold-foreground", className)} aria-hidden="true">
+    <div
+      className={cn(
+        "overflow-hidden",
+        dark ? "bg-offer text-offer-gold border-b border-offer-border" : "bg-offer-gold text-offer-gold-foreground",
+        className,
+      )}
+      aria-hidden="true"
+    >
       <div className="flex w-max motion-safe:animate-marquee">
         {[0, 1].map((copy) => (
           <div key={copy} className="flex shrink-0 items-center">
             {row.map((item, i) => (
               <span
                 key={`${copy}-${i}`}
-                className="flex items-center gap-4 px-4 py-2 font-mono text-[0.7rem] md:text-xs font-semibold uppercase tracking-[0.2em] whitespace-nowrap"
+                className={cn(
+                  "flex items-center gap-4 px-4 font-mono font-semibold uppercase tracking-[0.2em] whitespace-nowrap",
+                  dark ? "py-1.5 text-[0.62rem] md:text-[0.68rem]" : "py-2 text-[0.7rem] md:text-xs",
+                )}
               >
                 {item}
-                <span className="h-1.5 w-1.5 rotate-45 bg-offer-gold-foreground/70" />
+                <span className={cn("h-1.5 w-1.5 rotate-45", dark ? "bg-offer-accent" : "bg-offer-gold-foreground/70")} />
               </span>
             ))}
           </div>
         ))}
       </div>
     </div>
+  );
+}
+
+function HeaderTimer({ now }: { now: number }) {
+  const t = timeLeft(BLACK_OFFER.endsAt, now);
+  return (
+    <span className="hidden md:inline-flex items-center gap-2 rounded-full border border-offer-border bg-offer-foreground/5 px-3 py-1 text-xs text-offer-muted">
+      <span className="relative flex h-1.5 w-1.5">
+        <span className="absolute inline-flex h-full w-full rounded-full bg-offer-hot opacity-75 motion-safe:animate-ping" />
+        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-offer-hot" />
+      </span>
+      Termina em
+      <span className="font-mono tabular-nums text-offer-foreground">
+        {t.days}d {String(t.hours).padStart(2, "0")}h {String(t.minutes).padStart(2, "0")}m
+      </span>
+    </span>
   );
 }
 
@@ -400,27 +428,37 @@ export default function Black() {
         description="Só em novembro: o plano anual completo da MedStation de R$ 999,90 por R$ 399,90, em pagamento único no cartão ou boleto. 7 dias de garantia."
       />
 
-      <Marquee />
-
-      <header className="sticky top-0 z-30 border-b border-border/60 bg-background/90 backdrop-blur">
-        <div className="container mx-auto px-4 md:px-8 h-16 flex items-center justify-between gap-3">
-          <Link to="/" aria-label="MedStation">
-            <Logo size="sm" />
-          </Link>
-          <div className="flex items-center gap-2">
-            <Button asChild size="sm" variant="ghost">
-              <Link to="/auth" onClick={() => trackCtaClick({ cta: "black_login", section: "black", destination: "/auth" })}>
-                Já sou cliente
-              </Link>
-            </Button>
-            {active && (
-              <Button size="sm" className={cn("hidden sm:inline-flex", GOLD_BUTTON)} onClick={() => scrollToCheckout("black_header")}>
-                Assinar Black
+      <div className="sticky top-0 z-30">
+        <Marquee tone="dark" />
+        <header className="border-b border-offer-border bg-offer/90 text-offer-foreground backdrop-blur-md">
+          <div className="container mx-auto px-4 md:px-8 h-16 flex items-center justify-between gap-3">
+            <Link to="/" aria-label="MedStation" className="flex items-center gap-3">
+              <Logo size="sm" className="[&>span]:text-offer-foreground" />
+              <span className="hidden sm:inline-flex rounded-sm border border-offer-gold/50 px-1.5 py-0.5 font-mono text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-offer-gold">
+                Black
+              </span>
+            </Link>
+            {active && <HeaderTimer now={now} />}
+            <div className="flex items-center gap-2">
+              <Button
+                asChild
+                size="sm"
+                variant="ghost"
+                className="text-offer-muted hover:bg-offer-foreground/10 hover:text-offer-foreground"
+              >
+                <Link to="/auth" onClick={() => trackCtaClick({ cta: "black_login", section: "black", destination: "/auth" })}>
+                  Já sou cliente
+                </Link>
               </Button>
-            )}
+              {active && (
+                <Button size="sm" className={cn("hidden sm:inline-flex", GOLD_BUTTON)} onClick={() => scrollToCheckout("black_header")}>
+                  Assinar Black
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      </div>
 
       <section className="relative overflow-hidden bg-offer text-offer-foreground">
         {/* Brilhos de fundo */}
@@ -434,7 +472,7 @@ export default function Black() {
         />
         <div className="relative container mx-auto px-4 md:px-8 pt-10 pb-16 md:pt-16 md:pb-24 grid lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-14 items-center">
           <div className="motion-safe:animate-slide-up">
-            <span className="inline-flex items-center gap-2 rounded-sm bg-offer-hot px-2.5 py-1 font-mono text-[0.68rem] font-bold uppercase tracking-[0.18em] text-offer-foreground">
+            <span className="inline-flex items-center gap-2 rounded-full border border-offer-gold/40 bg-offer-gold/10 px-3 py-1 font-mono text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-offer-gold">
               <Sparkles className="w-3.5 h-3.5" /> Black MedStation · só em novembro
             </span>
             <h1 className="mt-5 text-[2.4rem] leading-[1.03] md:text-7xl font-semibold tracking-tight">
@@ -445,11 +483,14 @@ export default function Black() {
               </span>
               .
             </h1>
-            <p className="mt-6 text-base md:text-lg text-offer-muted leading-relaxed max-w-xl">
-              O plano anual completo com <span className="text-offer-foreground font-semibold">{DISCOUNT_PCT}% de desconto</span>: de{" "}
-              <span className="line-through decoration-offer-hot decoration-2">{brl(ANCHOR)}</span> por {brl(PRICE)}, em pagamento
-              único. Dá cerca de <span className="text-offer-gold font-semibold">{brl(PER_DAY)} por dia</span> para escrever menos
-              burocracia e atender mais.
+            <p className="mt-6 max-w-xl text-lg md:text-2xl font-medium leading-snug text-offer-foreground">
+              Economize de <span className="text-offer-gold">24 a 40 horas</span> de trabalho burocrático e repetitivo no seu
+              plantão ou consultório.
+            </p>
+            <p className="mt-4 max-w-xl text-base md:text-lg text-offer-muted leading-relaxed">
+              Evoluções, receitas, atestados e anamneses prontos em segundos, para você voltar ao que importa: o paciente. Tudo isso
+              por <span className="text-offer-foreground font-semibold">{brl(PER_DAY)} por dia</span>, com{" "}
+              {DISCOUNT_PCT}% de desconto no plano anual.
             </p>
 
             <div className="mt-8">
@@ -474,7 +515,7 @@ export default function Black() {
 
       {/* Tarja diagonal entre seções */}
       <div className="relative -mt-4 overflow-hidden py-4" aria-hidden="true">
-        <Marquee className="-rotate-1 scale-[1.02] bg-offer-hot text-offer-foreground [&_span>span]:bg-offer-foreground/70" />
+        <Marquee className="-rotate-1 scale-[1.02]" />
       </div>
 
       <main className="container mx-auto px-4 md:px-8 py-12 md:py-20 space-y-16 md:space-y-20">
@@ -497,7 +538,7 @@ export default function Black() {
           <Reveal delay={120}>
             <div className="rounded-2xl border border-border bg-card p-5 md:p-6">
               <h3 className="flex items-center gap-2 text-base font-semibold">
-                <BadgePercent className="w-4 h-4 text-offer-hot" /> Compare e decida
+                <BadgePercent className="w-4 h-4 text-foreground" /> Compare e decida
               </h3>
               <dl className="mt-4 space-y-2 text-sm">
                 <div className="flex items-center justify-between rounded-lg px-3 py-3">
