@@ -33,8 +33,8 @@ type Result =
   | { type: "success"; message: string; userName?: string | null; password: string }
   | { type: "error"; message: string };
 
-export function AdminSetPasswordForm() {
-  const [email, setEmail] = useState("");
+export function AdminSetPasswordForm({ initialEmail = "", lockEmail = false }: { initialEmail?: string; lockEmail?: boolean } = {}) {
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [show, setShow] = useState(false);
@@ -117,6 +117,7 @@ export function AdminSetPasswordForm() {
               setResult(null);
             }}
             disabled={loading}
+            readOnly={lockEmail}
             autoComplete="off"
           />
         </div>

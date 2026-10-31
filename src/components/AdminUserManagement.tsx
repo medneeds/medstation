@@ -8,6 +8,7 @@ import { Shield, Search, Mail, Loader2, CheckCircle2, AlertCircle, KeyRound } fr
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { AdminSetPasswordForm } from "@/components/admin/AdminSetPasswordForm";
 
 const emailSchema = z.string().email("Email inválido");
 
@@ -188,6 +189,13 @@ export function AdminUserManagement() {
           <p>• O usuário receberá um email com link para redefinir a senha</p>
           <p>• O link expira em 1 hora</p>
           <p>• Esta ação é registrada nos logs do sistema</p>
+        </div>
+
+        <div className="pt-4 border-t border-border/60 space-y-3">
+          <p className="text-sm font-medium flex items-center gap-2">
+            <KeyRound className="h-4 w-4" /> Definir senha agora
+          </p>
+          <AdminSetPasswordForm />
         </div>
       </CardContent>
     </Card>

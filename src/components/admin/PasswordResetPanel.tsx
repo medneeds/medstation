@@ -69,10 +69,12 @@ export function PasswordResetPanel() {
         </div>
       </div>
 
-      <Tabs defaultValue="link" className="space-y-3">
-        <TabsList className="h-9">
+      <Tabs defaultValue="direct" className="space-y-3">
+        <TabsList className="h-auto flex-wrap">
+          <TabsTrigger value="direct" className="text-xs gap-1.5">
+            <KeyRound className="h-3.5 w-3.5" /> Definir senha agora
+          </TabsTrigger>
           <TabsTrigger value="link" className="text-xs">Enviar link por e-mail</TabsTrigger>
-          <TabsTrigger value="direct" className="text-xs">Definir senha agora</TabsTrigger>
         </TabsList>
 
         <TabsContent value="direct" className="mt-0">
