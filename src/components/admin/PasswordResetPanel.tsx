@@ -62,11 +62,25 @@ export function PasswordResetPanel() {
         <div>
           <h2 className="text-sm font-semibold">Redefinição de senha</h2>
           <p className="text-xs text-muted-foreground">
-            Digite o e-mail do usuário. Ele recebe um link para criar uma nova senha, válido por 1 hora.
+            Envie um link por e-mail ou, se o e-mail não chegar, defina a senha aqui mesmo.
           </p>
         </div>
       </div>
 
+      <Tabs defaultValue="link" className="space-y-3">
+        <TabsList className="h-9">
+          <TabsTrigger value="link" className="text-xs">Enviar link por e-mail</TabsTrigger>
+          <TabsTrigger value="direct" className="text-xs">Definir senha agora</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="direct" className="mt-0">
+          <AdminSetPasswordForm />
+        </TabsContent>
+
+        <TabsContent value="link" className="mt-0 space-y-3">
+          <p className="text-xs text-muted-foreground">
+            O usuário recebe um link para criar uma nova senha, válido por 1 hora.
+          </p>
       <form
         className="flex gap-2 flex-wrap"
         onSubmit={(e) => {
