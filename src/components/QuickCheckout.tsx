@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { trackCheckoutStarted } from "@/lib/analytics";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import { DISPLAY_PRICING } from "@/lib/subscription-tiers";
 
 interface QuickCheckoutProps {
   product?: "agents" | "pro_completo";
@@ -34,10 +35,11 @@ export function QuickCheckout({
   const { toast } = useToast();
 
   const price = isCompleto
-    ? billingPeriod === "yearly" ? 499.9 : 49.9
+    ? DISPLAY_PRICING.bundle[billingPeriod === "yearly" ? "yearly" : "monthly"].now
     : billingPeriod === "yearly" ? 299.9 : 29.9;
 
-  const listPrice = isCompleto ? 99.9 : 59.9;
+  const listPrice = isCompleto ? DISPLAY_PRICING.bundle.monthly.list : 59.9;
+  const showListPrice = billingPeriod === "monthly" && listPrice > price;
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,7 +100,7 @@ export function QuickCheckout({
               Checkout Rápido
             </Badge>
             <div className="flex items-baseline justify-center gap-2">
-              {billingPeriod === "monthly" && (
+              {showListPrice && (
                 <span className="text-lg text-muted-foreground line-through">
                   R$ {listPrice.toFixed(2).replace(".", ",")}
                 </span>
