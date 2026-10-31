@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { trackCheckoutStarted, trackCtaClick } from "@/lib/analytics";
 import { BLACK_OFFER, PRICE_TABLE, blackStatus, timeLeft, type BlackStatus } from "@/lib/pricingSchedule";
+import { saveBlackLead } from "@/lib/blackLead";
 import { brl } from "@/lib/subscription-tiers";
 import { cn } from "@/lib/utils";
 import { PlatformDemo } from "@/components/landing/PlatformDemo";
@@ -222,7 +223,10 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
   const [email, setEmail] = useState("");
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [vipSaved, setVipSaved] = useState(false);
   const { toast } = useToast();
+  const upcoming = status === "upcoming";
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSessionEmail(data.session?.user?.email ?? null));
@@ -230,13 +234,25 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (status !== "active") return;
+    if (status === "ended" || loading) return;
     const clean = (sessionEmail ?? email).trim();
-    if (!sessionEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) {
       toast({ variant: "destructive", title: "E-mail inválido", description: "Confira o e-mail e tente de novo." });
       return;
     }
     setLoading(true);
+
+    // Antes da abertura: entra na lista VIP e é avisado à meia-noite.
+    if (status === "upcoming") {
+      trackCtaClick({ cta: "black_vip", section: "black", destination: "vip_list" });
+      await saveBlackLead(clean, "black_vip", phone);
+      setLoading(false);
+      setVipSaved(true);
+      return;
+    }
+
+    // Guarda o contato antes do pagamento para recuperar quem desistir.
+    await saveBlackLead(clean, "black_checkout");
     trackCheckoutStarted({
       origin: "black_2026",
       product: "pro_completo",
