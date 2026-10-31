@@ -1691,6 +1691,9 @@ export type Database = {
           access_start: string | null
           acquisition_source: string | null
           amount_cents: number | null
+          boleto_expires_at: string | null
+          boleto_reminders_sent: string[]
+          boleto_voucher_url: string | null
           campaign: string | null
           checkout_session_id: string
           checkout_status: string
@@ -1708,6 +1711,8 @@ export type Database = {
           recovery_status: string
           recovery_updated_at: string | null
           recovery_updated_by: string | null
+          recovery_url: string | null
+          replaced_subscription_ids: string[]
           status: string
           stripe_customer_id: string | null
           updated_at: string
@@ -1721,6 +1726,9 @@ export type Database = {
           access_start?: string | null
           acquisition_source?: string | null
           amount_cents?: number | null
+          boleto_expires_at?: string | null
+          boleto_reminders_sent?: string[]
+          boleto_voucher_url?: string | null
           campaign?: string | null
           checkout_session_id: string
           checkout_status?: string
@@ -1738,6 +1746,8 @@ export type Database = {
           recovery_status?: string
           recovery_updated_at?: string | null
           recovery_updated_by?: string | null
+          recovery_url?: string | null
+          replaced_subscription_ids?: string[]
           status?: string
           stripe_customer_id?: string | null
           updated_at?: string
@@ -1751,6 +1761,9 @@ export type Database = {
           access_start?: string | null
           acquisition_source?: string | null
           amount_cents?: number | null
+          boleto_expires_at?: string | null
+          boleto_reminders_sent?: string[]
+          boleto_voucher_url?: string | null
           campaign?: string | null
           checkout_session_id?: string
           checkout_status?: string
@@ -1768,6 +1781,8 @@ export type Database = {
           recovery_status?: string
           recovery_updated_at?: string | null
           recovery_updated_by?: string | null
+          recovery_url?: string | null
+          replaced_subscription_ids?: string[]
           status?: string
           stripe_customer_id?: string | null
           updated_at?: string
