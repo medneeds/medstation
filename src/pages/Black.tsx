@@ -247,22 +247,20 @@ export default function Black() {
         description="Só em novembro: o plano anual completo da MedStation de R$ 999,90 por R$ 399,90, em pagamento único no cartão ou boleto. 7 dias de garantia."
       />
 
-      <section className="bg-offer text-offer-foreground">
-        <header className="container mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
-          <Link to="/" aria-label="MedStation" className="rounded-sm bg-offer-foreground px-2 py-1">
+      <header className="border-b border-border/60 bg-background">
+        <div className="container mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
+          <Link to="/" aria-label="MedStation">
             <Logo size="sm" />
           </Link>
-          <Button
-            asChild
-            size="sm"
-            variant="ghost"
-            className="text-offer-foreground hover:bg-offer-foreground/10 hover:text-offer-foreground"
-          >
+          <Button asChild size="sm" variant="ghost">
             <Link to="/auth" onClick={() => trackCtaClick({ cta: "black_login", section: "black", destination: "/auth" })}>
               Já sou cliente
             </Link>
           </Button>
-        </header>
+        </div>
+      </header>
+
+      <section className="bg-offer text-offer-foreground">
 
         <div className="container mx-auto px-4 md:px-8 pt-8 pb-14 md:pt-14 md:pb-20 grid lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-14 items-center">
           <div>

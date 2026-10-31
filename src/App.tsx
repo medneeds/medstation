@@ -81,6 +81,7 @@ const AdminAudience = lazy(() => import("./pages/admin/AdminAudience"));
 const AdminEmails = lazy(() => import("./pages/admin/AdminEmails"));
 const AdminInternos = lazy(() => import("./pages/admin/AdminInternos"));
 const Internos = lazy(() => import("./pages/Internos"));
+const Black = lazy(() => import("./pages/Black"));
 const Indicar = lazy(() => import("./pages/Indicar"));
 const ReferralRedirect = lazy(() => import("./pages/ReferralRedirect"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -105,6 +106,7 @@ const App = () => (
 
             <Route path="/" element={<Lp3 />} />
             <Route path="/internos" element={<Internos />} />
+            <Route path="/black" element={<Black />} />
             <Route path="/landing" element={<Navigate to="/" replace />} />
             <Route path="/tour" element={<Navigate to="/" replace />} />
             <Route path="/comecar" element={<Comecar />} />

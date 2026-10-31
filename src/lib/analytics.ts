@@ -78,10 +78,11 @@ function withPostHog(fn: (p: PostHogClient) => void) {
   if (phLoadAllowed) void loadPostHog();
 }
 
-const LANDING_PATHS = new Set(["/", "/pricing"]);
+const LANDING_PATHS = new Set(["/", "/pricing", "/black"]);
 const PUBLIC_ANALYTICS_PATHS = new Set([
   "/",
   "/pricing",
+  "/black",
   "/auth",
   "/confirmar-email",
   "/obrigado",
