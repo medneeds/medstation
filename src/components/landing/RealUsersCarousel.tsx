@@ -93,6 +93,11 @@ export function RealUsersCarousel({
                     </p>
                   )}
                   <p className="mt-2 text-sm leading-snug text-muted-foreground">{u.practice}</p>
+                  {u.quote && (
+                    <blockquote className="mt-3 border-l-2 border-primary/60 pl-3 text-sm italic leading-relaxed text-foreground/85">
+                      “{u.quote}”
+                    </blockquote>
+                  )}
                 </figcaption>
               </figure>
             ))}

@@ -15,6 +15,8 @@ export type RealUser = {
   location?: string;
   /** Onde atua. */
   practice: string;
+  /** Depoimento curto (opcional). */
+  quote?: string;
 };
 
 export const REAL_USERS: RealUser[] = [
@@ -65,5 +67,7 @@ export const REAL_USERS: RealUser[] = [
     photo: marcellaQueiroz.url,
     location: "São Luís, MA",
     practice: "Medicina do Trabalho e Medicina de Emergência",
+    quote:
+      "A MedStation tem facilitado minha rotina médica. É uma ferramenta extremamente útil, prática e inteligente, que otimiza meu tempo, auxilia na tomada de decisões e me ajuda a esclarecer dúvidas no dia a dia. Em meio à correria dos plantões, ter um recurso assim faz toda a diferença.",
   },
 ];
