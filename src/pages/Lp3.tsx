@@ -29,7 +29,10 @@ import { consumeLandingShellAction } from "@/lib/landingShell";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { DISPLAY_PRICING, HAS_LAUNCH_DISCOUNT, brl } from "@/lib/subscription-tiers";
 import { BlackFridayBanner } from "@/components/landing/BlackFridayBanner";
-import { isBlackActive } from "@/lib/pricingSchedule";
+import { BLACK_OFFER, isBlackActive } from "@/lib/pricingSchedule";
+import { brl as brlBlack } from "@/lib/subscription-tiers";
+
+const BLACK_PRICE_LABEL = brlBlack(BLACK_OFFER.amountCents / 100);
 
 import { ArrowRight, Check, Quote, Star } from "lucide-react";
 import { AnnualBonusCard } from "@/components/AnnualBonusCard";
@@ -198,7 +201,7 @@ export default function Lp3() {
 
               <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2.5">
                 {(blackOn
-                  ? ["Black: anual por R$ 399,90", "Sem instalar nada", "7 dias de garantia"]
+                  ? [`Black: anual por ${BLACK_PRICE_LABEL}`, "Sem instalar nada", "7 dias de garantia"]
                   : ["Teste de 7 dias sem cartão", "Sem instalar nada", "Assinatura cancele quando quiser"]
                 ).map((b) => (
                   <li key={b} className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -431,7 +434,7 @@ export default function Lp3() {
             {blackOn ? (
               <>
                 <h3 className="text-xl md:text-2xl font-semibold tracking-tight">
-                  Black MedStation: um ano inteiro por R$ 399,90.
+                  Black MedStation: um ano inteiro por {BLACK_PRICE_LABEL}.
                 </h3>
                 <p className="mt-2 text-sm text-muted-foreground">
                   Pagamento único, 7 dias de garantia. Só até 30 de novembro.
