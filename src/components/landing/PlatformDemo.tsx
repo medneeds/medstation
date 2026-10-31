@@ -291,6 +291,11 @@ function EscutaScreen({ slide, p }: { slide: DemoSlide; p: number }) {
   const docP = Math.max(0, (p - 0.45) / 0.55);
   const response = slide.response ?? "";
   const shown = response.slice(0, Math.floor(response.length * Math.min(1, docP)));
+  const docRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = docRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [shown.length]);
   return (
     <div className="grid h-full grid-rows-[auto_1fr] gap-3 px-3 md:px-5 py-4">
       <div className="rounded-xl border border-border bg-muted/40 p-3">
@@ -320,7 +325,7 @@ function EscutaScreen({ slide, p }: { slide: DemoSlide; p: number }) {
           {linesShown === 0 && <p className="text-[0.78rem] text-muted-foreground">...</p>}
         </div>
       </div>
-      <div className="overflow-hidden rounded-xl border border-border bg-card p-3 shadow-sm">
+      <div ref={docRef} className="overflow-hidden rounded-xl border border-border bg-card p-3 shadow-sm">
         <p className="mb-2 text-[0.65rem] uppercase tracking-[0.16em] text-muted-foreground">Anamnese sendo montada</p>
         {shown ? <DocText text={shown} typing={docP < 1} /> : <p className="text-xs text-muted-foreground">Aguardando a conversa...</p>}
       </div>
@@ -477,6 +482,16 @@ export function PlatformDemo({ className }: { className?: string }) {
   const [inView, setInView] = useState(false);
   const [pausedUntil, setPausedUntil] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
+  const tabsRef = useRef<HTMLDivElement>(null);
+
+  // Mantém a aba ativa visível na faixa de abas (sem mexer na rolagem da página).
+  useEffect(() => {
+    const strip = tabsRef.current;
+    const tab = strip?.querySelectorAll<HTMLElement>("[role=tab]")[index];
+    if (!strip || !tab) return;
+    const left = tab.offsetLeft - strip.clientWidth / 2 + tab.clientWidth / 2;
+    strip.scrollTo({ left: Math.max(0, left), behavior: reduced ? "auto" : "smooth" });
+  }, [index, reduced]);
 
   useEffect(() => {
     const el = sectionRef.current;
@@ -531,7 +546,7 @@ export function PlatformDemo({ className }: { className?: string }) {
         </p>
       </div>
 
-      <div className="-mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div ref={tabsRef} className="relative -mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="flex w-max gap-2 pb-1" role="tablist">
           {SLIDES.map((s, i) => {
             const I = s.icon;
