@@ -21,6 +21,7 @@ import { ptBR } from "date-fns/locale";
 import { AdminUserManagement } from "@/components/AdminUserManagement";
 import { AccountSecurityCard } from "@/components/AccountSecurityCard";
 import { LetterheadCard } from "@/components/settings/LetterheadCard";
+import { DISPLAY_PRICING, HAS_LAUNCH_DISCOUNT, PRICE_SUMMARY, brl } from "@/lib/subscription-tiers";
 
 const BRAZILIAN_STATES = [
   "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG",
@@ -468,7 +469,7 @@ export default function Settings() {
                 </Button>
               </div>
               <div className="text-xs text-muted-foreground">
-                Plano único com tudo incluso — Documentação, Copiloto e Fluxo — por R$ 49,90/mês ou R$ 499,90/ano. Em breve o valor passa a R$ 99,90/mês.
+                Plano único com tudo incluso — Documentação, Copiloto e Fluxo — por {PRICE_SUMMARY}.{HAS_LAUNCH_DISCOUNT ? ` A partir de 1º de dezembro o valor passa a ${brl(DISPLAY_PRICING.bundle.monthly.list)}/mês.` : ""}
               </div>
             </div>
           )}

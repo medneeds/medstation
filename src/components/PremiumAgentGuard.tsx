@@ -7,6 +7,7 @@ import { Lock, Sparkles, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { DISPLAY_PRICING, HAS_LAUNCH_DISCOUNT, brl } from "@/lib/subscription-tiers";
 
 interface PremiumAgentGuardProps {
   children: ReactNode;
@@ -120,11 +121,11 @@ export function PremiumAgentGuard({ children, agentName }: PremiumAgentGuardProp
                   <span className="text-[0.65rem] uppercase tracking-[0.18em] font-mono text-primary">Oferta especial</span>
                 </div>
                 <div className="flex items-baseline justify-center gap-2 mb-1">
-                  <span className="text-4xl font-black bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">R$ 49,90</span>
+                  <span className="text-4xl font-black bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">{brl(DISPLAY_PRICING.bundle.monthly.now)}</span>
                   <span className="text-muted-foreground">/mês</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Ou R$ 499,90/ano — dois meses de cortesia. Em breve R$ 99,90/mês.
+                  Ou {brl(DISPLAY_PRICING.bundle.yearly.now)}/ano — dois meses de cortesia.{HAS_LAUNCH_DISCOUNT ? ` A partir de 1º de dezembro, ${brl(DISPLAY_PRICING.bundle.monthly.list)}/mês.` : ""}
                 </p>
               </div>
               <Button 

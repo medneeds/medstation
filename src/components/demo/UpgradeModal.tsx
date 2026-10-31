@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ASSISTANTS_GRID } from "@/lib/demoPromoContent";
 import { Sparkles, ArrowRight, Check, Shield, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { PRICE_SUMMARY } from "@/lib/subscription-tiers";
 
 interface UpgradeModalProps {
   open: boolean;
@@ -106,7 +107,7 @@ export function UpgradeModal({ open, onOpenChange, reason = "engagement", contex
         </div>
 
         <p className="text-[11px] text-center text-muted-foreground">
-          Plano único R$ 49,90/mês ou R$ 499,90/ano · 7 dias grátis no cadastro, sem cartão
+          Plano único {PRICE_SUMMARY} · 7 dias grátis no cadastro, sem cartão
         </p>
       </DialogContent>
     </Dialog>
