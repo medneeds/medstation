@@ -43,6 +43,7 @@ export default {
           gold: "hsl(var(--offer-gold))",
           "gold-foreground": "hsl(var(--offer-gold-foreground))",
           hot: "hsl(var(--offer-hot))",
+          vivid: "hsl(var(--offer-vivid))",
         },
         warning: {
           DEFAULT: "hsl(var(--warning))",

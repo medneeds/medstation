@@ -557,9 +557,9 @@ export default function Black() {
             </span>
             <h1 className="mt-5 text-[2.4rem] leading-[1.03] md:text-7xl font-semibold tracking-tight">
               Um ano inteiro de MedStation por{" "}
-              <span className="relative inline-block text-offer-gold">
+              <span className="relative inline-block text-offer-vivid">
                 {brl(PRICE)}
-                <span className="absolute -bottom-1 left-0 h-1.5 w-full rounded-full bg-offer-gold/40" />
+                <span className="absolute -bottom-1 left-0 h-1.5 w-full rounded-full bg-offer-vivid/40" />
               </span>
               .
             </h1>
