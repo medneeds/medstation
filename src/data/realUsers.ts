@@ -1,4 +1,5 @@
 import marcioSerra from "@/assets/real-users/dr-marcio-serra.jpg.asset.json";
+import alvaroFialho from "@/assets/real-users/dr-alvaro-fialho.jpg.asset.json";
 
 /** Médicos reais que usam a MedStation (uso de foto e nome autorizado pelo dono). */
 export type RealUser = {
@@ -15,5 +16,11 @@ export const REAL_USERS: RealUser[] = [
     name: "Dr. Marcio Serra",
     photo: marcioSerra.url,
     practice: "Gestão hospitalar, Medicina Intensiva e Medicina de Emergência",
+  },
+  {
+    name: "Dr. Alvaro Fialho",
+    photo: alvaroFialho.url,
+    location: "São Luís, MA",
+    practice: "Médico Residente em Terapia Intensiva",
   },
 ];
