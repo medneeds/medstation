@@ -433,7 +433,7 @@ export default function Black() {
         root.classList.remove("light");
         root.classList.add("dark");
       }
-      root.style.colorScheme = "dark";
+      if (root.style.colorScheme !== "dark") root.style.colorScheme = "dark";
     };
     apply();
     const observer = new MutationObserver(apply);
