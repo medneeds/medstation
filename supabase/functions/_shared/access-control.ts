@@ -89,20 +89,46 @@ function serviceClient() {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
-async function stripeAccess(email: string): Promise<AccessResolution | null> {
+/** Clientes do Stripe já ligados à conta (assinaturas com o user_id da conta). */
+async function linkedCustomerIds(
+  supabase: ReturnType<typeof serviceClient> | null,
+  userId: string | null,
+): Promise<string[]> {
+  if (!supabase || !userId) return [];
+  try {
+    const { data } = await supabase
+      .from("stripe_subscriptions")
+      .select("stripe_customer_id")
+      .eq("user_id", userId)
+      .limit(20);
+    return ((data ?? []) as { stripe_customer_id: string | null }[])
+      .map((r) => r.stripe_customer_id ?? "");
+  } catch {
+    return [];
+  }
+}
+
+async function stripeAccess(
+  email: string | null,
+  supabase: ReturnType<typeof serviceClient> | null = null,
+  userId: string | null = null,
+): Promise<AccessResolution | null> {
   const key = Deno.env.get("STRIPE_SECRET_KEY");
   if (!key) return null;
 
   const stripe = new Stripe(key, { apiVersion: "2025-08-27.basil" });
   // Um mesmo e-mail pode ter mais de um customer no Stripe (checkout convidado,
   // e-mail alterado, duplicidade). Verificar apenas o primeiro bloqueava pagantes.
-  const customers = await stripe.customers.list({ email, limit: 10 });
-  if (!customers.data.length) return null;
+  // Além do e-mail, valem os clientes já ligados à conta: quem pagou com outro
+  // e-mail não perde o acesso depois que o pagamento é ligado à conta certa.
+  const byEmail = email ? (await stripe.customers.list({ email, limit: 10 })).data.map((c) => c.id) : [];
+  const customerIds = collectCustomerIds(byEmail, await linkedCustomerIds(supabase, userId));
+  if (!customerIds.length) return null;
 
   const collected: MinimalSubscription[] = [];
-  for (const customer of customers.data) {
+  for (const customerId of customerIds) {
     const subscriptions = await stripe.subscriptions.list({
-      customer: customer.id,
+      customer: customerId,
       status: "all",
       limit: 20,
     });
