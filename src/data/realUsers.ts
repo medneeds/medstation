@@ -1,4 +1,5 @@
 import marcioSerra from "@/assets/real-users/dr-marcio-serra.jpg.asset.json";
+import clenilsonJunior from "@/assets/real-users/dr-clenilson-junior.jpg.asset.json";
 import alvaroFialho from "@/assets/real-users/dr-alvaro-fialho.jpg.asset.json";
 
 /** Médicos reais que usam a MedStation (uso de foto e nome autorizado pelo dono). */
@@ -22,5 +23,11 @@ export const REAL_USERS: RealUser[] = [
     photo: alvaroFialho.url,
     location: "São Luís, MA",
     practice: "Médico Residente em Terapia Intensiva",
+  },
+  {
+    name: "Dr. Clenilson Júnior",
+    photo: clenilsonJunior.url,
+    location: "São Luís, MA",
+    practice: "Psiquiatria e Medicina de Emergência",
   },
 ];
