@@ -34,6 +34,9 @@
     --offer-border: 155 10% 18%;
     --offer-accent: 150 52% 62%;
     --offer-accent-foreground: 160 20% 6%;
+    --offer-gold: 44 92% 60%;
+    --offer-gold-foreground: 40 45% 8%;
+    --offer-hot: 6 80% 63%;
 
     --secondary: 152 16% 95%;
     --secondary-foreground: 165 18% 14%;
@@ -114,6 +117,9 @@
     --offer-border: 155 10% 18%;
     --offer-accent: 150 52% 62%;
     --offer-accent-foreground: 160 20% 6%;
+    --offer-gold: 44 92% 60%;
+    --offer-gold-foreground: 40 45% 8%;
+    --offer-hot: 6 80% 63%;
     --primary-rgb: 138, 196, 166;
 
     --secondary: 0 0% 11%;

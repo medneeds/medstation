@@ -40,6 +40,9 @@ export default {
           border: "hsl(var(--offer-border))",
           accent: "hsl(var(--offer-accent))",
           "accent-foreground": "hsl(var(--offer-accent-foreground))",
+          gold: "hsl(var(--offer-gold))",
+          "gold-foreground": "hsl(var(--offer-gold-foreground))",
+          hot: "hsl(var(--offer-hot))",
         },
         warning: {
           DEFAULT: "hsl(var(--warning))",
@@ -198,6 +201,11 @@ export default {
           "0%, 100%": { opacity: "0.35" },
           "50%": { opacity: "0.6" },
         },
+        "cta-pulse": {
+          "0%": { boxShadow: "0 0 0 0 hsl(var(--offer-gold) / 0.55)" },
+          "70%": { boxShadow: "0 0 0 14px hsl(var(--offer-gold) / 0)" },
+          "100%": { boxShadow: "0 0 0 0 hsl(var(--offer-gold) / 0)" },
+        },
         "glyph-sheen": {
           "0%": { backgroundPosition: "150% 0" },
           "60%, 100%": { backgroundPosition: "-150% 0" },
@@ -223,6 +231,8 @@ export default {
         "orb-shimmer": "orb-shimmer 30s cubic-bezier(0.45, 0, 0.55, 1) infinite",
         "glyph-sheen": "glyph-sheen 6s cubic-bezier(0.32, 0.72, 0, 1) infinite",
         "brand-sweep": "brand-sweep 7s cubic-bezier(0.32, 0.72, 0, 1) infinite",
+        "cta-pulse": "cta-pulse 2.2s ease-out infinite",
+        marquee: "scroll 32s linear infinite",
 
 
 
