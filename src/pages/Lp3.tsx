@@ -29,6 +29,7 @@ import { consumeLandingShellAction } from "@/lib/landingShell";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { DISPLAY_PRICING, HAS_LAUNCH_DISCOUNT, brl } from "@/lib/subscription-tiers";
 import { BlackFridayBanner } from "@/components/landing/BlackFridayBanner";
+import { isBlackActive } from "@/lib/pricingSchedule";
 
 import { ArrowRight, Check, Quote, Star } from "lucide-react";
 import { AnnualBonusCard } from "@/components/AnnualBonusCard";
@@ -121,6 +122,12 @@ export default function Lp3() {
   };
 
   const price = DISPLAY_PRICING.bundle[billing];
+  // Em novembro a campanha Black substitui os botões de teste grátis.
+  const blackOn = isBlackActive();
+  const goBlack = (label: string) => {
+    trackCtaClick({ cta: label, section: "lp3", destination: "/black" });
+    window.location.href = "/black";
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -152,9 +159,15 @@ export default function Lp3() {
             >
               Já sou cliente
             </Button>
-            <Button size="sm" onClick={() => goForm("header_teste")}>
-              Testar 7 dias grátis
-            </Button>
+            {blackOn ? (
+              <Button size="sm" onClick={() => goBlack("header_black")}>
+                Assinar Black anual
+              </Button>
+            ) : (
+              <Button size="sm" onClick={() => goForm("header_teste")}>
+                Testar 7 dias grátis
+              </Button>
+            )}
           </div>
         </div>
       </header>
@@ -184,7 +197,10 @@ export default function Lp3() {
               </p>
 
               <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2.5">
-                {["Teste de 7 dias sem cartão", "Sem instalar nada", "Assinatura cancele quando quiser"].map((b) => (
+                {(blackOn
+                  ? ["Black: anual por R$ 399,90", "Sem instalar nada", "7 dias de garantia"]
+                  : ["Teste de 7 dias sem cartão", "Sem instalar nada", "Assinatura cancele quando quiser"]
+                ).map((b) => (
                   <li key={b} className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Check className="w-4 h-4 text-primary" />
                     {b}
@@ -412,15 +428,31 @@ export default function Lp3() {
           </div>
 
           <div className="mt-14 max-w-xl mx-auto text-center">
-            <h3 className="text-xl md:text-2xl font-semibold tracking-tight">
-              Comece pelo teste. Decida depois.
-            </h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              7 dias com tudo liberado, sem cartão. Leva menos de um minuto.
-            </p>
-            <Button className="mt-6" size="lg" onClick={() => goForm("cta_final_topo")}>
-              Testar 7 dias grátis <ArrowRight className="w-4 h-4 ml-1.5" />
-            </Button>
+            {blackOn ? (
+              <>
+                <h3 className="text-xl md:text-2xl font-semibold tracking-tight">
+                  Black MedStation: um ano inteiro por R$ 399,90.
+                </h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Pagamento único, 7 dias de garantia. Só até 30 de novembro.
+                </p>
+                <Button className="mt-6" size="lg" onClick={() => goBlack("cta_final_black")}>
+                  Assinar plano Black anual <ArrowRight className="w-4 h-4 ml-1.5" />
+                </Button>
+              </>
+            ) : (
+              <>
+                <h3 className="text-xl md:text-2xl font-semibold tracking-tight">
+                  Comece pelo teste. Decida depois.
+                </h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  7 dias com tudo liberado, sem cartão. Leva menos de um minuto.
+                </p>
+                <Button className="mt-6" size="lg" onClick={() => goForm("cta_final_topo")}>
+                  Testar 7 dias grátis <ArrowRight className="w-4 h-4 ml-1.5" />
+                </Button>
+              </>
+            )}
           </div>
         </section>
       </main>
