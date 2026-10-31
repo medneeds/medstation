@@ -191,19 +191,21 @@ function usePrefersReducedMotion() {
 /** Tempo decorrido (ms) enquanto `running`; volta a zero quando `resetKey` muda. */
 function useElapsed(running: boolean, resetKey: unknown, max: number) {
   const [elapsed, setElapsed] = useState(0);
+  const acc = useRef(0);
   useEffect(() => {
+    acc.current = 0;
     setElapsed(0);
   }, [resetKey]);
   useEffect(() => {
     if (!running) return;
-    const start = Date.now() - elapsed;
+    const start = Date.now() - acc.current;
     const id = window.setInterval(() => {
       const e = Math.min(max, Date.now() - start);
+      acc.current = e;
       setElapsed(e);
       if (e >= max) window.clearInterval(id);
     }, 40);
     return () => window.clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running, resetKey, max]);
   return elapsed;
 }
