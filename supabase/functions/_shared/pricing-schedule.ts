@@ -51,3 +51,44 @@ export function blackStatus(now: Date | number = Date.now()): BlackStatus {
 export function isBlackActive(now: Date | number = Date.now()): boolean {
   return blackStatus(now) === "active";
 }
+
+/** Produto do plano único MedStation Completo no Stripe. */
+export const UNIFIED_PRODUCT_ID = "prod_V4jGKeBPH2hGYg";
+
+/** Etiqueta gravada nas compras para separar os períodos de preço. */
+export function pricingCohort(now: Date | number = Date.now()): string {
+  return pricePhase(now) === "full" ? "full_price_2026_12" : "current_unified";
+}
+
+export type MonthlyLineItem =
+  | { price: string; quantity: number }
+  | {
+    quantity: number;
+    price_data: {
+      currency: string;
+      unit_amount: number;
+      product: string;
+      recurring: { interval: "month" };
+    };
+  };
+
+/**
+ * Item da assinatura mensal: no lançamento usa o Price de R$ 49,90; depois do
+ * fim do lançamento cobra R$ 99,90/mês sobre o mesmo produto (o acesso continua
+ * sendo concedido pelo produto, então nada muda na liberação).
+ */
+export function monthlySubscriptionLineItem(
+  launchPriceId: string,
+  now: Date | number = Date.now(),
+): MonthlyLineItem {
+  if (pricePhase(now) === "launch") return { price: launchPriceId, quantity: 1 };
+  return {
+    quantity: 1,
+    price_data: {
+      currency: "brl",
+      unit_amount: PRICE_TABLE.full.monthlyCents,
+      product: UNIFIED_PRODUCT_ID,
+      recurring: { interval: "month" },
+    },
+  };
+}
