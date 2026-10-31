@@ -294,8 +294,8 @@ export default function Lp3() {
         </section>
 
 
-        <FounderSection className="border-b border-border/50" />
         <RealUsersCarousel className="border-b border-border/50" />
+        <FounderSection className="border-b border-border/50" />
 
         {/* 5. Prova social */}
         <section className="bg-muted/25 border-b border-border/50">
