@@ -17,6 +17,7 @@ export const REAL_USERS: RealUser[] = [
   {
     name: "Dr. Marcio Serra",
     photo: marcioSerra.url,
+    location: "São Luís, MA",
     practice: "Gestão hospitalar, Medicina Intensiva e Medicina de Emergência",
   },
   {
