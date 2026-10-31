@@ -4,6 +4,7 @@ import pedroReboucas from "@/assets/real-users/dr-pedro-reboucas.jpg.asset.json"
 import luciaraDuarte from "@/assets/real-users/dra-luciara-duarte.jpg.asset.json";
 import daianeCordeiro from "@/assets/real-users/dra-daiane-cordeiro.jpg.asset.json";
 import joseLindoso from "@/assets/real-users/dr-jose-alexandre-lindoso.jpg.asset.json";
+import marcellaQueiroz from "@/assets/real-users/dra-marcella-queiroz.jpg.asset.json";
 import alvaroFialho from "@/assets/real-users/dr-alvaro-fialho.jpg.asset.json";
 
 /** Médicos reais que usam a MedStation (uso de foto e nome autorizado pelo dono). */
@@ -58,5 +59,11 @@ export const REAL_USERS: RealUser[] = [
     photo: joseLindoso.url,
     location: "São Luís, MA",
     practice: "Medicina de Emergência",
+  },
+  {
+    name: "Dra. Marcella Queiroz",
+    photo: marcellaQueiroz.url,
+    location: "São Luís, MA",
+    practice: "Medicina do Trabalho e Medicina de Emergência",
   },
 ];
