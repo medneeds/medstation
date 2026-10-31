@@ -119,8 +119,11 @@
           // Em novembro o botão de teste do topo leva para a Black (igual ao Lp3.tsx).
           var tb = shell.querySelector('[data-ms-action="trial"]');
           if (tb) { tb.setAttribute("data-ms-action", "black"); tb.textContent = "Assinar Black anual"; }
-          var badge = shell.querySelector("[data-ms-trial-badge]");
-          if (badge) badge.textContent = "Black: anual por R$ 399,90";
+          var swaps = { "Teste de 7 dias sem cartão": "Black: anual por R$ 399,90", "Assinatura cancele quando quiser": "7 dias de garantia" };
+          shell.querySelectorAll("li").forEach(function (li) {
+            var t = li.lastChild;
+            if (t && t.nodeType === 3 && swaps[t.textContent]) t.textContent = swaps[t.textContent];
+          });
         }
         var st = (window.__msShell = { email: "", focused: false, submitted: false, subscribe: false, google: false });
         var input = shell.querySelector("[data-ms-email]");
