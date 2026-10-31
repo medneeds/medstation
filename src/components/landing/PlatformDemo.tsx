@@ -351,12 +351,13 @@ function ChatScreen({ slide, p }: { slide: DemoSlide; p: number }) {
 const ESCUTA_LINES = [
   { who: "Paciente", text: "Doutor, faz três dias que estou com febre e tosse." },
   { who: "Médico", text: "Sente falta de ar?" },
-  { who: "Paciente", text: "Um pouco, quando subo escada." },
+  { who: "Paciente", text: "Um pouco, quando subo escada. Tenho pressão alta." },
+  { who: "Médico", text: "Temperatura 38,4 e saturação 93%." },
 ];
 
 function EscutaScreen({ slide, p }: { slide: DemoSlide; p: number }) {
-  const linesShown = Math.min(ESCUTA_LINES.length, Math.floor(p / 0.14));
-  const docP = Math.max(0, (p - 0.45) / 0.55);
+  const linesShown = Math.min(ESCUTA_LINES.length, Math.floor(p / 0.1));
+  const docP = Math.max(0, (p - 0.42) / 0.58);
   const response = slide.response ?? "";
   const shown = response.slice(0, Math.floor(response.length * Math.min(1, docP)));
   const docRef = useRef<HTMLDivElement>(null);
@@ -478,6 +479,35 @@ function CofreScreen({ p }: { p: number }) {
   );
 }
 
+function ControlsRow({ controls, p }: { controls: DemoControl[]; p: number }) {
+  if (!controls.length) return null;
+  let onIndex = -1;
+  return (
+    <div className="mb-2 flex gap-1.5 overflow-x-auto pr-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [mask-image:linear-gradient(to_right,black_calc(100%-28px),transparent)]">
+      {controls.map((c) => {
+        if (c.on) onIndex += 1;
+        const lit = !!c.on && p > 0.02 + onIndex * 0.025;
+        const I = c.icon;
+        return (
+          <span
+            key={c.label}
+            className={cn(
+              "inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2 py-1 text-[0.66rem] font-medium transition-all duration-300",
+              lit
+                ? "border-primary/50 bg-primary/15 text-primary shadow-[0_0_0_3px_hsl(var(--primary)/0.12)]"
+                : "border-border bg-background text-muted-foreground",
+            )}
+          >
+            {I && <I className="h-3 w-3" />}
+            {c.label}
+            {c.select && <ChevronDown className="h-3 w-3 opacity-70" />}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
 function MockWindow({ slide, p, activeIndex }: { slide: DemoSlide; p: number; activeIndex: number }) {
   const Icon = slide.icon;
   return (
@@ -490,7 +520,7 @@ function MockWindow({ slide, p, activeIndex }: { slide: DemoSlide; p: number; ac
           medstation-ai.com.br/{slide.path}
         </span>
       </div>
-      <div className="flex h-[400px] md:h-[440px]">
+      <div className="flex h-[440px] md:h-[480px]">
         <aside className="hidden sm:flex w-12 shrink-0 flex-col items-center gap-1.5 border-r border-border bg-muted/30 py-3">
           {SLIDES.map((s, i) => {
             const I = s.icon;
@@ -528,6 +558,7 @@ function MockWindow({ slide, p, activeIndex }: { slide: DemoSlide; p: number; ac
           </div>
           {slide.kind !== "cofre" && (
             <div className="border-t border-border px-3 md:px-5 py-2.5">
+              <ControlsRow controls={slide.controls} p={p} />
               <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/30 px-3 py-2 text-[0.75rem] text-muted-foreground">
                 <span className="flex-1 truncate">Escreva ou dite o caso...</span>
                 <Mic className="h-3.5 w-3.5" />
