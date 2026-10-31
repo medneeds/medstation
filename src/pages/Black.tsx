@@ -66,7 +66,7 @@ const MARQUEE_ITEMS = [
   `${DISCOUNT_PCT}% off no anual`,
   `de ${brl(ANCHOR)} por ${brl(PRICE)}`,
   "Só em novembro",
-  "24 a 40 horas a menos de burocracia",
+  "24 a 40 horas a menos de burocracia por mês",
   `${brl(PER_DAY)} por dia`,
   "7 dias de garantia",
 ];
@@ -485,8 +485,8 @@ export default function Black() {
               .
             </h1>
             <p className="mt-6 max-w-xl text-lg md:text-2xl font-medium leading-snug text-offer-foreground">
-              Economize de <span className="text-offer-gold">24 a 40 horas</span> de trabalho burocrático e repetitivo no seu
-              plantão ou consultório.
+              Economize de <span className="text-offer-gold">24 a 40 horas</span> de trabalho burocrático e repetitivo por mês na
+              sua prática médica.
             </p>
             <p className="mt-4 max-w-xl text-base md:text-lg text-offer-muted leading-relaxed">
               Evoluções, receitas, atestados e anamneses prontos em segundos, para você voltar ao que importa: o paciente. Tudo isso
