@@ -14,6 +14,7 @@ import { saveBlackLead } from "@/lib/blackLead";
 import { brl } from "@/lib/subscription-tiers";
 import { cn } from "@/lib/utils";
 import { PlatformDemo } from "@/components/landing/PlatformDemo";
+import { RealUsersCarousel } from "@/components/landing/RealUsersCarousel";
 
 const PRICE = BLACK_OFFER.amountCents / 100;
 const ANCHOR = BLACK_OFFER.anchorCents / 100;
@@ -649,6 +650,8 @@ export default function Black() {
             <GoldCta cta="black_demo" />
           </div>
         )}
+
+        <RealUsersCarousel />
 
         <section className="grid md:grid-cols-3 gap-4 md:gap-6">
           {highlights.map((h, i) => (

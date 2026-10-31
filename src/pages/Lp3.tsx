@@ -32,6 +32,7 @@ import { BlackFridayBanner } from "@/components/landing/BlackFridayBanner";
 import { BLACK_OFFER, isBlackActive } from "@/lib/pricingSchedule";
 
 import { ArrowRight, Check, Quote, Star } from "lucide-react";
+import { RealUsersCarousel } from "@/components/landing/RealUsersCarousel";
 import { AnnualBonusCard } from "@/components/AnnualBonusCard";
 import { ANNUAL_BONUS } from "@/lib/annualBonus";
 
@@ -291,6 +292,8 @@ export default function Lp3() {
           </div>
         </section>
 
+
+        <RealUsersCarousel className="border-b border-border/50" />
 
         {/* 5. Prova social */}
         <section className="bg-muted/25 border-b border-border/50">
