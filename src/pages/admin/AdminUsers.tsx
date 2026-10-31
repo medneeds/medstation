@@ -446,7 +446,7 @@ function UserDetailSheet({ user, onClose, onChanged }: { user: UserRow | null; o
               <div className="pt-4 space-y-2 border-t border-border/60">
                 <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Ações</div>
                 <Button variant="outline" size="sm" className="w-full justify-start" onClick={resetPassword} disabled={busy === "reset"}>
-                  <KeyRound className="h-4 w-4 mr-2" /> {busy === "reset" ? "Enviando..." : "Enviar reset de senha"}
+                  <KeyRound className="h-4 w-4 mr-2" /> {busy === "reset" ? "Enviando..." : "Enviar redefinição de senha"}
                 </Button>
                 <Button variant="outline" size="sm" className="w-full justify-start" onClick={grantCourtesy} disabled={busy === "courtesy"}>
                   <Gift className="h-4 w-4 mr-2" /> {busy === "courtesy" ? "Concedendo..." : "Conceder cortesia"}
