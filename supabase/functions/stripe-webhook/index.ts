@@ -16,7 +16,8 @@ import {
   type MinimalCheckoutSession,
 } from "../_shared/one-time-purchase.ts";
 
-const BILLING_RECOVERY_URL = "https://medstation-ai.com.br/settings";
+const SITE_URL = "https://medstation-ai.com.br";
+const BILLING_RECOVERY_URL = `${SITE_URL}/settings`;
 const STALE_PROCESSING_MS = 5 * 60 * 1000;
 
 type WebhookStatus = "processing" | "processed" | "failed";
@@ -57,7 +58,11 @@ async function resolveUserId(
   if (!customerId) return null;
 
   const customer = await stripe.customers.retrieve(customerId);
-  if (customer.deleted || !customer.email) return null;
+  if (customer.deleted) return null;
+  // Vínculo explícito gravado no cliente (conta criada/ligada após o pagamento).
+  const customerUserId = customer.metadata?.user_id?.trim();
+  if (customerUserId) return customerUserId;
+  if (!customer.email) return null;
 
   const existing = await findUserByEmail(
     (params) => supabase.auth.admin.listUsers(params) as any,
@@ -200,6 +205,75 @@ async function syncSubscription(
 }
 
 /**
+ * Garante que todo pagamento confirmado tenha uma conta dona.
+ * Sem conta para o e-mail pago, convida esse e-mail (o médico recebe o link
+ * para criar a senha) — antes isso só acontecia se ele voltasse à página
+ * /obrigado; quem fechava a aba ficava pago e sem acesso. O vínculo é gravado
+ * no Stripe (cliente e assinatura) e no espelho local, e qualquer falha avisa
+ * o admin em vez de sumir em silêncio.
+ */
+async function ensureAccountForPayment(
+  supabase: ReturnType<typeof serviceClient>,
+  stripe: Stripe,
+  input: { email: string | null; customerId: string | null; subscriptionId?: string | null },
+): Promise<string | null> {
+  const { email, customerId, subscriptionId } = input;
+  const lookup = (address: string) => findUserByEmail(
+    (params) => supabase.auth.admin.listUsers(params) as any,
+    address,
+  );
+
+  let userId: string | null = null;
+  try {
+    if (email) {
+      userId = (await lookup(email))?.id ?? null;
+      if (!userId) {
+        const { data, error } = await supabase.auth.admin.inviteUserByEmail(email, {
+          redirectTo: `${SITE_URL}/onboarding`,
+          data: { stripe_customer_id: customerId, payment_account_setup: true },
+        });
+        // Convite concorrente (página /obrigado) já criou a conta: busca de novo.
+        userId = data?.user?.id ?? (error ? (await lookup(email))?.id ?? null : null);
+      }
+    }
+  } catch (error) {
+    console.error("[stripe-webhook] account link failed", (error as Error)?.message);
+  }
+
+  if (!userId) {
+    await supabase.rpc("create_admin_notification", {
+      p_type: "sale",
+      p_title: "Pagamento confirmado sem conta ligada",
+      p_message: `Pagamento de ${email ?? "e-mail não informado"} sem conta na MedStation. Confira em Faturamento.`,
+      p_link: "/admin/faturamento",
+      p_severity: "warning",
+    });
+    return null;
+  }
+
+  try {
+    if (customerId) await stripe.customers.update(customerId, { metadata: { user_id: userId } });
+    if (subscriptionId) {
+      const current = await stripe.subscriptions.retrieve(subscriptionId);
+      if (!current.metadata?.user_id) {
+        await stripe.subscriptions.update(subscriptionId, { metadata: { ...current.metadata, user_id: userId } });
+      }
+    }
+  } catch (error) {
+    // O espelho local abaixo já basta para liberar o acesso.
+    console.error("[stripe-webhook] stripe metadata link failed", (error as Error)?.message);
+  }
+
+  if (subscriptionId) {
+    await supabase.from("stripe_subscriptions")
+      .update({ user_id: userId, updated_at: new Date().toISOString() })
+      .eq("stripe_subscription_id", subscriptionId)
+      .is("user_id", null);
+  }
+  return userId;
+}
+
+/**
  * Compra avulsa (Pix mensal 30 dias ou anual 12 meses, cartão ou Pix).
  * Idempotente: a unicidade de `checkout_session_id` garante que a reentrega do
  * mesmo evento nunca conceda o período duas vezes.
@@ -235,6 +309,9 @@ async function grantOneTimeAccess(
       email,
     );
     userId = existing?.id ?? null;
+  }
+  if (!userId) {
+    userId = await ensureAccountForPayment(supabase, stripe, { email: email ?? null, customerId });
   }
 
   // Extensão determinística: nova compra começa em max(agora, fim do acesso atual).
@@ -502,7 +579,15 @@ serve(async (req) => {
         const subscriptionId = objectId(session.subscription);
         if (subscriptionId) {
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-          await syncSubscription(supabase, stripe, subscription, event.id);
+          const synced = await syncSubscription(supabase, stripe, subscription, event.id);
+          if (!synced.userId) {
+            await ensureAccountForPayment(supabase, stripe, {
+              email: session.customer_details?.email ?? session.customer_email
+                ?? await getCustomerEmail(stripe, synced.customerId),
+              customerId: synced.customerId,
+              subscriptionId,
+            });
+          }
           break;
         }
         if (shouldGrantOneTimeAccess(event.type, session as unknown as MinimalCheckoutSession)) {
