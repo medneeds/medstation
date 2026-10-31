@@ -8,6 +8,8 @@ project_id = "rwiovxyftfbkvzbepfqi"
 
   [functions.admin-reset-password]
     verify_jwt = false
+  [functions.admin-set-password]
+    verify_jwt = false
   [functions.admin-set-role]
     verify_jwt = false
   [functions.agent-chat]
