@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AlertTriangle, Loader2, RefreshCw } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Loader2, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type Opportunity = {
@@ -29,6 +29,22 @@ type Opportunity = {
   created_at: string;
   access_end: string | null;
   opportunity: string;
+};
+
+type LinkIssue = {
+  kind: "assinatura" | "compra_avulsa";
+  reference: string;
+  payment_email: string | null;
+  account_email: string | null;
+  user_id: string | null;
+  access_end: string | null;
+  issue: "sem_conta" | "conta_inexistente" | "email_diferente";
+};
+
+const LINK_ISSUE_LABELS: Record<LinkIssue["issue"], string> = {
+  sem_conta: "Pago sem conta ligada",
+  conta_inexistente: "Conta ligada foi apagada",
+  email_diferente: "E-mail da conta diferente do pagamento",
 };
 
 type Cards = {
@@ -89,6 +105,7 @@ export default function PurchaseRecoveryPanel({ days = 30 }: { days?: number }) 
   const [error, setError] = useState<string | null>(null);
   const [cards, setCards] = useState<Cards | null>(null);
   const [rows, setRows] = useState<Opportunity[]>([]);
+  const [linkIssues, setLinkIssues] = useState<LinkIssue[] | null>(null);
   const [subsFailed, setSubsFailed] = useState<Array<Record<string, unknown>>>([]);
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -106,6 +123,7 @@ export default function PurchaseRecoveryPanel({ days = 30 }: { days?: number }) 
       setCards(data?.cards ?? null);
       setRows(data?.opportunities ?? []);
       setSubsFailed(data?.subscription_payment_failed ?? []);
+      setLinkIssues(Array.isArray(data?.payment_link_issues) ? data.payment_link_issues : null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Falha ao carregar recuperação");
       setCards(null);
@@ -168,6 +186,47 @@ export default function PurchaseRecoveryPanel({ days = 30 }: { days?: number }) 
           <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Atualizar
         </Button>
       </div>
+
+      <Card className={`p-4 space-y-2 ${linkIssues && linkIssues.length > 0 ? "border-destructive/40 bg-destructive/5" : ""}`}>
+        <div className="flex items-center gap-2">
+          {linkIssues && linkIssues.length > 0
+            ? <AlertTriangle className="h-4 w-4 text-destructive" />
+            : <CheckCircle2 className="h-4 w-4 text-primary" />}
+          <span className="text-sm font-medium text-foreground">Pagamentos ativos x contas</span>
+        </div>
+        {linkIssues === null ? (
+          <p className="text-xs text-muted-foreground">Conferência indisponível agora. Tente atualizar.</p>
+        ) : linkIssues.length === 0 ? (
+          <p className="text-xs text-muted-foreground">Todo pagamento ativo está ligado a uma conta com o mesmo e-mail.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-xs text-muted-foreground border-b border-border">
+                <tr>
+                  <th className="text-left px-3 py-2">E-mail do pagamento</th>
+                  <th className="text-left px-3 py-2">Conta ligada</th>
+                  <th className="text-left px-3 py-2">Problema</th>
+                  <th className="text-left px-3 py-2">Tipo</th>
+                  <th className="text-left px-3 py-2">Acesso até</th>
+                </tr>
+              </thead>
+              <tbody>
+                {linkIssues.map((r) => (
+                  <tr key={r.reference} className="border-b border-border/60">
+                    <td className="px-3 py-2 text-xs">{r.payment_email || "—"}</td>
+                    <td className="px-3 py-2 text-xs">{r.account_email || "—"}</td>
+                    <td className="px-3 py-2">
+                      <Badge variant="outline" className="text-[10px]">{LINK_ISSUE_LABELS[r.issue]}</Badge>
+                    </td>
+                    <td className="px-3 py-2 text-xs">{r.kind === "assinatura" ? "Assinatura" : "Compra à vista"}</td>
+                    <td className="px-3 py-2 text-xs">{r.access_end ? new Date(r.access_end).toLocaleDateString("pt-BR") : "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
 
       {cards && (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
