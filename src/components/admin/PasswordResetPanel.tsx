@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { AlertCircle, CheckCircle2, KeyRound, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AdminSetPasswordForm } from "./AdminSetPasswordForm";
 
 type Result =
   | { type: "success"; message: string; userName?: string | null }
@@ -136,6 +138,8 @@ export function PasswordResetPanel() {
           </div>
         </div>
       )}
+        </TabsContent>
+      </Tabs>
     </Card>
   );
 }
