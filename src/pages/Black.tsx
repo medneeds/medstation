@@ -14,6 +14,7 @@ import { saveBlackLead } from "@/lib/blackLead";
 import { brl } from "@/lib/subscription-tiers";
 import { cn } from "@/lib/utils";
 import { PlatformDemo } from "@/components/landing/PlatformDemo";
+import { FounderSection } from "@/components/landing/FounderSection";
 import { RealUsersCarousel } from "@/components/landing/RealUsersCarousel";
 
 const PRICE = BLACK_OFFER.amountCents / 100;
@@ -651,6 +652,7 @@ export default function Black() {
           </div>
         )}
 
+        <FounderSection />
         <RealUsersCarousel />
 
         <section className="grid md:grid-cols-3 gap-4 md:gap-6">

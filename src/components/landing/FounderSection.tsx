@@ -39,7 +39,7 @@ export function FounderSection({ className }: { className?: string }) {
               <span className="h-px w-8 bg-border" aria-hidden />
               <p className="text-sm">
                 <span className="font-semibold text-foreground">Dr. Artur Batista</span>
-                <span className="text-muted-foreground"> · Médico · CRM/MA 11788 · São Luís, MA</span>
+                <span className="text-muted-foreground"> · Médico · CRM/MA 11788</span>
               </p>
             </div>
           </div>
