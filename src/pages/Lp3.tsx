@@ -30,11 +30,12 @@ import { useReferralCapture } from "@/hooks/useReferralCapture";
 import { DISPLAY_PRICING, HAS_LAUNCH_DISCOUNT, brl } from "@/lib/subscription-tiers";
 import { BlackFridayBanner } from "@/components/landing/BlackFridayBanner";
 
-/** Frase do topo; a cópia estática em index.html troca o mesmo texto em dezembro. */
-const HERO_PER_DAY = HAS_LAUNCH_DISCOUNT ? "Menos de R$ 2 por dia" : "Menos de R$ 3 por dia";
 import { ArrowRight, Check, Quote, Star } from "lucide-react";
 import { AnnualBonusCard } from "@/components/AnnualBonusCard";
 import { ANNUAL_BONUS } from "@/lib/annualBonus";
+
+/** Frase do topo; a cópia estática em index.html troca o mesmo texto em dezembro. */
+const HERO_PER_DAY = HAS_LAUNCH_DISCOUNT ? "Menos de R$ 2 por dia" : "Menos de R$ 3 por dia";
 
 const importSubscribeNowDialog = () => import("@/components/landing/SubscribeNowDialog");
 const SubscribeNowDialog = lazy(() => importSubscribeNowDialog().then(m => ({ default: m.SubscribeNowDialog })));
