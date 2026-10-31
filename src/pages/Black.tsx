@@ -421,8 +421,33 @@ export default function Black() {
   const canceled = params.get("canceled") === "true";
   const active = status === "active";
 
+  // A Black é sempre escura: força o tema escuro enquanto a página está aberta
+  // (inclui janelas e avisos que abrem fora da página) e restaura ao sair.
+  useEffect(() => {
+    const root = document.documentElement;
+    const hadDark = root.classList.contains("dark");
+    const hadLight = root.classList.contains("light");
+    const prevScheme = root.style.colorScheme;
+    const apply = () => {
+      if (!root.classList.contains("dark") || root.classList.contains("light")) {
+        root.classList.remove("light");
+        root.classList.add("dark");
+      }
+      if (root.style.colorScheme !== "dark") root.style.colorScheme = "dark";
+    };
+    apply();
+    const observer = new MutationObserver(apply);
+    observer.observe(root, { attributes: true, attributeFilter: ["class", "style"] });
+    return () => {
+      observer.disconnect();
+      if (!hadDark) root.classList.remove("dark");
+      if (hadLight) root.classList.add("light");
+      root.style.colorScheme = prevScheme;
+    };
+  }, []);
+
   return (
-    <div className={cn("min-h-screen bg-background text-foreground", active && "pb-20 md:pb-0")}>
+    <div className={cn("dark min-h-screen bg-background text-foreground", active && "pb-20 md:pb-0")}>
       <Seo
         path="/black"
         title="Black MedStation — um ano inteiro por R$ 399,90"
