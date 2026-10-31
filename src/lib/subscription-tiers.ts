@@ -1,3 +1,5 @@
+import { currentPriceCents, pricePhase, PRICE_TABLE } from "./pricingSchedule";
+
 // Stripe Product and Price IDs - LIVE MODE (Produção)
 export const SUBSCRIPTION_TIERS = {
   AGENTS: {
@@ -108,17 +110,24 @@ export type PlanSlug =
   | "pro_completo"
   | "pro_completo_yearly"
   // Compra avulsa de 30 dias via Pix, sem renovação automática.
-  | "pix_monthly_30d";
+  | "pix_monthly_30d"
+  // Black MedStation: anual à vista só em novembro/2026.
+  | "black_anual_2026";
 
 /**
  * Preços de exibição nas landing pages.
  * `list` é o valor de referência (ancoragem) e `now` é o valor efetivamente cobrado hoje.
  * Alterar `now` exige criar o preço correspondente no provedor de pagamento.
  */
+const PHASE_PRICES = currentPriceCents();
+
+/** true enquanto vale o preço de lançamento (até 30/11/2026, horário de Brasília). */
+export const HAS_LAUNCH_DISCOUNT = pricePhase() === "launch";
+
 export const DISPLAY_PRICING = {
   bundle: {
-    monthly: { list: 99.9, now: 49.9 },
-    yearly: { list: 999.9, now: 499.9 },
+    monthly: { list: PRICE_TABLE.full.monthlyCents / 100, now: PHASE_PRICES.monthlyCents / 100 },
+    yearly: { list: PRICE_TABLE.full.yearlyCents / 100, now: PHASE_PRICES.yearlyCents / 100 },
   },
   agents: {
     monthly: { list: 89.9, now: 29.9 },
@@ -132,3 +141,6 @@ export const DISPLAY_PRICING = {
 
 export const brl = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 });
+
+/** Frase curta com os preços vigentes do plano único, para avisos e telas de bloqueio. */
+export const PRICE_SUMMARY = `${brl(DISPLAY_PRICING.bundle.monthly.now)}/mês ou ${brl(DISPLAY_PRICING.bundle.yearly.now)}/ano`;
