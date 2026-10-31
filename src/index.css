@@ -27,6 +27,14 @@
     --primary-hover: 158 46% 28%;
     --primary-rgb: 50, 124, 98;
 
+    /* Black MedStation: superfície escura fixa (igual nos dois temas) */
+    --offer: 160 12% 6%;
+    --offer-foreground: 60 10% 97%;
+    --offer-muted: 150 6% 66%;
+    --offer-border: 155 10% 18%;
+    --offer-accent: 150 52% 62%;
+    --offer-accent-foreground: 160 20% 6%;
+
     --secondary: 152 16% 95%;
     --secondary-foreground: 165 18% 14%;
 
@@ -98,6 +106,14 @@
     --primary: 152 38% 62%;
     --primary-foreground: 0 0% 6%;
     --primary-hover: 152 45% 70%;
+
+    /* Black MedStation: superfície escura fixa (igual nos dois temas) */
+    --offer: 160 12% 6%;
+    --offer-foreground: 60 10% 97%;
+    --offer-muted: 150 6% 66%;
+    --offer-border: 155 10% 18%;
+    --offer-accent: 150 52% 62%;
+    --offer-accent-foreground: 160 20% 6%;
     --primary-rgb: 138, 196, 166;
 
     --secondary: 0 0% 11%;
