@@ -116,6 +116,11 @@
           bf.className = "block bg-offer text-offer-foreground border-b border-offer-border hover:bg-offer/95";
           bf.innerHTML = '<div class="container mx-auto px-4 md:px-8 py-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 text-xs md:text-sm text-center"><span class="font-mono uppercase tracking-[0.18em] text-offer-accent text-[0.65rem] md:text-xs">Black MedStation</span><span>Plano anual de <span class="line-through text-offer-muted">R$&nbsp;999,90</span> por <strong class="font-semibold">R$&nbsp;399,90</strong> · só até 30/11</span><span class="font-medium underline underline-offset-2">Ver oferta</span></div>';
           shell.insertBefore(bf, shell.firstChild);
+          // Em novembro o botão de teste do topo leva para a Black (igual ao Lp3.tsx).
+          var tb = shell.querySelector('[data-ms-action="trial"]');
+          if (tb) { tb.setAttribute("data-ms-action", "black"); tb.textContent = "Assinar Black anual"; }
+          var badge = shell.querySelector("[data-ms-trial-badge]");
+          if (badge) badge.textContent = "Black: anual por R$ 399,90";
         }
         var st = (window.__msShell = { email: "", focused: false, submitted: false, subscribe: false, google: false });
         var input = shell.querySelector("[data-ms-email]");
@@ -140,6 +145,8 @@
           var a = el.getAttribute("data-ms-action");
           if (a === "login") {
             window.location.href = "/auth";
+          } else if (a === "black") {
+            window.location.href = "/black";
           } else if (a === "trial") {
             var c = document.getElementById("comecar");
             if (c) c.scrollIntoView({ behavior: "smooth" });
