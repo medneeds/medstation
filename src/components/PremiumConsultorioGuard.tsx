@@ -7,7 +7,7 @@ import { Mic, Sparkles, Loader2, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { DISPLAY_PRICING, PRICE_SUMMARY, brl } from "@/lib/subscription-tiers";
+import { DISPLAY_PRICING, brl } from "@/lib/subscription-tiers";
 
 interface PremiumConsultorioGuardProps {
   children: ReactNode;
