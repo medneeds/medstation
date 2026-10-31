@@ -3,6 +3,8 @@
 // queries complexas. GET = agregados + fila; POST = atualizar status manual.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import Stripe from "https://esm.sh/stripe@18.5.0";
+import { paymentLinkIssue, type PaymentLinkIssue } from "../_shared/payment-link.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,6 +47,93 @@ const VALID_RECOVERY = ["not_needed", "eligible", "contacted", "recovered", "dis
 function rate(paid: number, initiated: number): number | null {
   if (!initiated) return null;
   return Math.round((paid / initiated) * 1000) / 10;
+}
+
+type LinkIssueRow = {
+  kind: "assinatura" | "compra_avulsa";
+  reference: string;
+  payment_email: string | null;
+  account_email: string | null;
+  user_id: string | null;
+  access_end: string | null;
+  issue: PaymentLinkIssue;
+};
+
+/**
+ * Auditoria de vazamento: todo pagamento ATIVO precisa estar ligado a uma conta
+ * existente, de preferência com o mesmo e-mail do pagamento.
+ */
+// deno-lint-ignore no-explicit-any
+async function auditPaymentLinks(supabase: any): Promise<LinkIssueRow[] | null> {
+  try {
+    const nowIso = new Date().toISOString();
+    const [{ data: subs }, { data: purchases }] = await Promise.all([
+      supabase.from("stripe_subscriptions")
+        .select("stripe_subscription_id, stripe_customer_id, user_id, current_period_end")
+        .in("status", ["active", "trialing", "past_due"])
+        .limit(300),
+      supabase.from("stripe_one_time_purchases")
+        .select("checkout_session_id, email, user_id, access_end")
+        .eq("status", "paid")
+        .gt("access_end", nowIso)
+        .limit(300),
+    ]);
+
+    const accountEmail = new Map<string, string | null>();
+    const userIds = new Set<string>();
+    for (const r of [...(subs ?? []), ...(purchases ?? [])] as { user_id: string | null }[]) {
+      if (r.user_id) userIds.add(r.user_id);
+    }
+    await Promise.all([...userIds].map(async (id) => {
+      const { data } = await supabase.auth.admin.getUserById(id);
+      accountEmail.set(id, data?.user?.email ?? null);
+    }));
+
+    const key = Deno.env.get("STRIPE_SECRET_KEY");
+    const stripe = key ? new Stripe(key, { apiVersion: "2025-08-27.basil" }) : null;
+    const customerEmail = new Map<string, string | null>();
+    const customerIds = [...new Set(((subs ?? []) as { stripe_customer_id: string }[]).map((r) => r.stripe_customer_id))];
+    if (stripe) {
+      await Promise.all(customerIds.map(async (id) => {
+        try {
+          const c = await stripe.customers.retrieve(id);
+          customerEmail.set(id, c.deleted ? null : c.email ?? null);
+        } catch {
+          customerEmail.set(id, null);
+        }
+      }));
+    }
+
+    const issues: LinkIssueRow[] = [];
+    for (const r of (subs ?? []) as { stripe_subscription_id: string; stripe_customer_id: string; user_id: string | null; current_period_end: string | null }[]) {
+      const row = {
+        userId: r.user_id,
+        accountEmail: r.user_id ? accountEmail.get(r.user_id) ?? null : null,
+        paymentEmail: customerEmail.get(r.stripe_customer_id) ?? null,
+      };
+      const issue = paymentLinkIssue(row);
+      if (issue) issues.push({
+        kind: "assinatura", reference: r.stripe_subscription_id, payment_email: row.paymentEmail,
+        account_email: row.accountEmail, user_id: r.user_id, access_end: r.current_period_end, issue,
+      });
+    }
+    for (const r of (purchases ?? []) as { checkout_session_id: string; email: string | null; user_id: string | null; access_end: string | null }[]) {
+      const row = {
+        userId: r.user_id,
+        accountEmail: r.user_id ? accountEmail.get(r.user_id) ?? null : null,
+        paymentEmail: r.email,
+      };
+      const issue = paymentLinkIssue(row);
+      if (issue) issues.push({
+        kind: "compra_avulsa", reference: r.checkout_session_id, payment_email: row.paymentEmail,
+        account_email: row.accountEmail, user_id: r.user_id, access_end: r.access_end, issue,
+      });
+    }
+    return issues;
+  } catch (error) {
+    console.error("[ADMIN-PURCHASE-RECOVERY] link audit failed", (error as Error)?.message);
+    return null;
+  }
 }
 
 serve(async (req) => {
@@ -164,8 +253,11 @@ serve(async (req) => {
       .in("status", ["past_due", "unpaid"])
       .limit(200);
 
+    const paymentLinkIssues = await auditPaymentLinks(supabase);
+
     return json({
       generated_at: nowIso,
+      payment_link_issues: paymentLinkIssues,
       cards,
       opportunities,
       subscription_payment_failed: pastDue ?? [],
