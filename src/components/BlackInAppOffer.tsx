@@ -50,7 +50,7 @@ export function BlackInAppOffer({ fallback }: { fallback?: ReactNode }) {
   };
 
   return (
-    <div className="dark mb-4 flex flex-col gap-3 rounded-xl border border-offer-gold/40 bg-offer px-4 py-3 text-offer-foreground sm:flex-row sm:items-center">
+    <div className="mb-4 flex flex-col gap-3 rounded-xl border border-offer-gold/40 bg-offer px-4 py-3 text-offer-foreground sm:flex-row sm:items-center">
       <div className="flex min-w-0 flex-1 items-start gap-3">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-offer-gold/15 text-offer-gold">
           <Flame className="h-4 w-4" />
