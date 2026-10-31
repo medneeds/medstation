@@ -12,6 +12,7 @@ import { trackCheckoutStarted, trackCtaClick } from "@/lib/analytics";
 import { BLACK_OFFER, PRICE_TABLE, blackStatus, timeLeft, type BlackStatus } from "@/lib/pricingSchedule";
 import { brl } from "@/lib/subscription-tiers";
 import { cn } from "@/lib/utils";
+import { PlatformDemo } from "@/components/landing/PlatformDemo";
 
 const PRICE = BLACK_OFFER.amountCents / 100;
 const ANCHOR = BLACK_OFFER.anchorCents / 100;
@@ -564,6 +565,13 @@ export default function Black() {
             </div>
           </Reveal>
         </section>
+
+        <PlatformDemo />
+        {active && (
+          <div className="-mt-6 md:-mt-8 flex justify-center">
+            <GoldCta cta="black_demo" />
+          </div>
+        )}
 
         <section className="grid md:grid-cols-3 gap-4 md:gap-6">
           {highlights.map((h, i) => (
