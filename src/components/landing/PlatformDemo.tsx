@@ -2,6 +2,23 @@ import { useCallback, useEffect, useRef, useState, type ComponentType } from "re
 import useEmblaCarousel from "embla-carousel-react";
 import {
   Activity,
+  AlertTriangle,
+  BookOpen,
+  Building2,
+  CalendarDays,
+  ChevronDown,
+  ClipboardList,
+  Clock,
+  FileCog,
+  FileDown,
+  GraduationCap,
+  Lightbulb,
+  ListChecks,
+  Minimize2,
+  ScanLine,
+  SeparatorVertical,
+  Siren,
+  Zap,
   ArrowRight,
   Check,
   ChevronLeft,
@@ -30,6 +47,13 @@ import { trackCtaClick } from "@/lib/analytics";
 
 type Kind = "chat" | "escuta" | "cofre";
 
+interface DemoControl {
+  label: string;
+  icon?: ComponentType<{ className?: string }>;
+  on?: boolean;
+  select?: boolean;
+}
+
 interface DemoSlide {
   id: string;
   tab: string;
@@ -40,6 +64,8 @@ interface DemoSlide {
   bullets: string[];
   path: string;
   pills: string[];
+  /** Botões reais do assistente (rótulos iguais aos do app); `on` = ligado nesta demo. */
+  controls: DemoControl[];
   kind: Kind;
   input?: string;
   attachment?: string;
@@ -54,14 +80,20 @@ const SLIDES: DemoSlide[] = [
     icon: Stethoscope,
     kicker: "Assistente · Documentação",
     title: "Do rascunho à anamnese completa",
-    benefit: "Você escreve do seu jeito, abreviado. O Clínicus devolve no padrão do prontuário.",
-    bullets: ["Títulos padronizados", "Nada inventado: o que faltar fica como \"não informado\"", "Contextos de emergência, enfermaria e UTI"],
+    benefit: "Você escreve do seu jeito, abreviado. O Clínicus devolve no padrão do prontuário, no contexto que você escolher.",
+    bullets: ["9 contextos: consultório, emergência, enfermaria, UTI, alta e óbito", "Nada inventado: o que faltar fica como \"não informado\"", "Relatório, passagem de caso e Professor clínico"],
     path: "clinicus",
-    pills: ["Anamnese", "Contexto: Emergência"],
+    pills: [],
+    controls: [
+      { label: "Anamnese", icon: FileDown, on: true },
+      { label: "Emergência · Avaliação Inicial", select: true, on: true },
+      { label: "Relatório", icon: ClipboardList },
+      { label: "Professor", icon: GraduationCap },
+    ],
     kind: "chat",
-    input: "masc 67a, dor toracica tipica ha 2h, sudorese. HAS, DM2. PA 160x90 FC 98 SpO2 95%. ECG supra ST V2-V4",
+    input: "masc 67a, dor toracica tipica ha 2h, em aperto, irradia p/ MSE, sudorese. HAS, DM2, tabagista. PA 160x90 FC 98 SpO2 95%. ECG supra ST V2-V4",
     response:
-      "IDENTIFICAÇÃO\nMasculino, 67 anos.\n\nQUEIXA PRINCIPAL\nDor torácica há 2 horas.\n\nHISTÓRIA DA DOENÇA ATUAL\nDor torácica típica iniciada há 2 horas, associada a sudorese.\n\nANTECEDENTES\n• Hipertensão arterial sistêmica\n• Diabetes mellitus tipo 2\n\nEXAME FÍSICO\nPA 160x90 mmHg · FC 98 bpm · SpO2 95%\n\nEXAMES\nECG: supradesnivelamento do segmento ST em V2-V4.",
+      "IDENTIFICAÇÃO\nMasculino, 67 anos.\n\nQUEIXA PRINCIPAL\nDor torácica há 2 horas.\n\nHISTÓRIA DA DOENÇA ATUAL\nDor torácica típica, em aperto, iniciada há 2 horas, com irradiação para o membro superior esquerdo e sudorese associada.\n\nANTECEDENTES\n• Hipertensão arterial sistêmica\n• Diabetes mellitus tipo 2\n• Tabagismo\n\nEXAME FÍSICO\nPA 160x90 mmHg · FC 98 bpm · SpO2 95%\nDemais achados: não informado.\n\nEXAMES\nECG: supradesnivelamento do segmento ST em V2-V4.\n\nHIPÓTESE DIAGNÓSTICA\n• Síndrome coronariana aguda com supradesnivelamento de ST, parede anterior (a confirmar)",
   },
   {
     id: "examinus",
@@ -69,14 +101,23 @@ const SLIDES: DemoSlide[] = [
     icon: Activity,
     kicker: "Assistente · Exames",
     title: "Exames colados, organizados em segundos",
-    benefit: "Cole o laboratório como vier. Sai separado por sistema, com setas e alertas.",
-    bullets: ["Leitura de PDF e foto do laudo", "Valores alterados sinalizados", "Formato pronto para a evolução"],
+    benefit: "Cole o laboratório como vier, ou mande a foto do laudo. Sai pronto para a evolução, do jeito que você configurar.",
+    bullets: ["Separar com |, horário da coleta e só alterados", "Impressão clínica e modo compacto", "Interpretador de raio-X e ECG, e Consultor de exames"],
     path: "examinus",
-    pills: ["Separador |", "Alertas"],
+    pills: [],
+    controls: [
+      { label: "Consultor", icon: Lightbulb },
+      { label: "Interpretador", icon: ScanLine },
+      { label: "Separar", icon: SeparatorVertical, on: true },
+      { label: "Hora", icon: Clock, on: true },
+      { label: "Alterados", icon: AlertTriangle },
+      { label: "Impressão", icon: Stethoscope, on: true },
+      { label: "Compacto", icon: Minimize2, on: true },
+    ],
     kind: "chat",
-    input: "Hb 9,8 Leuco 14200 Plaq 180mil Cr 2,1 Ur 88 Na 134 K 5,6 PCR 120 Lactato 3,1",
+    input: "coleta 06:40 — Hb 9,8 Ht 30 VCM 88 HCM 29 RDW 14 Leuco 14200 (seg 82%) Plaq 180mil Cr 2,1 Ur 88 Na 134 K 5,6 PCR 120 Lactato 3,1",
     response:
-      "HEMOGRAMA\nHb 9,8 ↓ | Leuc 14.200 ↑ | Plaq 180.000\n\nFUNÇÃO RENAL E ELETRÓLITOS\nCr 2,1 ↑ | Ur 88 ↑ | Na 134 ↓ | K 5,6 ↑\n\nINFLAMATÓRIOS\nPCR 120 ↑ | Lactato 3,1 ↑\n\nALERTAS\n• Potássio elevado: 5,6\n• Lactato elevado: 3,1",
+      "LABORATÓRIO (31/10 · 06:40)\nHb 9,8 ↓ | Ht 30 ↓ | Leuc 14.200 ↑ | Plaq 180.000\nCr 2,1 ↑ | Ur 88 ↑ | Na 134 ↓ | K 5,6 ↑\nPCR 120 ↑ | Lactato 3,1 ↑\n\nIMPRESSÃO CLÍNICA\n• Leucocitose com PCR e lactato elevados: correlacionar com foco infeccioso\n• Creatinina 2,1 e ureia 88: comparar com o basal para definir lesão renal aguda\n• Potássio 5,6: repetir e checar ECG\n• Anemia normocítica: acompanhar evolução",
   },
   {
     id: "prescriptus",
@@ -84,14 +125,19 @@ const SLIDES: DemoSlide[] = [
     icon: Pill,
     kicker: "Assistente · Prescrição",
     title: "Receita pronta, só conferir e imprimir",
-    benefit: "Diga o caso. O Modo Receita entrega a prescrição limpa, com posologia completa.",
-    bullets: ["Receita simples e controle especial", "Alerta de alergia do paciente", "Modelos salvos para reutilizar"],
+    benefit: "Diga o caso. O Modo Receita entrega a prescrição limpa, com posologia completa e orientações ao paciente.",
+    bullets: ["Bula Inteligente (B.I.) e conduta por caso", "Receita simples e controle especial em PDF", "Alerta de alergia e modelos salvos"],
     path: "prescriptus",
-    pills: ["Modo Receita"],
+    pills: [],
+    controls: [
+      { label: "B.I.", icon: BookOpen },
+      { label: "Por caso", icon: ClipboardList },
+      { label: "Receita", icon: Pill, on: true },
+    ],
     kind: "chat",
     input: "Amigdalite bacteriana, adulta, 62 kg, sem alergias",
     response:
-      "RECEITUÁRIO\n\nUSO ORAL\n\n1. Amoxicilina 500 mg — 30 cápsulas\nTomar 1 cápsula de 8 em 8 horas por 10 dias.\n\n2. Dipirona 500 mg — 1 caixa\nTomar 1 comprimido de 6 em 6 horas se dor ou febre, por até 3 dias.",
+      "RECEITUÁRIO\n\nUSO ORAL\n\n1. Amoxicilina 500 mg — 30 cápsulas\nTomar 1 cápsula de 8 em 8 horas por 10 dias.\n\n2. Dipirona 500 mg — 1 caixa\nTomar 1 comprimido de 6 em 6 horas se dor ou febre, por até 3 dias.\n\nORIENTAÇÕES\n• Completar os 10 dias de antibiótico, mesmo com melhora\n• Retornar se a febre persistir após 72 horas ou se não conseguir engolir líquidos",
     footerChip: "Gerar PDF da receita",
   },
   {
@@ -100,14 +146,18 @@ const SLIDES: DemoSlide[] = [
     icon: FileText,
     kicker: "Assistente · CID e afastamento",
     title: "CID e dias de afastamento em um passo",
-    benefit: "O modo D.A. sugere os CIDs do caso e os dias para trabalho administrativo e braçal.",
-    bullets: ["2 a 5 CIDs para escolher", "Dias por tipo de trabalho", "Atalho direto para o atestado"],
+    benefit: "O modo D.A. sugere o CID do caso, alternativas e os dias para trabalho administrativo e braçal.",
+    bullets: ["C.R.: até 10 CIDs sem perguntas", "D.A.: dias por tipo de trabalho e marco do INSS", "Atalho direto para emitir no Atestus"],
     path: "codexus",
-    pills: ["D.A. Dias & Afastamento"],
+    pills: [],
+    controls: [
+      { label: "C.R.", icon: Zap },
+      { label: "D.A.", icon: CalendarDays, on: true },
+    ],
     kind: "chat",
-    input: "Lombalgia aguda mecânica, pedreiro, sem sinais de alarme",
+    input: "Lombalgia aguda mecânica após esforço, pedreiro, sem sinais de alarme",
     response:
-      "CID SUGERIDOS\n• M54.5 Dor lombar baixa\n• M54.4 Lumbago com ciática\n\nDIAS DE AFASTAMENTO\nTrabalho administrativo: 2 a 3 dias\nTrabalho braçal: 5 a 7 dias\n\nREAVALIAR SE\nDor irradiada, perda de força ou piora apesar do tratamento.",
+      "CID PRINCIPAL\nM54.5 Dor lombar baixa\n\nALTERNATIVAS\n• M54.4 Lumbago com ciática (se dor irradiada)\n• S33.5 Entorse e distensão da coluna lombar (se ligada ao esforço)\n\nDIAS DE AFASTAMENTO\nTrabalho administrativo: 2 a 3 dias\nTrabalho braçal (pedreiro): 5 a 7 dias\n\nATENÇÃO\nAcima de 15 dias, o afastamento segue pelo INSS.\nCID no atestado só com autorização do paciente.",
     footerChip: "Emitir no Atestus",
   },
   {
@@ -116,14 +166,18 @@ const SLIDES: DemoSlide[] = [
     icon: MessagesSquare,
     kicker: "Assistente · Discussão de caso",
     title: "Um colega para discutir o caso difícil",
-    benefit: "Raciocínio clínico direto, com diretriz por trás e sem completar o que você não informou.",
-    bullets: ["Separa o que foi pedido do que foi feito", "Suspeita nunca vira diagnóstico", "Conduta objetiva para decidir"],
+    benefit: "Raciocínio clínico direto, com diretriz por trás, no formato e na especialidade que você escolher.",
+    bullets: ["Parecer curto, completo, internação, UTI ou regulação", "9 especialidades para o olhar do especialista", "Separa o que foi pedido do que foi feito"],
     path: "mediscuss",
-    pills: ["Discussão"],
+    pills: [],
+    controls: [
+      { label: "Discussão clínica", select: true, on: true },
+      { label: "Cardiologia", select: true, on: true },
+    ],
     kind: "chat",
-    input: "IC FEr, creatinina subiu de 1,2 para 1,6 após iniciar sacubitril/valsartana. Suspendo?",
+    input: "IC FEr, creatinina subiu de 1,2 para 1,6 após iniciar sacubitril/valsartana. K 4,9. Suspendo?",
     response:
-      "LEITURA DO CASO\nAumento de cerca de 33% da creatinina após o início do sacubitril/valsartana.\n\nO QUE PESA\n• Elevação de até 50% do basal é aceita pelas diretrizes de IC\n• Revisar volemia, dose do diurético e potássio\n\nCONDUTA A CONSIDERAR\nManter a medicação, checar potássio e repetir a função renal em 1 a 2 semanas.",
+      "LEITURA DO CASO\nCreatinina de 1,2 para 1,6 (aumento de cerca de 33%) após início de sacubitril/valsartana, com potássio de 4,9.\n\nO QUE PESA\n• Elevação de até 50% do basal é aceita pelas diretrizes de IC\n• Hipotensão, hipovolemia ou excesso de diurético pioram a função renal\n\nCONDUTA A CONSIDERAR\n• Manter a medicação\n• Revisar volemia e dose do diurético\n• Repetir creatinina e potássio em 1 a 2 semanas\n\nQUANDO MUDAR\nAumento acima de 50%: reduzir a dose. Acima de 100%, creatinina acima de 3,5 mg/dL ou potássio acima de 5,5: suspender.",
   },
   {
     id: "escuta",
@@ -134,10 +188,16 @@ const SLIDES: DemoSlide[] = [
     benefit: "Você conversa com o paciente. A MedStation ouve, transcreve e organiza no padrão do prontuário.",
     bullets: ["Consultório ou emergência", "Avaliação rápida ou admissão completa", "Transcrição em português médico"],
     path: "consultorio",
-    pills: ["Emergência", "Avaliação rápida"],
+    pills: [],
+    controls: [
+      { label: "Consultório", icon: Building2 },
+      { label: "Emergência", icon: Siren, on: true },
+      { label: "Avaliação rápida", on: true },
+      { label: "Admissão completa" },
+    ],
     kind: "escuta",
     response:
-      "QUEIXA PRINCIPAL\nFebre e tosse há 3 dias.\n\nHISTÓRIA DA DOENÇA ATUAL\nFebre e tosse há 3 dias, com falta de ar ao subir escadas.\n\nANTECEDENTES\nNão informado.",
+      "QUEIXA PRINCIPAL\nFebre e tosse há 3 dias.\n\nHISTÓRIA DA DOENÇA ATUAL\nFebre e tosse há 3 dias, com falta de ar ao subir escadas.\n\nANTECEDENTES\n• Hipertensão arterial\n\nSINAIS VITAIS\nTax 38,4 °C · SpO2 93%\n\nALERGIAS\nNão informado.",
   },
   {
     id: "operador",
@@ -146,14 +206,21 @@ const SLIDES: DemoSlide[] = [
     kicker: "Modo · Central de operações",
     title: "Converte, organiza e indica o assistente certo",
     benefit: "Mande o laudo, o documento ou o pedido. O Operador transforma no formato que você precisa.",
-    bullets: ["Converter documentos", "Organizar exames por data", "Indica o melhor assistente para o caso"],
+    bullets: ["SOAP, transferência, interconsulta e resumo", "Organiza exames misturados por data", "Vaga, alto custo e resposta à auditoria"],
     path: "operador",
-    pills: ["Converter documento"],
+    pills: [],
+    controls: [
+      { label: "Livre", icon: Sparkles },
+      { label: "Converter documento", icon: FileCog, on: true },
+      { label: "Organizar exames", icon: ListChecks },
+      { label: "Resumo executivo" },
+      { label: "Solicitação de vaga" },
+    ],
     kind: "chat",
     input: "Transforme este laudo em texto curto para o prontuário",
     attachment: "laudo_tc_torax.pdf",
     response:
-      "TC DE TÓRAX\nConsolidação em lobo inferior direito, sem derrame pleural.\n\nPARA O PRONTUÁRIO\nTC de tórax: consolidação em LID, sem derrame pleural.",
+      "TC DE TÓRAX (31/10)\n• Consolidação em lobo inferior direito com broncograma aéreo\n• Sem derrame pleural\n• Sem linfonodomegalias\n\nPARA O PRONTUÁRIO\nTC de tórax (31/10): consolidação em LID com broncograma aéreo, sem derrame pleural ou linfonodomegalias.",
     footerChip: "Discutir no Mediscuss",
   },
   {
@@ -166,12 +233,13 @@ const SLIDES: DemoSlide[] = [
     bullets: ["Pastas com favoritos no topo", "Salvar resposta com 1 clique", "PDFs, imagens e documentos"],
     path: "notes",
     pills: ["Pastas", "Arquivos", "Favoritos"],
+    controls: [],
     kind: "cofre",
   },
 ];
 
-const TYPE_MS = 2600;
-const HOLD_MS = 3800;
+const TYPE_MS = 3400;
+const HOLD_MS = 4200;
 const TOTAL_MS = TYPE_MS + HOLD_MS;
 const PAUSE_AFTER_TOUCH_MS = 15000;
 
@@ -283,12 +351,13 @@ function ChatScreen({ slide, p }: { slide: DemoSlide; p: number }) {
 const ESCUTA_LINES = [
   { who: "Paciente", text: "Doutor, faz três dias que estou com febre e tosse." },
   { who: "Médico", text: "Sente falta de ar?" },
-  { who: "Paciente", text: "Um pouco, quando subo escada." },
+  { who: "Paciente", text: "Um pouco, quando subo escada. Tenho pressão alta." },
+  { who: "Médico", text: "Temperatura 38,4 e saturação 93%." },
 ];
 
 function EscutaScreen({ slide, p }: { slide: DemoSlide; p: number }) {
-  const linesShown = Math.min(ESCUTA_LINES.length, Math.floor(p / 0.14));
-  const docP = Math.max(0, (p - 0.45) / 0.55);
+  const linesShown = Math.min(ESCUTA_LINES.length, Math.floor(p / 0.1));
+  const docP = Math.max(0, (p - 0.42) / 0.58);
   const response = slide.response ?? "";
   const shown = response.slice(0, Math.floor(response.length * Math.min(1, docP)));
   const docRef = useRef<HTMLDivElement>(null);
@@ -410,6 +479,35 @@ function CofreScreen({ p }: { p: number }) {
   );
 }
 
+function ControlsRow({ controls, p }: { controls: DemoControl[]; p: number }) {
+  if (!controls.length) return null;
+  let onIndex = -1;
+  return (
+    <div className="mb-2 flex gap-1.5 overflow-x-auto pr-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [mask-image:linear-gradient(to_right,black_calc(100%-28px),transparent)]">
+      {controls.map((c) => {
+        if (c.on) onIndex += 1;
+        const lit = !!c.on && p > 0.02 + onIndex * 0.025;
+        const I = c.icon;
+        return (
+          <span
+            key={c.label}
+            className={cn(
+              "inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2 py-1 text-[0.66rem] font-medium transition-all duration-300",
+              lit
+                ? "border-primary/50 bg-primary/15 text-primary shadow-[0_0_0_3px_hsl(var(--primary)/0.12)]"
+                : "border-border bg-background text-muted-foreground",
+            )}
+          >
+            {I && <I className="h-3 w-3" />}
+            {c.label}
+            {c.select && <ChevronDown className="h-3 w-3 opacity-70" />}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
 function MockWindow({ slide, p, activeIndex }: { slide: DemoSlide; p: number; activeIndex: number }) {
   const Icon = slide.icon;
   return (
@@ -422,7 +520,7 @@ function MockWindow({ slide, p, activeIndex }: { slide: DemoSlide; p: number; ac
           medstation-ai.com.br/{slide.path}
         </span>
       </div>
-      <div className="flex h-[400px] md:h-[440px]">
+      <div className="flex h-[440px] md:h-[480px]">
         <aside className="hidden sm:flex w-12 shrink-0 flex-col items-center gap-1.5 border-r border-border bg-muted/30 py-3">
           {SLIDES.map((s, i) => {
             const I = s.icon;
@@ -460,6 +558,7 @@ function MockWindow({ slide, p, activeIndex }: { slide: DemoSlide; p: number; ac
           </div>
           {slide.kind !== "cofre" && (
             <div className="border-t border-border px-3 md:px-5 py-2.5">
+              <ControlsRow controls={slide.controls} p={p} />
               <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/30 px-3 py-2 text-[0.75rem] text-muted-foreground">
                 <span className="flex-1 truncate">Escreva ou dite o caso...</span>
                 <Mic className="h-3.5 w-3.5" />
