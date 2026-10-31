@@ -34,8 +34,12 @@ describe("anual via boleto", () => {
   it("oferece boleto no anual com vencimento de 3 dias", () => {
     expect(oneTimePaymentMethodTypes(annual, true)).toEqual(["card", "boleto"]);
     expect(BOLETO_EXPIRES_AFTER_DAYS).toBe(3);
-    expect(oneTimePaymentMethodOptions(["card", "boleto"])).toEqual({ boleto: { expires_after_days: 3 } });
-    expect(oneTimePaymentMethodOptions(["card"])).toBeUndefined();
+    expect(oneTimePaymentMethodOptions(["card", "boleto"])).toEqual({
+      card: { installments: { enabled: true } },
+      boleto: { expires_after_days: 3 },
+    });
+    expect(oneTimePaymentMethodOptions(["card"])).toEqual({ card: { installments: { enabled: true } } });
+    expect(oneTimePaymentMethodOptions(["boleto"])).toEqual({ boleto: { expires_after_days: 3 } });
   });
 
   it("boleto não ativado na conta cai para cartão", () => {
