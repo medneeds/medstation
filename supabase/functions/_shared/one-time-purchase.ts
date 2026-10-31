@@ -217,8 +217,11 @@ export function oneTimePaymentMethodTypes(plan: OneTimePlan, asyncEnabled: boole
 
 /** Opções do Stripe Checkout para os métodos assíncronos presentes. */
 export function oneTimePaymentMethodOptions(methods: string[]): Record<string, unknown> | undefined {
-  if (!methods.includes("boleto")) return undefined;
-  return { boleto: { expires_after_days: BOLETO_EXPIRES_AFTER_DAYS } };
+  const options: Record<string, unknown> = {};
+  // Parcelamento no cartão (até 12x) para as compras à vista.
+  if (methods.includes("card")) options.card = { installments: { enabled: true } };
+  if (methods.includes("boleto")) options.boleto = { expires_after_days: BOLETO_EXPIRES_AFTER_DAYS };
+  return Object.keys(options).length ? options : undefined;
 }
 
 function mentionsUnavailable(lower: string): boolean {
