@@ -402,18 +402,13 @@ export default function Black() {
 
       <Marquee />
 
-      <header className="sticky top-0 z-30 border-b border-offer-border bg-offer/95 text-offer-foreground backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-border/60 bg-background/90 backdrop-blur">
         <div className="container mx-auto px-4 md:px-8 h-16 flex items-center justify-between gap-3">
-          <Link to="/" aria-label="MedStation" className="rounded-md bg-offer-foreground px-2 py-1">
+          <Link to="/" aria-label="MedStation">
             <Logo size="sm" />
           </Link>
           <div className="flex items-center gap-2">
-            <Button
-              asChild
-              size="sm"
-              variant="ghost"
-              className="text-offer-foreground hover:bg-offer-foreground/10 hover:text-offer-foreground"
-            >
+            <Button asChild size="sm" variant="ghost">
               <Link to="/auth" onClick={() => trackCtaClick({ cta: "black_login", section: "black", destination: "/auth" })}>
                 Já sou cliente
               </Link>
