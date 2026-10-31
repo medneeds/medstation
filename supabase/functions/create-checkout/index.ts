@@ -16,6 +16,7 @@ import {
 } from "../_shared/one-time-purchase.ts";
 import { monthlySubscriptionLineItem, pricingCohort } from "../_shared/pricing-schedule.ts";
 import { recordPurchaseAttempt } from "../_shared/purchase-attempts.ts";
+import { allowsPurchaseWithActiveSubscription } from "../_shared/annual-switch.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -131,6 +132,10 @@ serve(async (req) => {
 
     const customers = await stripe.customers.list({ email: user.email, limit: 10 });
     let reusableCustomerId: string | undefined;
+    // Anual à vista (comum ou Black) pode ser comprado por quem já tem o mensal:
+    // o webhook encerra o mensal no fim do período pago, sem cobrança dupla.
+    const allowWithActiveSub = allowsPurchaseWithActiveSubscription(resolveOneTimePlan(plan)?.accessPeriod);
+    let replacesSubscription: string | undefined;
 
     for (const customer of customers.data) {
       reusableCustomerId ??= customer.id;
@@ -142,6 +147,10 @@ serve(async (req) => {
       const existingActive = existingSubs.data.find((subscription) =>
         ["active", "trialing", "past_due"].includes(subscription.status),
       );
+      if (existingActive && allowWithActiveSub) {
+        replacesSubscription ??= existingActive.id;
+        continue;
+      }
       if (existingActive) {
         return new Response(
           JSON.stringify({
@@ -176,6 +185,7 @@ serve(async (req) => {
         access_period: oneTimePlan.accessPeriod,
         access_days: String(oneTimePlan.accessDays),
         ...(oneTimePlan.offer ? { offer: oneTimePlan.offer } : {}),
+        ...(replacesSubscription ? { replaces_subscription: replacesSubscription } : {}),
       }
       : baseMetadata;
 
@@ -196,6 +206,9 @@ serve(async (req) => {
         billing_address_collection: "auto",
         metadata: oneTimeMetadata,
         payment_intent_data: { metadata: oneTimeMetadata },
+        // Quem desiste ganha um link para retomar o mesmo pagamento (painel Black).
+        expires_at: Math.floor(Date.now() / 1000) + 3 * 3600,
+        after_expiration: { recovery: { enabled: true } },
       }
       : {
         customer: reusableCustomerId,
@@ -216,7 +229,15 @@ serve(async (req) => {
 
     let session: Stripe.Checkout.Session;
     try {
-      session = await stripe.checkout.sessions.create(sessionConfig);
+      session = await stripe.checkout.sessions.create(sessionConfig).catch((error) => {
+        const message = error instanceof Error ? error.message : String(error);
+        if (!sessionConfig.after_expiration || !/after_expiration|recovery|expires_at/i.test(message)) throw error;
+        // Recuperação é bônus: nunca impede a venda.
+        logStep("RECOVERY_UNAVAILABLE", { message });
+        delete sessionConfig.after_expiration;
+        delete sessionConfig.expires_at;
+        return stripe.checkout.sessions.create(sessionConfig);
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       if (oneTimePlan && isAsyncMethodUnavailableError(message)) {
