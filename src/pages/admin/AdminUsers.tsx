@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Search, RefreshCw, Gift, KeyRound, Loader2, ShieldCheck, ShieldOff, Gift as GiftIcon, MessageCircle } from "lucide-react";
+import { PasswordResetPanel } from "@/components/admin/PasswordResetPanel";
 
 export function whatsappUrl(phone?: string | null): string | null {
   if (!phone) return null;
@@ -154,6 +155,9 @@ export default function AdminUsers() {
           </Button>
         </div>
       </header>
+
+      <PasswordResetPanel />
+
 
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-11 gap-2 text-xs">
@@ -318,9 +322,9 @@ function UserDetailSheet({ user, onClose, onChanged }: { user: UserRow | null; o
     if (!user) return;
     setBusy("reset");
     try {
-      await call("admin-reset-password", { email: user.email });
-      toast.success("Email de reset enviado");
-    } catch (e: any) { toast.error(`Erro: ${e.message}`); }
+      await call("admin-reset-password", { userEmail: user.email });
+      toast.success(`E-mail de redefinição enviado para ${user.email}`);
+    } catch (e: any) { toast.error(e.message); }
     finally { setBusy(null); }
   };
 
@@ -442,7 +446,7 @@ function UserDetailSheet({ user, onClose, onChanged }: { user: UserRow | null; o
               <div className="pt-4 space-y-2 border-t border-border/60">
                 <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Ações</div>
                 <Button variant="outline" size="sm" className="w-full justify-start" onClick={resetPassword} disabled={busy === "reset"}>
-                  <KeyRound className="h-4 w-4 mr-2" /> {busy === "reset" ? "Enviando..." : "Enviar reset de senha"}
+                  <KeyRound className="h-4 w-4 mr-2" /> {busy === "reset" ? "Enviando..." : "Enviar redefinição de senha"}
                 </Button>
                 <Button variant="outline" size="sm" className="w-full justify-start" onClick={grantCourtesy} disabled={busy === "courtesy"}>
                   <Gift className="h-4 w-4 mr-2" /> {busy === "courtesy" ? "Concedendo..." : "Conceder cortesia"}
