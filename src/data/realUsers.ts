@@ -49,6 +49,8 @@ export const REAL_USERS: RealUser[] = [
     photo: luciaraDuarte.url,
     location: "São Luís, MA",
     practice: "Pediatria, Psiquiatria e Medicina de Emergência",
+    quote:
+      "MedStation pra mim é uma ferramenta que preciso no meu dia a dia, trouxe mais agilidade, praticidade e assertividade nas minhas condutas.",
   },
   {
     name: "Dra. Daiane Cordeiro",
