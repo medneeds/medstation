@@ -7,6 +7,7 @@ import { Mic, Sparkles, Loader2, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { DISPLAY_PRICING, brl } from "@/lib/subscription-tiers";
 
 interface PremiumConsultorioGuardProps {
   children: ReactNode;
@@ -108,11 +109,11 @@ export function PremiumConsultorioGuard({ children }: PremiumConsultorioGuardPro
                   </span>
                 </div>
                 <div className="flex items-baseline justify-center gap-2">
-                  <span className="text-4xl font-black text-primary">R$ 49,90</span>
+                  <span className="text-4xl font-black text-primary">{brl(DISPLAY_PRICING.bundle.monthly.now)}</span>
                   <span className="text-muted-foreground">/mês</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Tudo incluso: Documentação, Copiloto e Fluxo. Ou R$ 499,90/ano.
+                  Tudo incluso: Documentação, Copiloto e Fluxo. Ou {brl(DISPLAY_PRICING.bundle.yearly.now)}/ano.
                 </p>
               </div>
               <Button
@@ -124,7 +125,7 @@ export function PremiumConsultorioGuard({ children }: PremiumConsultorioGuardPro
                 {checkoutLoading ? (
                   <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processando...</>
                 ) : (
-                  "Assinar por R$ 49,90/mês"
+                  `Assinar por ${brl(DISPLAY_PRICING.bundle.monthly.now)}/mês`
                 )}
               </Button>
               <Button variant="outline" className="w-full" onClick={() => navigate("/pricing")}>

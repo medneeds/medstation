@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
     if (reference.startsWith("cs_")) {
       const { data } = await supabase
         .from("stripe_one_time_purchases")
-        .select("email, status, access_period, access_end")
+        .select("email, plan, status, access_period, access_end")
         .eq("checkout_session_id", reference)
         .maybeSingle();
       result = purchaseEligibility(data);

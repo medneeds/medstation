@@ -6,7 +6,7 @@ import { ArrowRight, Check, Gift, Loader2, Lock, Quote, ShieldCheck, Star } from
 import { supabase } from "@/integrations/supabase/client";
 import { trackCheckoutStarted } from "@/lib/analytics";
 import { useToast } from "@/hooks/use-toast";
-import { DISPLAY_PRICING, brl } from "@/lib/subscription-tiers";
+import { DISPLAY_PRICING, HAS_LAUNCH_DISCOUNT, brl } from "@/lib/subscription-tiers";
 import { ANNUAL_BONUS } from "@/lib/annualBonus";
 
 type Cycle = "monthly" | "yearly";
@@ -80,9 +80,11 @@ export function SubscribeNowDialog({ open, onOpenChange }: Props) {
             {active && <Check className="h-2.5 w-2.5" />}
           </span>
         </div>
-        <p className="mt-1.5 text-[0.7rem] text-muted-foreground">
-          de <span className="line-through">{brl(DISPLAY_PRICING.bundle[c].list)}</span> por
-        </p>
+        {HAS_LAUNCH_DISCOUNT && (
+          <p className="mt-1.5 text-[0.7rem] text-muted-foreground">
+            de <span className="line-through">{brl(DISPLAY_PRICING.bundle[c].list)}</span> por
+          </p>
+        )}
         <div className="flex items-baseline gap-1">
           <span className="text-xl font-bold text-foreground">{brl(c === "yearly" ? yearly : monthly)}</span>
           <span className="text-xs text-muted-foreground">{c === "yearly" ? "/ano" : "/mês"}</span>

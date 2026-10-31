@@ -33,6 +33,14 @@ export default {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
+        offer: {
+          DEFAULT: "hsl(var(--offer))",
+          foreground: "hsl(var(--offer-foreground))",
+          muted: "hsl(var(--offer-muted))",
+          border: "hsl(var(--offer-border))",
+          accent: "hsl(var(--offer-accent))",
+          "accent-foreground": "hsl(var(--offer-accent-foreground))",
+        },
         warning: {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",

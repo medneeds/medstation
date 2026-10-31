@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
 
   const { data: purchases, error: pErr } = await admin
     .from('stripe_one_time_purchases')
-    .select('checkout_session_id, email, status, access_period, access_end')
+    .select('checkout_session_id, email, plan, status, access_period, access_end')
     .eq('access_period', 'annual_12m')
     .eq('status', 'paid')
   if (pErr) return json({ error: pErr.message }, 500)

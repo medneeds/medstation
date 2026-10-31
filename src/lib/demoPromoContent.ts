@@ -1,3 +1,5 @@
+import { DISPLAY_PRICING, brl } from "@/lib/subscription-tiers";
+
 // Pool de conteúdo rotativo para os pop-ups do demo público.
 // 3 categorias: assistentes, produtividade, oferta.
 
@@ -119,7 +121,7 @@ export const OFFER_PROMOS: PromoItem[] = [
   {
     id: "o-price",
     category: "offer",
-    title: "Plano único de R$ 49,90/mês",
+    title: `Plano único de ${brl(DISPLAY_PRICING.bundle.monthly.now)}/mês`,
     description: "A plataforma inteira: Documentação, Copiloto e Fluxo. Cancele quando quiser.",
     cta: "Assinar agora",
   },

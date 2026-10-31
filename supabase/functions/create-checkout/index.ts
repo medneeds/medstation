@@ -3,6 +3,7 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import {
   buildOneTimeLineItem,
+  BLACK_ANNUAL_PLAN_SLUG,
   getOneTimePlan,
   isAnnualPlan,
   isAsyncMethodUnavailableError,
@@ -11,7 +12,9 @@ import {
   oneTimePaymentMethodOptions,
   oneTimePaymentMethodTypes,
   oneTimePriceIdFromEnv,
+  resolveOneTimePlan,
 } from "../_shared/one-time-purchase.ts";
+import { monthlySubscriptionLineItem, pricingCohort } from "../_shared/pricing-schedule.ts";
 import { recordPurchaseAttempt } from "../_shared/purchase-attempts.ts";
 
 const corsHeaders = {
@@ -28,6 +31,7 @@ const CURRENT_PRICES: Record<string, string> = {
   pro_completo: "price_1U4Zo7ACiwQRloW4cJIn0jYn",
   pro_completo_yearly: "price_1U4ZoTACiwQRloW4f30FmEPb",
   [MONTHLY_PIX_PLAN_SLUG]: "one_time",
+  [BLACK_ANNUAL_PLAN_SLUG]: "one_time",
 };
 
 
@@ -97,6 +101,17 @@ serve(async (req) => {
       );
     }
 
+    // Black MedStation: só dentro da janela de novembro (horário de Brasília).
+    if (plan === BLACK_ANNUAL_PLAN_SLUG && !isOfferedOneTimePlan(plan)) {
+      return new Response(
+        JSON.stringify({
+          error: "A oferta Black MedStation vale só de 1 a 30 de novembro. Confira os planos na página inicial.",
+          code: "OFFER_NOT_ACTIVE",
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     // Pix retirado das opções: o plano Pix mensal não é mais vendido.
     if (getOneTimePlan(plan) && !isOfferedOneTimePlan(plan)) {
       return new Response(
@@ -142,12 +157,14 @@ serve(async (req) => {
     if (!origin) throw new Error("Request origin is required");
 
     const annual = isAnnualPlan(plan);
-    const oneTimePlan = getOneTimePlan(plan);
+    const oneTimePlan = resolveOneTimePlan(plan);
+    // Oferta fechada não acumula cupom nem desconto de indicação.
+    if (oneTimePlan?.offer) couponCode = undefined;
 
     const baseMetadata: Record<string, string> = {
       user_id: user.id,
       plan,
-      pricing_cohort: "current_unified",
+      pricing_cohort: oneTimePlan?.offer ?? pricingCohort(),
       acquisition: "authenticated_checkout",
     };
 
@@ -158,6 +175,7 @@ serve(async (req) => {
         payment_category: oneTimePlan.category,
         access_period: oneTimePlan.accessPeriod,
         access_days: String(oneTimePlan.accessDays),
+        ...(oneTimePlan.offer ? { offer: oneTimePlan.offer } : {}),
       }
       : baseMetadata;
 
@@ -174,7 +192,7 @@ serve(async (req) => {
         payment_method_options: oneTimePaymentMethodOptions(oneTimePaymentMethodTypes(oneTimePlan, true)) as
           Stripe.Checkout.SessionCreateParams.PaymentMethodOptions | undefined,
         success_url: `${origin}/obrigado?success=true&plan=${plan}&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/pricing?canceled=true`,
+        cancel_url: oneTimePlan.offer ? `${origin}/black?canceled=true` : `${origin}/pricing?canceled=true`,
         billing_address_collection: "auto",
         metadata: oneTimeMetadata,
         payment_intent_data: { metadata: oneTimeMetadata },
@@ -182,7 +200,8 @@ serve(async (req) => {
       : {
         customer: reusableCustomerId,
         customer_email: reusableCustomerId ? undefined : user.email,
-        line_items: [{ price: CURRENT_PRICES[plan], quantity: 1 }],
+        line_items: [monthlySubscriptionLineItem(CURRENT_PRICES[plan])] as
+          Stripe.Checkout.SessionCreateParams.LineItem[],
         mode: "subscription",
         success_url: `${origin}/obrigado?success=true&plan=${plan}&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/pricing?canceled=true`,

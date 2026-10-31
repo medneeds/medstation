@@ -27,10 +27,15 @@ const LandingToolExplorer = lazy(() => importLandingToolExplorer().then(m => ({ 
 import { trackCtaClick } from "@/lib/analytics";
 import { consumeLandingShellAction } from "@/lib/landingShell";
 import { useReferralCapture } from "@/hooks/useReferralCapture";
-import { DISPLAY_PRICING, brl } from "@/lib/subscription-tiers";
+import { DISPLAY_PRICING, HAS_LAUNCH_DISCOUNT, brl } from "@/lib/subscription-tiers";
+import { BlackFridayBanner } from "@/components/landing/BlackFridayBanner";
+
 import { ArrowRight, Check, Quote, Star } from "lucide-react";
 import { AnnualBonusCard } from "@/components/AnnualBonusCard";
 import { ANNUAL_BONUS } from "@/lib/annualBonus";
+
+/** Frase do topo; a cópia estática em index.html troca o mesmo texto em dezembro. */
+const HERO_PER_DAY = HAS_LAUNCH_DISCOUNT ? "Menos de R$ 2 por dia" : "Menos de R$ 3 por dia";
 
 const importSubscribeNowDialog = () => import("@/components/landing/SubscribeNowDialog");
 const SubscribeNowDialog = lazy(() => importSubscribeNowDialog().then(m => ({ default: m.SubscribeNowDialog })));
@@ -67,7 +72,9 @@ const faq = [
   },
   {
     q: "Existe diferença entre planos?",
-    a: "Não. Existe um único plano com a plataforma inteira: Documentação, Copiloto e Fluxo. No lançamento, sai de R$ 99,90 por R$ 49,90 por mês, ou de R$ 999,90 por R$ 499,90 por ano.",
+    a: HAS_LAUNCH_DISCOUNT
+      ? `Não. Existe um único plano com a plataforma inteira: Documentação, Copiloto e Fluxo. No lançamento, sai de ${brl(DISPLAY_PRICING.bundle.monthly.list)} por ${brl(DISPLAY_PRICING.bundle.monthly.now)} por mês, ou de ${brl(DISPLAY_PRICING.bundle.yearly.list)} por ${brl(DISPLAY_PRICING.bundle.yearly.now)} por ano, até 30 de novembro.`
+      : `Não. Existe um único plano com a plataforma inteira: Documentação, Copiloto e Fluxo, por ${brl(DISPLAY_PRICING.bundle.monthly.now)} por mês ou ${brl(DISPLAY_PRICING.bundle.yearly.now)} por ano.`,
   },
   {
     q: "Serve para qualquer especialidade?",
@@ -123,6 +130,8 @@ export default function Lp3() {
         description="Documentação clínica organizada, apoio à decisão no plantão e menos tarefas repetitivas na rotina. Teste 7 dias grátis, sem cartão."
       />
 
+
+      <BlackFridayBanner />
 
       <header className="sticky top-0 z-30 bg-background/85 backdrop-blur border-b border-border/50">
         <div className="container mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
@@ -196,7 +205,7 @@ export default function Lp3() {
                   Assinar agora <ArrowRight className="w-4 h-4 ml-1.5" />
                 </Button>
                 <span className="text-sm text-muted-foreground">
-                  Menos de R$ 2 por dia · <span className="text-foreground font-medium">7 dias de garantia</span>
+                  {HERO_PER_DAY} · <span className="text-foreground font-medium">7 dias de garantia</span>
                 </span>
               </div>
             </div>
@@ -329,21 +338,23 @@ export default function Lp3() {
                       </span>
                     ) : null}
                   </div>
-                  <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>
-                      de <span className="line-through">{brl(p.list)}</span>
-                    </span>
-                    <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[0.65rem] font-semibold text-primary">
-                      {Math.round((1 - p.now / p.list) * 100)}% off
-                    </span>
-                  </div>
-                  <div className="mt-0.5 flex items-baseline gap-1.5">
-                    <span className="text-sm text-muted-foreground">por</span>
+                  {HAS_LAUNCH_DISCOUNT && (
+                    <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>
+                        de <span className="line-through">{brl(p.list)}</span>
+                      </span>
+                      <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[0.65rem] font-semibold text-primary">
+                        {Math.round((1 - p.now / p.list) * 100)}% off
+                      </span>
+                    </div>
+                  )}
+                  <div className={`${HAS_LAUNCH_DISCOUNT ? "mt-0.5" : "mt-3"} flex items-baseline gap-1.5`}>
+                    {HAS_LAUNCH_DISCOUNT && <span className="text-sm text-muted-foreground">por</span>}
                     <span className="text-2xl font-bold text-primary">{brl(p.now)}</span>
                     <span className="text-sm text-muted-foreground">{cycle === "monthly" ? "/mês" : "/ano"}</span>
                   </div>
                   <div className="mt-1 text-xs text-muted-foreground">
-                    Preço de lançamento do plano único.
+                    {HAS_LAUNCH_DISCOUNT ? "Preço de lançamento, válido até 30/11." : "Plano único com tudo incluso."}
                   </div>
                   <p className="mt-3 text-xs text-muted-foreground">
                     {cycle === "monthly"
@@ -360,11 +371,14 @@ export default function Lp3() {
             })}
           </div>
 
-          <div className="mt-6 max-w-xl mx-auto rounded-xl border border-primary/25 bg-background px-4 py-3 text-center text-xs md:text-sm">
-            <strong className="text-primary">Preço de lançamento:</strong> o valor cheio da MedStation é{" "}
-            {brl(DISPLAY_PRICING.bundle.monthly.list)}/mês ou {brl(DISPLAY_PRICING.bundle.yearly.list)}/ano.
-            Assinando agora, você paga metade e mantém esse valor enquanto a assinatura estiver ativa.
-          </div>
+          {HAS_LAUNCH_DISCOUNT && (
+            <div className="mt-6 max-w-xl mx-auto rounded-xl border border-primary/25 bg-background px-4 py-3 text-center text-xs md:text-sm">
+              <strong className="text-primary">Preço de lançamento até 30 de novembro:</strong> a partir de 1º de
+              dezembro o valor passa a {brl(DISPLAY_PRICING.bundle.monthly.list)}/mês ou{" "}
+              {brl(DISPLAY_PRICING.bundle.yearly.list)}/ano. Assinando agora, você paga metade e mantém esse valor
+              enquanto a assinatura estiver ativa.
+            </div>
+          )}
 
           <AnnualBonusCard className="mt-6 max-w-xl mx-auto text-left" />
 

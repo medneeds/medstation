@@ -1,7 +1,11 @@
 // Catálogo único de compras avulsas (one-time) da MedStation.
 // Mensal no cartão continua sendo ASSINATURA RECORRENTE e não passa por aqui.
 // Aqui vivem: Anual à vista (12 meses, cartão ou boleto) e o Pix mensal
-// (30 dias) — este último fora da vitrine: o Pix foi retirado das opções.
+// (30 dias) — este último fora da vitrine: o Pix foi retirado das opções —
+// e a oferta Black MedStation (anual a R$ 399,90 só em novembro/2026, sem o
+// bônus Arsenal Med). Valores que mudam com a data saem de pricing-schedule.ts.
+
+import { BLACK_OFFER, isBlackActive, pricePhase, PRICE_TABLE } from "./pricing-schedule.ts";
 
 export type PaymentCategory =
   | "recurring_card_monthly"
@@ -21,9 +25,11 @@ export type RecoveryStatus = "not_needed" | "eligible" | "contacted" | "recovere
 
 export const ANNUAL_PLAN_SLUG = "pro_completo_yearly";
 export const MONTHLY_PIX_PLAN_SLUG = "pix_monthly_30d";
+export const BLACK_ANNUAL_PLAN_SLUG = BLACK_OFFER.slug;
 
 export const ANNUAL_PURPOSE = "annual_one_time_access";
 export const MONTHLY_PIX_PURPOSE = "monthly_pix_one_time_access";
+export const BLACK_ANNUAL_PURPOSE = "black_annual_one_time_access";
 
 export const ANNUAL_PRODUCT_ID = "prod_V4jGKeBPH2hGYg";
 export const ONE_TIME_CURRENCY = "brl";
@@ -45,6 +51,10 @@ export type OneTimePlan = {
   /** Env var opcional com um Price one-time dedicado. */
   priceEnvVar: string;
   label: string;
+  /** Compra que dá direito ao bônus Arsenal Med (a Black não dá). */
+  includesArsenalBonus: boolean;
+  /** Etiqueta de campanha gravada na compra (metadata.offer). */
+  offer?: string;
 };
 
 export const ONE_TIME_PLANS: Record<string, OneTimePlan> = {
@@ -62,6 +72,26 @@ export const ONE_TIME_PLANS: Record<string, OneTimePlan> = {
     paymentMethodTypes: ["card", "boleto"],
     priceEnvVar: "STRIPE_ANNUAL_ONETIME_PRICE_ID",
     label: "MedStation Completo — 12 meses à vista",
+    includesArsenalBonus: true,
+  },
+  [BLACK_ANNUAL_PLAN_SLUG]: {
+    slug: BLACK_ANNUAL_PLAN_SLUG,
+    purpose: BLACK_ANNUAL_PURPOSE,
+    amountCents: BLACK_OFFER.amountCents,
+    currency: ONE_TIME_CURRENCY,
+    productId: ANNUAL_PRODUCT_ID,
+    category: "annual_one_time",
+    accessPeriod: "annual_12m",
+    accessDays: 365,
+    allowCardFallback: true,
+    // Vendido só dentro da janela da Black: ver resolveOneTimePlan.
+    offered: false,
+    paymentMethodTypes: ["card", "boleto"],
+    // Sempre price_data com o valor da oferta: nenhum Price por env.
+    priceEnvVar: "",
+    label: "MedStation Completo — 12 meses (Black MedStation)",
+    includesArsenalBonus: false,
+    offer: "black_2026",
   },
   [MONTHLY_PIX_PLAN_SLUG]: {
     slug: MONTHLY_PIX_PLAN_SLUG,
@@ -81,12 +111,39 @@ export const ONE_TIME_PLANS: Record<string, OneTimePlan> = {
     // price por env é aceito para este plano.
     priceEnvVar: "",
     label: "MedStation Completo — 30 dias via Pix",
+    includesArsenalBonus: false,
   },
 };
 
 export function getOneTimePlan(plan: string | undefined | null): OneTimePlan | null {
   if (!plan) return null;
   return ONE_TIME_PLANS[plan] ?? null;
+}
+
+/**
+ * Plano com os valores do momento: o anual passa a R$ 999,90 quando o preço de
+ * lançamento acaba (o Price por env de R$ 499,90 deixa de valer) e a Black só
+ * fica à venda dentro da janela de novembro.
+ */
+export function resolveOneTimePlan(
+  plan: string | undefined | null,
+  now: Date | number = Date.now(),
+): OneTimePlan | null {
+  const base = getOneTimePlan(plan);
+  if (!base) return null;
+  if (base.slug === ANNUAL_PLAN_SLUG && pricePhase(now) === "full") {
+    return { ...base, amountCents: PRICE_TABLE.full.yearlyCents, priceEnvVar: "" };
+  }
+  if (base.slug === BLACK_ANNUAL_PLAN_SLUG) {
+    return { ...base, offered: isBlackActive(now) };
+  }
+  return { ...base };
+}
+
+/** Compra que não dá direito ao bônus Arsenal Med (ex.: Black). */
+export function planExcludesArsenalBonus(plan: string | undefined | null): boolean {
+  const found = getOneTimePlan(plan);
+  return found ? !found.includesArsenalBonus : false;
 }
 
 export function isOneTimePlan(plan: string | undefined | null): boolean {
@@ -190,8 +247,11 @@ export function isAsyncMethodUnavailableError(message: string): boolean {
 }
 
 /** Plano avulso que ainda pode ser vendido (o Pix mensal saiu da vitrine). */
-export function isOfferedOneTimePlan(plan: string | undefined | null): boolean {
-  return getOneTimePlan(plan)?.offered === true;
+export function isOfferedOneTimePlan(
+  plan: string | undefined | null,
+  now: Date | number = Date.now(),
+): boolean {
+  return resolveOneTimePlan(plan, now)?.offered === true;
 }
 
 export type MinimalCheckoutSession = {
