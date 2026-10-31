@@ -41,8 +41,8 @@ const faq = [
     a: "Pode. Use o mesmo e-mail da sua conta: os 12 meses entram assim que o pagamento for confirmado.",
   },
   {
-    q: "O bônus Arsenal Med vem junto?",
-    a: "Não. O Arsenal Med continua exclusivo do plano anual regular. A Black é o preço mais baixo do ano para a MedStation, sem bônus. Cupons e descontos de indicação também não se somam à oferta.",
+    q: "Posso usar cupom junto?",
+    a: "A Black já é o menor preço do ano para a MedStation, por isso cupons e descontos de indicação não se somam a ela.",
   },
   {
     q: "Já sou assinante mensal. Como faço?",
@@ -301,7 +301,7 @@ export default function Black() {
           <div>
             <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">Tudo o que entra no seu ano</h2>
             <p className="mt-3 text-muted-foreground">
-              A mesma MedStation completa do plano anual, sem limite de uso dos assistentes.
+              A MedStation completa, com todos os assistentes e sem limite de uso.
             </p>
             <ul className="mt-6 space-y-3">
               {included.map((item) => (
@@ -346,11 +346,11 @@ export default function Black() {
             </p>
           </div>
           <div className="rounded-2xl border border-border bg-card p-5 md:p-6">
-            <X className="w-6 h-6 text-muted-foreground" />
-            <h3 className="mt-3 text-base font-semibold">O que esta oferta não inclui</h3>
+            <Lock className="w-6 h-6 text-primary" />
+            <h3 className="mt-3 text-base font-semibold">Seu preço fica travado por 12 meses</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              O bônus Arsenal Med, que segue exclusivo do plano anual regular. Cupons e descontos de indicação também
-              não se somam à Black.
+              Pagou uma vez, está garantido. Em dezembro a MedStation sobe para {brl(ANCHOR)} por ano, e você segue o
+              ano inteiro sem nenhum reajuste.
             </p>
           </div>
         </section>
