@@ -9,6 +9,8 @@
  * pagamento anual (id da sessão de checkout ou da assinatura) consegue liberar.
  */
 
+import { planExcludesArsenalBonus } from "./one-time-purchase.ts";
+
 export const ARSENAL_BONUS_ENDPOINT = "https://arsenalmed.com.br/api/public/medstation-bonus";
 
 /**
@@ -26,6 +28,8 @@ export function isBonusReference(value: unknown): value is string {
 
 export type BonusPurchaseRow = {
   email: string | null;
+  /** Slug do plano comprado; compras da Black não dão direito ao bônus. */
+  plan?: string | null;
   status: string;
   access_period: string | null;
   access_end: string | null;
@@ -57,6 +61,7 @@ function cleanEmail(value: string | null | undefined): string | null {
 /** Compra anual à vista: paga, período anual e ainda vigente. */
 export function purchaseEligibility(row: BonusPurchaseRow | null, now = Date.now()): BonusEligibility {
   if (!row || row.status !== "paid" || row.access_period !== "annual_12m") return NOT_ELIGIBLE;
+  if (planExcludesArsenalBonus(row.plan)) return NOT_ELIGIBLE;
   const email = cleanEmail(row.email);
   const until = futureIso(row.access_end, now);
   return email && until ? { eligible: true, email, access_until: until } : NOT_ELIGIBLE;

@@ -8,6 +8,7 @@ import { notifyArsenalBonus } from "../_shared/arsenal-bonus.ts";
 import {
   computeAccessWindow,
   normalizePaymentMethod,
+  planExcludesArsenalBonus,
   planFromSession,
   recoveryStatusForOutcome,
   shouldGrantOneTimeAccess,
@@ -304,7 +305,9 @@ async function grantOneTimeAccess(
       .in("recovery_status", ["eligible", "contacted"]);
   }
 
-  if (accessPeriod === "annual_12m") {
+  // A Black MedStation (anual a R$ 399,90) não dá direito ao Arsenal Med.
+  const bonusExcluded = planExcludesArsenalBonus(session.metadata?.plan ?? plan?.slug);
+  if (accessPeriod === "annual_12m" && !bonusExcluded) {
     await deliverAnnualBonus(supabase, email ?? null, session.id);
   }
 
