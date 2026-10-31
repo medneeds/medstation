@@ -63,7 +63,8 @@ type LinkIssueRow = {
  * Auditoria de vazamento: todo pagamento ATIVO precisa estar ligado a uma conta
  * existente, de preferência com o mesmo e-mail do pagamento.
  */
-async function auditPaymentLinks(supabase: ReturnType<typeof createClient>): Promise<LinkIssueRow[] | null> {
+// deno-lint-ignore no-explicit-any
+async function auditPaymentLinks(supabase: any): Promise<LinkIssueRow[] | null> {
   try {
     const nowIso = new Date().toISOString();
     const [{ data: subs }, { data: purchases }] = await Promise.all([

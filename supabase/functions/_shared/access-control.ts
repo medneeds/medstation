@@ -122,7 +122,7 @@ async function stripeAccess(
   // e-mail alterado, duplicidade). Verificar apenas o primeiro bloqueava pagantes.
   // Além do e-mail, valem os clientes já ligados à conta: quem pagou com outro
   // e-mail não perde o acesso depois que o pagamento é ligado à conta certa.
-  const byEmail = email ? (await stripe.customers.list({ email, limit: 10 })).data.map((c) => c.id) : [];
+  const byEmail = email ? (await stripe.customers.list({ email, limit: 10 })).data.map((c: { id: string }) => c.id) : [];
   const customerIds = collectCustomerIds(byEmail, await linkedCustomerIds(supabase, userId));
   if (!customerIds.length) return null;
 

@@ -394,7 +394,7 @@ async function grantOneTimeAccess(
 async function resolvePaymentMethod(
   stripe: Stripe,
   session: Stripe.Checkout.Session,
-): Promise<"card" | "pix" | "unknown"> {
+): Promise<"card" | "pix" | "boleto" | "unknown"> {
   const direct = normalizePaymentMethod(session.payment_method_types);
   if (direct !== "unknown") return direct;
   const intentId = objectId(session.payment_intent);
