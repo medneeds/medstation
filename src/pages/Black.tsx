@@ -652,8 +652,8 @@ export default function Black() {
           </div>
         )}
 
-        <FounderSection />
         <RealUsersCarousel />
+        <FounderSection />
 
         <section className="grid md:grid-cols-3 gap-4 md:gap-6">
           {highlights.map((h, i) => (
