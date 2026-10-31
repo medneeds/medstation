@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ArrowRight, Check, Loader2, Lock, ShieldCheck, X } from "lucide-react";
+import { ArrowRight, Check, Loader2, Lock, ShieldCheck } from "lucide-react";
 import { Seo } from "@/components/Seo";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
