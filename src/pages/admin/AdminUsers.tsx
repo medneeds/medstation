@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Search, RefreshCw, Gift, KeyRound, Loader2, ShieldCheck, ShieldOff, Gift as GiftIcon, MessageCircle } from "lucide-react";
 import { PasswordResetPanel } from "@/components/admin/PasswordResetPanel";
+import { AdminSetPasswordForm } from "@/components/admin/AdminSetPasswordForm";
 
 export function whatsappUrl(phone?: string | null): string | null {
   if (!phone) return null;
@@ -297,6 +298,9 @@ export default function AdminUsers() {
 function UserDetailSheet({ user, onClose, onChanged }: { user: UserRow | null; onClose: () => void; onChanged: () => void }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [roles, setRoles] = useState<string[]>([]);
+  const [showSetPassword, setShowSetPassword] = useState(false);
+  useEffect(() => { setShowSetPassword(false); }, [user?.user_id]);
+
 
   useEffect(() => {
     if (!user) return;
@@ -448,6 +452,19 @@ function UserDetailSheet({ user, onClose, onChanged }: { user: UserRow | null; o
                 <Button variant="outline" size="sm" className="w-full justify-start" onClick={resetPassword} disabled={busy === "reset"}>
                   <KeyRound className="h-4 w-4 mr-2" /> {busy === "reset" ? "Enviando..." : "Enviar redefinição de senha"}
                 </Button>
+                <Button
+                  variant={showSetPassword ? "secondary" : "outline"}
+                  size="sm"
+                  className="w-full justify-start"
+                  onClick={() => setShowSetPassword((v) => !v)}
+                >
+                  <KeyRound className="h-4 w-4 mr-2" /> Definir senha agora
+                </Button>
+                {showSetPassword && user.email && (
+                  <div className="rounded-md border border-border/60 p-3">
+                    <AdminSetPasswordForm key={user.user_id} initialEmail={user.email} lockEmail />
+                  </div>
+                )}
                 <Button variant="outline" size="sm" className="w-full justify-start" onClick={grantCourtesy} disabled={busy === "courtesy"}>
                   <Gift className="h-4 w-4 mr-2" /> {busy === "courtesy" ? "Concedendo..." : "Conceder cortesia"}
                 </Button>
