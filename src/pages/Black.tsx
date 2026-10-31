@@ -327,14 +327,30 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
         <span className="text-5xl md:text-6xl font-bold tracking-tight">{brl(PRICE)}</span>
         <span className="text-sm text-muted-foreground">/ano</span>
       </div>
+      <p className="mt-1 text-sm font-medium text-foreground">
+        ou em até <span className="text-offer-gold font-semibold">12x no cartão</span>
+      </p>
       <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
         <span className="rounded-full bg-offer-gold/20 px-2.5 py-1 font-semibold text-foreground">
           Você economiza {brl(SAVINGS)}
         </span>
-        <span className="text-muted-foreground">Pagamento único · {brl(PER_MONTH)}/mês</span>
+        <span className="text-muted-foreground">Menos de {brl(Math.ceil(PER_DAY * 100) / 100)} por dia</span>
       </div>
 
+      {upcoming && vipSaved ? (
+        <div className="mt-6 rounded-xl border border-offer-gold/50 bg-offer-gold/10 p-4 text-sm" role="status">
+          <p className="font-semibold">Pronto, você está na lista VIP.</p>
+          <p className="mt-1 text-muted-foreground">
+            Assim que a Black abrir, à meia-noite de 1º de novembro, é só voltar a esta página e garantir o seu ano.
+          </p>
+        </div>
+      ) : (
       <div className="mt-6 space-y-3">
+        {upcoming && (
+          <p className="rounded-lg bg-offer-hot/10 px-3 py-2 text-xs text-foreground">
+            A Black abre à meia-noite de 1º de novembro. Entre na lista VIP e seja avisado primeiro.
+          </p>
+        )}
         {sessionEmail ? (
           <p className="rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
             Você vai assinar com a conta <span className="font-medium text-foreground">{sessionEmail}</span>.
@@ -352,11 +368,29 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
               placeholder="voce@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              disabled={status !== "active" || loading}
+              disabled={loading}
               className="mt-1.5 h-12"
               required
             />
             <p className="mt-1 text-[0.7rem] text-muted-foreground">Se já tem conta na MedStation, use o mesmo e-mail.</p>
+          </div>
+        )}
+        {upcoming && (
+          <div>
+            <label htmlFor="black-phone" className="text-xs font-medium">
+              WhatsApp (opcional)
+            </label>
+            <Input
+              id="black-phone"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              placeholder="(11) 99999-9999"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value.slice(0, 20))}
+              disabled={loading}
+              className="mt-1.5 h-12"
+            />
           </div>
         )}
         <Button
@@ -364,19 +398,21 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
           className={cn(
             "relative w-full h-14 text-base md:text-lg overflow-hidden",
             GOLD_BUTTON,
-            status === "active" && !loading && "motion-safe:animate-cta-pulse",
+            !loading && "motion-safe:animate-cta-pulse",
           )}
-          disabled={status !== "active" || loading}
+          disabled={loading}
         >
-          {status === "active" && !loading && (
+          {!loading && (
             <span className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-offer-foreground/40 to-transparent motion-safe:animate-brand-sweep" />
           )}
           {loading ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Abrindo pagamento...
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" /> {upcoming ? "Salvando..." : "Abrindo pagamento..."}
             </>
-          ) : status === "upcoming" ? (
-            "Disponível a partir de 1º de novembro"
+          ) : upcoming ? (
+            <>
+              Quero entrar na lista VIP <ArrowRight className="w-5 h-5 ml-1.5" />
+            </>
           ) : (
             <>
               {CTA_LABEL} <ArrowRight className="w-5 h-5 ml-1.5" />
@@ -384,10 +420,11 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
           )}
         </Button>
       </div>
+      )}
 
       <ul className="mt-5 grid gap-1.5 text-xs text-muted-foreground">
         <li className="flex items-center gap-2">
-          <Lock className="w-3.5 h-3.5 text-primary" /> Cartão ou boleto, em ambiente seguro
+          <Lock className="w-3.5 h-3.5 text-primary" /> Cartão em até 12x ou boleto, em ambiente seguro
         </li>
         <li className="flex items-center gap-2">
           <ShieldCheck className="w-3.5 h-3.5 text-primary" /> 7 dias de garantia incondicional
