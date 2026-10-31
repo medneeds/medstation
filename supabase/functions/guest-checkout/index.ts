@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import {
   buildOneTimeLineItem,
+  BLACK_ANNUAL_PLAN_SLUG,
   getOneTimePlan,
   isAnnualPlan,
   isAsyncMethodUnavailableError,
@@ -10,7 +11,9 @@ import {
   oneTimePaymentMethodOptions,
   oneTimePaymentMethodTypes,
   oneTimePriceIdFromEnv,
+  resolveOneTimePlan,
 } from "../_shared/one-time-purchase.ts";
+import { monthlySubscriptionLineItem, pricingCohort } from "../_shared/pricing-schedule.ts";
 import { recordPurchaseAttempt } from "../_shared/purchase-attempts.ts";
 
 const corsHeaders = {
@@ -27,6 +30,7 @@ const CURRENT_PRICES: Record<string, string> = {
   pro_completo: "price_1U4Zo7ACiwQRloW4cJIn0jYn",
   pro_completo_yearly: "price_1U4ZoTACiwQRloW4f30FmEPb",
   [MONTHLY_PIX_PLAN_SLUG]: "one_time",
+  [BLACK_ANNUAL_PLAN_SLUG]: "one_time",
 };
 
 
@@ -39,7 +43,7 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const email = body.email?.trim().toLowerCase();
     const billingPeriod = body.billingPeriod || "monthly";
-    const couponCode = body.couponCode?.trim();
+    let couponCode: string | undefined = body.couponCode?.trim();
     const requestedPlan: string | undefined = body.plan;
     const plan = requestedPlan || (billingPeriod === "yearly" ? "pro_completo_yearly" : "pro_completo");
 
@@ -48,6 +52,17 @@ serve(async (req) => {
         JSON.stringify({
           error: "Este plano legado não está mais disponível para novas contratações. Escolha o plano único MedStation Completo.",
           code: "LEGACY_PLAN_RETIRED",
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // Black MedStation: só dentro da janela de novembro (horário de Brasília).
+    if (plan === BLACK_ANNUAL_PLAN_SLUG && !isOfferedOneTimePlan(plan)) {
+      return new Response(
+        JSON.stringify({
+          error: "A oferta Black MedStation vale só de 1 a 30 de novembro. Confira os planos na página inicial.",
+          code: "OFFER_NOT_ACTIVE",
         }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
@@ -98,12 +113,14 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://medstation-ai.com.br";
     const annual = isAnnualPlan(plan);
-    const oneTimePlan = getOneTimePlan(plan);
+    const oneTimePlan = resolveOneTimePlan(plan);
+    // Oferta fechada não acumula cupom nem desconto de indicação.
+    if (oneTimePlan?.offer) couponCode = undefined;
 
     const baseMetadata: Record<string, string> = {
       plan,
       billing_period: billingPeriod,
-      pricing_cohort: "current_unified",
+      pricing_cohort: oneTimePlan?.offer ?? pricingCohort(),
       acquisition: "guest_checkout",
     };
 
@@ -114,6 +131,7 @@ serve(async (req) => {
         payment_category: oneTimePlan.category,
         access_period: oneTimePlan.accessPeriod,
         access_days: String(oneTimePlan.accessDays),
+        ...(oneTimePlan.offer ? { offer: oneTimePlan.offer } : {}),
       }
       : baseMetadata;
 
@@ -130,7 +148,7 @@ serve(async (req) => {
         payment_method_options: oneTimePaymentMethodOptions(oneTimePaymentMethodTypes(oneTimePlan, true)) as
           Stripe.Checkout.SessionCreateParams.PaymentMethodOptions | undefined,
         success_url: `${origin}/obrigado?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/?canceled=true`,
+        cancel_url: oneTimePlan.offer ? `${origin}/black?canceled=true` : `${origin}/?canceled=true`,
         billing_address_collection: "auto",
         metadata: oneTimeMetadata,
         payment_intent_data: { metadata: oneTimeMetadata },
@@ -138,7 +156,8 @@ serve(async (req) => {
       : {
         customer: reusableCustomerId,
         customer_email: reusableCustomerId ? undefined : email,
-        line_items: [{ price: CURRENT_PRICES[plan], quantity: 1 }],
+        line_items: [monthlySubscriptionLineItem(CURRENT_PRICES[plan])] as
+          Stripe.Checkout.SessionCreateParams.LineItem[],
         mode: "subscription",
         success_url: `${origin}/obrigado?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/?canceled=true`,
