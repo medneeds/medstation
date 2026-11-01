@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CheckCircle2, Copy, FileText, Loader2, Save, AlertTriangle, Circle, FolderPlus, Folder, Check, X } from "lucide-react";
+import { CheckCircle2, Copy, FileText, Loader2, Save, AlertTriangle, Circle, FolderPlus, Folder, Check, X, Eye } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import type { CaseFolder } from "@/hooks/useCaseFolders";
 
@@ -31,6 +32,10 @@ interface FinalizeFlowProps {
   isSavingCase: boolean;
   savedCaseId: string | null;
   onSaveCase: () => void;
+  /** Texto final da anamnese, para ler antes de copiar ou salvar. */
+  anamnesisText: string;
+  /** Transcrição completa da consulta, no mesmo formato da cópia. */
+  transcriptText: string;
   onCopyAnamnesis: () => void;
   onCopyTranscript: () => void;
   onRetry: () => void;
@@ -66,6 +71,8 @@ export function FinalizeFlow({
 
   savedCaseId,
   onSaveCase,
+  anamnesisText,
+  transcriptText,
   onCopyAnamnesis,
   onCopyTranscript,
   onRetry,
@@ -76,6 +83,7 @@ export function FinalizeFlow({
   const progressRef = useRef(4);
   const [isNewFolder, setIsNewFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
+  const [viewing, setViewing] = useState<"anamnesis" | "transcript" | null>(null);
 
   const handleCreateFolder = async () => {
     const created = await onCreateFolder(newFolderName);
@@ -216,17 +224,72 @@ export function FinalizeFlow({
 
         {/* Ações */}
         {phase === "done" && (
-          <div className="flex flex-wrap gap-2 pt-1">
-            <Button variant="outline" size="sm" className="gap-2 flex-1 sm:flex-none" onClick={onCopyAnamnesis}>
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            {/* Anamnese: ver e copiar lado a lado */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 min-h-11 md:min-h-0"
+              onClick={() => setViewing("anamnesis")}
+              disabled={!anamnesisText.trim()}
+            >
+              <Eye className="h-4 w-4" />
+              <span className="text-xs md:text-sm">Ver anamnese</span>
+            </Button>
+            <Button variant="outline" size="sm" className="gap-2 min-h-11 md:min-h-0" onClick={onCopyAnamnesis}>
               <FileText className="h-4 w-4" />
               <span className="text-xs md:text-sm">Copiar anamnese</span>
             </Button>
-            <Button variant="outline" size="sm" className="gap-2 flex-1 sm:flex-none" onClick={onCopyTranscript}>
+            {/* Transcrição: ver e copiar lado a lado */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 min-h-11 md:min-h-0"
+              onClick={() => setViewing("transcript")}
+              disabled={!transcriptText.trim()}
+            >
+              <Eye className="h-4 w-4" />
+              <span className="text-xs md:text-sm">Ver transcrição</span>
+            </Button>
+            <Button variant="outline" size="sm" className="gap-2 min-h-11 md:min-h-0" onClick={onCopyTranscript}>
               <Copy className="h-4 w-4" />
               <span className="text-xs md:text-sm">Copiar transcrição</span>
             </Button>
           </div>
         )}
+
+        <Dialog open={viewing !== null} onOpenChange={(open) => !open && setViewing(null)}>
+          <DialogContent className="z-[70] flex max-h-[85vh] w-[calc(100vw-1.5rem)] max-w-2xl flex-col gap-3 p-4 md:p-6">
+            <DialogHeader>
+              <DialogTitle>{viewing === "transcript" ? "Transcrição da consulta" : "Anamnese"}</DialogTitle>
+              <DialogDescription>
+                {viewing === "transcript"
+                  ? "Tudo o que foi captado na consulta, como foi falado."
+                  : "Confira antes de copiar para o prontuário ou salvar o caso."}
+              </DialogDescription>
+            </DialogHeader>
+            <div
+              className="min-h-0 flex-1 overflow-y-auto rounded-md border bg-muted/30 p-3 text-sm leading-relaxed whitespace-pre-wrap break-words"
+              tabIndex={0}
+              aria-label={viewing === "transcript" ? "Texto da transcrição" : "Texto da anamnese"}
+            >
+              {viewing === "transcript" ? transcriptText : anamnesisText}
+            </div>
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button variant="ghost" size="sm" className="min-h-11 md:min-h-0" onClick={() => setViewing(null)}>
+                Fechar
+              </Button>
+              <Button
+                size="sm"
+                className="gap-2 min-h-11 md:min-h-0"
+                onClick={viewing === "transcript" ? onCopyTranscript : onCopyAnamnesis}
+              >
+                <Copy className="h-4 w-4" />
+                {viewing === "transcript" ? "Copiar transcrição" : "Copiar anamnese"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {phase === "error" && (
           <Button variant="default" size="sm" className="gap-2" onClick={onRetry}>
