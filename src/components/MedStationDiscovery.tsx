@@ -16,7 +16,7 @@ import {
 
 /**
  * Home interna orientada a 3 caminhos de trabalho:
- * Documentação, Copiloto e Fluxo.
+ * Documentação, Decisão e Fluxo.
  * "Descubra a MedStation" é apenas a camada de explicação — não é um pilar.
  */
 export function MedStationDiscovery() {

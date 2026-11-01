@@ -113,7 +113,7 @@ export function PremiumConsultorioGuard({ children }: PremiumConsultorioGuardPro
                   <span className="text-muted-foreground">/mês</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Tudo incluso: Documentação, Copiloto e Fluxo. Ou {brl(DISPLAY_PRICING.bundle.yearly.now)}/ano.
+                  Tudo incluso: Documentação, Decisão e Fluxo. Ou {brl(DISPLAY_PRICING.bundle.yearly.now)}/ano.
                 </p>
               </div>
               <Button

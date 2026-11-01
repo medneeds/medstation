@@ -82,7 +82,7 @@ export function PremiumAgentGuard({ children, agentName }: PremiumAgentGuardProp
             </div>
             <CardTitle className="text-2xl">Assistente Premium</CardTitle>
             <CardDescription className="text-base mt-2">
-              {agentName} faz parte da assinatura MedStation. Todo novo cadastro usa a plataforma inteira por 7 dias, sem cartão. Depois disso, é a assinatura que mantém a plataforma inteira liberada: Documentação, Copiloto e Fluxo.
+              {agentName} faz parte da assinatura MedStation. Todo novo cadastro usa a plataforma inteira por 7 dias, sem cartão. Depois disso, é a assinatura que mantém a plataforma inteira liberada: Documentação, Decisão e Fluxo.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">

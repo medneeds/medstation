@@ -25,6 +25,7 @@ import { MedStationDiscovery, AllToolsSection } from "@/components/MedStationDis
 import { FreeExaminusSpotlight } from "@/components/FreeExaminusSpotlight";
 import { AnnualBonusCard } from "@/components/AnnualBonusCard";
 import { VaultSpotlight } from "@/components/VaultSpotlight";
+import { CopilotChat } from "@/components/copilot/CopilotChat";
 
 const agentModules = [
   {
@@ -146,6 +147,9 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Copiloto aberto na entrada: dúvidas de uso e atalho para o assistente certo */}
+      <CopilotChat variant="card" />
+
       <VaultSpotlight />
 
       {/* Descoberta orientada a 3 caminhos — dominante */}

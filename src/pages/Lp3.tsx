@@ -48,7 +48,7 @@ const SubscribeNowDialog = lazy(() => importSubscribeNowDialog().then(m => ({ de
 
 const proof = [
   { value: "Documentação", label: "texto clínico pronto para revisão" },
-  { value: "Copiloto", label: "apoio de raciocínio no plantão" },
+  { value: "Decisão", label: "apoio de raciocínio no plantão" },
   { value: "Fluxo", label: "menos trabalho repetitivo na rotina" },
 ];
 
@@ -57,7 +57,7 @@ const proof = [
 const faq = [
   {
     q: "Como funciona o teste de 7 dias?",
-    a: "Você informa apenas o e-mail e recebe um link seguro de acesso. Durante 7 dias a plataforma inteira fica liberada: Documentação, Copiloto e Fluxo. Não pedimos cartão de crédito em momento nenhum do teste.",
+    a: "Você informa apenas o e-mail e recebe um link seguro de acesso. Durante 7 dias a plataforma inteira fica liberada: Documentação, Decisão e Fluxo. Não pedimos cartão de crédito em momento nenhum do teste.",
   },
 
   {
@@ -67,8 +67,8 @@ const faq = [
   {
     q: "Existe diferença entre planos?",
     a: HAS_LAUNCH_DISCOUNT
-      ? `Não. Existe um único plano com a plataforma inteira: Documentação, Copiloto e Fluxo. Até 30 de novembro, o preço de lançamento é ${brl(DISPLAY_PRICING.bundle.monthly.now)} por mês ou ${brl(DISPLAY_PRICING.bundle.yearly.now)} por ano. A partir de 1º de dezembro, passa a ${brl(DISPLAY_PRICING.bundle.monthly.list)} por mês ou ${brl(DISPLAY_PRICING.bundle.yearly.list)} por ano.`
-      : `Não. Existe um único plano com a plataforma inteira: Documentação, Copiloto e Fluxo, por ${brl(DISPLAY_PRICING.bundle.monthly.now)} por mês ou ${brl(DISPLAY_PRICING.bundle.yearly.now)} por ano.`,
+      ? `Não. Existe um único plano com a plataforma inteira: Documentação, Decisão e Fluxo. Até 30 de novembro, o preço de lançamento é ${brl(DISPLAY_PRICING.bundle.monthly.now)} por mês ou ${brl(DISPLAY_PRICING.bundle.yearly.now)} por ano. A partir de 1º de dezembro, passa a ${brl(DISPLAY_PRICING.bundle.monthly.list)} por mês ou ${brl(DISPLAY_PRICING.bundle.yearly.list)} por ano.`
+      : `Não. Existe um único plano com a plataforma inteira: Documentação, Decisão e Fluxo, por ${brl(DISPLAY_PRICING.bundle.monthly.now)} por mês ou ${brl(DISPLAY_PRICING.bundle.yearly.now)} por ano.`,
   },
   {
     q: "Serve para qualquer especialidade?",
@@ -296,7 +296,7 @@ export default function Lp3() {
               Um plantão de burocracia custa mais caro
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Um único plano com a plataforma inteira: Documentação, Copiloto e Fluxo.
+              Um único plano com a plataforma inteira: Documentação, Decisão e Fluxo.
               Sem módulos separados, sem upgrade escondido.
             </p>
           </div>

@@ -185,7 +185,7 @@ const PATH_REASON: Record<DiscoveryPathId, string> = {
   documentation:
     "Suas respostas indicam maior esforço na produção de texto clínico. O caminho Documentação concentra as ferramentas que geram registros prontos para revisão.",
   copilot:
-    "Suas respostas indicam necessidade de apoio para decidir e calcular durante o atendimento. O caminho Copiloto reúne consulta, cálculo e discussão clínica.",
+    "Suas respostas indicam necessidade de apoio para decidir e calcular durante o atendimento. O caminho Decisão reúne consulta, cálculo e discussão clínica.",
   workflow:
     "Suas respostas indicam trabalho repetitivo ao longo da rotina. O caminho Fluxo integra voz, evolução de leitos e continuidade entre os dias.",
 };

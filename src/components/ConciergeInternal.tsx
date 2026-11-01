@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AssistentesAIChat } from "@/components/AssistentesAIChat";
+import { CopilotChat } from "@/components/copilot/CopilotChat";
 import { cn } from "@/lib/utils";
 
 type Guide = {
@@ -228,7 +228,8 @@ export function ConciergeInternal({
 }) {
   const navigate = useNavigate();
   const setOpen = onOpenChange;
-  const [tab, setTab] = useState<"guia" | "perguntar">("guia");
+  // O Copiloto abre direto na conversa; o guia por escrito fica na outra aba.
+  const [tab, setTab] = useState<"guia" | "perguntar">("perguntar");
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState<(typeof GROUPS)[number]>("Todos");
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -285,7 +286,7 @@ export function ConciergeInternal({
             : "opacity-0 -translate-y-2 scale-[0.98] pointer-events-none",
         )}
         role="dialog"
-        aria-label="Concierge MedStation"
+        aria-label="Copiloto MedStation"
         aria-hidden={!open}
       >
         <div className="relative flex h-[calc(100vh-5rem)] max-h-[640px] sm:h-[600px] flex-col rounded-3xl border border-border/60 bg-card/90 backdrop-blur-xl overflow-hidden shadow-[0_24px_70px_-40px_hsl(var(--primary)/0.5)]">
@@ -294,9 +295,9 @@ export function ConciergeInternal({
               <Sparkles className="w-4 h-4 text-primary" />
             </div>
             <div className="leading-tight min-w-0">
-              <p className="text-[15px] font-semibold truncate">Concierge MedStation</p>
+              <p className="text-[15px] font-semibold truncate">Copiloto MedStation</p>
               <p className="text-[11px] text-muted-foreground truncate">
-                Descubra tudo o que dá para fazer aqui dentro
+                Tire o melhor proveito da plataforma
               </p>
             </div>
             <Button
@@ -304,7 +305,7 @@ export function ConciergeInternal({
               size="icon"
               className="ml-auto h-8 w-8 rounded-full"
               onClick={() => setOpen(false)}
-              aria-label="Fechar concierge"
+              aria-label="Fechar Copiloto"
             >
               <X className="h-4 w-4" />
             </Button>
@@ -314,8 +315,8 @@ export function ConciergeInternal({
           <div className="flex gap-1 px-4 pt-3">
             {(
               [
-                { id: "guia", label: "Guia", icon: BookOpen },
                 { id: "perguntar", label: "Perguntar", icon: MessageCircleQuestion },
+                { id: "guia", label: "Guia", icon: BookOpen },
               ] as const
             ).map((t) => (
               <button
@@ -474,19 +475,7 @@ export function ConciergeInternal({
             </>
           ) : (
             <div className="flex-1 min-h-0 p-3">
-              <AssistentesAIChat
-                className="h-full border-0 shadow-none bg-transparent rounded-2xl"
-                title="Perguntar ao Concierge"
-                subtitle="Explico qualquer recurso da plataforma e por onde começar"
-                welcome="Pode perguntar: como uso o Modo Rotineiro? Qual assistente serve para alta? Como salvo um atendimento?"
-                suggestions={[
-                  "Por onde eu começo hoje?",
-                  "Como funciona o Modo Escuta?",
-                  "Qual assistente uso no plantão?",
-                  "Como salvo e organizo meus atendimentos?",
-                ]}
-                ask={ask}
-              />
+              <CopilotChat variant="panel" ask={ask} onNavigate={() => setOpen(false)} />
             </div>
           )}
         </div>

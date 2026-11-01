@@ -1,6 +1,6 @@
 import { ReactNode, Suspense, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { HelpCircle } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Search } from "lucide-react";
@@ -182,11 +182,11 @@ function DashboardLayoutInner({ children }: DashboardLayoutProps) {
                 <button
                   type="button"
                   onClick={() => setConciergeOpen(true)}
-                  aria-label="Como usar a plataforma"
-                  title="Como usar"
+                  aria-label="Abrir o Copiloto MedStation"
+                  title="Copiloto"
                   className={`${isAssistant ? "hidden md:inline-flex" : "inline-flex"} h-11 w-11 md:h-8 md:w-8 items-center justify-center rounded-sm border border-hairline text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors`}
                 >
-                  <HelpCircle className="h-3.5 w-3.5" />
+                  <Sparkles className="h-3.5 w-3.5" />
                 </button>
                 <span className={isAssistant ? "hidden md:contents" : "contents"}>
                   <HeaderThemeToggle />

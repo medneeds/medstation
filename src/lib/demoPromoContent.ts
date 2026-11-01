@@ -122,7 +122,7 @@ export const OFFER_PROMOS: PromoItem[] = [
     id: "o-price",
     category: "offer",
     title: `Plano único de ${brl(DISPLAY_PRICING.bundle.monthly.now)}/mês`,
-    description: "A plataforma inteira: Documentação, Copiloto e Fluxo. Cancele quando quiser.",
+    description: "A plataforma inteira: Documentação, Decisão e Fluxo. Cancele quando quiser.",
     cta: "Assinar agora",
   },
   {

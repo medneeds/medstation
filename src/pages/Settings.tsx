@@ -470,7 +470,7 @@ export default function Settings() {
                 </Button>
               </div>
               <div className="text-xs text-muted-foreground">
-                Plano único com tudo incluso — Documentação, Copiloto e Fluxo — por {PRICE_SUMMARY}.{HAS_LAUNCH_DISCOUNT ? ` A partir de 1º de dezembro o valor passa a ${brl(DISPLAY_PRICING.bundle.monthly.list)}/mês.` : ""}
+                Plano único com tudo incluso — Documentação, Decisão e Fluxo — por {PRICE_SUMMARY}.{HAS_LAUNCH_DISCOUNT ? ` A partir de 1º de dezembro o valor passa a ${brl(DISPLAY_PRICING.bundle.monthly.list)}/mês.` : ""}
               </div>
             </div>
           )}

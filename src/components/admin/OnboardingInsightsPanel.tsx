@@ -32,7 +32,7 @@ const GOAL_LABEL: Record<string, string> = {
 
 const PATH_LABEL: Record<string, string> = {
   documentation: "Documentação",
-  copilot: "Copiloto",
+  copilot: "Decisão",
   workflow: "Fluxo",
 };
 

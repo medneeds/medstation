@@ -33,7 +33,7 @@ const empty: Form = { full_name: "", email: "", phone: "", medical_school: "", c
 
 const benefits = [
   "Anamneses, evoluções e sumários prontos para revisar",
-  "Copiloto para discutir casos e condutas no plantão",
+  "Assistentes para discutir casos e condutas no plantão",
   "Professor clínico para estudar diagnósticos e síndromes",
 ];
 

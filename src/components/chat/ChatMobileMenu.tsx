@@ -92,7 +92,7 @@ export function ChatMobileMenu({
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => window.dispatchEvent(new Event(OPEN_CONCIERGE_EVENT))}>
           <HelpCircle className="mr-2 h-4 w-4" />
-          Como usar
+          Copiloto (dúvidas de uso)
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
