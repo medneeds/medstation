@@ -67,4 +67,18 @@ describe("leitura da resposta do Copiloto", () => {
     expect(actions.map((a) => a.route)).toEqual(["/prescricoes", "/numerus"]);
     expect(resolveCopilotActions("clinicus")).toEqual([]);
   });
+
+  it("recupera resposta com quebra de linha crua dentro do JSON", () => {
+    const raw = '{"resposta": "Abra o Clínicus.\nDepois cole os dados.", "acoes": ["clinicus", "x"]}';
+    expect(parseCopilotReply(raw)).toEqual({ reply: "Abra o Clínicus.\nDepois cole os dados.", actions: ["clinicus"] });
+  });
+});
+
+describe("conversa do Copiloto", () => {
+  it("pergunta vinda do guia é enviada uma única vez por nonce", async () => {
+    const { claimCopilotAsk } = await import("../copilot");
+    expect(claimCopilotAsk(123)).toBe(true);
+    expect(claimCopilotAsk(123)).toBe(false);
+    expect(claimCopilotAsk(124)).toBe(true);
+  });
 });

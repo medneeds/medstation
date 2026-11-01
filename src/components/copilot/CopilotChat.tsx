@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
 import {
   COPILOT_SUGGESTIONS,
+  claimCopilotAsk,
   resetCopilot,
   sendCopilotMessage,
   useCopilot,
@@ -32,7 +33,6 @@ export function CopilotChat({ variant, onNavigate, ask, className }: CopilotChat
   const { messages, loading } = useCopilot();
   const [draft, setDraft] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
-  const lastAskNonce = useRef<number | null>(null);
   const hasConversation = messages.length > 0;
 
   // Mantém a última mensagem visível dentro da própria caixa do chat.
@@ -42,8 +42,7 @@ export function CopilotChat({ variant, onNavigate, ask, className }: CopilotChat
   }, [messages.length, loading]);
 
   useEffect(() => {
-    if (!ask || !ask.text.trim() || lastAskNonce.current === ask.nonce) return;
-    lastAskNonce.current = ask.nonce;
+    if (!ask || !ask.text.trim() || !claimCopilotAsk(ask.nonce)) return;
     void send(ask.text, "guia");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ask?.nonce]);
@@ -52,7 +51,7 @@ export function CopilotChat({ variant, onNavigate, ask, className }: CopilotChat
     const clean = text.trim();
     if (!clean || loading) return;
     setDraft("");
-    trackEvent("copilot_question_sent", { source, origin: variant });
+    trackEvent("help_copilot_question_sent", { source, origin: variant });
     await sendCopilotMessage(clean);
   };
 
@@ -62,7 +61,7 @@ export function CopilotChat({ variant, onNavigate, ask, className }: CopilotChat
   };
 
   const open = (feature: CopilotFeature) => {
-    trackEvent("copilot_action_clicked", { feature: feature.id, destination: feature.route, origin: variant });
+    trackEvent("help_copilot_action_clicked", { feature: feature.id, destination: feature.route, origin: variant });
     navigate(feature.route);
     onNavigate?.();
   };
@@ -95,6 +94,7 @@ export function CopilotChat({ variant, onNavigate, ask, className }: CopilotChat
             variant="ghost"
             size="sm"
             onClick={resetCopilot}
+            disabled={loading}
             className="h-11 w-11 shrink-0 p-0 md:h-8 md:w-8"
             aria-label="Começar nova conversa com o Copiloto"
             title="Nova conversa"
@@ -111,16 +111,14 @@ export function CopilotChat({ variant, onNavigate, ask, className }: CopilotChat
           isCard ? "max-h-[45vh] md:max-h-80 px-4 md:px-5 pt-3" : "flex-1 min-h-0 px-1",
           !hasConversation && isCard && "pt-1",
         )}
-        aria-live="polite"
         aria-busy={loading}
       >
         {!hasConversation && (
-          <div className="flex flex-wrap gap-2" role="list" aria-label="Sugestões de perguntas">
+          <div className="flex flex-wrap gap-2" aria-label="Sugestões de perguntas" role="group">
             {COPILOT_SUGGESTIONS.map((s) => (
               <button
                 key={s}
                 type="button"
-                role="listitem"
                 onClick={() => void send(s, "sugestao")}
                 disabled={loading}
                 className="min-h-11 md:min-h-9 rounded-full border border-border bg-background px-3 py-1.5 text-left text-xs md:text-sm text-foreground hover:border-primary/50 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
@@ -139,7 +137,7 @@ export function CopilotChat({ variant, onNavigate, ask, className }: CopilotChat
               </p>
             </div>
           ) : (
-            <div key={m.id} className="space-y-2">
+            <div key={m.id} className="space-y-2" aria-live="polite">
               <p
                 className={cn(
                   "max-w-[92%] rounded-2xl rounded-bl-sm px-3 py-2 text-sm whitespace-pre-wrap break-words",
@@ -189,7 +187,7 @@ export function CopilotChat({ variant, onNavigate, ask, className }: CopilotChat
           maxLength={1500}
           disabled={loading}
           autoComplete="off"
-          className="h-11"
+          className="h-11 text-base md:text-sm"
         />
         <Button
           type="submit"
