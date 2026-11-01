@@ -133,7 +133,8 @@
         var shell = document.getElementById("ms-shell");
         if (!shell) return;
         var path = window.location.pathname.replace(/\/+$/, "") || "/";
-        if (path !== "/") {
+        var blackNow = Date.now() >= Date.parse("2026-11-01T03:00:00.000Z") && Date.now() < Date.parse("2026-12-01T03:00:00.000Z");
+        if (path !== "/" || blackNow) {
           shell.parentNode.removeChild(shell);
           return;
         }

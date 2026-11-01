@@ -10,7 +10,6 @@ import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { DISPLAY_PRICING } from "@/lib/subscription-tiers";
 import { FormLegalNotice } from "@/components/legal/FormLegalNotice";
-import { checkoutTracking } from "@/lib/conversion";
 
 interface QuickCheckoutProps {
   product?: "agents" | "pro_completo";
@@ -67,7 +66,7 @@ export function QuickCheckout({
     });
     try {
       const { data, error } = await supabase.functions.invoke("guest-checkout", {
-        body: { tracking: checkoutTracking(), email, product, billingPeriod, plan },
+        body: { email, product, billingPeriod, plan },
       });
 
       if (error) throw error;
@@ -233,7 +232,7 @@ export function InlineCheckout({
     });
     try {
       const { data, error } = await supabase.functions.invoke("guest-checkout", {
-        body: { tracking: checkoutTracking(), email, product, billingPeriod, plan },
+        body: { email, product, billingPeriod, plan },
       });
 
       if (error) throw error;

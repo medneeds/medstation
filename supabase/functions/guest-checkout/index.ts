@@ -16,7 +16,6 @@ import {
 import { monthlySubscriptionLineItem, pricingCohort } from "../_shared/pricing-schedule.ts";
 import { recordPurchaseAttempt } from "../_shared/purchase-attempts.ts";
 import { allowsPurchaseWithActiveSubscription } from "../_shared/annual-switch.ts";
-import { trackingMetadata } from "../_shared/meta-capi.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -132,11 +131,6 @@ serve(async (req) => {
       billing_period: billingPeriod,
       pricing_cohort: oneTimePlan?.offer ?? pricingCohort(),
       acquisition: "guest_checkout",
-      // Aceite de marketing do navegador: libera o envio da compra pela API de Conversões.
-      ...trackingMetadata(body.tracking, {
-        ip: req.headers.get("x-forwarded-for"),
-        userAgent: req.headers.get("user-agent"),
-      }),
     };
 
     const oneTimeMetadata: Record<string, string> = oneTimePlan

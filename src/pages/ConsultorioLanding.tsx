@@ -21,7 +21,6 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { GuestEmailDialog } from "@/components/GuestEmailDialog";
-import { checkoutTracking } from "@/lib/conversion";
 
 type ConsultorioPlan = "consultorio_monthly" | "consultorio_upgrade" | "pro2_bundle" | "agents_upgrade";
 
@@ -52,7 +51,7 @@ export default function ConsultorioLanding() {
         auth_state: "guest",
       });
       const { data, error } = await supabase.functions.invoke("guest-checkout", {
-        body: { tracking: checkoutTracking(), email, plan: guestPlan },
+        body: { email, plan: guestPlan },
       });
       if (error) throw error;
       if (data?.url) window.location.href = data.url;
@@ -86,7 +85,7 @@ export default function ConsultorioLanding() {
           auth_state: "authenticated",
         });
         const { data, error } = await supabase.functions.invoke("create-checkout", {
-          body: { tracking: checkoutTracking(), plan },
+          body: { plan },
         });
         if (error) throw error;
         if (data?.url) window.location.href = data.url;

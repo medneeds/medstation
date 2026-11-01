@@ -10,7 +10,6 @@ import { DISPLAY_PRICING, HAS_LAUNCH_DISCOUNT, brl } from "@/lib/subscription-ti
 import { ANNUAL_BONUS } from "@/lib/annualBonus";
 import { REAL_USERS } from "@/data/realUsers";
 import { FormLegalNotice } from "@/components/legal/FormLegalNotice";
-import { checkoutTracking } from "@/lib/conversion";
 
 /** Depoimento autorizado (src/data/realUsers.ts) — o mais curto, para caber no checkout. */
 const FEATURED_QUOTE = REAL_USERS.filter((u) => u.quote).sort(
@@ -55,7 +54,7 @@ export function SubscribeNowDialog({ open, onOpenChange }: Props) {
     });
     try {
       const { data, error } = await supabase.functions.invoke("guest-checkout", {
-        body: { tracking: checkoutTracking(), email: clean, product: "pro_completo", billingPeriod: cycle, plan },
+        body: { email: clean, product: "pro_completo", billingPeriod: cycle, plan },
       });
       if (error) throw error;
       if (!data?.url) throw new Error("Não foi possível abrir o pagamento.");

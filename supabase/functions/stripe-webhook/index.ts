@@ -16,7 +16,6 @@ import {
   utmFromMetadata,
   type MinimalCheckoutSession,
 } from "../_shared/one-time-purchase.ts";
-import { sendPurchaseToMeta } from "../_shared/meta-capi.ts";
 
 const SITE_URL = "https://medstation-ai.com.br";
 const BILLING_RECOVERY_URL = `${SITE_URL}/settings`;
@@ -46,21 +45,6 @@ function invoiceSubscriptionId(invoice: Record<string, unknown>): string | null 
   const parent = invoice.parent as Record<string, unknown> | undefined;
   const details = parent?.subscription_details as Record<string, unknown> | undefined;
   return objectId(details?.subscription);
-}
-
-/** Compra confirmada para a API de Conversões da Meta (só com aceite; nunca lança). */
-async function reportPurchaseToMeta(session: Stripe.Checkout.Session) {
-  const result = await sendPurchaseToMeta(
-    {
-      sessionId: session.id,
-      email: session.customer_details?.email ?? session.customer_email,
-      amountCents: session.amount_total,
-      currency: session.currency,
-      metadata: (session.metadata ?? {}) as Record<string, string>,
-    },
-    { token: Deno.env.get("META_CAPI_ACCESS_TOKEN"), testEventCode: Deno.env.get("META_CAPI_TEST_EVENT_CODE") },
-  );
-  console.log("[stripe-webhook] meta capi", { session: session.id, ...result });
 }
 
 async function resolveUserId(
@@ -757,13 +741,11 @@ serve(async (req) => {
               subscriptionId,
             });
           }
-          if (session.payment_status === "paid") await reportPurchaseToMeta(session);
           break;
         }
         if (shouldGrantOneTimeAccess(event.type, session as unknown as MinimalCheckoutSession)) {
           const result = await grantOneTimeAccess(supabase, stripe, session, event.id);
           console.log("[stripe-webhook] one-time access", { type: event.type, ...result });
-          await reportPurchaseToMeta(session);
         } else {
           const boleto = event.type === "checkout.session.completed" && session.mode === "payment"
             ? await recordBoletoPending(supabase, stripe, session, event.id)

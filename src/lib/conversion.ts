@@ -65,19 +65,3 @@ export function trackPurchaseConversion(data: PurchaseConversion) {
     ...(data.extra ?? {}),
   });
 }
-
-function readCookie(name: string): string | undefined {
-  if (typeof document === "undefined") return undefined;
-  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
-  return match ? decodeURIComponent(match[1]) : undefined;
-}
-
-/**
- * Vai no corpo de todo checkout: o aceite de marketing e os cookies da Meta.
- * Sem aceite, só `{ consent: false }` — o servidor não grava nada e a compra
- * não é enviada pela API de Conversões (supabase/functions/_shared/meta-capi.ts).
- */
-export function checkoutTracking(): { consent: boolean; fbp?: string; fbc?: string } {
-  if (!hasMarketingConsent()) return { consent: false };
-  return { consent: true, fbp: readCookie("_fbp"), fbc: readCookie("_fbc") };
-}

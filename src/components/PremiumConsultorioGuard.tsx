@@ -8,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { DISPLAY_PRICING, brl } from "@/lib/subscription-tiers";
-import { checkoutTracking } from "@/lib/conversion";
 
 interface PremiumConsultorioGuardProps {
   children: ReactNode;
@@ -36,7 +35,7 @@ export function PremiumConsultorioGuard({ children }: PremiumConsultorioGuardPro
       });
 
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { tracking: checkoutTracking(), plan },
+        body: { plan },
       });
       if (error) throw error;
       if (data?.url) window.open(data.url, "_blank");
