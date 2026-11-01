@@ -146,7 +146,7 @@ serve(async (req) => {
         status: "all",
         limit: 20,
       });
-      const existingActive = existingSubs.data.find((subscription) =>
+      const existingActive = existingSubs.data.find((subscription: { status: string }) =>
         ["active", "trialing", "past_due"].includes(subscription.status),
       );
       if (existingActive && allowWithActiveSub) {

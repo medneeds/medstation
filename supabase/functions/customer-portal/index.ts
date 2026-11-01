@@ -66,7 +66,7 @@ serve(async (req) => {
           status: "all",
           limit: 20,
         });
-        if (subscriptions.data.some((subscription) =>
+        if (subscriptions.data.some((subscription: { status: string }) =>
           ["active", "trialing", "past_due", "unpaid"].includes(subscription.status)
         )) {
           fallbackCustomerId = customer.id;
