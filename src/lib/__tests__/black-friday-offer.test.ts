@@ -39,7 +39,8 @@ describe("Black MedStation (novembro/2026)", () => {
   it("é um plano anual de 12 meses", () => {
     const plan = resolveOneTimePlan(BLACK_ANNUAL_PLAN_SLUG, NOV_01_0000_BRT);
     expect(plan?.accessPeriod).toBe("annual_12m");
-    expect(plan?.paymentMethodTypes).toEqual(["card", "boleto"]);
+    // Só cartão: boleto e Pix não estão ativos na conta e o Stripe não parcela no Brasil.
+    expect(plan?.paymentMethodTypes).toEqual(["card"]);
   });
 
   it("não dá direito ao bônus Arsenal Med", () => {

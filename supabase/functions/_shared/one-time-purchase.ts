@@ -88,7 +88,8 @@ export const ONE_TIME_PLANS: Record<string, OneTimePlan> = {
     allowCardFallback: true,
     // Vendido só dentro da janela da Black: ver resolveOneTimePlan.
     offered: false,
-    paymentMethodTypes: ["card", "boleto"],
+    // Só cartão: boleto e Pix não estão ativos na conta, e o Stripe não parcela no Brasil.
+    paymentMethodTypes: ["card"],
     // Sempre price_data com o valor da oferta: nenhum Price por env.
     priceEnvVar: "",
     label: "MedStation Completo — 12 meses (Black MedStation)",
