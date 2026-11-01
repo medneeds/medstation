@@ -10,7 +10,7 @@ export const COMPANY = {
   /** Formato 00.000.000/0000-00 */
   cnpj: "55.595.830/0001-09",
   /** Endereço da sede, com cidade/UF e CEP */
-  address: "Rua das Laranjeiras, Q62 C20 - Jardim Renascença",
+  address: "Rua das Laranjeiras, Q62 C20 - Jardim Renascença, São Luís/MA, CEP 65075-250",
   /** Canal de atendimento, privacidade (encarregado/DPO) e reembolso */
   contactEmail: "contato@medstation-ai.com.br",
   /** Suporte por WhatsApp (MedNeeds) */
