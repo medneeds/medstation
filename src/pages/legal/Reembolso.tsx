@@ -31,7 +31,7 @@ export default function Reembolso() {
       <h2>2. Como o valor é devolvido</h2>
       <ul>
         <li>
-          <strong>Cartão de crédito (à vista ou parcelado):</strong> o estorno é solicitado à operadora em até 5 dias úteis após o
+          <strong>Cartão de crédito:</strong> o estorno é solicitado à operadora em até 5 dias úteis após o
           pedido. O crédito aparece na fatura conforme o prazo do seu banco, normalmente em até 2 faturas.
         </li>
         <li>

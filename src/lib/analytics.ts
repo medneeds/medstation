@@ -396,6 +396,15 @@ function captureCampaignContext(): Record<string, string> {
   }
 }
 
+/** UTMs da visita (URL atual ou as guardadas da chegada pelo anúncio). */
+export function campaignUtm(): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [key, value] of Object.entries(captureCampaignContext())) {
+    if (key.startsWith("utm_") && value) out[key] = value;
+  }
+  return out;
+}
+
 function utmContext(): Record<string, unknown> {
   return sanitizeProperties(captureCampaignContext());
 }

@@ -86,7 +86,7 @@ export default function Termos() {
           antecedência.
         </li>
         <li>
-          <strong>Plano anual e ofertas anuais:</strong> pagamento único (à vista, parcelado no cartão ou boleto)
+          <strong>Plano anual e ofertas anuais:</strong> pagamento único no cartão de crédito
           que dá acesso por 12 meses, <strong>sem renovação automática</strong>. Ao fim do período, você escolhe
           se quer contratar de novo.
         </li>

@@ -193,6 +193,6 @@ describe("UI de pricing", () => {
     expect(pricing).toContain("Assinar agora");
     expect(pricing).not.toContain("Pagar 1 mês via Pix");
     expect(pricing).not.toContain('startCheckout("pix_monthly_30d")');
-    expect(pricing).toContain("Cartão ou boleto à vista.");
+    expect(pricing).toContain("Pagamento único no cartão de crédito.");
   });
 });

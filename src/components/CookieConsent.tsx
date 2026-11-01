@@ -61,11 +61,16 @@ export function CookieConsent() {
           aria-label="Aviso de cookies"
           className="fixed inset-x-0 bottom-0 z-[70] border-t border-border bg-background/95 backdrop-blur shadow-[0_-8px_30px_-12px_hsl(var(--foreground)/0.25)]"
         >
-          <div className="container mx-auto px-4 md:px-8 py-4 flex flex-col gap-3 md:flex-row md:items-center md:gap-6">
-            <p className="text-sm text-foreground leading-relaxed md:flex-1">
-              Usamos cookies necessários para o site funcionar e, com a sua permissão, cookies de análise e de
-              marketing para entender o uso e medir anúncios. Você pode mudar a escolha quando quiser. Saiba mais
-              na{" "}
+          <div className="container mx-auto px-4 md:px-8 py-3 md:py-4 flex flex-col gap-2 md:gap-3 md:flex-row md:items-center md:gap-6">
+            <p className="text-xs sm:text-sm text-foreground leading-relaxed md:flex-1">
+              <span className="sm:hidden">
+                Usamos cookies para o site funcionar e, se você permitir, para análise e medição de anúncios. Saiba mais na{" "}
+              </span>
+              <span className="hidden sm:inline">
+                Usamos cookies necessários para o site funcionar e, com a sua permissão, cookies de análise e de
+                marketing para entender o uso e medir anúncios. Você pode mudar a escolha quando quiser. Saiba mais
+                na{" "}
+              </span>
               <Link to="/privacidade#cookies" className="text-primary underline underline-offset-4">
                 Política de Privacidade
               </Link>

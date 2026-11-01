@@ -47,6 +47,25 @@ export function trackingMetadata(
   return out;
 }
 
+const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"] as const;
+
+/**
+ * UTMs do anúncio para os metadados da sessão do Stripe. UTM não é dado
+ * pessoal, então vai com ou sem aceite de cookies: assim a venda fica
+ * atribuída à campanha mesmo quando a Meta não recebe o evento.
+ */
+export function utmMetadata(utm: unknown): Record<string, string> {
+  if (!utm || typeof utm !== "object") return {};
+  const out: Record<string, string> = {};
+  for (const key of UTM_KEYS) {
+    const value = (utm as Record<string, unknown>)[key];
+    if (typeof value !== "string") continue;
+    const clean = value.replace(/[\u0000-\u001f]/g, "").trim().slice(0, 100);
+    if (clean) out[key] = clean;
+  }
+  return out;
+}
+
 export async function sha256Hex(value: string): Promise<string> {
   const bytes = new TextEncoder().encode(value);
   const digest = await crypto.subtle.digest("SHA-256", bytes);

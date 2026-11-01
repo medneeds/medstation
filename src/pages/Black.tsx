@@ -8,7 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { trackCheckoutStarted, trackCtaClick } from "@/lib/analytics";
+import { campaignUtm, trackCheckoutStarted, trackCtaClick } from "@/lib/analytics";
+import { hasMarketingConsent } from "@/lib/consent";
+import { friendlyCheckoutError, readRememberedEmail, rememberCheckoutEmail, suggestEmailFix } from "@/lib/blackCheckout";
 import { BLACK_OFFER, PRICE_TABLE, blackStatus, timeLeft, type BlackStatus } from "@/lib/pricingSchedule";
 import { saveBlackLead } from "@/lib/blackLead";
 import { brl } from "@/lib/subscription-tiers";
@@ -47,6 +49,18 @@ const included = [
 ];
 
 const faq = [
+  {
+    q: "Como recebo o acesso depois de pagar?",
+    a: "Assim que o pagamento é confirmado, enviamos um e-mail para o endereço que você informou com o link para entrar. Se você já tem conta, os 12 meses entram nela automaticamente.",
+  },
+  {
+    q: "Posso parcelar ou pagar com Pix ou boleto?",
+    a: `Nesta oferta, o pagamento é único no cartão de crédito: ${brl(PRICE)} à vista, sem parcelamento, Pix ou boleto.`,
+  },
+  {
+    q: "Como funciona a garantia de 7 dias?",
+    a: "Se desistir em até 7 dias corridos do pagamento, devolvemos 100% do valor, sem precisar justificar. É só pedir pelo e-mail contato@medstation-ai.com.br com o e-mail da conta.",
+  },
   {
     q: "A Black renova sozinha?",
     a: `Não. É um pagamento único de ${brl(PRICE)} que libera 12 meses de acesso, sem cobrança automática no fim.`,
@@ -227,7 +241,7 @@ function scrollToCheckout(cta: string) {
 }
 
 function CheckoutCard({ status }: { status: BlackStatus }) {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => readRememberedEmail());
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [phone, setPhone] = useState("");
@@ -260,6 +274,12 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
 
     // Guarda o contato antes do pagamento para recuperar quem desistir.
     await saveBlackLead(clean, "black_checkout");
+    if (!sessionEmail) rememberCheckoutEmail(clean);
+    try {
+      if (hasMarketingConsent()) (window as { fbq?: (...a: unknown[]) => void }).fbq?.("track", "Lead", { content_name: BLACK_OFFER.slug });
+    } catch {
+      /* noop */
+    }
     trackCheckoutStarted({
       origin: "black_2026",
       product: "pro_completo",
@@ -271,10 +291,10 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
     try {
       const { data, error } = sessionEmail
         ? await supabase.functions.invoke("create-checkout", {
-          body: { tracking: checkoutTracking(), plan: BLACK_OFFER.slug, billingPeriod: "yearly" },
+          body: { tracking: checkoutTracking(), utm: campaignUtm(), plan: BLACK_OFFER.slug, billingPeriod: "yearly" },
         })
         : await supabase.functions.invoke("guest-checkout", {
-          body: { tracking: checkoutTracking(), email: clean, product: "pro_completo", billingPeriod: "yearly", plan: BLACK_OFFER.slug },
+          body: { tracking: checkoutTracking(), utm: campaignUtm(), email: clean, product: "pro_completo", billingPeriod: "yearly", plan: BLACK_OFFER.slug },
         });
       if (error) {
         let message = error.message;
@@ -292,7 +312,7 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
       toast({
         variant: "destructive",
         title: "Não deu certo",
-        description: (err as Error)?.message || "Tente novamente em instantes.",
+        description: friendlyCheckoutError((err as Error)?.message),
       });
       setLoading(false);
     }
@@ -377,7 +397,19 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
               className="mt-1.5 h-12"
               required
             />
-            <p className="mt-1 text-[0.7rem] text-muted-foreground">Se já tem conta na MedStation, use o mesmo e-mail.</p>
+            {suggestEmailFix(email) ? (
+              <button
+                type="button"
+                onClick={() => setEmail(suggestEmailFix(email) ?? email)}
+                className="mt-1 text-left text-[0.75rem] font-medium text-offer-hot underline underline-offset-2"
+              >
+                Você quis dizer {suggestEmailFix(email)}? Toque para corrigir.
+              </button>
+            ) : (
+              <p className="mt-1 text-[0.7rem] text-muted-foreground">
+                Seu acesso chega neste e-mail. Se já tem conta na MedStation, use o mesmo.
+              </p>
+            )}
           </div>
         )}
         {upcoming && (
@@ -532,11 +564,12 @@ export default function Black() {
                 className="text-offer-muted hover:bg-offer-foreground/10 hover:text-offer-foreground"
               >
                 <Link to="/auth" onClick={() => trackCtaClick({ cta: "black_login", section: "black", destination: "/auth" })}>
-                  Já sou cliente
+                  <span className="sm:hidden">Entrar</span>
+                  <span className="hidden sm:inline">Já sou cliente</span>
                 </Link>
               </Button>
               {active && (
-                <Button size="sm" className={cn("hidden sm:inline-flex", GOLD_BUTTON)} onClick={() => scrollToCheckout("black_header")}>
+                <Button size="sm" className={GOLD_BUTTON} onClick={() => scrollToCheckout("black_header")}>
                   Assinar Black
                 </Button>
               )}
@@ -572,6 +605,14 @@ export default function Black() {
               Economize até <span className="text-offer-gold">40 horas</span> de trabalho burocrático e repetitivo por mês na
               sua prática médica.<sup className="text-offer-muted">*</sup>
             </p>
+            {active && (
+              <Button
+                className={cn("mt-6 h-12 w-full text-base lg:hidden", GOLD_BUTTON)}
+                onClick={() => scrollToCheckout("black_hero_mobile")}
+              >
+                Garantir meu ano por {brl(PRICE)} <ArrowRight className="w-4 h-4 ml-1.5" />
+              </Button>
+            )}
             <p className="mt-4 max-w-xl text-base md:text-lg text-offer-muted leading-relaxed">
               Evoluções, receitas, atestados e anamneses prontos em segundos, para você voltar ao que importa: o paciente. Tudo isso
               por <span className="text-offer-foreground font-semibold">{brl(PER_DAY)} por dia</span>, com{" "}
@@ -611,7 +652,7 @@ export default function Black() {
         <section className="grid md:grid-cols-2 gap-8 md:gap-12 items-start">
           <Reveal>
             <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">Tudo o que entra no seu ano</h2>
-            <p className="mt-3 text-muted-foreground">A MedStation completa, com todos os assistentes e sem limite de uso.</p>
+            <p className="mt-3 text-muted-foreground">A MedStation completa, com todos os assistentes liberados.</p>
             <ul className="mt-6 space-y-3">
               {included.map((item) => (
                 <li key={item} className="flex items-start gap-3 text-sm">
@@ -654,7 +695,7 @@ export default function Black() {
                 </div>
               </dl>
               <p className="mt-4 text-sm">
-                São <span className="font-semibold">{brl(SAVINGS)} a mais no seu bolso</span> em relação ao anual de dezembro.
+                São <span className="font-semibold">{brl(SAVINGS)} a menos</span> que o anual a partir de 1º/12.
               </p>
             </div>
           </Reveal>

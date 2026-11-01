@@ -96,7 +96,7 @@ export function SubscribeNowDialog({ open, onOpenChange }: Props) {
           <span className="text-xs text-muted-foreground">{c === "yearly" ? "/ano" : "/mês"}</span>
         </div>
         <p className="mt-0.5 text-[0.7rem] text-muted-foreground">
-          {c === "yearly" ? `Pagamento único no cartão ou boleto · economize ${brl(saving)}` : "Renova todo mês"}
+          {c === "yearly" ? `Pagamento único no cartão · economize ${brl(saving)}` : "Renova todo mês"}
         </p>
       </button>
     );

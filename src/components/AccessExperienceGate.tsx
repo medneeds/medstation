@@ -4,7 +4,9 @@ import { CalendarClock, CheckCircle2, Crown, LockKeyhole, Settings2, Sparkles } 
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { trackLifecycleEvent } from "@/lib/analytics";
+import { trackCtaClick, trackLifecycleEvent } from "@/lib/analytics";
+import { BLACK_OFFER, blackStatus } from "@/lib/pricingSchedule";
+import { brl } from "@/lib/subscription-tiers";
 import { hasSeenWelcomeTour } from "@/pages/WelcomeTour";
 import {
   Dialog,
@@ -161,6 +163,54 @@ export function AccessContentGate({ children }: { children: ReactNode }) {
   }
 
   const expired = accessStatus === "trial_expired";
+
+  // Em novembro, quem está sem acesso entra, vê a conta e recebe só a Black.
+  if (blackStatus() === "active") {
+    return (
+      <div className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center py-8">
+        <Card className="w-full overflow-hidden border-2 border-offer-gold bg-offer text-offer-foreground">
+          <CardHeader className="text-center">
+            <span className="mx-auto inline-flex items-center gap-2 rounded-full border border-offer-gold/40 bg-offer-gold/10 px-3 py-1 font-mono text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-offer-gold">
+              Black MedStation · só até 30/11
+            </span>
+            <CardTitle className="mt-3 font-display text-2xl md:text-3xl">
+              {expired ? "Seu teste terminou. Volte com a Black." : "Volte a usar a MedStation com a Black."}
+            </CardTitle>
+            <CardDescription className="mx-auto max-w-lg leading-relaxed text-offer-muted">
+              Um ano inteiro por <span className="font-semibold text-offer-gold">{brl(BLACK_OFFER.amountCents / 100)}</span>, pagamento
+              único no cartão, sem renovação automática e com garantia de 7 dias. Sua conta e seus dados continuam
+              preservados.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-xl bg-offer-foreground/5 p-4 text-sm text-offer-muted">
+              Com a Black, os assistentes, o Modo Escuta, o Modo Rotineiro, voz, OCR e geração de documentos voltam a funcionar
+              na sua conta assim que o pagamento é confirmado.
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Button
+                asChild
+                size="lg"
+                className="bg-offer-gold text-offer-gold-foreground hover:bg-offer-gold/90"
+                onClick={() => trackCtaClick({ cta: "black_paywall", section: "paywall", destination: "/black" })}
+              >
+                <Link to={`/black?utm_source=app&utm_medium=paywall&utm_campaign=${BLACK_OFFER.slug}`}>
+                  <Crown className="mr-2 h-4 w-4" />
+                  Garantir a Black
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="border-offer-border bg-transparent text-offer-foreground hover:bg-offer-foreground/10">
+                <Link to="/settings">
+                  <Settings2 className="mr-2 h-4 w-4" />
+                  Minha conta
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center py-8">

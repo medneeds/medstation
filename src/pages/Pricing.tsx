@@ -205,7 +205,7 @@ export default function Pricing() {
               </p>
               {isYearly && (
                 <p className="text-[11px] md:text-xs text-primary mt-1">
-                  Cartão ou boleto à vista.
+                  Pagamento único no cartão de crédito.
                 </p>
               )}
 
@@ -325,7 +325,7 @@ export default function Pricing() {
         open={dialogOpen}
         onOpenChange={(o) => { setDialogOpen(o); if (!o) setPendingPlan(null); }}
         planLabel="MedStation Completo"
-        priceLabel={`${brl(price.now)}${isYearly ? "/ano · cartão ou boleto" : "/mês"}`}
+        priceLabel={`${brl(price.now)}${isYearly ? "/ano · pagamento único no cartão" : "/mês"}`}
         loading={loadingPlan !== null}
         onConfirm={(email) => { if (pendingPlan) runGuestCheckout(pendingPlan, email); }}
       />
