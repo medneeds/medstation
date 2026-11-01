@@ -68,7 +68,8 @@
       // Meta é baixado; o banner chama window.__msLoadPixel(true) se ele aceitar.
       (function () {
         var META_PIXEL_ID = '1120398934987866';
-        var allowed = ['/', '/pricing', '/black', '/auth', '/confirmar-email', '/obrigado', '/welcome'];
+        // Sem /confirmar-email: a URL pode trazer o e-mail (?email=) e o Pixel envia a URL inteira.
+        var allowed = ['/', '/pricing', '/black', '/auth', '/obrigado', '/welcome'];
         window.__msLoadPixel = function (fromApp) {
           if (window.fbq) return;
           !function(f,b,e,v,n,t,s)
@@ -79,6 +80,8 @@
           t.src=v;s=b.getElementsByTagName(e)[0];
           s.parentNode.insertBefore(t,s)}(window, document,'script',
           'https://connect.facebook.net/en_US/fbevents.js');
+          // Sem PageView automático em navegação do app (pushState): só os que o app manda.
+          window.fbq.disablePushState = true;
           fbq('set', 'autoConfig', false, META_PIXEL_ID);
           fbq('init', META_PIXEL_ID);
           var path = window.location.pathname.replace(/\/+$/, '') || '/';

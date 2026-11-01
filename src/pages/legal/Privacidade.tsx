@@ -142,8 +142,9 @@ export default function Privacidade() {
           <strong>Hospedagem e banco de dados:</strong> Lovable Cloud (infraestrutura Supabase).
         </li>
         <li>
-          <strong>Inteligência artificial:</strong> o conteúdo que você envia aos assistentes é processado por
-          modelos de terceiros, como Google (Gemini) e OpenAI, acessados por API, para gerar a resposta.
+          <strong>Inteligência artificial:</strong> o conteúdo que você envia aos assistentes passa pelo gateway de
+          IA da Lovable e é processado por modelos de terceiros, como Google (Gemini) e OpenAI, para gerar a
+          resposta.
         </li>
         <li>
           <strong>Transcrição de voz:</strong> ElevenLabs, OpenAI e o serviço de transcrição da Lovable.
@@ -155,8 +156,8 @@ export default function Privacidade() {
           <strong>E-mails transacionais:</strong> serviço de e-mail da Lovable.
         </li>
         <li>
-          <strong>Somente com seu consentimento:</strong> PostHog (análise de uso, servidores na União
-          Europeia) e Meta Platforms (Meta Pixel, medição de anúncios).
+          <strong>Somente com seu consentimento:</strong> PostHog (análise de uso, servidores nos Estados
+          Unidos) e Meta Platforms (Meta Pixel, medição de anúncios).
         </li>
         <li>Autoridades públicas, quando houver obrigação legal ou ordem judicial.</li>
       </ul>
@@ -175,7 +176,7 @@ export default function Privacidade() {
           Após o pedido de exclusão ou o encerramento da conta: apagamos ou anonimizamos, exceto o que a lei
           obriga a guardar.
         </li>
-        <li>Registros de acesso: 6 meses (Marco Civil da Internet).</li>
+        <li>Registros de acesso: pelo menos 6 meses, como exige o Marco Civil da Internet.</li>
         <li>Dados fiscais e de pagamento: pelo prazo exigido pela legislação tributária (em regra, 5 anos).</li>
         <li>Cadastros de interesse que não viraram conta: até você pedir a exclusão ou se opor ao contato.</li>
       </ul>
@@ -196,11 +197,16 @@ export default function Privacidade() {
         <tbody>
           <tr>
             <td>Necessários</td>
-            <td>
-              Manter você conectado, verificar o aparelho, lembrar tema, preferências e sua escolha sobre cookies;
-              guardar a origem da visita para vincular a campanha ao seu cadastro
-            </td>
+            <td>Manter você conectado, verificar o aparelho, lembrar tema, preferências e sua escolha sobre cookies</td>
             <td>Execução de contrato e legítimo interesse</td>
+          </tr>
+          <tr>
+            <td>Medição própria</td>
+            <td>
+              Guardar só no seu navegador a origem da visita (campanha) e o botão clicado, para vincular o cadastro à
+              campanha. Nada disso é enviado a terceiros
+            </td>
+            <td>Legítimo interesse; você pode se opor pelo contato do encarregado</td>
           </tr>
           <tr>
             <td>Análise</td>

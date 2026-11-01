@@ -52,4 +52,16 @@ describe("Meta PageView da primeira tela", () => {
     await trackPageView("/pricing");
     expect(window.fbq).not.toHaveBeenCalled();
   });
+
+  it("nunca envia ao Meta a página de confirmação, que pode ter o e-mail na URL", async () => {
+    await trackPageView("/confirmar-email");
+    expect(window.fbq).not.toHaveBeenCalled();
+  });
+
+  it("não envia nada ao Meta se a URL atual tiver e-mail", async () => {
+    window.history.replaceState(null, "", "/auth?email=fulano%40exemplo.com");
+    await trackPageView("/pricing");
+    expect(window.fbq).not.toHaveBeenCalled();
+    window.history.replaceState(null, "", "/");
+  });
 });

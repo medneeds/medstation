@@ -75,7 +75,7 @@ const faq = [
   {
     q: "Existe diferença entre planos?",
     a: HAS_LAUNCH_DISCOUNT
-      ? `Não. Existe um único plano com a plataforma inteira: Documentação, Copiloto e Fluxo. No lançamento, sai de ${brl(DISPLAY_PRICING.bundle.monthly.list)} por ${brl(DISPLAY_PRICING.bundle.monthly.now)} por mês, ou de ${brl(DISPLAY_PRICING.bundle.yearly.list)} por ${brl(DISPLAY_PRICING.bundle.yearly.now)} por ano, até 30 de novembro.`
+      ? `Não. Existe um único plano com a plataforma inteira: Documentação, Copiloto e Fluxo. Até 30 de novembro, o preço de lançamento é ${brl(DISPLAY_PRICING.bundle.monthly.now)} por mês ou ${brl(DISPLAY_PRICING.bundle.yearly.now)} por ano. A partir de 1º de dezembro, passa a ${brl(DISPLAY_PRICING.bundle.monthly.list)} por mês ou ${brl(DISPLAY_PRICING.bundle.yearly.list)} por ano.`
       : `Não. Existe um único plano com a plataforma inteira: Documentação, Copiloto e Fluxo, por ${brl(DISPLAY_PRICING.bundle.monthly.now)} por mês ou ${brl(DISPLAY_PRICING.bundle.yearly.now)} por ano.`,
   },
   {
@@ -365,23 +365,22 @@ export default function Lp3() {
                       </span>
                     ) : null}
                   </div>
+                  {/* Sem "de/por": o preço de dezembro nunca foi cobrado e não pode servir de referência (CDC art. 37). */}
                   {HAS_LAUNCH_DISCOUNT && (
-                    <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>
-                        de <span className="line-through">{brl(p.list)}</span>
-                      </span>
+                    <div className="mt-3 text-xs">
                       <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[0.65rem] font-semibold text-primary">
-                        {Math.round((1 - p.now / p.list) * 100)}% off
+                        Preço de lançamento
                       </span>
                     </div>
                   )}
-                  <div className={`${HAS_LAUNCH_DISCOUNT ? "mt-0.5" : "mt-3"} flex items-baseline gap-1.5`}>
-                    {HAS_LAUNCH_DISCOUNT && <span className="text-sm text-muted-foreground">por</span>}
+                  <div className={`${HAS_LAUNCH_DISCOUNT ? "mt-1.5" : "mt-3"} flex items-baseline gap-1.5`}>
                     <span className="text-2xl font-bold text-primary">{brl(p.now)}</span>
                     <span className="text-sm text-muted-foreground">{cycle === "monthly" ? "/mês" : "/ano"}</span>
                   </div>
                   <div className="mt-1 text-xs text-muted-foreground">
-                    {HAS_LAUNCH_DISCOUNT ? "Preço de lançamento, válido até 30/11." : "Plano único com tudo incluso."}
+                    {HAS_LAUNCH_DISCOUNT
+                      ? `Válido até 30/11. A partir de 1º/12: ${brl(p.list)}${cycle === "monthly" ? "/mês" : "/ano"}.`
+                      : "Plano único com tudo incluso."}
                   </div>
                   <p className="mt-3 text-xs text-muted-foreground">
                     {cycle === "monthly"
@@ -402,8 +401,8 @@ export default function Lp3() {
             <div className="mt-6 max-w-xl mx-auto rounded-xl border border-primary/25 bg-background px-4 py-3 text-center text-xs md:text-sm">
               <strong className="text-primary">Preço de lançamento até 30 de novembro:</strong> a partir de 1º de
               dezembro o valor passa a {brl(DISPLAY_PRICING.bundle.monthly.list)}/mês ou{" "}
-              {brl(DISPLAY_PRICING.bundle.yearly.list)}/ano. Assinando agora, você paga metade e mantém esse valor
-              enquanto a assinatura estiver ativa.
+              {brl(DISPLAY_PRICING.bundle.yearly.list)}/ano. No mensal, quem assina agora mantém o valor de lançamento
+              enquanto a assinatura estiver ativa. O anual cobre 12 meses pelo preço pago hoje.
             </div>
           )}
 

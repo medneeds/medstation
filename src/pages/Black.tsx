@@ -30,6 +30,7 @@ const MONTHLY_FULL = PRICE_TABLE.full.monthlyCents / 100;
 const DISCOUNT_PCT = Math.round((1 - PRICE / CURRENT_YEARLY) * 100);
 const PER_DAY = PRICE / 365;
 const SAVINGS = DECEMBER_YEARLY - PRICE;
+const SAVINGS_NOW = CURRENT_YEARLY - PRICE;
 
 const CTA_LABEL = "Assinar plano Black anual";
 const GOLD_BUTTON =
@@ -340,7 +341,7 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
       </p>
       <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
         <span className="rounded-full bg-offer-gold/20 px-2.5 py-1 font-semibold text-foreground">
-          Você economiza {brl(SAVINGS)}
+          {brl(SAVINGS_NOW)} a menos que o anual de hoje
         </span>
         <span className="text-muted-foreground">Menos de {brl(Math.ceil(PER_DAY * 100) / 100)} por dia</span>
       </div>
@@ -636,7 +637,7 @@ export default function Black() {
                 <div className="flex items-center justify-between rounded-lg px-3 py-3">
                   <dt className="text-muted-foreground">Mensal, a partir de 1º/12</dt>
                   <dd className="text-muted-foreground">
-                    <span className="line-through">{brl(MONTHLY_FULL * 12)}</span>/ano
+                    {brl(MONTHLY_FULL * 12)}/ano
                   </dd>
                 </div>
                 <div className="flex items-center justify-between rounded-lg px-3 py-3">
@@ -648,7 +649,7 @@ export default function Black() {
                 <div className="flex items-center justify-between rounded-lg px-3 py-3">
                   <dt className="text-muted-foreground">Anual, a partir de 1º/12</dt>
                   <dd className="text-muted-foreground">
-                    <span className="line-through">{brl(DECEMBER_YEARLY)}</span>/ano
+                    {brl(DECEMBER_YEARLY)}/ano
                   </dd>
                 </div>
                 <div className="flex items-center justify-between rounded-lg border-2 border-offer-gold bg-offer-gold/10 px-3 py-3">

@@ -4,7 +4,8 @@
 // Categorias:
 // - necessários: login, segurança do aparelho, tema, preferências. Sempre ativos
 //   (execução do contrato / legítimo interesse) e não passam por aqui.
-// - analytics: PostHog (terceiro, servidores na UE). Só carrega com consentimento.
+// - analytics: PostHog (terceiro; região definida em VITE_LOVABLE_CONNECTOR_POSTHOG_REGION,
+//   hoje "us"). Só carrega com consentimento.
 // - marketing: Meta Pixel. Só carrega com consentimento.
 //
 // O index.html lê a mesma chave para decidir se carrega o Pixel no primeiro
@@ -106,11 +107,24 @@ function applyMarketingConsent(granted: boolean) {
       window.__msLoadPixel?.(true);
       window.fbq?.("consent", "grant");
     } else {
-      // Se o Pixel já tinha sido carregado nesta aba, para de enviar.
+      // Se o Pixel já tinha sido carregado nesta aba, para de enviar e apaga seus cookies.
       window.fbq?.("consent", "revoke");
+      clearMetaCookies();
     }
   } catch {
     /* noop */
+  }
+}
+
+/** Apaga os cookies do Meta (_fbp/_fbc) no domínio atual e no domínio-pai. */
+function clearMetaCookies() {
+  const host = window.location.hostname;
+  const parts = host.split(".");
+  const domains = ["", host, parts.length > 2 ? `.${parts.slice(-3).join(".")}` : `.${host}`, `.${parts.slice(-2).join(".")}`];
+  for (const name of ["_fbp", "_fbc"]) {
+    for (const domain of domains) {
+      document.cookie = `${name}=; Max-Age=0; path=/${domain ? `; domain=${domain}` : ""}`;
+    }
   }
 }
 

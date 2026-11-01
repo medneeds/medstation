@@ -78,7 +78,7 @@ export function SubscribeNowDialog({ open, onOpenChange }: Props) {
       >
         {c === "yearly" && (
           <span className="absolute -top-2.5 right-3 rounded-full bg-primary px-2 py-0.5 text-[0.65rem] font-semibold text-primary-foreground">
-            Melhor custo · {savingPct}% off
+            Melhor custo · {savingPct}% a menos que o mensal
           </span>
         )}
         <div className="flex items-center justify-between">
@@ -88,9 +88,7 @@ export function SubscribeNowDialog({ open, onOpenChange }: Props) {
           </span>
         </div>
         {HAS_LAUNCH_DISCOUNT && (
-          <p className="mt-1.5 text-[0.7rem] text-muted-foreground">
-            de <span className="line-through">{brl(DISPLAY_PRICING.bundle[c].list)}</span> por
-          </p>
+          <p className="mt-1.5 text-[0.7rem] text-muted-foreground">Preço de lançamento</p>
         )}
         <div className="flex items-baseline gap-1">
           <span className="text-xl font-bold text-foreground">{brl(c === "yearly" ? yearly : monthly)}</span>

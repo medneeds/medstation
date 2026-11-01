@@ -1,6 +1,6 @@
 import { Seo } from "@/components/Seo";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AssistantSpotlightDialog } from "@/components/AssistantSpotlightDialog";
 
 import { Button } from "@/components/ui/button";
@@ -325,7 +325,7 @@ export default function Comecar() {
 
               <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-primary" /> Dados tratados conforme a <a href="/privacidade" className="underline underline-offset-2 hover:text-foreground">Política de Privacidade</a>
+                  <ShieldCheck className="w-3.5 h-3.5 text-primary" /> Dados tratados conforme a <Link to="/privacidade" className="underline underline-offset-2 hover:text-foreground">Política de Privacidade</Link>
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5 text-primary" /> Sem instalar nada, roda no navegador

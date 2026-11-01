@@ -39,8 +39,9 @@ export function QuickCheckout({
     ? DISPLAY_PRICING.bundle[billingPeriod === "yearly" ? "yearly" : "monthly"].now
     : billingPeriod === "yearly" ? 299.9 : 29.9;
 
+  // Sem preço riscado: o "de" seria o preço futuro, nunca cobrado (CDC art. 37).
   const listPrice = isCompleto ? DISPLAY_PRICING.bundle.monthly.list : 59.9;
-  const showListPrice = billingPeriod === "monthly" && listPrice > price;
+  const showListPrice = false;
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();

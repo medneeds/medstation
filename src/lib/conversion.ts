@@ -41,8 +41,10 @@ export function trackPurchaseConversion(data: PurchaseConversion) {
   const value = typeof data.value === "number" ? data.value : undefined;
   const currency = (data.currency || "BRL").toUpperCase();
 
-  // Meta Pixel — só com consentimento de marketing.
+  // Meta Pixel — só com consentimento de marketing e sem dado pessoal na URL.
+  const urlHasPersonalData = /[?&](email|e-mail|phone|telefone|crm|cpf)=/i.test(window.location.search);
   try {
+    if (urlHasPersonalData) throw new Error("skip");
     if (hasMarketingConsent()) window.fbq?.(
       "track",
       "Purchase",
