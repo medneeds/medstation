@@ -5,6 +5,7 @@ import luciaraDuarte from "@/assets/real-users/dra-luciara-duarte.jpg.asset.json
 import daianeCordeiro from "@/assets/real-users/dra-daiane-cordeiro.jpg.asset.json";
 import joseLindoso from "@/assets/real-users/dr-jose-alexandre-lindoso.jpg.asset.json";
 import marcellaQueiroz from "@/assets/real-users/dra-marcella-queiroz.jpg.asset.json";
+import solonAlves from "@/assets/real-users/dr-solon-alves.jpeg.asset.json";
 import leandroAlbuquerque from "@/assets/real-users/dr-leandro-albuquerque.jpeg.asset.json";
 import alvaroFialho from "@/assets/real-users/dr-alvaro-fialho.jpg.asset.json";
 
@@ -82,5 +83,11 @@ export const REAL_USERS: RealUser[] = [
     practice: "Especialista em Clínica Médica",
     quote:
       "Utilizar o Medstation possibilitou otimizar meu processo de trabalho tanto do ponto de vista técnico como no auxílio na tomada de decisões nas condutas, além disso, consigo executar hoje minhas atividades de trabalho de forma mais ágil e acurada, melhorando consequentemente a qualidade da assistência prestada ao paciente! Pois com a otimização do tempo é possível uma avaliação mais minuciosa e criteriosa e isso interfere diretamente na melhora da qualidade da assistência prestada!",
+  },
+  {
+    name: "Dr. Solon Alves",
+    photo: solonAlves.url,
+    location: "São Luís, MA",
+    practice: "Médico residente em Cirurgia Geral",
   },
 ];
