@@ -112,3 +112,13 @@ describe("texto da página de pagamento do Stripe", () => {
     }
   });
 });
+
+import { salesWhatsAppUrl } from "@/components/landing/WhatsAppContact";
+
+describe("WhatsApp da página Black", () => {
+  it("abre a conversa com o Artur com a mensagem pronta", () => {
+    expect(salesWhatsAppUrl()).toBe(
+      "https://wa.me/5598981659576?text=Oi%20Artur%2C%20quero%20saber%20mais%20sobre%20a%20MedStation.",
+    );
+  });
+});

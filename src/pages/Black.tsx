@@ -19,6 +19,7 @@ import { RealUsersCarousel } from "@/components/landing/RealUsersCarousel";
 import { FormLegalNotice } from "@/components/legal/FormLegalNotice";
 import { SiteFooter } from "@/components/SiteFooter";
 import { checkoutTracking } from "@/lib/conversion";
+import { WhatsAppFloatingButton, WhatsAppInlineButton } from "@/components/landing/WhatsAppContact";
 
 const PRICE = BLACK_OFFER.amountCents / 100;
 // "De/por" e "% off" usam o preço anual efetivamente praticado durante a oferta
@@ -694,6 +695,11 @@ export default function Black() {
                 </AccordionItem>
               ))}
             </Accordion>
+            <div className="mt-8 rounded-xl border border-border/70 bg-card/60 p-5 text-center">
+              <p className="text-sm font-semibold">Ainda ficou com dúvida?</p>
+              <p className="mt-1 text-sm text-muted-foreground">Fale direto comigo, Artur, médico e fundador da MedStation.</p>
+              <WhatsAppInlineButton className="mt-4" />
+            </div>
           </section>
         </Reveal>
       </main>
@@ -720,6 +726,8 @@ export default function Black() {
       )}
 
       <SiteFooter />
+
+      <WhatsAppFloatingButton aboveStickyBar={active} />
 
       {/* Barra fixa no celular */}
       {active && (
