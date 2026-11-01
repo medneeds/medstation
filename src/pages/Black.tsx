@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { PlatformDemo } from "@/components/landing/PlatformDemo";
 import { FounderSection } from "@/components/landing/FounderSection";
 import { RealUsersCarousel } from "@/components/landing/RealUsersCarousel";
+import { VslVideo } from "@/components/landing/VslVideo";
 import { FormLegalNotice } from "@/components/legal/FormLegalNotice";
 import { SiteFooter } from "@/components/SiteFooter";
 import { checkoutTracking } from "@/lib/conversion";
@@ -653,6 +654,7 @@ export default function Black() {
                 O pagamento não foi concluído. Sua oferta continua aqui até 30/11.
               </p>
             )}
+            <VslVideo className="mb-6" />
             <CheckoutCard status={status} />
           </div>
         </div>
