@@ -235,7 +235,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden">
+      <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden" aria-describedby={undefined}>
         <DialogTitle className="sr-only">Buscar</DialogTitle>
         <div className="flex items-center border-b px-4">
           <Search className="h-5 w-5 text-muted-foreground shrink-0" />

@@ -41,6 +41,7 @@ import { PrescriptionTemplatesBar } from "@/components/prescriptions/Prescriptio
 import { allergyHits } from "@/lib/patientClinical";
 import { patientSchema } from "@/lib/validations";
 import {
+  decideDictatedPatient,
   isMedicationFilled,
   matchDictatedPatient,
   mergeDictatedMedications,
@@ -94,7 +95,10 @@ export default function NewPrescription() {
   const [newPatientDialogOpen, setNewPatientDialogOpen] = useState(false);
   const [creatingPatient, setCreatingPatient] = useState(false);
   const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false);
-  const [medToRemove, setMedToRemove] = useState<number | null>(null);
+  // Medicamento a remover (índice + nome no momento do pedido) e se a confirmação está aberta.
+  // O item fica guardado depois de fechar para o título não piscar vazio na animação de saída.
+  const [medToRemove, setMedToRemove] = useState<{ index: number; name: string } | null>(null);
+  const [medRemoveOpen, setMedRemoveOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [newPatient, setNewPatient] = useState({
     name: "",
@@ -199,23 +203,33 @@ export default function NewPrescription() {
       setValidityDays(data.validity_days.toString());
     }
 
-    // Paciente pelo nome ditado: só seleciona com nome completo idêntico e único.
-    // Nome parcial ou homônimo nunca troca o paciente — o médico escolhe na lista.
+    // Paciente pelo nome ditado: só seleciona quando ninguém está selecionado e há um único
+    // nome completo idêntico. Com paciente já selecionado, nunca troca — só avisa se divergir.
     if (data.patient_name) {
-      const match = matchDictatedPatient(patients, String(data.patient_name));
-      if (match.status === "match") {
-        setSelectedPatient(match.patient.id);
+      const dictatedName = String(data.patient_name);
+      const selectedName = selectedPatient
+        ? selectedPatientData?.name ?? patients.find((pt) => pt.id === selectedPatient)?.name ?? ""
+        : null;
+      const decision = decideDictatedPatient(selectedName, matchDictatedPatient(patients, dictatedName), dictatedName);
+      if (decision.action === "select") {
+        setSelectedPatient(decision.patient.id);
         toast({
           title: "Paciente identificado",
-          description: `${match.patient.name} selecionado automaticamente. Confira antes de salvar.`,
+          description: `${decision.patient.name} selecionado automaticamente. Confira antes de salvar.`,
         });
-      } else {
+      } else if (decision.action === "warn") {
+        toast({
+          title: "Paciente diferente do ditado",
+          description: `O paciente ditado (${dictatedName}) é diferente do selecionado (${selectedName}). Confira antes de salvar.`,
+          variant: "destructive",
+        });
+      } else if (decision.action === "ask") {
         toast({
           title: "Selecione o paciente",
           description:
-            match.status === "ambiguous"
-              ? `Nome ditado: "${data.patient_name}". Há ${match.count} pacientes com esse nome; escolha na lista.`
-              : `Nome ditado: "${data.patient_name}". Nenhum paciente com esse nome completo; escolha na lista.`,
+            decision.reason === "ambiguous"
+              ? `Nome ditado: "${dictatedName}". Há ${decision.count} pacientes com esse nome; escolha na lista.`
+              : `Nome ditado: "${dictatedName}". Nenhum paciente com esse nome completo; escolha na lista.`,
         });
       }
     }
@@ -327,8 +341,12 @@ export default function NewPrescription() {
 
   // Card com conteúdo pede confirmação; card vazio sai direto.
   const requestRemoveMedication = (index: number) => {
-    if (isMedicationFilled(medications[index])) setMedToRemove(index);
-    else removeMedication(index);
+    if (isMedicationFilled(medications[index])) {
+      setMedToRemove({ index, name: medications[index].name.trim() });
+      setMedRemoveOpen(true);
+    } else {
+      removeMedication(index);
+    }
   };
 
   const updateMedication = (index: number, field: keyof Medication, value: string) => {
@@ -938,13 +956,13 @@ export default function NewPrescription() {
       </AlertDialog>
 
       {/* Confirmação ao remover medicamento preenchido */}
-      <AlertDialog open={medToRemove !== null} onOpenChange={(o) => !o && setMedToRemove(null)}>
+      <AlertDialog open={medRemoveOpen} onOpenChange={setMedRemoveOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remover medicamento {medToRemove !== null ? medToRemove + 1 : ""}?</AlertDialogTitle>
+            <AlertDialogTitle>Remover medicamento {medToRemove ? medToRemove.index + 1 : ""}?</AlertDialogTitle>
             <AlertDialogDescription>
-              {medToRemove !== null && medications[medToRemove]?.name.trim()
-                ? `${medications[medToRemove].name.trim()} sairá desta prescrição.`
+              {medToRemove?.name
+                ? `${medToRemove.name} sairá desta prescrição.`
                 : "Os dados deste medicamento sairão desta prescrição."}
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -952,8 +970,8 @@ export default function NewPrescription() {
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                if (medToRemove !== null) removeMedication(medToRemove);
-                setMedToRemove(null);
+                if (medToRemove) removeMedication(medToRemove.index);
+                setMedRemoveOpen(false);
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

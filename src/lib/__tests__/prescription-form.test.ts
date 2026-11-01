@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  decideDictatedPatient,
   matchDictatedPatient,
   mergeDictatedMedications,
   normalizePersonName,
@@ -37,6 +38,30 @@ describe("paciente pelo nome ditado", () => {
   });
 });
 
+describe("decisão sobre o paciente ditado", () => {
+  const patients = [p("1", "Mariana Souza"), p("3", "Ana Lima"), p("4", "Ana Lima")];
+  const decide = (selected: string | null, dictated: string) =>
+    decideDictatedPatient(selected, matchDictatedPatient(patients, dictated), dictated);
+
+  it("sem paciente selecionado e nome único idêntico: seleciona", () => {
+    expect(decide(null, "mariana  SOUZA")).toEqual({ action: "select", patient: patients[0] });
+  });
+
+  it("sem paciente selecionado e homônimos ou sem correspondência: pede para escolher", () => {
+    expect(decide(null, "Ana Lima")).toEqual({ action: "ask", reason: "ambiguous", count: 2 });
+    expect(decide(null, "Ana")).toEqual({ action: "ask", reason: "none" });
+  });
+
+  it("com paciente selecionado e mesmo nome: mantém sem aviso", () => {
+    expect(decide("Mariana Souza", " MARIANA souza ")).toEqual({ action: "keep" });
+  });
+
+  it("com paciente selecionado e nome diferente: nunca troca, só avisa", () => {
+    expect(decide("Ana Lima", "Mariana Souza")).toEqual({ action: "warn" });
+    expect(decide("Mariana Souza", "Ana")).toEqual({ action: "warn" });
+  });
+});
+
 describe("medicamentos ditados", () => {
   it("lista vazia ou só placeholder: o ditado substitui", () => {
     expect(mergeDictatedMedications([empty], [med("Dipirona")])).toEqual([med("Dipirona")]);
@@ -50,6 +75,21 @@ describe("medicamentos ditados", () => {
       med("", "500mg"),
       med("Dipirona"),
     ]);
+  });
+
+  it("medicamento ditado com o mesmo nome substitui o preenchido no lugar, sem duplicar", () => {
+    const current = [med("Amoxicilina", "500mg"), med("Dipirona", "1g")];
+    expect(mergeDictatedMedications(current, [med("  AMOXICILINA ", "875mg"), med("Omeprazol")])).toEqual([
+      med("  AMOXICILINA ", "875mg"),
+      med("Dipirona", "1g"),
+      med("Omeprazol"),
+    ]);
+  });
+
+  it("não altera a lista original", () => {
+    const current = [med("Amoxicilina", "500mg")];
+    mergeDictatedMedications(current, [med("Amoxicilina", "875mg")]);
+    expect(current).toEqual([med("Amoxicilina", "500mg")]);
   });
 
   it("ditado sem medicamentos não mexe na lista", () => {

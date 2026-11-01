@@ -73,6 +73,8 @@ export function PrescriptionTemplatesBar({ medications, observations, onApply }:
   const [saving, setSaving] = useState(false);
   // Modelo aguardando confirmação de exclusão.
   const [toDelete, setToDelete] = useState<Template | null>(null);
+  // Menu controlado: fecha antes de abrir a confirmação (evita a tela travada do Radix).
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const load = async () => {
     const { data } = await supabase
@@ -134,7 +136,8 @@ export function PrescriptionTemplatesBar({ medications, observations, onApply }:
 
   return (
     <div className="flex flex-wrap gap-2">
-      <DropdownMenu>
+      {/* modal={false}: o menu não trava o body, então só o AlertDialog mexe em pointer-events */}
+      <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen} modal={false}>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm">
             <Library className="h-4 w-4 mr-2" />
@@ -166,6 +169,7 @@ export function PrescriptionTemplatesBar({ medications, observations, onApply }:
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                  setMenuOpen(false);
                   setToDelete(t);
                 }}
               >

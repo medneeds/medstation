@@ -68,10 +68,9 @@ export function SaveToPatientButton({ content, assistantLabel }: { content: stri
         onClick={() => setOpen(true)}
         className="h-11 min-w-11 md:h-7 md:min-w-0 px-2 gap-1.5 text-xs"
         title="Salvar na ficha de um paciente"
-        aria-label="Salvar na ficha do paciente"
       >
         {savedTo ? <Check className="h-3 w-3 text-primary" /> : <UserRound className="h-3 w-3" />}
-        <span className={savedTo ? "text-primary hidden md:inline" : "hidden md:inline"}>
+        <span className={savedTo ? "text-primary sr-only md:not-sr-only" : "sr-only md:not-sr-only"}>
           {savedTo ? "Na ficha" : "Salvar na ficha"}
         </span>
       </Button>

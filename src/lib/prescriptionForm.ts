@@ -41,6 +41,32 @@ export function matchDictatedPatient<T extends { name: string }>(
   return { status: "none" };
 }
 
+export type DictatedPatientAction<T> =
+  | { action: "select"; patient: T }
+  | { action: "ask"; reason: "ambiguous" | "none"; count?: number }
+  | { action: "keep" }
+  | { action: "warn" };
+
+/**
+ * O que fazer com o paciente ditado. Com paciente já selecionado, nunca troca:
+ * só avisa ("warn") se o nome ditado for diferente. Sem paciente selecionado,
+ * seleciona apenas com um único nome completo idêntico; senão pede para escolher.
+ */
+export function decideDictatedPatient<T>(
+  selectedName: string | null,
+  match: DictatedPatientMatch<T>,
+  dictatedName: string,
+): DictatedPatientAction<T> {
+  if (selectedName !== null) {
+    return normalizePersonName(selectedName) === normalizePersonName(dictatedName || "")
+      ? { action: "keep" }
+      : { action: "warn" };
+  }
+  if (match.status === "match") return { action: "select", patient: match.patient };
+  if (match.status === "ambiguous") return { action: "ask", reason: "ambiguous", count: match.count };
+  return { action: "ask", reason: "none" };
+}
+
 /** Verdadeiro quando o médico já escreveu algo em qualquer campo do medicamento. */
 export function isMedicationFilled(med: PrescriptionMedication): boolean {
   return [med.name, med.dosage, med.frequency, med.duration, med.instructions].some((v) => (v || "").trim() !== "");
@@ -48,7 +74,9 @@ export function isMedicationFilled(med: PrescriptionMedication): boolean {
 
 /**
  * Junta os medicamentos ditados aos já preenchidos: o que foi digitado fica e o ditado
- * entra depois. Linhas vazias (placeholder) são descartadas. Sem nada preenchido,
+ * entra depois. Se o ditado traz um medicamento com o mesmo nome (ignorando acentos,
+ * maiúsculas e espaços) de um já preenchido, ele substitui esse no mesmo lugar em vez
+ * de duplicar. Linhas vazias (placeholder) são descartadas. Sem nada preenchido,
  * o ditado substitui a lista, como antes.
  */
 export function mergeDictatedMedications(
@@ -56,8 +84,15 @@ export function mergeDictatedMedications(
   dictated: PrescriptionMedication[],
 ): PrescriptionMedication[] {
   if (dictated.length === 0) return current;
-  const filled = current.filter(isMedicationFilled);
-  return filled.length ? [...filled, ...dictated] : dictated;
+  const merged = current.filter(isMedicationFilled);
+  if (merged.length === 0) return dictated;
+  for (const med of dictated) {
+    const key = normalizePersonName(med.name || "");
+    const index = key ? merged.findIndex((m) => normalizePersonName(m.name || "") === key) : -1;
+    if (index >= 0) merged[index] = med;
+    else merged.push(med);
+  }
+  return merged;
 }
 
 export const DEFAULT_VALIDITY_DAYS = 30;

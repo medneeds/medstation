@@ -150,7 +150,7 @@ export function LeadForm({
       className={`rounded-3xl border border-border/70 bg-card/90 backdrop-blur-sm p-5 md:p-7 shadow-[0_24px_60px_-32px_hsl(var(--primary)/0.45)] ${className}`}
     >
       {sent ? (
-        <div ref={sentRef} role="status" tabIndex={-1} className="outline-none">
+        <div ref={sentRef} tabIndex={-1} className="outline-none">
           <div className="flex items-center gap-2">
             <MailCheck className="w-5 h-5 text-primary shrink-0" />
             <p className="text-sm font-semibold">Confira seu e-mail</p>

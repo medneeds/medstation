@@ -87,7 +87,6 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 
 import { SaveToVaultButton } from "@/components/chat/SaveToVaultButton";
 import { SaveToPatientButton } from "@/components/chat/SaveToPatientButton";
-import { clearChatDraft, draftToRestore, readChatDraft, writeChatDraft } from "@/components/chat/chatDraft";
 import { 
   Send, 
   Paperclip, 
@@ -602,27 +601,6 @@ export function AgentChat({
     }
   }, []);
 
-  // Rascunho: restaura depois do agent-prefill (o updater vê o prefill, se houver) e só com o campo vazio
-  useEffect(() => {
-    const saved = readChatDraft(agentType);
-    setMessage((prev) => draftToRestore(prev, saved) ?? prev);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Rascunho: grava com atraso para não escrever a cada tecla; no desmonte grava o último texto.
-  // Durante o envio o campo fica vazio de propósito: o rascunho só sai quando o envio dá certo.
-  const draftStateRef = useRef({ message, isLoading });
-  draftStateRef.current = { message, isLoading };
-  useEffect(() => {
-    if (isLoading) return;
-    const timer = setTimeout(() => writeChatDraft(agentType, message), 400);
-    return () => clearTimeout(timer);
-  }, [message, agentType, isLoading]);
-  useEffect(() => () => {
-    const { message: last, isLoading: sending } = draftStateRef.current;
-    if (!sending) writeChatDraft(agentType, last);
-  }, [agentType]);
-
   // ESC to exit focus mode
 
   useEffect(() => {
@@ -1006,6 +984,7 @@ export function AgentChat({
     if (!user || !session) {
       setCurrentConversation(baseConversation);
       setRadiologyAttachments(pendingFiles);
+      setMessage((prev) => prev || typedText);
       setIsLoading(false);
       toast({ title: "Sessão expirada", description: "Faça login novamente para continuar a conversa.", variant: "destructive" });
       navigate("/auth");
@@ -1192,7 +1171,6 @@ export function AgentChat({
       setConversations((prev) =>
         prev.map((c) => (c.id === conversation!.id ? { ...c, last_message: lastPreview, updated_at: new Date().toISOString() } : c)),
       );
-      clearChatDraft(agentType);
       setResponseAnnouncement("Resposta pronta");
     } catch (error: unknown) {
       console.error("[interpretador] error:", error);
@@ -1247,8 +1225,9 @@ export function AgentChat({
     }
     setValidationAnnouncement("");
 
-    // Texto que estava no campo: volta para o campo se o envio falhar.
-    const typedText = message;
+    // Texto do campo: volta para o campo se o envio falhar. Envios prontos (ex.: Comprimir)
+    // não usam nem limpam o campo, então não há o que devolver.
+    const typedText = presetContent ? "" : message;
     const messageContent = presetContent ?? message;
     const baseConversation = currentConversation;
     const modeMetadata = agentType === "clinicus"
@@ -1291,7 +1270,7 @@ export function AgentChat({
         };
 
     flushSync(() => {
-      setMessage("");
+      if (!presetContent) setMessage("");
       setIsLoading(true);
       setResponseAnnouncement("");
       setCurrentConversation(optimisticConversation);
@@ -1303,6 +1282,7 @@ export function AgentChat({
     if (!user) {
       // rollback optimistic UI
       setCurrentConversation(baseConversation);
+      setMessage((prev) => prev || typedText);
       setIsLoading(false);
       toast({
         title: "Sessão expirada",
@@ -1314,8 +1294,8 @@ export function AgentChat({
     }
 
     let conversation = baseConversation;
-    // Fora do try para que o texto já recebido sobreviva a uma falha no meio do caminho.
-    let assistantContent = "";
+    // Mensagem do médico gravada no banco (null = não gravou); lida no catch.
+    let savedUserMessage: Promise<Message | null> | null = null;
 
     try {
       // Create conversation if it doesn't exist (background)
@@ -1342,16 +1322,24 @@ export function AgentChat({
       }
 
       // Persist user message in background; do NOT block UI
-      const userInsertPromise = supabase
-        .from("messages")
-        .insert({
-          conversation_id: conversation.id,
-          role: "user",
-          content: messageContent,
-          ...(modeMetadata && { metadata: modeMetadata }),
-        })
-        .select()
-        .single();
+      // O builder do PostgREST é "thenable" e dispara a query a cada await/then:
+      // Promise.resolve garante um único INSERT mesmo lendo o resultado de novo no catch.
+      const userInsertPromise = Promise.resolve(
+        supabase
+          .from("messages")
+          .insert({
+            conversation_id: conversation.id,
+            role: "user",
+            content: messageContent,
+            ...(modeMetadata && { metadata: modeMetadata }),
+          })
+          .select()
+          .single(),
+      );
+      savedUserMessage = userInsertPromise.then(
+        ({ data, error }) => (error || !data ? null : { ...data, role: data.role as "user" | "assistant" }),
+        () => null,
+      );
 
       // Reconcile optimistic ID once persisted (non-blocking) and clear pending state
       userInsertPromise.then(({ data: userMsgData, error: userError }) => {
@@ -1409,6 +1397,7 @@ export function AgentChat({
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let textBuffer = "";
+      let assistantContent = "";
 
       while (true) {
         const { done, value } = await reader.read();
@@ -1491,37 +1480,31 @@ export function AgentChat({
           ? { ...c, last_message: messageContent, updated_at: new Date().toISOString() }
           : c
       ));
-      clearChatDraft(agentType);
       setResponseAnnouncement("Resposta pronta");
 
     } catch (error: any) {
       console.error("Error sending message:", error);
 
-      const partialAnswer = assistantContent;
-      if (partialAnswer.trim()) {
-        // Já chegou texto da resposta: mantém na tela (não salvo) em vez de descartar
-        setCurrentConversation((prev) => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            messages: prev.messages.map((m) => {
-              if (m.id === "streaming-temp") return { ...m, id: `unsaved-assistant-${Date.now()}`, content: partialAnswer };
-              if (m.id === optimisticUserId) return { ...m, pending: false };
-              return m;
-            }),
-          };
-        });
-      } else if (conversation) {
-        // Remove streaming message on error
+      if (conversation) {
+        // Se a mensagem do médico foi gravada, ela continua visível (e copiável) na conversa;
+        // senão, o texto volta para o campo. Assim não perde o texto nem duplica ao reenviar.
+        let savedUser: Message | null = null;
+        try {
+          savedUser = savedUserMessage ? await savedUserMessage : null;
+        } catch {
+          savedUser = null;
+        }
         const messagesWithoutStreaming = conversation.messages.filter(m => m.id !== "streaming-temp");
-        setCurrentConversation({ ...conversation, messages: messagesWithoutStreaming });
+        setCurrentConversation({
+          ...conversation,
+          messages: savedUser ? [...messagesWithoutStreaming, savedUser] : messagesWithoutStreaming,
+        });
+        if (!savedUser) setMessage((prev) => prev || typedText);
       } else {
-        // A conversa nem chegou a ser criada: volta ao estado anterior (sem "Pensando...")
+        // A conversa nem chegou a ser criada: volta ao estado anterior e devolve o texto
         setCurrentConversation(baseConversation);
+        setMessage((prev) => prev || typedText);
       }
-
-      // Nunca perde o que o médico digitou
-      setMessage((prev) => prev || typedText);
 
       toast({
         title: "Erro ao enviar mensagem",
@@ -2529,10 +2512,9 @@ export function AgentChat({
                         onClick={() => setReadingMessage(msg)}
                         className="h-11 min-w-11 md:h-7 md:min-w-0 px-2 gap-1.5 text-xs"
                         title="Abrir em leitura ampliada"
-                        aria-label="Abrir em leitura ampliada"
                       >
                         <BookOpen className="h-3 w-3" />
-                        <span className="hidden md:inline">Ler</span>
+                        <span className="sr-only md:not-sr-only">Ler</span>
                       </Button>
                       <Button
                         variant="ghost"
@@ -2544,10 +2526,9 @@ export function AgentChat({
                         }
                         className="h-11 min-w-11 md:h-7 md:min-w-0 px-2 gap-1.5 text-xs"
                         title="Copiar em caixa alta"
-                        aria-label="Copiar em caixa alta"
                       >
                         <FileUp className="h-3 w-3" />
-                        <span className="hidden md:inline">Maiúscula</span>
+                        <span className="sr-only md:not-sr-only">Maiúscula</span>
                       </Button>
                       <SaveToVaultButton content={visibleContent(msg.content)} assistantLabel={agentName} />
                       <SaveToPatientButton content={visibleContent(msg.content)} assistantLabel={agentName} />
@@ -2558,7 +2539,6 @@ export function AgentChat({
                         onClick={() => copyToClipboard(visibleContent(msg.content), msg.id)}
                         className="h-11 min-w-11 md:h-7 md:min-w-0 px-2 gap-1.5 text-xs"
                         title="Copiar texto"
-                        aria-label="Copiar texto"
                       >
                         {copiedMessageId === msg.id ? (
                           <>
