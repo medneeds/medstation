@@ -32,6 +32,8 @@ export const MONTHLY_PIX_PURPOSE = "monthly_pix_one_time_access";
 export const BLACK_ANNUAL_PURPOSE = "black_annual_one_time_access";
 
 export const ANNUAL_PRODUCT_ID = "prod_V4jGKeBPH2hGYg";
+/** Produto próprio da Black no catálogo do Stripe (separa vendas e relatórios). */
+export const BLACK_PRODUCT_ID = "prod_VXxBDmIzduPvt1";
 export const ONE_TIME_CURRENCY = "brl";
 
 export type OneTimePlan = {
@@ -79,7 +81,7 @@ export const ONE_TIME_PLANS: Record<string, OneTimePlan> = {
     purpose: BLACK_ANNUAL_PURPOSE,
     amountCents: BLACK_OFFER.amountCents,
     currency: ONE_TIME_CURRENCY,
-    productId: ANNUAL_PRODUCT_ID,
+    productId: BLACK_PRODUCT_ID,
     category: "annual_one_time",
     accessPeriod: "annual_12m",
     accessDays: 365,
