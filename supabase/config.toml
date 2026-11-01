@@ -85,6 +85,10 @@ verify_jwt = false
 [functions.public-assistants-chat]
 verify_jwt = false
 
+[functions.copilot-chat]
+# Login conferido dentro da função (getUserIdFromAuth), como no agent-chat.
+verify_jwt = false
+
 [functions.send-welcome-lead]
 verify_jwt = false
 

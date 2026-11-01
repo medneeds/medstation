@@ -33,7 +33,7 @@ const empty: Form = { full_name: "", email: "", phone: "", medical_school: "", c
 
 const benefits = [
   "Anamneses, evoluções e sumários prontos para revisar",
-  "Copiloto para discutir casos e condutas no plantão",
+  "Assistentes para discutir casos e condutas no plantão",
   "Professor clínico para estudar diagnósticos e síndromes",
 ];
 
@@ -130,7 +130,7 @@ export default function Internos() {
           </h1>
           <p className="mt-6 text-base md:text-xl leading-relaxed text-muted-foreground">
             Sobreviva ao internato e aos seus primeiros plantões com segurança. Produza mais, digite menos e tenha um
-            copiloto de IA treinado em medicina, com{" "}
+            assistentes de IA feitos para a prática médica, com{" "}
             <strong className="text-foreground">liberação para os {INTERN_CAMPAIGN.spots} primeiros</strong>, por{" "}
             {INTERN_CAMPAIGN.courtesyDays} dias.
           </p>

@@ -152,7 +152,7 @@ export function AssistantOrbit() {
           <span className="italic text-primary">Digite menos.</span>
         </h2>
         <p className="mt-4 text-sm xl:text-base text-muted-foreground leading-relaxed max-w-[20rem]">
-          Documentação, Copiloto e Fluxo em uma só plataforma. Em segundos, no seu fluxo.
+          Documentação, Decisão e Fluxo em uma só plataforma. Em segundos, no seu fluxo.
         </p>
       </div>
       <style>{`

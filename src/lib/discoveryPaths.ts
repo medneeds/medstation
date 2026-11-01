@@ -61,8 +61,10 @@ export const DISCOVERY_PATHS: DiscoveryPath[] = [
     ],
   },
   {
+    // id interno segue "copilot" (analytics e onboarding); o nome exibido é Decisão,
+    // porque "Copiloto" agora é o chat de ajuda da plataforma.
     id: "copilot",
-    label: "Copiloto",
+    label: "Decisão",
     confirmation: "Consulte, calcule e discuta decisões clínicas com apoio contextual.",
     tagline: "Ganhe uma segunda camada de raciocínio no plantão.",
     icon: Activity,

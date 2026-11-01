@@ -132,7 +132,7 @@ export default function Pricing() {
       <Seo
         path="/pricing"
         title="Plano único — MedStation"
-        description="Um único plano com a plataforma inteira: Documentação, Copiloto e Fluxo. Teste 7 dias grátis, sem cartão."
+        description="Um único plano com a plataforma inteira: Documentação, Decisão e Fluxo. Teste 7 dias grátis, sem cartão."
       />
       <div className="container mx-auto px-4 py-10 md:py-16 lg:py-20 max-w-5xl">
         {/* Header */}
@@ -144,7 +144,7 @@ export default function Pricing() {
             Produza mais. <span className="italic text-primary">Digite menos.</span>
           </h1>
           <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
-            Uma assinatura, a plataforma inteira: Documentação, Copiloto e Fluxo, sem módulos
+            Uma assinatura, a plataforma inteira: Documentação, Decisão e Fluxo, sem módulos
             separados.
           </p>
 
