@@ -621,12 +621,13 @@ export default function Black() {
               Economize até <span className="text-offer-gold">40 horas</span> de trabalho burocrático e repetitivo por mês na
               sua prática médica.<sup className="text-offer-muted">*</sup>
             </p>
+            <VslVideo className="mt-6" />
             {active && (
               <Button
-                className={cn("mt-6 h-12 w-full text-base lg:hidden", GOLD_BUTTON)}
+                className={cn("mt-4 h-auto min-h-12 w-full whitespace-normal py-3 text-base leading-snug lg:hidden", GOLD_BUTTON)}
                 onClick={() => scrollToCheckout("black_hero_mobile")}
               >
-                Garantir meu ano por {brl(PRICE)} <ArrowRight className="w-4 h-4 ml-1.5" />
+                Quero garantir meu ano com a MedStation agora <ArrowRight className="w-4 h-4 ml-1.5 shrink-0" />
               </Button>
             )}
             <p className="mt-4 max-w-xl text-base md:text-lg text-offer-muted leading-relaxed">
@@ -654,7 +655,6 @@ export default function Black() {
                 O pagamento não foi concluído. Sua oferta continua aqui até 30/11.
               </p>
             )}
-            <VslVideo className="mb-6" />
             <CheckoutCard status={status} />
           </div>
         </div>
