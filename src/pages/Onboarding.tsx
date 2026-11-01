@@ -50,6 +50,26 @@ export function isValidBirthDate(value: string): boolean {
   return year >= 1900 && d.getTime() < Date.now();
 }
 
+/**
+ * Nascimento e sexo são opcionais (menos atrito no primeiro acesso); se a data
+ * for preenchida, precisa ser válida. O WhatsApp segue obrigatório: é o canal
+ * de suporte e de avisos da conta.
+ */
+export function isOnboardingProfileValid(p: {
+  fullName: string;
+  phone: string;
+  birthDate: string;
+  crm: string;
+  crmState: string;
+}): boolean {
+  return (
+    p.fullName.trim().length >= 3 &&
+    isValidPhoneBr(p.phone) &&
+    (!p.birthDate || isValidBirthDate(p.birthDate)) &&
+    (!p.crm.trim() || !!p.crmState)
+  );
+}
+
 const TOOL_LABELS: Record<string, { title: string; description: string; url: string }> = (() => {
   const map: Record<string, { title: string; description: string; url: string }> = {};
   for (const tool of ALL_ASSISTANTS) {
@@ -130,12 +150,7 @@ export default function Onboarding() {
   }, [surveyValid, routinePains, workSettings, primaryGoals]);
 
 
-  const profileValid =
-    fullName.trim().length >= 3 &&
-    isValidPhoneBr(phone) &&
-    isValidBirthDate(birthDate) &&
-    !!gender &&
-    (!crm.trim() || !!crmState);
+  const profileValid = isOnboardingProfileValid({ fullName, phone, birthDate, crm, crmState });
 
   const saveProfile = async () => {
     if (!userId) return false;
@@ -144,8 +159,8 @@ export default function Onboarding() {
       .update({
         full_name: fullName.trim(),
         phone: phone.replace(/\D/g, ""),
-        date_of_birth: birthDate,
-        gender,
+        date_of_birth: birthDate || null,
+        gender: gender || null,
         crm: crm.trim() || null,
         crm_state: crm.trim() ? crmState || null : null,
       })
@@ -280,7 +295,7 @@ export default function Onboarding() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="ob-birth">Data de nascimento</Label>
+                    <Label htmlFor="ob-birth">Data de nascimento (opcional)</Label>
                     <Input
                       id="ob-birth"
                       type="date"
@@ -288,14 +303,14 @@ export default function Onboarding() {
                       onChange={(e) => setBirthDate(e.target.value)}
                       className="h-12"
                     />
-                    {showErrors && !isValidBirthDate(birthDate) && (
+                    {showErrors && !!birthDate && !isValidBirthDate(birthDate) && (
                       <p className="text-xs text-destructive">Informe uma data válida.</p>
                     )}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Sexo</Label>
+                  <Label>Sexo (opcional)</Label>
                   <Select value={gender} onValueChange={setGender}>
                     <SelectTrigger className="h-12">
                       <SelectValue placeholder="Selecione" />
@@ -309,9 +324,6 @@ export default function Onboarding() {
                   <p className="text-xs text-muted-foreground">
                     Usado apenas para o tratamento dentro da plataforma.
                   </p>
-                  {showErrors && !gender && (
-                    <p className="text-xs text-destructive">Selecione uma opção.</p>
-                  )}
                 </div>
 
                 {isIntern ? (

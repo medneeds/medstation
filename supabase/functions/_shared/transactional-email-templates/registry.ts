@@ -7,6 +7,7 @@ import { template as arsenalMedBonus } from './arsenal-med-bonus.tsx'
 import { template as loginCode } from './login-code.tsx'
 import { template as internCourtesyWelcome } from './intern-courtesy-welcome.tsx'
 import { template as boletoReminder } from './boleto-reminder.tsx'
+import { previewTemplate as purchaseActivationPreview } from '../email-templates/purchase-activation.tsx'
 
 export interface TemplateEntry {
   // deno-lint-ignore no-explicit-any
@@ -28,4 +29,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'login-code': loginCode,
   'intern-courtesy-welcome': internCourtesyWelcome,
   'boleto-reminder': boletoReminder,
+  // Só prévia: o envio real é pelo auth-email-hook (precisa do link de ativação).
+  'purchase-activation-preview': purchaseActivationPreview,
 }

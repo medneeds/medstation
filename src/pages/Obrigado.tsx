@@ -19,10 +19,35 @@ import {
   Receipt,
 } from "lucide-react";
 import { LogoMark } from "@/components/LogoMark";
+import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
+import { COMPANY } from "@/config/company";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import {
+  purchaseActivationRedirect,
+  resendSecondsLeft,
+} from "../../supabase/functions/_shared/purchase-activation";
 
-type Status = "processing" | "confirmed" | "pending" | "login" | "set-password" | "error" | "idle";
+// "activate": conta criada pelo pagamento e ainda sem senha. Nunca pedimos
+// senha para ela: o acesso chega por e-mail (link de ativação) ou pelo Google.
+type Status = "processing" | "confirmed" | "pending" | "login" | "activate" | "error" | "idle";
+
+/** Segundos até poder pedir outro link; só re-renderiza enquanto conta. */
+function useResendCountdown(lastSentAt: number | null) {
+  const [now, setNow] = useState(() => Date.now());
+  const left = resendSecondsLeft(lastSentAt, now);
+  useEffect(() => {
+    if (!lastSentAt) return;
+    setNow(Date.now());
+    const id = window.setInterval(() => {
+      const current = Date.now();
+      setNow(current);
+      if (resendSecondsLeft(lastSentAt, current) === 0) window.clearInterval(id);
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [lastSentAt]);
+  return left;
+}
 
 const NEXT_STEPS = [
   {
@@ -56,7 +81,10 @@ export default function Obrigado() {
   const [loading, setLoading] = useState(false);
   const [userExists, setUserExists] = useState(false);
   const [message, setMessage] = useState("");
-  const [resetSent, setResetSent] = useState(false);
+  const [accessEmailSent, setAccessEmailSent] = useState(false);
+  const [lastSentAt, setLastSentAt] = useState<number | null>(null);
+  const [linkLoading, setLinkLoading] = useState(false);
+  const resendLeft = useResendCountdown(lastSentAt);
   const [voucherUrl, setVoucherUrl] = useState<string | null>(null);
   const [authenticated, setAuthenticated] = useState(false);
   const ran = useRef(false);
@@ -114,17 +142,24 @@ export default function Obrigado() {
           void supabase.functions.invoke("check-subscription");
         }
 
-        if (data.passwordWasSkipped && !data.userExists && !isLogged) {
-          setStatus("set-password");
+        // Conta nova (ou nunca ativada): não há senha. Mostra "enviamos seu
+        // acesso" com reenvio do link, em vez de um login com senha.
+        const needsActivation = typeof data.needsActivation === "boolean"
+          ? data.needsActivation
+          : !!data.passwordWasSkipped && !data.userExists;
+        if (needsActivation && !isLogged) {
+          const sent = !!data.accessEmailSent;
+          setAccessEmailSent(sent);
+          // O e-mail acabou de sair: o próximo pedido só depois da espera.
+          if (sent) setLastSentAt(Date.now());
+          setStatus("activate");
           return;
         }
         setStatus("confirmed");
         setMessage(
           isLogged
             ? "Sua assinatura está ativa e o acesso completo já foi liberado."
-            : data.userExists
-              ? "Sua assinatura está ativa. Entre para continuar de onde parou."
-              : "Sua conta foi criada e sua assinatura está ativa.",
+            : "Pagamento confirmado. Entre na sua conta para continuar de onde parou.",
         );
         return;
       } catch (err: any) {
@@ -187,23 +222,42 @@ export default function Obrigado() {
     }
   };
 
-  const handleSendPasswordEmail = async () => {
-    setLoading(true);
+  /**
+   * Link de acesso por e-mail, sem senha. Nunca cria conta (shouldCreateUser
+   * false): quem não pagou não ganha conta por aqui, e o acesso continua vindo
+   * só do webhook. Espera de 60 s entre pedidos (o Supabase também limita).
+   */
+  const sendAccessLink = async (redirectTo: string) => {
+    const target = email.trim();
+    if (!target || linkLoading || resendLeft > 0) return;
+    setLinkLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+      const { error } = await supabase.auth.signInWithOtp({
+        email: target,
+        options: { shouldCreateUser: false, emailRedirectTo: redirectTo },
       });
-      if (error) throw error;
-      setResetSent(true);
-      toast({ title: "Link enviado", description: `Verifique ${email} para definir sua senha.` });
+      if (error) {
+        const rateLimited = (error as { status?: number }).status === 429
+          || /rate|seconds|security purposes/i.test(error.message);
+        if (rateLimited) {
+          setLastSentAt(Date.now());
+          toast({ title: "Aguarde um minuto", description: "Acabamos de enviar um link. Confira a caixa de entrada e o spam." });
+          return;
+        }
+        throw error;
+      }
+      setLastSentAt(Date.now());
+      setAccessEmailSent(true);
+      toast({ title: "Link enviado", description: `Abra o e-mail que chegou em ${target} para entrar.` });
     } catch (error: any) {
+      console.error("[obrigado] access link error", error);
       toast({
         variant: "destructive",
-        title: "Não foi possível enviar o link",
-        description: error.message || "Tente novamente em instantes.",
+        title: "Não conseguimos enviar o link agora",
+        description: `Tente de novo em instantes ou escreva para ${COMPANY.contactEmail}.`,
       });
     } finally {
-      setLoading(false);
+      setLinkLoading(false);
     }
   };
 
@@ -366,36 +420,86 @@ export default function Obrigado() {
             </motion.div>
           )}
 
-          {status === "set-password" && (
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 text-center">
-              <div className="inline-flex w-14 h-14 rounded-full bg-primary/10 border border-primary/30 items-center justify-center">
-                <CheckCircle2 className="w-7 h-7 text-primary" strokeWidth={1.7} />
-              </div>
-              <div>
-                <h1 className="text-2xl font-semibold tracking-tight">Obrigado pela confiança</h1>
-                <p className="text-muted-foreground mt-2 text-sm">
-                  Sua conta foi criada com {email}. Como o pagamento veio por carteira digital,
-                  enviamos um link seguro para você definir a senha de acesso.
+          {status === "activate" && (
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-md mx-auto">
+              <div className="text-center">
+                <div className="inline-flex w-14 h-14 rounded-full bg-primary/10 border border-primary/30 items-center justify-center">
+                  <Mail className="w-7 h-7 text-primary" strokeWidth={1.7} />
+                </div>
+                <p className="mt-4 text-xs uppercase tracking-[0.2em] text-primary font-medium">Pagamento confirmado</p>
+                <h1 className="text-2xl md:text-3xl font-semibold tracking-tight mt-2">
+                  {accessEmailSent ? "Enviamos seu acesso para" : "Falta ativar seu acesso"}
+                </h1>
+                {accessEmailSent && (
+                  <p className="mt-1 text-base font-medium break-all">{email}</p>
+                )}
+                <p className="text-muted-foreground mt-3 text-sm leading-relaxed">
+                  {accessEmailSent
+                    ? "Abra o e-mail da MedStation e toque em “Ativar meu acesso”. Você entra direto, sem criar senha."
+                    : <>Peça o link de acesso: ele chega em <strong className="text-foreground break-all">{email}</strong> e você entra direto, sem criar senha.</>}
                 </p>
               </div>
-              {!resetSent ? (
-                <Button onClick={handleSendPasswordEmail} disabled={loading} className="w-full h-12 shadow-md">
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (<>Receber link por email <ArrowRight className="w-4 h-4 ml-2" /></>)}
+
+              <div className="space-y-2">
+                <Button
+                  onClick={() => sendAccessLink(purchaseActivationRedirect(window.location.origin))}
+                  disabled={linkLoading || resendLeft > 0 || !email}
+                  variant={accessEmailSent ? "outline" : "default"}
+                  className="w-full h-12"
+                >
+                  {linkLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : resendLeft > 0 ? (
+                    `Reenviar link de acesso em ${resendLeft} s`
+                  ) : accessEmailSent ? (
+                    "Reenviar link de acesso"
+                  ) : (
+                    "Enviar link de acesso"
+                  )}
                 </Button>
-              ) : (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-center gap-2 p-3 bg-muted/50 rounded-lg border text-sm">
-                    <Mail className="w-4 h-4 text-primary" />
-                    <span>Link enviado para {email}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Não chegou? Verifique o spam ou{" "}
-                    <Button variant="link" className="h-auto p-0 text-xs" onClick={handleSendPasswordEmail} disabled={loading}>
-                      reenviar
-                    </Button>.
+                {accessEmailSent && (
+                  <p className="text-xs text-center text-muted-foreground">
+                    Não chegou em 2 minutos? Veja o spam e a aba Promoções.
                   </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-border" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">ou</span>
+                  </div>
                 </div>
-              )}
+                <GoogleAuthButton
+                  label="Entrar com Google"
+                  redirectTo="/onboarding"
+                  source="obrigado"
+                  hideDivider
+                />
+                <p className="text-xs text-center text-muted-foreground">
+                  Use a conta Google deste mesmo e-mail.
+                </p>
+              </div>
+
+              <div className="space-y-2 pt-4 border-t border-hairline text-xs text-muted-foreground">
+                <p className="flex items-start gap-2">
+                  <ShieldCheck className="w-4 h-4 text-primary mt-0.5 shrink-0" strokeWidth={1.7} />
+                  Garantia de 7 dias: se desistir, devolvemos 100% do valor.
+                </p>
+                <p className="flex items-start gap-2">
+                  <HeartHandshake className="w-4 h-4 text-primary mt-0.5 shrink-0" strokeWidth={1.7} />
+                  <span>
+                    E-mail errado ou não consegue entrar? Escreva para{" "}
+                    <a href={`mailto:${COMPANY.contactEmail}`} className="underline underline-offset-2 text-foreground">
+                      {COMPANY.contactEmail}
+                    </a>
+                    .
+                  </span>
+                </p>
+              </div>
             </motion.div>
           )}
 
@@ -411,15 +515,28 @@ export default function Obrigado() {
                 <p className="text-muted-foreground mt-2 text-sm">
                   {userExists
                     ? "Faça login para acessar sua assinatura."
-                    : "Entre com a senha que você definiu no checkout."}
+                    : "Entre com o e-mail usado no pagamento."}
                 </p>
               </div>
 
               <form onSubmit={handleLogin} className="space-y-4">
-                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border">
-                  <Mail className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">{email}</span>
-                </div>
+                {userExists && email ? (
+                  <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border">
+                    <Mail className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm font-medium break-all">{email}</span>
+                  </div>
+                ) : (
+                  <Input
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    placeholder="Seu e-mail"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="h-12"
+                    required
+                  />
+                )}
                 <Input
                   type="password"
                   placeholder="Sua senha"
@@ -433,6 +550,25 @@ export default function Obrigado() {
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (<>Entrar e começar <ArrowRight className="w-4 h-4 ml-2" /></>)}
                 </Button>
               </form>
+
+              <div className="space-y-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-11"
+                  onClick={() => sendAccessLink(`${window.location.origin}/dashboard`)}
+                  disabled={linkLoading || resendLeft > 0 || !email.trim()}
+                >
+                  {linkLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : resendLeft > 0 ? (
+                    `Link enviado · reenviar em ${resendLeft} s`
+                  ) : (
+                    "Entrar sem senha: receber link por e-mail"
+                  )}
+                </Button>
+                <GoogleAuthButton label="Entrar com Google" redirectTo="/dashboard" source="obrigado" hideDivider />
+              </div>
 
               <p className="text-xs text-center text-muted-foreground">
                 Esqueceu a senha?{" "}

@@ -88,6 +88,6 @@ describe("complete-checkout preserva posse de identidade", () => {
 
   it("usa convite por e-mail para conta nova", () => {
     expect(source).toContain("inviteUserByEmail(email");
-    expect(source).toContain('accountSetup: "invite_sent"');
+    expect(source).toContain('checkoutAccountFields("invite_sent")');
   });
 });

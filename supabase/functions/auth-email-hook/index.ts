@@ -7,6 +7,18 @@ import { MagicLinkEmail } from '../_shared/email-templates/magic-link.tsx'
 import { RecoveryEmail } from '../_shared/email-templates/recovery.tsx'
 import { EmailChangeEmail } from '../_shared/email-templates/email-change.tsx'
 import { ReauthenticationEmail } from '../_shared/email-templates/reauthentication.tsx'
+import { PurchaseActivationEmail } from '../_shared/email-templates/purchase-activation.tsx'
+import { createClient } from 'npm:@supabase/supabase-js@2'
+import { findUserByEmail } from '../_shared/admin-users.ts'
+import {
+  PURCHASE_ACTIVATION_SUBJECT,
+  mayBePurchaseActivation,
+  paymentPlanOf,
+  purchasedPlanSummary,
+  shouldUsePurchaseActivationEmail,
+  type ActivationAuthUser,
+  type AuthEmailAction,
+} from '../_shared/purchase-activation.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,6 +32,8 @@ const SENDER_DOMAIN = "notify.medstation-ai.com.br"
 const ROOT_DOMAIN = "medstation-ai.com.br"
 const FROM_DOMAIN = "medstation-ai.com.br"
 const SITE_URL = `https://${ROOT_DOMAIN}`
+// Mesmo contato de src/config/company.ts (COMPANY.contactEmail).
+const SUPPORT_EMAIL = "contato@medstation-ai.com.br"
 
 // Template mapping for preview mode
 const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
@@ -29,6 +43,8 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
   recovery: RecoveryEmail,
   email_change: EmailChangeEmail,
   reauthentication: ReauthenticationEmail,
+  // Convite vindo de um pagamento confirmado (ver purchaseActivationContent).
+  invite_purchase: PurchaseActivationEmail,
 }
 
 // Sample data for preview mode ONLY (not used in actual email sending).
@@ -68,6 +84,54 @@ const SAMPLE_DATA: Record<string, object> = {
   reauthentication: {
     token: '123456',
   },
+  invite_purchase: {
+    siteName: SITE_NAME,
+    confirmationUrl: SAMPLE_PROJECT_URL,
+    recipient: SAMPLE_EMAIL,
+    planName: 'Black MedStation',
+    planDetails: ['12 meses de acesso completo', 'Pagamento único no cartão de crédito', 'Sem renovação automática'],
+    supportEmail: SUPPORT_EMAIL,
+  },
+}
+
+/**
+ * Conta criada por um pagamento e ainda não ativada: troca o convite genérico
+ * ("você foi convidado… se não esperava, ignore", que parece spam para quem
+ * acabou de pagar) pelo e-mail de compra com o botão de ativação. Vale também
+ * para o "Reenviar link de acesso" da /obrigado (signup/magiclink com
+ * ?ativacao=compra no redirect). Qualquer falha cai no e-mail padrão.
+ */
+async function purchaseActivationContent(
+  actionType: AuthEmailAction,
+  data: { email: string; url: string },
+): Promise<{ subject: string; element: React.ReactElement } | null> {
+  if (!mayBePurchaseActivation(actionType, data.url)) return null
+  try {
+    const url = Deno.env.get('SUPABASE_URL')
+    const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    if (!url || !key) return null
+    const admin = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } })
+    const user = (await findUserByEmail(
+      (params) => admin.auth.admin.listUsers(params) as any,
+      data.email,
+    )) as ActivationAuthUser | null
+    if (!shouldUsePurchaseActivationEmail({ actionType, url: data.url, user })) return null
+    const plan = purchasedPlanSummary(paymentPlanOf(user))
+    return {
+      subject: PURCHASE_ACTIVATION_SUBJECT,
+      element: React.createElement(PurchaseActivationEmail, {
+        siteName: SITE_NAME,
+        confirmationUrl: data.url,
+        recipient: data.email,
+        planName: plan?.name ?? null,
+        planDetails: plan?.details ?? [],
+        supportEmail: SUPPORT_EMAIL,
+      }),
+    }
+  } catch (error) {
+    console.error('[auth-email-hook] purchase activation lookup failed', (error as Error)?.message)
+    return null
+  }
 }
 
 // Preview endpoint handler - returns rendered HTML without sending email
@@ -128,33 +192,33 @@ const handler = createAuthEmailHandler({
   senderDomain: SENDER_DOMAIN,
   sendUrl: Deno.env.get('LOVABLE_SEND_URL'),
   emails: {
-    signup: {
-      subject: 'Confirme seu e-mail — MedStation',
-      render: (data) =>
-        React.createElement(SignupEmail, {
+    signup: async (data) =>
+      (await purchaseActivationContent('signup', data)) ?? {
+        subject: 'Confirme seu e-mail — MedStation',
+        element: React.createElement(SignupEmail, {
           siteName: SITE_NAME,
           siteUrl: SITE_URL,
           recipient: data.email,
           confirmationUrl: data.url,
         }),
-    },
-    invite: {
-      subject: 'Você foi convidado para a MedStation',
-      render: (data) =>
-        React.createElement(InviteEmail, {
+      },
+    invite: async (data) =>
+      (await purchaseActivationContent('invite', data)) ?? {
+        subject: 'Você foi convidado para a MedStation',
+        element: React.createElement(InviteEmail, {
           siteName: SITE_NAME,
           siteUrl: SITE_URL,
           confirmationUrl: data.url,
         }),
-    },
-    magiclink: {
-      subject: 'Seu link de acesso — MedStation',
-      render: (data) =>
-        React.createElement(MagicLinkEmail, {
+      },
+    magiclink: async (data) =>
+      (await purchaseActivationContent('magiclink', data)) ?? {
+        subject: 'Seu link de acesso — MedStation',
+        element: React.createElement(MagicLinkEmail, {
           siteName: SITE_NAME,
           confirmationUrl: data.url,
         }),
-    },
+      },
     recovery: {
       subject: 'Redefinição de senha — MedStation',
       render: (data) =>

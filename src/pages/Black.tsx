@@ -102,6 +102,20 @@ function useClock(intervalMs = 1000) {
   return now;
 }
 
+/**
+ * Estado da oferta (antes/durante/depois). Confere a cada segundo, mas só
+ * re-renderiza quando o estado muda: o relógio que bate todo segundo fica
+ * dentro dos contadores, não na página inteira.
+ */
+function useBlackStatus(intervalMs = 1000): BlackStatus {
+  const [status, setStatus] = useState<BlackStatus>(() => blackStatus(Date.now()));
+  useEffect(() => {
+    const id = window.setInterval(() => setStatus(blackStatus(Date.now())), intervalMs);
+    return () => window.clearInterval(id);
+  }, [intervalMs]);
+  return status;
+}
+
 /** Fades a block in the first time it scrolls into view. */
 function Reveal({ children, className, delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -173,7 +187,8 @@ function Marquee({ tone = "gold", className }: { tone?: "gold" | "dark"; classNa
   );
 }
 
-function HeaderTimer({ now }: { now: number }) {
+function HeaderTimer() {
+  const now = useClock();
   const t = timeLeft(BLACK_OFFER.endsAt, now);
   return (
     <span className="hidden md:inline-flex items-center gap-2 rounded-full border border-offer-border bg-offer-foreground/5 px-3 py-1 text-xs text-offer-muted">
@@ -189,7 +204,8 @@ function HeaderTimer({ now }: { now: number }) {
   );
 }
 
-function Countdown({ target, now, label }: { target: string; now: number; label: string }) {
+function Countdown({ target, label }: { target: string; label: string }) {
+  const now = useClock();
   const t = timeLeft(target, now);
   const parts = [
     { v: t.days, l: "dias" },
@@ -506,8 +522,7 @@ const highlights = [
 ];
 
 export default function Black() {
-  const now = useClock();
-  const status = blackStatus(now);
+  const status = useBlackStatus();
   const [params] = useSearchParams();
   const canceled = params.get("canceled") === "true";
   const active = status === "active";
@@ -555,7 +570,7 @@ export default function Black() {
                 Black
               </span>
             </Link>
-            {active && <HeaderTimer now={now} />}
+            {active && <HeaderTimer />}
             <div className="flex items-center gap-2">
               <Button
                 asChild
@@ -624,8 +639,8 @@ export default function Black() {
             </p>
 
             <div className="mt-8">
-              {active && <Countdown target={BLACK_OFFER.endsAt} now={now} label="A oferta termina em" />}
-              {status === "upcoming" && <Countdown target={BLACK_OFFER.startsAt} now={now} label="A Black começa em" />}
+              {active && <Countdown target={BLACK_OFFER.endsAt} label="A oferta termina em" />}
+              {status === "upcoming" && <Countdown target={BLACK_OFFER.startsAt} label="A Black começa em" />}
               {status === "ended" && (
                 <p className="text-sm text-offer-muted">A oferta foi válida de 1 a 30 de novembro de 2026.</p>
               )}
@@ -758,7 +773,7 @@ export default function Black() {
               {brl(PRICE)} por 12 meses. <span className="text-offer-gold">Só até 30/11.</span>
             </h2>
             <div className="mt-8 flex justify-center">
-              <Countdown target={BLACK_OFFER.endsAt} now={now} label="Termina em" />
+              <Countdown target={BLACK_OFFER.endsAt} label="Termina em" />
             </div>
             <GoldCta cta="black_footer" className="mt-8" />
             <p className="mt-3 text-xs text-offer-muted">7 dias de garantia · Cartão de crédito · Sem renovação automática</p>

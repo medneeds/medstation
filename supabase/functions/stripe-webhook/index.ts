@@ -232,9 +232,9 @@ async function syncSubscription(
 async function ensureAccountForPayment(
   supabase: ReturnType<typeof serviceClient>,
   stripe: Stripe,
-  input: { email: string | null; customerId: string | null; subscriptionId?: string | null },
+  input: { email: string | null; customerId: string | null; subscriptionId?: string | null; plan?: string | null },
 ): Promise<string | null> {
-  const { email, customerId, subscriptionId } = input;
+  const { email, customerId, subscriptionId, plan } = input;
   const lookup = (address: string) => findUserByEmail(
     (params) => supabase.auth.admin.listUsers(params) as any,
     address,
@@ -247,7 +247,9 @@ async function ensureAccountForPayment(
       if (!userId) {
         const { data, error } = await supabase.auth.admin.inviteUserByEmail(email, {
           redirectTo: `${SITE_URL}/onboarding`,
-          data: { stripe_customer_id: customerId, payment_account_setup: true },
+          // payment_account_setup + payment_plan fazem o auth-email-hook mandar
+          // "Pagamento confirmado: ative seu acesso" em vez do convite genérico.
+          data: { stripe_customer_id: customerId, payment_account_setup: true, payment_plan: plan ?? null },
         });
         // Convite concorrente (página /obrigado) já criou a conta: busca de novo.
         userId = data?.user?.id ?? (error ? (await lookup(email))?.id ?? null : null);
@@ -426,7 +428,11 @@ async function grantOneTimeAccess(
     userId = existing?.id ?? null;
   }
   if (!userId) {
-    userId = await ensureAccountForPayment(supabase, stripe, { email: email ?? null, customerId });
+    userId = await ensureAccountForPayment(supabase, stripe, {
+      email: email ?? null,
+      customerId,
+      plan: session.metadata?.plan ?? plan?.slug ?? null,
+    });
   }
 
   // Extensão determinística: nova compra começa em max(agora, fim do acesso atual).

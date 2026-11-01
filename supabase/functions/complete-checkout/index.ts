@@ -2,6 +2,11 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { findUserByEmail, maskEmail } from "../_shared/admin-users.ts";
+import {
+  checkoutAccountDecision,
+  checkoutAccountFields,
+  type ActivationAuthUser,
+} from "../_shared/purchase-activation.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -102,36 +107,48 @@ serve(async (req) => {
       { auth: { persistSession: false, autoRefreshToken: false } },
     );
 
-    const existing = await findUserByEmail(
+    const lookup = () => findUserByEmail(
       (params) => supabaseAdmin.auth.admin.listUsers(params) as any,
       email,
-    );
-
-    if (existing) {
-      await attachUserToSubscription(stripe, session, existing.id);
-      logStep("Existing account matched to paid checkout", {
-        userId: existing.id,
-        email: maskEmail(email),
-      });
-      return new Response(
+    ) as Promise<ActivationAuthUser | null>;
+    const plan = session.metadata?.plan ?? null;
+    const reply = (fields: ReturnType<typeof checkoutAccountFields>) =>
+      new Response(
         JSON.stringify({
           success: true,
-          userExists: true,
           email,
-          passwordWasSkipped: false,
-          accountSetup: "existing_user",
-          plan: session.metadata?.plan ?? null,
+          ...fields,
+          plan,
           amountTotal: session.amount_total ?? null,
           currency: session.currency ?? null,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+      );
+
+    // Conta já existente: quem já entrou alguma vez segue para o login; quem
+    // foi convidado (pelo webhook, logo após o pagamento) e nunca ativou não
+    // tem senha, então a /obrigado mostra "ative pelo e-mail" em vez do login.
+    const existing = await lookup();
+    const decision = checkoutAccountDecision(existing);
+    if (existing && decision.kind !== "no_account") {
+      await attachUserToSubscription(stripe, session, existing.id);
+      logStep("Existing account matched to paid checkout", {
+        userId: existing.id,
+        email: maskEmail(email),
+        decision: decision.kind,
+      });
+      return reply(
+        decision.kind === "existing_user"
+          ? checkoutAccountFields("existing_user")
+          : checkoutAccountFields("activation_pending", decision.accessEmailSent),
       );
     }
 
     // SECURITY: a successful Stripe payment proves payment, not ownership of the
     // email typed in Checkout. Never auto-confirm that email and never return a
     // magic/recovery action link to the browser. Initial access is delivered to
-    // the mailbox owner through a Supabase invitation.
+    // the mailbox owner through a Supabase invitation. Access itself is granted
+    // only by stripe-webhook.
     const origin = req.headers.get("origin") || "https://medstation-ai.com.br";
     const { data: invited, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
       redirectTo: `${origin}/onboarding`,
@@ -139,28 +156,28 @@ serve(async (req) => {
         checkout_session_id: sessionId,
         stripe_customer_id: typeof session.customer === "string" ? session.customer : session.customer?.id,
         payment_account_setup: true,
+        payment_plan: plan,
       },
     });
 
     if (inviteError) {
+      // O webhook pode ter convidado no mesmo instante: busca de novo.
+      const raced = await lookup().catch(() => null);
+      const racedDecision = checkoutAccountDecision(raced);
+      if (raced && racedDecision.kind !== "no_account") {
+        await attachUserToSubscription(stripe, session, raced.id);
+        logStep("Account created concurrently", { userId: raced.id, email: maskEmail(email) });
+        return reply(
+          racedDecision.kind === "existing_user"
+            ? checkoutAccountFields("existing_user")
+            : checkoutAccountFields("activation_pending", racedDecision.accessEmailSent),
+        );
+      }
       logStep("Could not deliver account invite", {
         email: maskEmail(email),
         error: inviteError.message,
       });
-      return new Response(
-        JSON.stringify({
-          success: true,
-          userExists: false,
-          email,
-          passwordWasSkipped: true,
-          accountSetup: "invite_failed",
-          message: "Pagamento confirmado, mas não foi possível enviar o convite de acesso agora.",
-          plan: session.metadata?.plan ?? null,
-          amountTotal: session.amount_total ?? null,
-          currency: session.currency ?? null,
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
-      );
+      return reply(checkoutAccountFields("invite_failed"));
     }
 
     if (invited.user?.id) {
@@ -172,20 +189,7 @@ serve(async (req) => {
       email: maskEmail(email),
     });
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        userExists: false,
-        email,
-        passwordWasSkipped: true,
-        accountSetup: "invite_sent",
-        message: "Pagamento confirmado. Enviamos um convite para você concluir o acesso pelo seu e-mail.",
-        plan: session.metadata?.plan ?? null,
-        amountTotal: session.amount_total ?? null,
-        currency: session.currency ?? null,
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
-    );
+    return reply(checkoutAccountFields("invite_sent"));
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: errorMessage });
