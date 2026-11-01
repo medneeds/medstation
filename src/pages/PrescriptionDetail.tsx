@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { exportPrescriptionToPDF } from "@/utils/pdfExport";
@@ -67,12 +67,21 @@ export default function PrescriptionDetail() {
   const [prescription, setPrescription] = useState<Prescription | null>(null);
   const [loading, setLoading] = useState(true);
   const [pdfOpen, setPdfOpen] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     if (id) {
       fetchPrescription();
     }
   }, [id]);
+
+  // Vindo de "Criar e Solicitar Assinatura": abre o PDF oficial uma vez e limpa o
+  // state (replace) para que recarregar a página não abra de novo.
+  useEffect(() => {
+    if (!prescription || !(location.state as { openOfficialPdf?: boolean } | null)?.openOfficialPdf) return;
+    setPdfOpen(true);
+    navigate(location.pathname, { replace: true, state: null });
+  }, [prescription, location.state, location.pathname, navigate]);
 
   const fetchPrescription = async () => {
     try {
