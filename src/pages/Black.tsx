@@ -18,6 +18,7 @@ import { FounderSection } from "@/components/landing/FounderSection";
 import { RealUsersCarousel } from "@/components/landing/RealUsersCarousel";
 import { FormLegalNotice } from "@/components/legal/FormLegalNotice";
 import { SiteFooter } from "@/components/SiteFooter";
+import { checkoutTracking } from "@/lib/conversion";
 
 const PRICE = BLACK_OFFER.amountCents / 100;
 // "De/por" e "% off" usam o preço anual efetivamente praticado durante a oferta
@@ -273,10 +274,10 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
     try {
       const { data, error } = sessionEmail
         ? await supabase.functions.invoke("create-checkout", {
-          body: { plan: BLACK_OFFER.slug, billingPeriod: "yearly" },
+          body: { tracking: checkoutTracking(), plan: BLACK_OFFER.slug, billingPeriod: "yearly" },
         })
         : await supabase.functions.invoke("guest-checkout", {
-          body: { email: clean, product: "pro_completo", billingPeriod: "yearly", plan: BLACK_OFFER.slug },
+          body: { tracking: checkoutTracking(), email: clean, product: "pro_completo", billingPeriod: "yearly", plan: BLACK_OFFER.slug },
         });
       if (error) {
         let message = error.message;

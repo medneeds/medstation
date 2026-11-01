@@ -3,7 +3,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { blackOnlyRedirect, hasStoredSession } from "@/lib/blackOnly";
 import { AnalyticsTracker } from "./components/AnalyticsTracker";
 import { WelcomeEmailTrigger } from "./components/WelcomeEmailTrigger";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
@@ -96,6 +97,13 @@ const CookieConsent = lazy(() => import("./components/CookieConsent").then(m => 
 
 const queryClient = new QueryClient();
 
+// Em novembro as páginas públicas de venda levam para /black (src/lib/blackOnly.ts).
+const BlackOnlyGate = ({ children }: { children: JSX.Element }) => {
+  const location = useLocation();
+  const target = blackOnlyRedirect(location, { loggedIn: hasStoredSession() });
+  return target ? <Navigate to={target} replace /> : children;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -113,12 +121,12 @@ const App = () => (
           <Suspense fallback={<div className="min-h-screen" aria-hidden="true" />}>
           <Routes>
 
-            <Route path="/" element={<Lp3 />} />
+            <Route path="/" element={<BlackOnlyGate><Lp3 /></BlackOnlyGate>} />
             <Route path="/internos" element={<Internos />} />
             <Route path="/black" element={<Black />} />
             <Route path="/landing" element={<Navigate to="/" replace />} />
             <Route path="/tour" element={<Navigate to="/" replace />} />
-            <Route path="/comecar" element={<Comecar />} />
+            <Route path="/comecar" element={<BlackOnlyGate><Comecar /></BlackOnlyGate>} />
             <Route path="/lp2" element={<Navigate to="/" replace />} />
             <Route path="/lp3" element={<Navigate to="/" replace />} />
             <Route path="/home" element={<Navigate to="/" replace />} />
@@ -127,7 +135,7 @@ const App = () => (
             <Route path="/confirmar-email" element={<ConfirmarEmail />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/redefinir-senha" element={<Navigate to="/reset-password" replace />} />
-            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/pricing" element={<BlackOnlyGate><Pricing /></BlackOnlyGate>} />
             <Route path="/consultorio-landing" element={<Navigate to="/" replace />} />
             <Route
               path="/consultorio"
