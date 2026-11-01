@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowRight, Loader2, RotateCcw, SendHorizontal, Sparkles } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ArrowRight, LifeBuoy, Loader2, RefreshCw, RotateCcw, SendHorizontal, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
+import { SUPPORT_CHAT_EVENT } from "@/components/SupportChat";
 import {
   COPILOT_SUGGESTIONS,
   claimCopilotAsk,
   resetCopilot,
+  retryCopilotMessage,
   sendCopilotMessage,
   useCopilot,
   type CopilotFeature,
@@ -30,6 +32,7 @@ interface CopilotChatProps {
  */
 export function CopilotChat({ variant, onNavigate, ask, className }: CopilotChatProps) {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { messages, loading } = useCopilot();
   const [draft, setDraft] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
@@ -52,7 +55,12 @@ export function CopilotChat({ variant, onNavigate, ask, className }: CopilotChat
     if (!clean || loading) return;
     setDraft("");
     trackEvent("help_copilot_question_sent", { source, origin: variant });
-    await sendCopilotMessage(clean);
+    await sendCopilotMessage(clean, { pathname });
+  };
+
+  const retry = (messageId: string) => {
+    trackEvent("help_copilot_question_sent", { source: "tentar_de_novo", origin: variant });
+    void retryCopilotMessage(messageId, { pathname });
   };
 
   const onSubmit = (e: FormEvent) => {
@@ -61,8 +69,16 @@ export function CopilotChat({ variant, onNavigate, ask, className }: CopilotChat
   };
 
   const open = (feature: CopilotFeature) => {
-    trackEvent("help_copilot_action_clicked", { feature: feature.id, destination: feature.route, origin: variant });
-    navigate(feature.route);
+    trackEvent("help_copilot_action_clicked", {
+      feature: feature.id,
+      destination: feature.route ?? feature.opens ?? "",
+      origin: variant,
+    });
+    if (feature.opens === "support") {
+      window.dispatchEvent(new CustomEvent(SUPPORT_CHAT_EVENT));
+    } else if (feature.route) {
+      navigate(feature.route);
+    }
     onNavigate?.();
   };
 
@@ -85,7 +101,7 @@ export function CopilotChat({ variant, onNavigate, ask, className }: CopilotChat
         <div className="min-w-0 flex-1">
           <h2 className="text-base md:text-lg font-semibold tracking-tight">Copiloto MedStation</h2>
           <p className="text-xs md:text-sm text-muted-foreground">
-            Qual é a sua dúvida hoje? Pergunte como usar qualquer recurso e eu te levo ao assistente certo.
+            Seu guia na plataforma: pergunte onde fica, como usar ou qual assistente resolve sua tarefa, e eu te levo até lá.
           </p>
         </div>
         {hasConversation && (
@@ -146,19 +162,42 @@ export function CopilotChat({ variant, onNavigate, ask, className }: CopilotChat
               >
                 {m.content}
               </p>
-              {m.actions && m.actions.length > 0 && (
-                <div className="flex flex-wrap gap-2" aria-label="Atalhos sugeridos pelo Copiloto">
-                  {m.actions.map((f, i) => (
+              {((m.actions && m.actions.length > 0) || m.retryText) && (
+                <div className="flex flex-wrap gap-2" role="group" aria-label="Atalhos sugeridos pelo Copiloto">
+                  {m.retryText && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="default"
+                      onClick={() => retry(m.id)}
+                      disabled={loading}
+                      className="min-h-11 md:min-h-9 gap-1.5"
+                    >
+                      <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
+                      Tentar de novo
+                    </Button>
+                  )}
+                  {m.actions?.map((f, i) => (
                     <Button
                       key={f.id}
                       type="button"
                       size="sm"
-                      variant={i === 0 ? "default" : "outline"}
+                      variant={i === 0 && !m.retryText ? "default" : "outline"}
                       onClick={() => open(f)}
-                      className="min-h-11 md:min-h-9 gap-1.5"
+                      className="min-h-11 md:min-h-9 max-w-full gap-1.5 whitespace-normal text-left"
+                      title={f.where}
                     >
-                      Abrir {f.name}
-                      <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                      {f.opens === "support" ? (
+                        <>
+                          <LifeBuoy className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                          Falar com o suporte
+                        </>
+                      ) : (
+                        <>
+                          Abrir {f.name}
+                          <ArrowRight className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                        </>
+                      )}
                     </Button>
                   ))}
                 </div>
@@ -200,7 +239,7 @@ export function CopilotChat({ variant, onNavigate, ask, className }: CopilotChat
       </form>
       {isCard && (
         <p className="-mt-2 px-4 pb-4 text-[11px] text-muted-foreground md:px-5">
-          Para dúvidas de uso da plataforma. Não envie dados de pacientes aqui.
+          Para dúvidas de uso da plataforma, não para conduta clínica. Não envie dados de pacientes aqui.
         </p>
       )}
     </section>

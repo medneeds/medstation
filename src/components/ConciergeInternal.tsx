@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Sparkles,
@@ -15,198 +15,52 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CopilotChat } from "@/components/copilot/CopilotChat";
+import { currentCopilotFeatures, type CopilotFeature } from "@/lib/copilot";
 import { cn } from "@/lib/utils";
+
+type GuideGroup = "Assistentes" | "Modos" | "Organização" | "Conta";
 
 type Guide = {
   id: string;
   name: string;
-  group: "Assistentes" | "Modos" | "Organização" | "Conta";
+  group: GuideGroup;
   what: string;
   when: string;
+  where: string;
   steps: string[];
   url: string;
+  keywords: string[];
 };
 
-const GUIDES: Guide[] = [
-  {
-    id: "clinicus",
-    name: "Clínicus",
-    group: "Assistentes",
-    what: "Transforma dados soltos do atendimento em anamnese, evolução ou relatório prontos para o prontuário.",
-    when: "Quando você já colheu a história e precisa escrever rápido e bem.",
-    steps: [
-      "Escolha o contexto (consultório, enfermaria, emergência, UTI)",
-      "Cole ou dite os dados do paciente",
-      "Ative Anamnese ou Relatório e envie",
-      "Copie o texto final no botão de cópia",
-    ],
-    url: "/clinicus",
-  },
-  {
-    id: "examinus",
-    name: "Examinus",
-    group: "Assistentes",
-    what: "Organiza e interpreta exames, e sugere quais exames pedir no modo consultor.",
-    when: "Ao receber resultados extensos ou na dúvida sobre a próxima investigação.",
-    steps: ["Cole os resultados ou envie foto/PDF", "Ligue os ajustes que quiser (tempo, comparação, impressão)", "Envie e copie o resumo"],
-    url: "/examinus",
-  },
-  {
-    id: "gasometrus",
-    name: "Gasometrus",
-    group: "Assistentes",
-    what: "Interpretação completa de gasometria, passo a passo, com conduta sugerida.",
-    when: "Beira de leito, emergência e UTI.",
-    steps: ["Cole os valores da gasometria", "Opcional: ative a leitura sistemática", "Leia a interpretação e a conduta"],
-    url: "/gasometrus",
-  },
-  {
-    id: "prescriptus",
-    name: "Prescriptus",
-    group: "Assistentes",
-    what: "Discussão de fármacos, doses e interações — e o Modo Receita, que entrega a prescrição formatada.",
-    when: "Antes de prescrever ou quando quiser a receita pronta.",
-    steps: ["Descreva o caso e o objetivo terapêutico", "Ative o Modo Receita se quiser o documento pronto", "Revise sempre antes de assinar"],
-    url: "/prescriptus",
-  },
-  {
-    id: "numerus",
-    name: "Numerus",
-    group: "Assistentes",
-    what: "Calculadoras interativas por peso: drogas vasoativas, sedação, intubação e protocolos.",
-    when: "Quando precisa de dose e diluição na hora.",
-    steps: ["Informe o peso", "Escolha a droga ou o protocolo", "Confira o resultado e copie"],
-    url: "/numerus",
-  },
-  {
-    id: "mediscuss",
-    name: "Mediscuss",
-    group: "Assistentes",
-    what: "Monta pedidos de parecer, discussão de caso, internação, UTI ou transferência.",
-    when: "Na hora de acionar outra equipe com clareza.",
-    steps: ["Cole os dados do caso", "Escolha o modo e a especialidade", "Copie o texto para o prontuário"],
-    url: "/mediscuss",
-  },
-  {
-    id: "atestus",
-    name: "Atestus",
-    group: "Assistentes",
-    what: "Atestados e declarações com CID, sem descrição de doença.",
-    when: "Fim do atendimento, quando o paciente precisa do documento.",
-    steps: ["Informe período e CID", "Gere e revise", "Copie"],
-    url: "/atestus",
-  },
-  {
-    id: "orientus",
-    name: "Orientus",
-    group: "Assistentes",
-    what: "Orientações de alta em linguagem que o paciente entende.",
-    when: "Ao liberar o paciente.",
-    steps: ["Descreva diagnóstico e conduta", "Gere as orientações", "Entregue impresso ou por mensagem"],
-    url: "/orientus",
-  },
-  {
-    id: "protocolus",
-    name: "Protocolus",
-    group: "Assistentes",
-    what: "Protocolos e diretrizes atualizadas (AHA, ESC, OMS e outras).",
-    when: "Quando quer condutas embasadas em segundos.",
-    steps: ["Pergunte pelo protocolo ou cenário", "Leia os pontos-chave"],
-    url: "/protocolus",
-  },
-  {
-    id: "legalis",
-    name: "Legalis",
-    group: "Assistentes",
-    what: "Proteção jurídica: blindagem do registro, ética e defesa argumentativa.",
-    when: "Casos sensíveis, recusa de tratamento, conflitos.",
-    steps: ["Descreva a situação", "Receba orientação de conduta e de registro"],
-    url: "/legalis",
-  },
-  {
-    id: "scorius",
-    name: "Scorius",
-    group: "Assistentes",
-    what: "Escores clínicos aplicados ao caso.",
-    when: "Estratificação de risco.",
-    steps: ["Informe os dados", "Escolha o escore", "Interprete o resultado"],
-    url: "/scorius",
-  },
-  {
-    id: "codexus",
-    name: "CODexus",
-    group: "Assistentes",
-    what: "Busca de CID e codificação.",
-    when: "Ao fechar documentos e faturamento.",
-    steps: ["Digite o diagnóstico", "Escolha o código adequado"],
-    url: "/codexus",
-  },
-  {
-    id: "escuta",
-    name: "Modo Escuta",
-    group: "Modos",
-    what: "Grava o atendimento, transcreve em tempo real e estrutura a anamnese sozinho.",
-    when: "Consultas e atendimentos em que você não quer digitar nada.",
-    steps: [
-      "Abra Modo Escuta > Novo atendimento",
-      "Inicie a gravação (o paciente deve ser avisado)",
-      "Ao finalizar, revise a transcrição e gere a estruturação",
-      "Salve em uma pasta com nome e data",
-    ],
-    url: "/consultorio",
-  },
-  {
-    id: "escuta-hist",
-    name: "Histórico do Modo Escuta",
-    group: "Organização",
-    what: "Todos os atendimentos salvos, por pasta e por data.",
-    when: "Para retomar, copiar ou comparar atendimentos.",
-    steps: ["Abra Histórico", "Filtre por pasta ou data", "Abra e copie o que precisar"],
-    url: "/consultorio/historico",
-  },
-  {
-    id: "rotina",
-    name: "Modo Rotineiro",
-    group: "Modos",
-    what: "Mapa de leitos da sua enfermaria/UTI com evolução diária que herda o dia anterior e o assistente Carpe Diem.",
-    when: "Visita diária de rotina.",
-    steps: [
-      "Configure unidades e leitos",
-      "Interne o paciente no leito",
-      "Abra a evolução do dia — ela já nasce herdada",
-      "Descreva as mudanças e peça ao Carpe Diem para reescrever",
-      "Movimente o leito ou dê alta (fica no arquivo)",
-    ],
-    url: "/rotina",
-  },
-  {
-    id: "arquivo",
-    name: "Arquivo de altas",
-    group: "Organização",
-    what: "Consulta de todos os pacientes já liberados, com histórico das evoluções.",
-    when: "Quando precisa resgatar um caso antigo.",
-    steps: ["Abra Arquivo de altas", "Busque pelo nome ou período"],
-    url: "/rotina/arquivo",
-  },
-  {
-    id: "indicar",
-    name: "Indique e ganhe",
-    group: "Conta",
-    what: "Seu link único: quem entra por ele ganha desconto e você ganha dias de acesso.",
-    when: "Sempre que um colega perguntar da plataforma.",
-    steps: ["Copie seu link", "Envie ao colega", "Acompanhe as indicações"],
-    url: "/indicar",
-  },
-  {
-    id: "perfil",
-    name: "Perfil e assinatura",
-    group: "Conta",
-    what: "Seus dados, preferências, tema e gestão do plano.",
-    when: "Para ajustar conta e pagamento.",
-    steps: ["Abra Perfil", "Ajuste o que precisar"],
-    url: "/settings",
-  },
-];
+const GROUP_BY_KIND: Record<CopilotFeature["kind"], GuideGroup> = {
+  assistente: "Assistentes",
+  modo: "Modos",
+  organizacao: "Organização",
+  conta: "Conta",
+};
+
+/** O guia é o mesmo catálogo que a IA usa: um lugar só para manter. */
+function buildGuides(): Guide[] {
+  return currentCopilotFeatures()
+    .filter((f): f is CopilotFeature & { route: string } => typeof f.route === "string")
+    .map((f) => ({
+      id: f.id,
+      name: f.name,
+      group: GROUP_BY_KIND[f.kind],
+      what: f.what,
+      when: f.when,
+      where: f.where,
+      steps: f.how,
+      url: f.route,
+      keywords: f.keywords,
+    }));
+}
+
+const fold = (s: string) =>
+  s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 
 const GROUPS = ["Todos", "Assistentes", "Modos", "Organização", "Conta"] as const;
 
@@ -247,22 +101,43 @@ export function ConciergeInternal({
   const toggleDone = (id: string) => {
     setDone((prev) => {
       const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
-      localStorage.setItem(DONE_KEY, JSON.stringify(next));
+      try {
+        localStorage.setItem(DONE_KEY, JSON.stringify(next));
+      } catch {
+        /* sem storage: o passo fica marcado só nesta aba */
+      }
       return next;
     });
   };
 
+  // Recalcula ao abrir: a Black, por exemplo, só aparece dentro da janela da oferta.
+  const guides = useMemo(() => (open ? buildGuides() : []), [open]);
+
   const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return GUIDES.filter(
+    const q = fold(query.trim());
+    return guides.filter(
       (g) =>
         (group === "Todos" || g.group === group) &&
-        (!q ||
-          g.name.toLowerCase().includes(q) ||
-          g.what.toLowerCase().includes(q) ||
-          g.when.toLowerCase().includes(q)),
+        (!q || [g.name, g.what, g.when, g.where, ...g.keywords].some((t) => fold(t).includes(q))),
     );
-  }, [query, group]);
+  }, [query, group, guides]);
+
+  // Esc fecha o painel; fechado, ele sai da ordem de tabulação (inert).
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, setOpen]);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = panelRef.current;
+    if (!el) return;
+    if (open) el.removeAttribute("inert");
+    else el.setAttribute("inert", "");
+  }, [open]);
 
   const go = (url: string) => {
     setOpen(false);
@@ -278,6 +153,7 @@ export function ConciergeInternal({
     <>
       {/* Painel */}
       <div
+        ref={panelRef}
         className={cn(
           "fixed z-[60] transition-all duration-300 ease-out origin-top-right",
           "top-14 sm:top-16 right-2 sm:right-5 w-[calc(100vw-1rem)] sm:w-[420px]",
@@ -289,7 +165,7 @@ export function ConciergeInternal({
         aria-label="Copiloto MedStation"
         aria-hidden={!open}
       >
-        <div className="relative flex h-[calc(100vh-5rem)] max-h-[640px] sm:h-[600px] flex-col rounded-3xl border border-border/60 bg-card/90 backdrop-blur-xl overflow-hidden shadow-[0_24px_70px_-40px_hsl(var(--primary)/0.5)]">
+        <div className="relative flex h-[calc(100vh-5rem)] max-sm:supports-[height:100dvh]:h-[calc(100dvh-4.5rem)] max-h-[640px] sm:h-[600px] flex-col rounded-3xl border border-border/60 bg-card/90 backdrop-blur-xl overflow-hidden shadow-[0_24px_70px_-40px_hsl(var(--primary)/0.5)]">
           <div className="flex items-center gap-3 px-4 py-3 border-b border-border/50 bg-background/50">
             <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-primary" />
@@ -303,7 +179,7 @@ export function ConciergeInternal({
             <Button
               variant="ghost"
               size="icon"
-              className="ml-auto h-8 w-8 rounded-full"
+              className="ml-auto h-11 w-11 md:h-8 md:w-8 rounded-full"
               onClick={() => setOpen(false)}
               aria-label="Fechar Copiloto"
             >
@@ -433,9 +309,10 @@ export function ConciergeInternal({
 
                         {isOpen && (
                           <div className="px-3 pb-3 pt-1 border-t border-border/40">
-                            <p className="text-[11px] text-muted-foreground mb-2">
+                            <p className="text-[11px] text-muted-foreground mb-1">
                               QUANDO USAR: {g.when}
                             </p>
+                            <p className="text-[11px] text-muted-foreground mb-2">ONDE FICA: {g.where}</p>
                             <ol className="space-y-1 mb-3">
                               {g.steps.map((s, i) => (
                                 <li key={s} className="flex gap-2 text-xs">
