@@ -30,8 +30,6 @@ const DECEMBER_YEARLY = BLACK_OFFER.anchorCents / 100;
 const MONTHLY_FULL = PRICE_TABLE.full.monthlyCents / 100;
 const DISCOUNT_PCT = Math.round((1 - PRICE / CURRENT_YEARLY) * 100);
 const PER_DAY = PRICE / 365;
-// Parcela exibida no cartão (até 12x): arredondada para cima, como o Stripe mostra.
-const INSTALLMENT = Math.ceil((PRICE / 12) * 100) / 100;
 const SAVINGS = DECEMBER_YEARLY - PRICE;
 const SAVINGS_NOW = CURRENT_YEARLY - PRICE;
 
@@ -335,13 +333,14 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
       <p className="mt-4 text-sm text-muted-foreground">
         de <span className="line-through decoration-offer-hot decoration-2">{brl(CURRENT_YEARLY)}</span> por
       </p>
-      <p className="text-sm font-medium text-foreground">em até</p>
-      <div className="flex items-baseline gap-1.5">
-        <span className="text-2xl font-semibold">12x de</span>
-        <span className="text-5xl md:text-6xl font-bold tracking-tight">{brl(INSTALLMENT)}</span>
+      <div className="flex items-baseline gap-2">
+        <span className="text-lg font-semibold">em até</span>
+        <span className="text-5xl md:text-6xl font-bold tracking-tight">12x</span>
+        <span className="text-lg font-semibold">no cartão</span>
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
-        no cartão, ou <span className="font-semibold text-foreground">{brl(PRICE)}</span> à vista no cartão ou boleto
+        ou <span className="font-semibold text-foreground">{brl(PRICE)}</span> à vista no cartão ou boleto. O valor de cada parcela
+        aparece na tela de pagamento, antes de você confirmar.
       </p>
       <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
         <span className="rounded-full bg-offer-gold/20 px-2.5 py-1 font-semibold text-foreground">
@@ -569,9 +568,9 @@ export default function Black() {
               <Sparkles className="w-3.5 h-3.5" /> Black MedStation · só em novembro
             </span>
             <h1 className="mt-5 text-[2.4rem] leading-[1.03] md:text-7xl font-semibold tracking-tight">
-              Um ano inteiro de MedStation em 12x de{" "}
+              Um ano inteiro de MedStation em até{" "}
               <span className="relative inline-block text-offer-gold">
-                {brl(INSTALLMENT)}
+                12x no cartão
                 <span className="absolute -bottom-1 left-0 h-1.5 w-full rounded-full bg-offer-gold/40" />
               </span>
               .
@@ -661,7 +660,7 @@ export default function Black() {
                 </div>
                 <div className="flex items-center justify-between rounded-lg border-2 border-offer-gold bg-offer-gold/10 px-3 py-3">
                   <dt className="font-semibold">Black MedStation</dt>
-                  <dd className="text-right"><span className="block text-lg font-bold">12x {brl(INSTALLMENT)}</span><span className="text-xs text-muted-foreground">ou {brl(PRICE)} à vista</span></dd>
+                  <dd className="text-right"><span className="block text-lg font-bold">{brl(PRICE)}</span><span className="text-xs text-muted-foreground">ou em até 12x no cartão</span></dd>
                 </div>
               </dl>
               <p className="mt-4 text-sm">
@@ -738,7 +737,7 @@ export default function Black() {
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-offer-border bg-offer/95 px-4 py-3 text-offer-foreground backdrop-blur md:hidden">
           <div className="flex items-center gap-3">
             <div className="min-w-0 leading-tight">
-              <p className="text-base font-bold text-offer-gold">12x {brl(INSTALLMENT)}</p>
+              <p className="text-base font-bold text-offer-gold">Até 12x no cartão</p>
               <p className="text-[0.65rem] text-offer-muted">ou {brl(PRICE)} à vista</p>
             </div>
             <Button className={cn("h-12 flex-1 text-sm motion-safe:animate-cta-pulse", GOLD_BUTTON)} onClick={() => scrollToCheckout("black_sticky_mobile")}>
