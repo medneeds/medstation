@@ -8,7 +8,7 @@ import { LogoMark } from "@/components/LogoMark";
  */
 export function ThinkingIndicator({ label = "Pensando" }: { label?: string }) {
   return (
-    <div className="flex items-center gap-2.5 py-0.5">
+    <div role="status" className="flex items-center gap-2.5 py-0.5">
       <span className="relative inline-flex h-7 w-7 items-center justify-center">
         {/* Breathing halo */}
         <span className="absolute inset-0 rounded-md bg-primary/30 blur-md animate-thinking-halo" />
