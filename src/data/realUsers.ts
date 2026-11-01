@@ -33,6 +33,8 @@ export const REAL_USERS: RealUser[] = [
     photo: alvaroFialho.url,
     location: "São Luís, MA",
     practice: "Médico Residente em Terapia Intensiva",
+    quote:
+      "Sou médico, residente de terapia intensiva e utilizo diariamente a inteligência artificial na minha prática médica. Posso dizer que essa ferramenta se tornou uma grande aliada na minha rotina, principalmente pela rapidez no acesso a informações científicas, auxílio no raciocínio clínico e otimização do tempo. Na medicina, especialmente na terapia intensiva, precisamos de agilidade e informações confiáveis para tomar decisões. A inteligência artificial não substitui o conhecimento e a experiência do médico, mas potencializa nossa capacidade de oferecer uma assistência cada vez mais segura e qualificada. Hoje, considero MedStation como ferramenta de apoio na minha rotina diária.",
   },
   {
     name: "Dr. Clenilson Júnior",
