@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { DISPLAY_PRICING, HAS_LAUNCH_DISCOUNT, brl } from "@/lib/subscription-tiers";
+import { checkoutTracking } from "@/lib/conversion";
 
 interface PremiumAgentGuardProps {
   children: ReactNode;
@@ -44,7 +45,7 @@ export function PremiumAgentGuard({ children, agentName }: PremiumAgentGuardProp
       });
 
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { billingPeriod: "monthly", product: "agents" },
+        body: { tracking: checkoutTracking(), billingPeriod: "monthly", product: "agents" },
       });
 
       if (error) throw error;
