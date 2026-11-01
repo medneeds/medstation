@@ -12,6 +12,7 @@ import { OnboardingProvider } from "./contexts/OnboardingContext";
 
 // Landing "/" permanece eager: é o primeiro paint público.
 import Lp3 from "./pages/Lp3";
+import HomeEntry from "./pages/HomeEntry";
 
 // Tudo que não é a landing entra por code splitting (React.lazy),
 // para manter o bundle inicial da "/" mínimo.
@@ -113,7 +114,7 @@ const App = () => (
           <Suspense fallback={<div className="min-h-screen" aria-hidden="true" />}>
           <Routes>
 
-            <Route path="/" element={<Lp3 />} />
+            <Route path="/" element={<HomeEntry />} />
             <Route path="/internos" element={<Internos />} />
             <Route path="/black" element={<Black />} />
             <Route path="/landing" element={<Navigate to="/" replace />} />

@@ -18,6 +18,25 @@
     <meta name="author" content="MedStation" />
     <meta name="google-site-verification" content="yBsFwUXAAzTXOBgMPkb0kR6Ad5CDYUDh_xlU8kFIOuM" />
 
+    <!-- Novembro só com a Black: durante a oferta, as páginas públicas de venda vão
+         para /black antes de qualquer paint, mantendo UTM e hash. Mesmas regras de
+         src/lib/blackOnly.ts (um teste mantém a lista de caminhos igual). -->
+    <script>
+      (function () {
+        try {
+          var now = Date.now();
+          if (now < Date.parse("2026-11-01T03:00:00.000Z") || now >= Date.parse("2026-12-01T03:00:00.000Z")) return;
+          var path = window.location.pathname.replace(/\/+$/, "") || "/";
+          var blackOnlyPaths = ["/", "/pricing", "/comecar"];
+          if (blackOnlyPaths.indexOf(path) === -1) return;
+          for (var i = 0; i < window.localStorage.length; i++) {
+            if (/^sb-.+-auth-token$/.test(window.localStorage.key(i) || "")) return;
+          }
+          window.location.replace("/black" + window.location.search + window.location.hash);
+        } catch (e) { /* sem storage: o app faz o mesmo ao montar */ }
+      })();
+    </script>
+
     <!-- Tema antes do app: aplica claro/escuro (mesma chave do next-themes) já no
          primeiro paint, para o topo instantâneo da landing não piscar no tema errado. -->
     <script>
@@ -114,7 +133,8 @@
         var shell = document.getElementById("ms-shell");
         if (!shell) return;
         var path = window.location.pathname.replace(/\/+$/, "") || "/";
-        if (path !== "/") {
+        var blackNow = Date.now() >= Date.parse("2026-11-01T03:00:00.000Z") && Date.now() < Date.parse("2026-12-01T03:00:00.000Z");
+        if (path !== "/" || blackNow) {
           shell.parentNode.removeChild(shell);
           return;
         }
