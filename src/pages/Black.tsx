@@ -51,10 +51,6 @@ const faq = [
     a: `Não. É um pagamento único de ${brl(PRICE)} que libera 12 meses de acesso, sem cobrança automática no fim.`,
   },
   {
-    q: "Posso pagar no boleto?",
-    a: "Sim. O boleto vence em 3 dias e o acesso é liberado assim que o banco confirmar o pagamento. Gere o seu boleto até 30 de novembro.",
-  },
-  {
     q: "Já tenho conta na MedStation. Posso aproveitar?",
     a: "Pode. Use o mesmo e-mail da sua conta: os 12 meses entram assim que o pagamento for confirmado.",
   },
@@ -337,7 +333,7 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
         <span className="text-5xl md:text-6xl font-bold tracking-tight">{brl(PRICE)}</span>
         <span className="text-sm text-muted-foreground">/ano</span>
       </div>
-      <p className="mt-1 text-sm font-medium text-foreground">pagamento único, no cartão ou boleto</p>
+      <p className="mt-1 text-sm font-medium text-foreground">pagamento único no cartão de crédito</p>
       <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
         <span className="rounded-full bg-offer-gold/20 px-2.5 py-1 font-semibold text-foreground">
           {brl(SAVINGS_NOW)} a menos que o anual de hoje
@@ -432,7 +428,7 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
 
       <ul className="mt-5 grid gap-1.5 text-xs text-muted-foreground">
         <li className="flex items-center gap-2">
-          <Lock className="w-3.5 h-3.5 text-primary" /> Cartão ou boleto, em ambiente seguro
+          <Lock className="w-3.5 h-3.5 text-primary" /> Cartão de crédito, em ambiente seguro
         </li>
         <li className="flex items-center gap-2">
           <ShieldCheck className="w-3.5 h-3.5 text-primary" /> 7 dias de garantia incondicional
@@ -472,7 +468,7 @@ const highlights = [
   {
     icon: CalendarCheck,
     title: "Paga uma vez, sem surpresa",
-    text: "Pagamento único no cartão ou boleto. Nada de cobrança automática no fim dos 12 meses.",
+    text: "Pagamento único no cartão de crédito. Nada de cobrança automática no fim dos 12 meses.",
   },
 ];
 
@@ -513,7 +509,7 @@ export default function Black() {
       <Seo
         path="/black"
         title="Black MedStation — um ano inteiro por R$ 399,90"
-        description={`Só em novembro: o plano anual completo da MedStation de ${brl(CURRENT_YEARLY)} por ${brl(PRICE)}, em pagamento único no cartão ou boleto. 7 dias de garantia.`}
+        description={`Só em novembro: o plano anual completo da MedStation de ${brl(CURRENT_YEARLY)} por ${brl(PRICE)}, em pagamento único no cartão. 7 dias de garantia.`}
       />
 
       <div className="sticky top-0 z-30">
@@ -718,7 +714,7 @@ export default function Black() {
               <Countdown target={BLACK_OFFER.endsAt} now={now} label="Termina em" />
             </div>
             <GoldCta cta="black_footer" className="mt-8" />
-            <p className="mt-3 text-xs text-offer-muted">7 dias de garantia · Cartão ou boleto · Sem renovação automática</p>
+            <p className="mt-3 text-xs text-offer-muted">7 dias de garantia · Cartão de crédito · Sem renovação automática</p>
           </Reveal>
         </section>
       )}
