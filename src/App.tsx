@@ -92,6 +92,7 @@ const AdVideo = lazy(() => import("./pages/AdVideo"));
 const Privacidade = lazy(() => import("./pages/legal/Privacidade"));
 const Termos = lazy(() => import("./pages/legal/Termos"));
 const Reembolso = lazy(() => import("./pages/legal/Reembolso"));
+const Descadastrar = lazy(() => import("./pages/Descadastrar"));
 // Banner de cookies fora do bundle inicial; nada não essencial carrega antes da escolha.
 const CookieConsent = lazy(() => import("./components/CookieConsent").then(m => ({ default: m.CookieConsent })));
 
@@ -435,6 +436,7 @@ const App = () => (
             <Route path="/termos" element={<Termos />} />
             <Route path="/termos-de-uso" element={<Navigate to="/termos" replace />} />
             <Route path="/reembolso" element={<Reembolso />} />
+            <Route path="/descadastrar" element={<Descadastrar />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

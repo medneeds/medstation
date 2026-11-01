@@ -79,6 +79,12 @@ verify_jwt = false
 [functions.boleto-reminders]
 verify_jwt = false
 
+[functions.black-recovery-reminders]
+verify_jwt = false
+
+[functions.email-unsubscribe]
+verify_jwt = false
+
 [functions.admin-black-dashboard]
 verify_jwt = false
 

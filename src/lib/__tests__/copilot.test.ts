@@ -45,7 +45,7 @@ const NOT_IN_COPILOT = new Set([
   "/", "/internos", "/landing", "/tour", "/comecar", "/lp2", "/lp3", "/home", "/auth", "/confirmar-email",
   "/reset-password", "/redefinir-senha", "/consultorio-landing", "/obrigado", "/welcome", "/onboarding",
   "/welcome-tour", "/admin/login", "/admin", "/admin/subscribers", "/ad-video", "/privacidade", "/privacy",
-  "/termos", "/termos-de-uso", "*",
+  "/termos", "/termos-de-uso", "/descadastrar", "*",
 ]);
 
 const SCHEDULE = { black: BLACK_OFFER, fullPriceStartsAt: FULL_PRICE_STARTS_AT, table: PRICE_TABLE };

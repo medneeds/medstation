@@ -290,7 +290,7 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
     }
 
     // Guarda o contato antes do pagamento para recuperar quem desistir.
-    await saveBlackLead(clean, "black_checkout");
+    await saveBlackLead(clean, "black_checkout", phone);
     if (!sessionEmail) rememberCheckoutEmail(clean);
     try {
       if (hasMarketingConsent()) (window as { fbq?: (...a: unknown[]) => void }).fbq?.("track", "Lead", { content_name: BLACK_OFFER.slug });
@@ -429,24 +429,27 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
             )}
           </div>
         )}
-        {upcoming && (
-          <div>
-            <label htmlFor="black-phone" className="text-xs font-medium">
-              WhatsApp (opcional)
-            </label>
-            <Input
-              id="black-phone"
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
-              placeholder="(11) 99999-9999"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value.slice(0, 20))}
-              disabled={loading}
-              className="mt-1.5 h-12"
-            />
-          </div>
-        )}
+        <div>
+          <label htmlFor="black-phone" className="text-xs font-medium">
+            WhatsApp (opcional)
+          </label>
+          <Input
+            id="black-phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            placeholder="(11) 99999-9999"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value.slice(0, 20))}
+            disabled={loading}
+            className="mt-1.5 h-12"
+          />
+          {!upcoming && (
+            <p className="mt-1 text-[0.7rem] text-muted-foreground">
+              Para te avisar se o pagamento não for concluído.
+            </p>
+          )}
+        </div>
         <Button
           type="submit"
           className={cn(
@@ -487,7 +490,7 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
           <Check className="w-3.5 h-3.5 text-primary" /> 12 meses de acesso, sem renovação automática
         </li>
       </ul>
-      <FormLegalNotice mentionsReminder mentionsWhatsapp={upcoming} className="mt-4" />
+      <FormLegalNotice mentionsReminder mentionsWhatsapp className="mt-4" />
     </form>
   );
 }

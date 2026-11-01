@@ -4,6 +4,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { BLACK_OFFER } from "../_shared/pricing-schedule.ts";
+import { abandonedCheckouts, isTestEmail } from "../_shared/black-recovery.ts";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -37,9 +38,6 @@ type Purchase = {
   boleto_reminders_sent: string[] | null;
   replaced_subscription_ids: string[] | null;
 };
-
-const isTestEmail = (email: string | null | undefined) =>
-  !email || /@(example\.(com|org|net)|teste?\.com)$/i.test(email);
 
 /** Dia no horário de Brasília (AAAA-MM-DD). */
 const brDay = (iso: string) => new Date(Date.parse(iso) - 3 * 3_600_000).toISOString().slice(0, 10);
@@ -121,32 +119,27 @@ Deno.serve(async (req) => {
     p.status === "pending" && p.payment_method === "boleto" && p.boleto_expires_at &&
     Date.parse(p.boleto_expires_at) > Date.now()
   );
-  const boletoEmails = new Set(pendingBoletos.map((p) => p.email));
 
-  // Começou e não pagou: clicou em assinar ou abriu o pagamento, sem compra paga
-  // e sem boleto ainda dentro do prazo.
-  const latestAttempt = new Map<string, Purchase>();
-  for (const p of purchases) {
-    if (!p.email || p.status === "paid") continue;
-    if (!latestAttempt.has(p.email)) latestAttempt.set(p.email, p);
+  // Começou e não pagou: regra compartilhada com o envio automático (black-recovery-reminders).
+  const { data: recoveryRows } = await supabase.from("black_recovery_emails")
+    .select("email, step, sent_at, outcome").limit(10000);
+  const recoveryByEmail = new Map<string, { step: string; sent_at: string; outcome: string }[]>();
+  for (const r of recoveryRows ?? []) {
+    const list = recoveryByEmail.get(r.email) ?? [];
+    list.push({ step: r.step, sent_at: r.sent_at, outcome: r.outcome });
+    recoveryByEmail.set(r.email, list);
   }
-  const abandonedEmails = new Set<string>([...clickEmails, ...latestAttempt.keys()]);
-  const abandoned = [...abandonedEmails]
-    .filter((email) => !paidEmails.has(email) && !boletoEmails.has(email))
-    .map((email) => {
-      const attempt = latestAttempt.get(email);
-      const lead = firstLeadByEmail.get(email);
-      return {
-        email,
-        phone: phoneByEmail.get(email) ?? null,
-        last_at: attempt?.created_at ?? lead?.created_at ?? null,
-        purchase_id: attempt?.id ?? null,
-        stage: attempt ? attempt.status === "expired" ? "expirou" : attempt.status === "failed" ? "falhou" : "abriu o pagamento" : "clicou em assinar",
-        recovery_url: attempt?.recovery_url ?? null,
-        recovery_status: attempt?.recovery_status ?? null,
-      };
-    })
-    .sort((a, b) => (b.last_at ?? "").localeCompare(a.last_at ?? ""));
+  const abandoned = abandonedCheckouts({ leads, attempts: purchases })
+    .map(({ email, attempt, lastAt }) => ({
+      email,
+      phone: phoneByEmail.get(email) ?? null,
+      last_at: lastAt,
+      purchase_id: attempt?.id ?? null,
+      stage: attempt ? attempt.status === "expired" ? "expirou" : attempt.status === "failed" ? "falhou" : "abriu o pagamento" : "clicou em assinar",
+      recovery_url: attempt?.recovery_url ?? null,
+      recovery_status: attempt?.recovery_status ?? null,
+      recovery_emails: recoveryByEmail.get(email) ?? [],
+    }));
 
   // Por origem: cliques em assinar, vendas e receita.
   const bySource = new Map<string, { source: string; clicks: number; paid: number; revenue_cents: number }>();

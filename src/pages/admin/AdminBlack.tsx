@@ -33,6 +33,7 @@ type Dashboard = {
     stage: string;
     recovery_url: string | null;
     recovery_status: string | null;
+    recovery_emails?: { step: string; sent_at: string; outcome: string }[];
   }[];
   boletos: {
     id: string;
@@ -70,6 +71,25 @@ function Kpi({ label, value, hint }: { label: string; value: string | number; hi
       <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
       {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
     </Card>
+  );
+}
+
+const RECOVERY_LABEL: Record<string, string> = { "1h": "E-mail 1 (1 h)", "24h": "E-mail 2 (24 h)" };
+
+/** Lembretes automáticos (black-recovery-reminders): enviado, bloqueado pelo destinatário ou ainda não. */
+function RecoveryEmails({ sent }: { sent: { step: string; sent_at: string; outcome: string }[] }) {
+  const byStep = new Map(sent.map((s) => [s.step, s]));
+  return (
+    <div className="mt-1 flex flex-wrap gap-1">
+      {["1h", "24h"].map((step) => {
+        const row = byStep.get(step);
+        const label = RECOVERY_LABEL[step];
+        if (!row) return <Badge key={step} variant="outline" className="text-[10px] font-normal text-muted-foreground">{label}: não enviado</Badge>;
+        if (row.outcome === "suppressed") return <Badge key={step} variant="outline" className="text-[10px] font-normal">{label}: bloqueado</Badge>;
+        if (row.outcome === "sending") return <Badge key={step} variant="outline" className="text-[10px] font-normal">{label}: enviando</Badge>;
+        return <Badge key={step} variant="secondary" className="text-[10px] font-normal">{label}: enviado {when(row.sent_at)}</Badge>;
+      })}
+    </div>
   );
 }
 
@@ -265,7 +285,7 @@ export default function AdminBlack() {
             <TabsContent value="abandoned">
               <Card className="p-4">
                 <p className="text-xs text-muted-foreground">
-                  Clicaram em assinar ou abriram o pagamento e não concluíram. O link de retomada aparece cerca de 3 horas depois que a pessoa sai do pagamento e reabre a mesma compra.
+                  Clicaram em assinar ou abriram o pagamento e não concluíram. O link de retomada aparece cerca de 3 horas depois que a pessoa sai do pagamento e reabre a mesma compra. Os e-mails automáticos saem cerca de 1 hora e 24 horas depois da última tentativa.
                 </p>
                 {data.abandoned.length === 0 ? <Empty>Ninguém parado no pagamento.</Empty> : (
                   <ul className="mt-3 divide-y divide-border">
@@ -277,6 +297,7 @@ export default function AdminBlack() {
                             {a.stage} · {when(a.last_at)}{a.phone ? ` · ${a.phone}` : ""}
                             {a.recovery_status === "contacted" && " · já contatado"}
                           </p>
+                          <RecoveryEmails sent={a.recovery_emails ?? []} />
                         </div>
                         <div className="flex flex-wrap items-center gap-1.5">
                           <ContactButtons phone={a.phone} email={a.email} kind="abandoned" link={a.recovery_url} />
