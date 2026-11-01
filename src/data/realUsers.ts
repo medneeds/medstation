@@ -63,6 +63,8 @@ export const REAL_USERS: RealUser[] = [
     photo: daianeCordeiro.url,
     location: "São Luís, MA",
     practice: "Home Care e Medicina de Emergência",
+    quote:
+      "A plataforma MedStation me surpreendeu positivamente em diversos aspectos. Embora eu nunca tenha sido uma grande adepta do uso de IA na prática médica, encontrei na plataforma, pela primeira vez, uma ferramenta capaz de agregar valor real à minha rotina profissional. A experiência tem sido surpreendente. A precisão e o nível de detalhamento das informações fizeram uma diferença muito grande no meu dia a dia. A MedStation tem contribuído para aprimorar a qualidade da assistência que ofereço aos meus pacientes, de forma muito mais ágil e organizada.",
   },
   {
     name: "Dr. José Alexandre Lindoso",
