@@ -31,9 +31,11 @@ import { DISPLAY_PRICING, HAS_LAUNCH_DISCOUNT, brl } from "@/lib/subscription-ti
 import { BlackFridayBanner } from "@/components/landing/BlackFridayBanner";
 import { BLACK_OFFER, isBlackActive } from "@/lib/pricingSchedule";
 
-import { ArrowRight, Check, Quote, Star } from "lucide-react";
+import { ArrowRight, Check, Quote } from "lucide-react";
 import { FounderSection } from "@/components/landing/FounderSection";
 import { RealUsersCarousel } from "@/components/landing/RealUsersCarousel";
+import { SiteFooter } from "@/components/SiteFooter";
+import { REAL_USERS } from "@/data/realUsers";
 import { AnnualBonusCard } from "@/components/AnnualBonusCard";
 import { ANNUAL_BONUS } from "@/lib/annualBonus";
 
@@ -52,18 +54,13 @@ const proof = [
 ];
 
 
-const testimonials = [
-  {
-    name: "Dr. Leandro Albuquerque",
-    role: "Médico",
-    text: "Otimizou meu processo de trabalho no técnico e na tomada de decisão. Executo minhas atividades de forma mais ágil e acurada, melhorando a qualidade da assistência ao paciente.",
-  },
-  {
-    name: "Dra. Luciara Duarte",
-    role: "Médica",
-    text: "A melhor experiência possível. Otimiza muito o meu tempo e consigo fazer minhas atividades com mais qualidade. Muito bom mesmo. Excelente!",
-  },
-];
+// Depoimentos só de quem autorizou nome, foto e texto (src/data/realUsers.ts).
+// Nada de depoimento sem autorização registrada — CDC art. 37 e CONAR.
+const testimonials = REAL_USERS.filter((u) => u.quote).map((u) => ({
+  name: u.name,
+  role: u.practice,
+  text: u.quote as string,
+}));
 
 const faq = [
   {
@@ -301,17 +298,12 @@ export default function Lp3() {
         <section className="bg-muted/25 border-b border-border/50">
           <div className="container mx-auto px-4 md:px-8 py-14 md:py-20">
             <h2 className="text-2xl md:text-4xl font-semibold tracking-tight text-center">
-              Quem já usa, não volta atrás
+              O que dizem os médicos que usam
             </h2>
             <div className="mt-8 grid md:grid-cols-2 gap-4">
               {testimonials.map((t) => (
                 <figure key={t.name} className="relative rounded-2xl border border-border/60 bg-background p-6">
-                  <Quote className="absolute top-5 right-5 w-7 h-7 text-primary/15" />
-                  <div className="flex gap-0.5 mb-4">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className="w-4 h-4 text-primary fill-primary" />
-                    ))}
-                  </div>
+                  <Quote className="absolute top-5 right-5 w-7 h-7 text-primary/15" aria-hidden="true" />
                   <blockquote className="text-sm md:text-base leading-relaxed text-muted-foreground">
                     “{t.text}”
                   </blockquote>
@@ -350,6 +342,7 @@ export default function Lp3() {
                 <button
                   key={cycle}
                   type="button"
+                  aria-pressed={active}
                   onClick={() => setBilling(cycle)}
                   className={`relative text-left rounded-2xl border p-5 transition-all ${
                     active
@@ -475,12 +468,7 @@ export default function Lp3() {
         </section>
       </main>
 
-      <footer className="border-t border-border/50">
-        <div className="container mx-auto px-4 md:px-8 py-8 text-xs text-muted-foreground flex flex-wrap justify-between gap-3">
-          <span>© {new Date().getFullYear()} MedStation</span>
-          <span>A decisão clínica final é sempre do médico.</span>
-        </div>
-      </footer>
+      <SiteFooter />
 
       <DeferredIdle delayMs={900}>
         <ConciergeFab />

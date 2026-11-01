@@ -30,6 +30,7 @@ import {
   MessagesSquare,
   Mic,
 } from "lucide-react";
+import { SiteFooter } from "@/components/SiteFooter";
 
 const paths = [
   {
@@ -127,7 +128,7 @@ const assistants: Assistant[] = [
     short: "CO",
     icon: FileCode,
     desc: "CID-10 certo",
-    hook: "O código certo na primeira tentativa — e a glosa não vem.",
+    hook: "Sugestão de CID-10 e TISS em segundos, pronta para você conferir.",
     detail: "Codificação CID-10 e TISS a partir da descrição clínica, com alternativas quando há dúvida.",
     bullets: ["CID-10 e TISS", "Sugestões alternativas", "Menos retrabalho administrativo"],
   },
@@ -301,7 +302,7 @@ export default function Comecar() {
                       </span>
                       <span
                         className={`mt-3 block text-xs leading-relaxed pr-8 pb-1 ${
-                          p.primary ? "opacity-80" : "text-muted-foreground/80"
+                          p.primary ? "opacity-80" : "text-muted-foreground"
                         }`}
                       >
                         {p.hint}
@@ -324,7 +325,7 @@ export default function Comecar() {
 
               <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-primary" /> Dados protegidos, conforme a LGPD
+                  <ShieldCheck className="w-3.5 h-3.5 text-primary" /> Dados tratados conforme a <a href="/privacidade" className="underline underline-offset-2 hover:text-foreground">Política de Privacidade</a>
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5 text-primary" /> Sem instalar nada, roda no navegador
@@ -413,12 +414,7 @@ export default function Comecar() {
           </div>
         </main>
 
-        <footer className="container mx-auto px-4 md:px-8 py-8 border-t border-border/50 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
-          <span>© {new Date().getFullYear()} MedStation</span>
-          <button className="hover:text-foreground transition-colors" onClick={() => go("/tour", "entrada_footer")}>
-            Ver tour completo da plataforma
-          </button>
-        </footer>
+        <SiteFooter />
 
         <AssistantSpotlightDialog
           assistant={selected}

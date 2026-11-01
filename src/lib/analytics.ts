@@ -3,8 +3,12 @@
 // - nenhum autocapture/session replay;
 // - pageviews somente em rotas públicas explicitamente permitidas;
 // - propriedades enviadas passam por allowlist e normalização;
-// - nenhuma informação clínica, nome, e-mail, telefone, CRM ou conteúdo livre é enviado.
+// - nenhuma informação clínica, nome, e-mail, telefone, CRM ou conteúdo livre é enviado;
+// - PostHog e Meta Pixel só funcionam com consentimento (src/lib/consent.ts).
+//   Antes da decisão, eventos do PostHog ficam numa fila em memória (limitada) e
+//   só saem se o visitante aceitar; se recusar, a fila é descartada.
 import { supabase } from "@/integrations/supabase/client";
+import { getConsent, hasMarketingConsent, onConsentChange } from "@/lib/consent";
 
 const TOKEN = import.meta.env.VITE_LOVABLE_CONNECTOR_POSTHOG_API_KEY as string | undefined;
 const REGION = (import.meta.env.VITE_LOVABLE_CONNECTOR_POSTHOG_REGION as string | undefined) ?? "eu";
@@ -26,8 +30,12 @@ const phQueue: Array<(p: PostHogClient) => void> = [];
 /** Liberado após o evento "load" da página (ver initAnalytics). */
 let phLoadAllowed = false;
 
+/** Máximo de eventos guardados enquanto o visitante ainda não decidiu. */
+const PH_PENDING_QUEUE_MAX = 50;
+
 function loadPostHog(): Promise<PostHogClient | null> {
   if (!TOKEN || typeof window === "undefined") return Promise.resolve(null);
+  if (getConsent()?.analytics !== true) return Promise.resolve(null);
   if (phLoading) return phLoading;
   phLoading = import("posthog-js")
     .then((mod) => {
@@ -66,6 +74,14 @@ function loadPostHog(): Promise<PostHogClient | null> {
 
 function withPostHog(fn: (p: PostHogClient) => void) {
   if (!TOKEN || typeof window === "undefined") return;
+  const consent = getConsent();
+  // Recusou: nada sai e nada fica guardado.
+  if (consent && !consent.analytics) return;
+  // Ainda não decidiu: guarda em memória até a decisão, sem carregar o SDK.
+  if (!consent) {
+    if (phQueue.length < PH_PENDING_QUEUE_MAX) phQueue.push(fn);
+    return;
+  }
   if (phClient) {
     try {
       fn(phClient);
@@ -74,8 +90,45 @@ function withPostHog(fn: (p: PostHogClient) => void) {
     }
     return;
   }
-  phQueue.push(fn);
+  if (phQueue.length < PH_PENDING_QUEUE_MAX) phQueue.push(fn);
   if (phLoadAllowed) void loadPostHog();
+}
+
+/** Envia ao Meta Pixel apenas com consentimento de marketing. */
+function metaTrack(...args: unknown[]) {
+  if (typeof window === "undefined" || !hasMarketingConsent()) return;
+  try {
+    window.fbq?.(...args);
+  } catch {
+    /* noop */
+  }
+}
+
+let consentListenerInstalled = false;
+function installConsentListener() {
+  if (consentListenerInstalled || typeof window === "undefined") return;
+  consentListenerInstalled = true;
+  onConsentChange((consent) => {
+    if (consent.analytics) {
+      if (phClient) {
+        try {
+          phClient.opt_in_capturing();
+        } catch {
+          /* noop */
+        }
+      }
+      if (phLoadAllowed) void loadPostHog();
+      return;
+    }
+    phQueue.splice(0);
+    if (phClient) {
+      try {
+        phClient.opt_out_capturing();
+      } catch {
+        /* noop */
+      }
+    }
+  });
 }
 
 const LANDING_PATHS = new Set(["/", "/pricing", "/black"]);
@@ -158,7 +211,15 @@ declare global {
   }
 }
 
+let ephemeralSessionId: string | null = null;
+
 function getSessionId(): string {
+  // Sem consentimento de análise: identificador só em memória, que some ao
+  // recarregar a página — conta visitas sem guardar nada no aparelho.
+  if (getConsent()?.analytics !== true) {
+    if (!ephemeralSessionId) ephemeralSessionId = crypto.randomUUID();
+    return ephemeralSessionId;
+  }
   if (bootedSessionId) return bootedSessionId;
   try {
     let sid = localStorage.getItem("ms_sid");
@@ -320,6 +381,7 @@ export function initAnalytics() {
   if (initialized || typeof window === "undefined") return;
   initialized = true;
   captureCampaignContext();
+  installConsentListener();
 
   if (!TOKEN) return;
 
@@ -363,7 +425,7 @@ export async function trackPageView(path: string, referrer?: string) {
     if (window.__msInitialPixelPageView === safePath) {
       window.__msInitialPixelPageView = undefined;
     } else {
-      window.fbq?.("track", "PageView");
+      metaTrack("track", "PageView");
     }
   } catch {
     /* noop */
@@ -376,7 +438,7 @@ export async function trackPageView(path: string, referrer?: string) {
       path: safePath,
       referrer: safeReferrerHost(referrer ?? document.referrer) ?? null,
       session_id: getSessionId(),
-      user_agent: navigator.userAgent.slice(0, 500),
+      user_agent: getConsent()?.analytics === true ? navigator.userAgent.slice(0, 500) : null,
       device: detectDevice(),
     });
     if (error) console.debug("[analytics] page_view insert failed", error.message);
@@ -408,7 +470,7 @@ function trackMetaLifecycle(name: string) {
   if (!metaEvent) return;
 
   try {
-    window.fbq?.("track", metaEvent, { content_name: "MedStation" });
+    metaTrack("track", metaEvent, { content_name: "MedStation" });
   } catch {
     /* noop */
   }
@@ -551,7 +613,7 @@ export function trackCheckoutStarted(meta: CheckoutStartedMeta) {
       params.currency = "BRL";
       params.value = meta.price_brl;
     }
-    window.fbq?.("track", "InitiateCheckout", params);
+    metaTrack("track", "InitiateCheckout", params);
   } catch {
     /* noop */
   }

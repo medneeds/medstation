@@ -30,6 +30,8 @@ export function RealUsersCarousel({
 
   useEffect(() => {
     if (paused) return;
+    // Acessibilidade: sem rolagem automática para quem pediu menos movimento.
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
     const id = window.setInterval(() => {
       const el = track.current;
       if (!el) return;
@@ -66,6 +68,8 @@ export function RealUsersCarousel({
           onMouseLeave={() => setPaused(false)}
           onTouchStart={() => setPaused(true)}
           onTouchEnd={() => window.setTimeout(() => setPaused(false), 4000)}
+          onFocus={() => setPaused(true)}
+          onBlur={() => setPaused(false)}
         >
           <div
             ref={track}

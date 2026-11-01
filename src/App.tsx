@@ -87,6 +87,11 @@ const Indicar = lazy(() => import("./pages/Indicar"));
 const ReferralRedirect = lazy(() => import("./pages/ReferralRedirect"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AdVideo = lazy(() => import("./pages/AdVideo"));
+const Privacidade = lazy(() => import("./pages/legal/Privacidade"));
+const Termos = lazy(() => import("./pages/legal/Termos"));
+const Reembolso = lazy(() => import("./pages/legal/Reembolso"));
+// Banner de cookies fora do bundle inicial; nada não essencial carrega antes da escolha.
+const CookieConsent = lazy(() => import("./components/CookieConsent").then(m => ({ default: m.CookieConsent })));
 
 
 const queryClient = new QueryClient();
@@ -102,6 +107,9 @@ const App = () => (
           <BrowserRouter>
           <AnalyticsTracker />
           <WelcomeEmailTrigger />
+          <Suspense fallback={null}>
+            <CookieConsent />
+          </Suspense>
           <Suspense fallback={<div className="min-h-screen" aria-hidden="true" />}>
           <Routes>
 
@@ -413,6 +421,11 @@ const App = () => (
             />
             <Route path="/r/:code" element={<ReferralRedirect />} />
             <Route path="/ad-video" element={<AdVideo />} />
+            <Route path="/privacidade" element={<Privacidade />} />
+            <Route path="/privacy" element={<Navigate to="/privacidade" replace />} />
+            <Route path="/termos" element={<Termos />} />
+            <Route path="/termos-de-uso" element={<Navigate to="/termos" replace />} />
+            <Route path="/reembolso" element={<Reembolso />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

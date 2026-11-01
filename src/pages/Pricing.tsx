@@ -16,6 +16,7 @@ import { trackCtaClick, trackCheckoutStarted } from "@/lib/analytics";
 import { describeCheckoutError } from "@/lib/checkoutErrors";
 import { AnnualBonusCard } from "@/components/AnnualBonusCard";
 import { ANNUAL_BONUS } from "@/lib/annualBonus";
+import { SiteFooter } from "@/components/SiteFooter";
 
 
 const included = [
@@ -27,7 +28,7 @@ const included = [
   "Orientus — orientação de alta ao paciente",
   "Atestus — atestados prontos",
   "Mediscuss — discussão de caso complexo",
-  "Legalis — proteção jurídica e ética",
+  "Legalis — orientação jurídica e ética",
   "Codexus — CID e codificação",
   "Numerus — escores e cálculos de beira de leito",
   "Scorius — estratificação de risco",
@@ -305,9 +306,9 @@ export default function Pricing() {
         {/* Trust */}
         <div className="mt-12 md:mt-16 grid grid-cols-3 gap-3 md:gap-6 text-center max-w-3xl mx-auto">
           {[
-            { value: "99.9%", label: "Uptime" },
-            { value: "LGPD", label: "Compliance" },
-            { value: "24/7", label: "Disponível" },
+            { value: "Web", label: "Sem instalar" },
+            { value: "0", label: "Fidelidade" },
+            { value: "7 dias", label: "Garantia" },
           ].map((item) => (
             <div key={item.label} className="border border-hairline rounded-md py-4 px-2 bg-card/40">
               <div className="font-display text-xl md:text-2xl tracking-tight text-foreground">{item.value}</div>
@@ -316,6 +317,8 @@ export default function Pricing() {
           ))}
         </div>
       </div>
+
+      <SiteFooter className="mt-12 md:mt-16" />
 
       <GuestEmailDialog
         open={dialogOpen}

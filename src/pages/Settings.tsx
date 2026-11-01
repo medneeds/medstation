@@ -21,6 +21,7 @@ import { ptBR } from "date-fns/locale";
 import { AdminUserManagement } from "@/components/AdminUserManagement";
 import { AccountSecurityCard } from "@/components/AccountSecurityCard";
 import { LetterheadCard } from "@/components/settings/LetterheadCard";
+import { PrivacyCard } from "@/components/settings/PrivacyCard";
 import { DISPLAY_PRICING, HAS_LAUNCH_DISCOUNT, PRICE_SUMMARY, brl } from "@/lib/subscription-tiers";
 
 const BRAZILIAN_STATES = [
@@ -478,6 +479,9 @@ export default function Settings() {
 
       {/* Conta e segurança */}
       <AccountSecurityCard />
+
+      {/* Privacidade: cookies e políticas */}
+      <PrivacyCard />
 
       {/* Administração - Somente para admins */}
       {isAdmin && <AdminUserManagement />}

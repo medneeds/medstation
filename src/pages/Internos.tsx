@@ -15,6 +15,8 @@ import {
   INTERN_CAMPAIGN, BR_STATES, MEDICAL_PERIODS, graduationYearOptions, isGuaranteedSpot,
   spotsLeft, isCampaignFull, waitlistPosition,
 } from "@/lib/internCampaign";
+import { FormLegalNotice } from "@/components/legal/FormLegalNotice";
+import { SiteFooter } from "@/components/SiteFooter";
 
 const schema = z.object({
   full_name: z.string().trim().min(3, "Informe seu nome completo").max(120),
@@ -242,10 +244,12 @@ export default function Internos() {
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>{full ? "Entrar na lista de espera" : "Quero meu acesso gratuito"} <ArrowRight className="ml-1 h-4 w-4" /></>}
               </Button>
               <p className="text-center text-xs text-muted-foreground">Depois da inscrição você entra no grupo de internos no WhatsApp.</p>
+              <FormLegalNotice className="text-center" />
             </form>
           )}
         </section>
       </main>
+      <SiteFooter />
     </div>
   );
 }

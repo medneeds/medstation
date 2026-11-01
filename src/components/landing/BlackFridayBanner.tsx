@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
 import { trackCtaClick } from "@/lib/analytics";
-import { BLACK_OFFER, isBlackActive } from "@/lib/pricingSchedule";
+import { BLACK_OFFER, PRICE_TABLE, isBlackActive } from "@/lib/pricingSchedule";
 import { brl } from "@/lib/subscription-tiers";
 
 /**
  * Faixa da Black MedStation no topo da landing, só durante novembro/2026.
  * A cópia estática em index.html usa as mesmas classes: ao mudar aqui, atualize lá.
+ * "De" = preço anual praticado em novembro, nunca o preço futuro de dezembro.
  */
 export function BlackFridayBanner() {
   if (!isBlackActive()) return null;
@@ -20,7 +21,7 @@ export function BlackFridayBanner() {
           Black MedStation
         </span>
         <span>
-          Plano anual de <span className="line-through text-offer-muted">{brl(BLACK_OFFER.anchorCents / 100)}</span> por{" "}
+          Plano anual de <span className="line-through text-offer-muted">{brl(PRICE_TABLE.launch.yearlyCents / 100)}</span> por{" "}
           <strong className="font-semibold">{brl(BLACK_OFFER.amountCents / 100)}</strong> · só até 30/11
         </span>
         <span className="font-medium underline underline-offset-2">Ver oferta</span>

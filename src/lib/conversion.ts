@@ -3,6 +3,7 @@
 // a página de agradecimento (/obrigado). Evita disparo duplicado por reload.
 
 import { trackSubscriptionCompleted } from "@/lib/analytics";
+import { hasMarketingConsent } from "@/lib/consent";
 
 declare global {
   interface Window {
@@ -40,15 +41,15 @@ export function trackPurchaseConversion(data: PurchaseConversion) {
   const value = typeof data.value === "number" ? data.value : undefined;
   const currency = (data.currency || "BRL").toUpperCase();
 
-  // Meta Pixel
+  // Meta Pixel — só com consentimento de marketing.
   try {
-    window.fbq?.(
+    if (hasMarketingConsent()) window.fbq?.(
       "track",
       "Purchase",
       { value: value ?? 0, currency, content_name: data.plan ?? undefined },
       { eventID: id },
     );
-    window.fbq?.("track", "Subscribe", { value: value ?? 0, currency }, { eventID: `sub_${id}` });
+    if (hasMarketingConsent()) window.fbq?.("track", "Subscribe", { value: value ?? 0, currency }, { eventID: `sub_${id}` });
   } catch {
     /* noop */
   }

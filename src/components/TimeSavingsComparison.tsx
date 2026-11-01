@@ -82,7 +82,7 @@ export function TimeSavingsComparison({ className }: { className?: string }) {
             </div>
           </div>
 
-          <p className="text-2xs md:text-xs text-muted-foreground/80 text-center mt-5 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-2xs md:text-xs text-muted-foreground text-center mt-5 max-w-2xl mx-auto leading-relaxed">
             Estimativa baseada em 15 consultas por dia, 22 dias úteis, com economia média de 7,5 minutos por atendimento. Seu ganho real depende do seu volume.
           </p>
         </div>

@@ -11,6 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from "@/hooks/use-toast";
 import { signInSchema } from "@/lib/validations";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
+import { FormLegalNotice } from "@/components/legal/FormLegalNotice";
 import { Logo } from "@/components/Logo";
 import { trackLifecycleEvent } from "@/lib/analytics";
 import { Eye, EyeOff, MailCheck, Lock } from "lucide-react";
@@ -448,6 +449,7 @@ export default function Auth() {
                           <p className="text-[11px] text-muted-foreground text-center">
                             Sem senha. Enviaremos um link seguro para o seu e-mail.
                           </p>
+                          <FormLegalNotice className="text-center" />
                         </form>
                       </>
                     )}
