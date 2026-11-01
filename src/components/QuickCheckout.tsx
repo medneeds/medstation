@@ -9,6 +9,7 @@ import { trackCheckoutStarted } from "@/lib/analytics";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { DISPLAY_PRICING } from "@/lib/subscription-tiers";
+import { FormLegalNotice } from "@/components/legal/FormLegalNotice";
 
 interface QuickCheckoutProps {
   product?: "agents" | "pro_completo";
@@ -38,8 +39,9 @@ export function QuickCheckout({
     ? DISPLAY_PRICING.bundle[billingPeriod === "yearly" ? "yearly" : "monthly"].now
     : billingPeriod === "yearly" ? 299.9 : 29.9;
 
+  // Sem preço riscado: o "de" seria o preço futuro, nunca cobrado (CDC art. 37).
   const listPrice = isCompleto ? DISPLAY_PRICING.bundle.monthly.list : 59.9;
-  const showListPrice = billingPeriod === "monthly" && listPrice > price;
+  const showListPrice = false;
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -166,10 +168,9 @@ export function QuickCheckout({
         </div>
         
         <p className="text-[10px] text-center text-muted-foreground">
-          Ao continuar, você concorda com nossos termos de uso.
-          <br />
           Após o pagamento, você receberá um link seguro para definir sua senha.
         </p>
+        <FormLegalNotice mentionsReminder className="text-center" />
       </form>
     </Card>
   );

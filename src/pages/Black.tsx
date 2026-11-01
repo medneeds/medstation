@@ -16,13 +16,21 @@ import { cn } from "@/lib/utils";
 import { PlatformDemo } from "@/components/landing/PlatformDemo";
 import { FounderSection } from "@/components/landing/FounderSection";
 import { RealUsersCarousel } from "@/components/landing/RealUsersCarousel";
+import { FormLegalNotice } from "@/components/legal/FormLegalNotice";
+import { SiteFooter } from "@/components/SiteFooter";
 
 const PRICE = BLACK_OFFER.amountCents / 100;
-const ANCHOR = BLACK_OFFER.anchorCents / 100;
+// "De/por" e "% off" usam o preço anual efetivamente praticado durante a oferta
+// (novembro = preço de lançamento). Usar como referência um preço que ainda não
+// foi cobrado (o de dezembro) é propaganda enganosa (CDC art. 37 / Procon).
+const CURRENT_YEARLY = PRICE_TABLE.launch.yearlyCents / 100;
+/** Preço anual a partir de 1º/12 — só aparece rotulado como preço futuro. */
+const DECEMBER_YEARLY = BLACK_OFFER.anchorCents / 100;
 const MONTHLY_FULL = PRICE_TABLE.full.monthlyCents / 100;
-const DISCOUNT_PCT = Math.round((1 - PRICE / ANCHOR) * 100);
+const DISCOUNT_PCT = Math.round((1 - PRICE / CURRENT_YEARLY) * 100);
 const PER_DAY = PRICE / 365;
-const SAVINGS = ANCHOR - PRICE;
+const SAVINGS = DECEMBER_YEARLY - PRICE;
+const SAVINGS_NOW = CURRENT_YEARLY - PRICE;
 
 const CTA_LABEL = "Assinar plano Black anual";
 const GOLD_BUTTON =
@@ -59,16 +67,16 @@ const faq = [
   },
   {
     q: "E depois de novembro?",
-    a: `A partir de 1º de dezembro, a MedStation passa a custar ${brl(MONTHLY_FULL)} por mês ou ${brl(ANCHOR)} por ano.`,
+    a: `A partir de 1º de dezembro, a MedStation passa a custar ${brl(MONTHLY_FULL)} por mês ou ${brl(DECEMBER_YEARLY)} por ano.`,
   },
 ];
 
 const MARQUEE_ITEMS = [
   "Black MedStation",
   `${DISCOUNT_PCT}% off no anual`,
-  `de ${brl(ANCHOR)} por ${brl(PRICE)}`,
+  `de ${brl(CURRENT_YEARLY)} por ${brl(PRICE)}`,
   "Só em novembro",
-  "24 a 40 horas a menos de burocracia por mês",
+  "Até 40 horas a menos de burocracia por mês*",
   `${brl(PER_DAY)} por dia`,
   "7 dias de garantia",
 ];
@@ -322,7 +330,7 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
         <span className="text-sm font-semibold">Plano Black anual</span>
       </div>
       <p className="mt-4 text-sm text-muted-foreground">
-        de <span className="line-through decoration-offer-hot decoration-2">{brl(ANCHOR)}</span> por
+        de <span className="line-through decoration-offer-hot decoration-2">{brl(CURRENT_YEARLY)}</span> por
       </p>
       <div className="flex items-baseline gap-1.5">
         <span className="text-5xl md:text-6xl font-bold tracking-tight">{brl(PRICE)}</span>
@@ -333,7 +341,7 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
       </p>
       <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
         <span className="rounded-full bg-offer-gold/20 px-2.5 py-1 font-semibold text-foreground">
-          Você economiza {brl(SAVINGS)}
+          {brl(SAVINGS_NOW)} a menos que o anual de hoje
         </span>
         <span className="text-muted-foreground">Menos de {brl(Math.ceil(PER_DAY * 100) / 100)} por dia</span>
       </div>
@@ -434,6 +442,7 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
           <Check className="w-3.5 h-3.5 text-primary" /> 12 meses de acesso, sem renovação automática
         </li>
       </ul>
+      <FormLegalNotice mentionsReminder mentionsWhatsapp={upcoming} className="mt-4" />
     </form>
   );
 }
@@ -454,7 +463,7 @@ const highlights = [
   {
     icon: Lock,
     title: "Preço travado por 12 meses",
-    text: `Em dezembro a MedStation sobe para ${brl(ANCHOR)} por ano. Você segue o ano inteiro sem nenhum reajuste.`,
+    text: `Em dezembro a MedStation sobe para ${brl(DECEMBER_YEARLY)} por ano. Você segue o ano inteiro sem nenhum reajuste.`,
   },
   {
     icon: ShieldCheck,
@@ -505,7 +514,7 @@ export default function Black() {
       <Seo
         path="/black"
         title="Black MedStation — um ano inteiro por R$ 399,90"
-        description="Só em novembro: o plano anual completo da MedStation de R$ 999,90 por R$ 399,90, em pagamento único no cartão ou boleto. 7 dias de garantia."
+        description={`Só em novembro: o plano anual completo da MedStation de ${brl(CURRENT_YEARLY)} por ${brl(PRICE)}, em pagamento único no cartão ou boleto. 7 dias de garantia.`}
       />
 
       <div className="sticky top-0 z-30">
@@ -564,13 +573,17 @@ export default function Black() {
               .
             </h1>
             <p className="mt-6 max-w-xl text-lg md:text-2xl font-medium leading-snug text-offer-foreground">
-              Economize de <span className="text-offer-gold">24 a 40 horas</span> de trabalho burocrático e repetitivo por mês na
-              sua prática médica.
+              Economize até <span className="text-offer-gold">40 horas</span> de trabalho burocrático e repetitivo por mês na
+              sua prática médica.<sup className="text-offer-muted">*</sup>
             </p>
             <p className="mt-4 max-w-xl text-base md:text-lg text-offer-muted leading-relaxed">
               Evoluções, receitas, atestados e anamneses prontos em segundos, para você voltar ao que importa: o paciente. Tudo isso
               por <span className="text-offer-foreground font-semibold">{brl(PER_DAY)} por dia</span>, com{" "}
               {DISCOUNT_PCT}% de desconto no plano anual.
+            </p>
+            <p className="mt-3 max-w-xl text-xs text-offer-muted leading-relaxed">
+              * Estimativa baseada em 15 atendimentos por dia, 22 dias por mês, com economia média de 7,5 minutos por
+              atendimento. O ganho real depende do seu volume e do seu uso.
             </p>
 
             <div className="mt-8">
@@ -624,13 +637,19 @@ export default function Black() {
                 <div className="flex items-center justify-between rounded-lg px-3 py-3">
                   <dt className="text-muted-foreground">Mensal, a partir de 1º/12</dt>
                   <dd className="text-muted-foreground">
-                    <span className="line-through">{brl(MONTHLY_FULL * 12)}</span>/ano
+                    {brl(MONTHLY_FULL * 12)}/ano
+                  </dd>
+                </div>
+                <div className="flex items-center justify-between rounded-lg px-3 py-3">
+                  <dt className="text-muted-foreground">Anual hoje, até 30/11</dt>
+                  <dd className="text-muted-foreground">
+                    <span className="line-through">{brl(CURRENT_YEARLY)}</span>/ano
                   </dd>
                 </div>
                 <div className="flex items-center justify-between rounded-lg px-3 py-3">
                   <dt className="text-muted-foreground">Anual, a partir de 1º/12</dt>
                   <dd className="text-muted-foreground">
-                    <span className="line-through">{brl(ANCHOR)}</span>/ano
+                    {brl(DECEMBER_YEARLY)}/ano
                   </dd>
                 </div>
                 <div className="flex items-center justify-between rounded-lg border-2 border-offer-gold bg-offer-gold/10 px-3 py-3">
@@ -705,12 +724,14 @@ export default function Black() {
         </section>
       )}
 
+      <SiteFooter />
+
       {/* Barra fixa no celular */}
       {active && (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-offer-border bg-offer/95 px-4 py-3 text-offer-foreground backdrop-blur md:hidden">
           <div className="flex items-center gap-3">
             <div className="min-w-0 leading-tight">
-              <p className="text-[0.65rem] text-offer-muted line-through">{brl(ANCHOR)}</p>
+              <p className="text-[0.65rem] text-offer-muted line-through">{brl(CURRENT_YEARLY)}</p>
               <p className="text-base font-bold text-offer-gold">{brl(PRICE)}<span className="text-xs font-normal text-offer-muted">/ano</span></p>
             </div>
             <Button className={cn("h-12 flex-1 text-sm motion-safe:animate-cta-pulse", GOLD_BUTTON)} onClick={() => scrollToCheckout("black_sticky_mobile")}>

@@ -4,7 +4,7 @@ import {
   consumeLandingShellAction,
   peekLandingShellEmail,
 } from "@/lib/landingShell";
-import { ArrowRight, Loader2, MailCheck, ShieldCheck } from "lucide-react";
+import { ArrowRight, Loader2, MailCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { trackCtaClick, trackLifecycleEvent } from "@/lib/analytics";
+import { FormLegalNotice } from "@/components/legal/FormLegalNotice";
 
 interface LeadFormProps {
   /** Identificador da origem gravado junto do lead. */
@@ -220,10 +221,7 @@ export function LeadForm({
         </>
       )}
 
-      <p className="mt-4 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-        <ShieldCheck className="w-3.5 h-3.5 text-primary shrink-0" />
-        Seus dados ficam protegidos e são usados só para liberar seu acesso.
-      </p>
+      <FormLegalNotice className="mt-4" />
     </div>
   );
 }

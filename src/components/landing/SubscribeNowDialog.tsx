@@ -2,12 +2,19 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, Check, Gift, Loader2, Lock, Quote, ShieldCheck, Star } from "lucide-react";
+import { ArrowRight, Check, Gift, Loader2, Lock, Quote, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { trackCheckoutStarted } from "@/lib/analytics";
 import { useToast } from "@/hooks/use-toast";
 import { DISPLAY_PRICING, HAS_LAUNCH_DISCOUNT, brl } from "@/lib/subscription-tiers";
 import { ANNUAL_BONUS } from "@/lib/annualBonus";
+import { REAL_USERS } from "@/data/realUsers";
+import { FormLegalNotice } from "@/components/legal/FormLegalNotice";
+
+/** Depoimento autorizado (src/data/realUsers.ts) — o mais curto, para caber no checkout. */
+const FEATURED_QUOTE = REAL_USERS.filter((u) => u.quote).sort(
+  (a, b) => (a.quote?.length ?? 0) - (b.quote?.length ?? 0),
+)[0];
 
 type Cycle = "monthly" | "yearly";
 
@@ -71,7 +78,7 @@ export function SubscribeNowDialog({ open, onOpenChange }: Props) {
       >
         {c === "yearly" && (
           <span className="absolute -top-2.5 right-3 rounded-full bg-primary px-2 py-0.5 text-[0.65rem] font-semibold text-primary-foreground">
-            Melhor custo · {savingPct}% off
+            Melhor custo · {savingPct}% a menos que o mensal
           </span>
         )}
         <div className="flex items-center justify-between">
@@ -81,9 +88,7 @@ export function SubscribeNowDialog({ open, onOpenChange }: Props) {
           </span>
         </div>
         {HAS_LAUNCH_DISCOUNT && (
-          <p className="mt-1.5 text-[0.7rem] text-muted-foreground">
-            de <span className="line-through">{brl(DISPLAY_PRICING.bundle[c].list)}</span> por
-          </p>
+          <p className="mt-1.5 text-[0.7rem] text-muted-foreground">Preço de lançamento</p>
         )}
         <div className="flex items-baseline gap-1">
           <span className="text-xl font-bold text-foreground">{brl(c === "yearly" ? yearly : monthly)}</span>
@@ -159,6 +164,7 @@ export function SubscribeNowDialog({ open, onOpenChange }: Props) {
               autoFocus
             />
             <p className="text-[0.7rem] text-muted-foreground">Seu acesso é criado com este e-mail logo após o pagamento.</p>
+            <FormLegalNotice mentionsReminder />
           </div>
 
           <Button type="submit" size="lg" className="w-full h-12 text-base" disabled={loading}>
@@ -175,16 +181,15 @@ export function SubscribeNowDialog({ open, onOpenChange }: Props) {
             <span className="inline-flex items-center gap-1"><Check className="h-3 w-3" /> Cancele quando quiser</span>
           </div>
 
-          <figure className="rounded-xl border border-border/60 bg-muted/30 p-4">
-            <div className="flex items-center gap-0.5 text-primary">
-              {Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-3.5 w-3.5 fill-current" />)}
-            </div>
-            <blockquote className="mt-2 text-sm leading-relaxed text-foreground/90">
-              <Quote className="mr-1 inline h-3.5 w-3.5 -translate-y-0.5 text-primary" />
-              Otimizou meu processo de trabalho no técnico e na tomada de decisão. Executo minhas atividades de forma mais ágil e acurada.
-            </blockquote>
-            <figcaption className="mt-2 text-xs text-muted-foreground">Dr. Leandro Albuquerque · Médico</figcaption>
-          </figure>
+          {FEATURED_QUOTE?.quote ? (
+            <figure className="rounded-xl border border-border/60 bg-muted/30 p-4">
+              <blockquote className="text-sm leading-relaxed text-foreground/90">
+                <Quote className="mr-1 inline h-3.5 w-3.5 -translate-y-0.5 text-primary" aria-hidden="true" />
+                {FEATURED_QUOTE.quote}
+              </blockquote>
+              <figcaption className="mt-2 text-xs text-muted-foreground">{FEATURED_QUOTE.name}</figcaption>
+            </figure>
+          ) : null}
         </form>
       </DialogContent>
     </Dialog>

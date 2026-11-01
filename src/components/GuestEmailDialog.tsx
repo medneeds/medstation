@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Mail, Loader2, ArrowRight, ShieldCheck, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { FormLegalNotice } from "@/components/legal/FormLegalNotice";
 
 interface GuestEmailDialogProps {
   open: boolean;
@@ -109,6 +110,8 @@ export function GuestEmailDialog({
             <ShieldCheck className="w-3.5 h-3.5 text-primary" />
             Pagamento seguro · Garantia de 7 dias
           </div>
+
+          <FormLegalNotice mentionsReminder className="text-center" />
 
           <p className="text-[11px] text-center text-muted-foreground">
             Já tem conta?{" "}

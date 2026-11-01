@@ -31,9 +31,11 @@ import { DISPLAY_PRICING, HAS_LAUNCH_DISCOUNT, brl } from "@/lib/subscription-ti
 import { BlackFridayBanner } from "@/components/landing/BlackFridayBanner";
 import { BLACK_OFFER, isBlackActive } from "@/lib/pricingSchedule";
 
-import { ArrowRight, Check, Quote, Star } from "lucide-react";
+import { ArrowRight, Check, Quote } from "lucide-react";
 import { FounderSection } from "@/components/landing/FounderSection";
 import { RealUsersCarousel } from "@/components/landing/RealUsersCarousel";
+import { SiteFooter } from "@/components/SiteFooter";
+import { REAL_USERS } from "@/data/realUsers";
 import { AnnualBonusCard } from "@/components/AnnualBonusCard";
 import { ANNUAL_BONUS } from "@/lib/annualBonus";
 
@@ -52,18 +54,13 @@ const proof = [
 ];
 
 
-const testimonials = [
-  {
-    name: "Dr. Leandro Albuquerque",
-    role: "Médico",
-    text: "Otimizou meu processo de trabalho no técnico e na tomada de decisão. Executo minhas atividades de forma mais ágil e acurada, melhorando a qualidade da assistência ao paciente.",
-  },
-  {
-    name: "Dra. Luciara Duarte",
-    role: "Médica",
-    text: "A melhor experiência possível. Otimiza muito o meu tempo e consigo fazer minhas atividades com mais qualidade. Muito bom mesmo. Excelente!",
-  },
-];
+// Depoimentos só de quem autorizou nome, foto e texto (src/data/realUsers.ts).
+// Nada de depoimento sem autorização registrada — CDC art. 37 e CONAR.
+const testimonials = REAL_USERS.filter((u) => u.quote).map((u) => ({
+  name: u.name,
+  role: u.practice,
+  text: u.quote as string,
+}));
 
 const faq = [
   {
@@ -78,7 +75,7 @@ const faq = [
   {
     q: "Existe diferença entre planos?",
     a: HAS_LAUNCH_DISCOUNT
-      ? `Não. Existe um único plano com a plataforma inteira: Documentação, Copiloto e Fluxo. No lançamento, sai de ${brl(DISPLAY_PRICING.bundle.monthly.list)} por ${brl(DISPLAY_PRICING.bundle.monthly.now)} por mês, ou de ${brl(DISPLAY_PRICING.bundle.yearly.list)} por ${brl(DISPLAY_PRICING.bundle.yearly.now)} por ano, até 30 de novembro.`
+      ? `Não. Existe um único plano com a plataforma inteira: Documentação, Copiloto e Fluxo. Até 30 de novembro, o preço de lançamento é ${brl(DISPLAY_PRICING.bundle.monthly.now)} por mês ou ${brl(DISPLAY_PRICING.bundle.yearly.now)} por ano. A partir de 1º de dezembro, passa a ${brl(DISPLAY_PRICING.bundle.monthly.list)} por mês ou ${brl(DISPLAY_PRICING.bundle.yearly.list)} por ano.`
       : `Não. Existe um único plano com a plataforma inteira: Documentação, Copiloto e Fluxo, por ${brl(DISPLAY_PRICING.bundle.monthly.now)} por mês ou ${brl(DISPLAY_PRICING.bundle.yearly.now)} por ano.`,
   },
   {
@@ -301,17 +298,12 @@ export default function Lp3() {
         <section className="bg-muted/25 border-b border-border/50">
           <div className="container mx-auto px-4 md:px-8 py-14 md:py-20">
             <h2 className="text-2xl md:text-4xl font-semibold tracking-tight text-center">
-              Quem já usa, não volta atrás
+              O que dizem os médicos que usam
             </h2>
             <div className="mt-8 grid md:grid-cols-2 gap-4">
               {testimonials.map((t) => (
                 <figure key={t.name} className="relative rounded-2xl border border-border/60 bg-background p-6">
-                  <Quote className="absolute top-5 right-5 w-7 h-7 text-primary/15" />
-                  <div className="flex gap-0.5 mb-4">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className="w-4 h-4 text-primary fill-primary" />
-                    ))}
-                  </div>
+                  <Quote className="absolute top-5 right-5 w-7 h-7 text-primary/15" aria-hidden="true" />
                   <blockquote className="text-sm md:text-base leading-relaxed text-muted-foreground">
                     “{t.text}”
                   </blockquote>
@@ -350,6 +342,7 @@ export default function Lp3() {
                 <button
                   key={cycle}
                   type="button"
+                  aria-pressed={active}
                   onClick={() => setBilling(cycle)}
                   className={`relative text-left rounded-2xl border p-5 transition-all ${
                     active
@@ -372,23 +365,22 @@ export default function Lp3() {
                       </span>
                     ) : null}
                   </div>
+                  {/* Sem "de/por": o preço de dezembro nunca foi cobrado e não pode servir de referência (CDC art. 37). */}
                   {HAS_LAUNCH_DISCOUNT && (
-                    <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>
-                        de <span className="line-through">{brl(p.list)}</span>
-                      </span>
+                    <div className="mt-3 text-xs">
                       <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[0.65rem] font-semibold text-primary">
-                        {Math.round((1 - p.now / p.list) * 100)}% off
+                        Preço de lançamento
                       </span>
                     </div>
                   )}
-                  <div className={`${HAS_LAUNCH_DISCOUNT ? "mt-0.5" : "mt-3"} flex items-baseline gap-1.5`}>
-                    {HAS_LAUNCH_DISCOUNT && <span className="text-sm text-muted-foreground">por</span>}
+                  <div className={`${HAS_LAUNCH_DISCOUNT ? "mt-1.5" : "mt-3"} flex items-baseline gap-1.5`}>
                     <span className="text-2xl font-bold text-primary">{brl(p.now)}</span>
                     <span className="text-sm text-muted-foreground">{cycle === "monthly" ? "/mês" : "/ano"}</span>
                   </div>
                   <div className="mt-1 text-xs text-muted-foreground">
-                    {HAS_LAUNCH_DISCOUNT ? "Preço de lançamento, válido até 30/11." : "Plano único com tudo incluso."}
+                    {HAS_LAUNCH_DISCOUNT
+                      ? `Válido até 30/11. A partir de 1º/12: ${brl(p.list)}${cycle === "monthly" ? "/mês" : "/ano"}.`
+                      : "Plano único com tudo incluso."}
                   </div>
                   <p className="mt-3 text-xs text-muted-foreground">
                     {cycle === "monthly"
@@ -409,8 +401,8 @@ export default function Lp3() {
             <div className="mt-6 max-w-xl mx-auto rounded-xl border border-primary/25 bg-background px-4 py-3 text-center text-xs md:text-sm">
               <strong className="text-primary">Preço de lançamento até 30 de novembro:</strong> a partir de 1º de
               dezembro o valor passa a {brl(DISPLAY_PRICING.bundle.monthly.list)}/mês ou{" "}
-              {brl(DISPLAY_PRICING.bundle.yearly.list)}/ano. Assinando agora, você paga metade e mantém esse valor
-              enquanto a assinatura estiver ativa.
+              {brl(DISPLAY_PRICING.bundle.yearly.list)}/ano. No mensal, quem assina agora mantém o valor de lançamento
+              enquanto a assinatura estiver ativa. O anual cobre 12 meses pelo preço pago hoje.
             </div>
           )}
 
@@ -475,12 +467,7 @@ export default function Lp3() {
         </section>
       </main>
 
-      <footer className="border-t border-border/50">
-        <div className="container mx-auto px-4 md:px-8 py-8 text-xs text-muted-foreground flex flex-wrap justify-between gap-3">
-          <span>© {new Date().getFullYear()} MedStation</span>
-          <span>A decisão clínica final é sempre do médico.</span>
-        </div>
-      </footer>
+      <SiteFooter />
 
       <DeferredIdle delayMs={900}>
         <ConciergeFab />

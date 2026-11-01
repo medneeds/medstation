@@ -3,8 +3,12 @@
 // - nenhum autocapture/session replay;
 // - pageviews somente em rotas públicas explicitamente permitidas;
 // - propriedades enviadas passam por allowlist e normalização;
-// - nenhuma informação clínica, nome, e-mail, telefone, CRM ou conteúdo livre é enviado.
+// - nenhuma informação clínica, nome, e-mail, telefone, CRM ou conteúdo livre é enviado;
+// - PostHog e Meta Pixel só funcionam com consentimento (src/lib/consent.ts).
+//   Antes da decisão, eventos do PostHog ficam numa fila em memória (limitada) e
+//   só saem se o visitante aceitar; se recusar, a fila é descartada.
 import { supabase } from "@/integrations/supabase/client";
+import { getConsent, hasMarketingConsent, onConsentChange } from "@/lib/consent";
 
 const TOKEN = import.meta.env.VITE_LOVABLE_CONNECTOR_POSTHOG_API_KEY as string | undefined;
 const REGION = (import.meta.env.VITE_LOVABLE_CONNECTOR_POSTHOG_REGION as string | undefined) ?? "eu";
@@ -26,8 +30,12 @@ const phQueue: Array<(p: PostHogClient) => void> = [];
 /** Liberado após o evento "load" da página (ver initAnalytics). */
 let phLoadAllowed = false;
 
+/** Máximo de eventos guardados enquanto o visitante ainda não decidiu. */
+const PH_PENDING_QUEUE_MAX = 50;
+
 function loadPostHog(): Promise<PostHogClient | null> {
   if (!TOKEN || typeof window === "undefined") return Promise.resolve(null);
+  if (getConsent()?.analytics !== true) return Promise.resolve(null);
   if (phLoading) return phLoading;
   phLoading = import("posthog-js")
     .then((mod) => {
@@ -47,6 +55,12 @@ function loadPostHog(): Promise<PostHogClient | null> {
         person_profiles: "identified_only",
         sanitize_properties: (properties, eventName) => sanitizePostHogProperties(properties, eventName),
       });
+      // Uma recusa anterior deixa o opt-out salvo no aparelho; com consentimento agora, reativa.
+      try {
+        if (client.has_opted_out_capturing()) client.opt_in_capturing();
+      } catch {
+        /* noop */
+      }
       phClient = client;
       phQueue.splice(0).forEach((fn) => {
         try {
@@ -66,6 +80,14 @@ function loadPostHog(): Promise<PostHogClient | null> {
 
 function withPostHog(fn: (p: PostHogClient) => void) {
   if (!TOKEN || typeof window === "undefined") return;
+  const consent = getConsent();
+  // Recusou: nada sai e nada fica guardado.
+  if (consent && !consent.analytics) return;
+  // Ainda não decidiu: guarda em memória até a decisão, sem carregar o SDK.
+  if (!consent) {
+    if (phQueue.length < PH_PENDING_QUEUE_MAX) phQueue.push(fn);
+    return;
+  }
   if (phClient) {
     try {
       fn(phClient);
@@ -77,6 +99,60 @@ function withPostHog(fn: (p: PostHogClient) => void) {
   phQueue.push(fn);
   if (phLoadAllowed) void loadPostHog();
 }
+
+/** Envia ao Meta Pixel apenas com consentimento de marketing. */
+/** Parâmetros que nunca podem sair para o Meta junto com a URL da página. */
+const SENSITIVE_QUERY = /[?&](email|e-mail|phone|telefone|crm|cpf)=/i;
+
+function metaTrack(...args: unknown[]) {
+  if (typeof window === "undefined" || !hasMarketingConsent()) return;
+  // O Pixel envia a URL completa; se ela carrega dado pessoal, não envia nada.
+  if (SENSITIVE_QUERY.test(window.location.search)) return;
+  try {
+    window.fbq?.(...args);
+  } catch {
+    /* noop */
+  }
+}
+
+let consentListenerInstalled = false;
+function installConsentListener() {
+  if (consentListenerInstalled || typeof window === "undefined") return;
+  consentListenerInstalled = true;
+  onConsentChange((consent) => {
+    if (consent.analytics) {
+      if (phClient) {
+        try {
+          phClient.opt_in_capturing();
+        } catch {
+          /* noop */
+        }
+      }
+      if (phLoadAllowed) void loadPostHog();
+      return;
+    }
+    phQueue.splice(0);
+    if (phClient) {
+      try {
+        // Apaga o identificador do PostHog e deixa só a marca de recusa.
+        phClient.reset();
+        phClient.opt_out_capturing();
+      } catch {
+        /* noop */
+      }
+    }
+    try {
+      // Sem consentimento, o identificador próprio de visitas também sai do aparelho.
+      localStorage.removeItem("ms_sid");
+      bootedSessionId = null;
+    } catch {
+      /* noop */
+    }
+  });
+}
+
+/** Rotas públicas sem PageView no Meta (a URL pode conter dado pessoal). */
+const META_EXCLUDED_PATHS = new Set(["/confirmar-email"]);
 
 const LANDING_PATHS = new Set(["/", "/pricing", "/black"]);
 const PUBLIC_ANALYTICS_PATHS = new Set([
@@ -158,7 +234,15 @@ declare global {
   }
 }
 
+let ephemeralSessionId: string | null = null;
+
 function getSessionId(): string {
+  // Sem consentimento de análise: identificador só em memória, que some ao
+  // recarregar a página — conta visitas sem guardar nada no aparelho.
+  if (getConsent()?.analytics !== true) {
+    if (!ephemeralSessionId) ephemeralSessionId = crypto.randomUUID();
+    return ephemeralSessionId;
+  }
   if (bootedSessionId) return bootedSessionId;
   try {
     let sid = localStorage.getItem("ms_sid");
@@ -320,6 +404,7 @@ export function initAnalytics() {
   if (initialized || typeof window === "undefined") return;
   initialized = true;
   captureCampaignContext();
+  installConsentListener();
 
   if (!TOKEN) return;
 
@@ -360,10 +445,12 @@ export async function trackPageView(path: string, referrer?: string) {
 
   try {
     // O primeiro PageView já saiu do index.html antes do app carregar; não duplica.
-    if (window.__msInitialPixelPageView === safePath) {
+    if (META_EXCLUDED_PATHS.has(safePath)) {
+      /* /confirmar-email pode ter o e-mail na URL, e o Pixel envia a URL inteira: nunca ao Meta. */
+    } else if (window.__msInitialPixelPageView === safePath) {
       window.__msInitialPixelPageView = undefined;
     } else {
-      window.fbq?.("track", "PageView");
+      metaTrack("track", "PageView");
     }
   } catch {
     /* noop */
@@ -376,7 +463,7 @@ export async function trackPageView(path: string, referrer?: string) {
       path: safePath,
       referrer: safeReferrerHost(referrer ?? document.referrer) ?? null,
       session_id: getSessionId(),
-      user_agent: navigator.userAgent.slice(0, 500),
+      user_agent: getConsent()?.analytics === true ? navigator.userAgent.slice(0, 500) : null,
       device: detectDevice(),
     });
     if (error) console.debug("[analytics] page_view insert failed", error.message);
@@ -408,7 +495,7 @@ function trackMetaLifecycle(name: string) {
   if (!metaEvent) return;
 
   try {
-    window.fbq?.("track", metaEvent, { content_name: "MedStation" });
+    metaTrack("track", metaEvent, { content_name: "MedStation" });
   } catch {
     /* noop */
   }
@@ -418,6 +505,8 @@ function trackMetaLifecycle(name: string) {
  * Marcos entre aquisição e checkout. `onceKey` evita duplicidade local.
  * Somente metadados comerciais da allowlist acima podem sair do navegador.
  */
+const sentOnceThisVisit = new Set<string>();
+
 export function trackLifecycleEvent(
   name:
     | "lead_created"
@@ -433,13 +522,17 @@ export function trackLifecycleEvent(
   onceKey?: string,
 ) {
   if (onceKey) {
+    const key = `ms_event:${name}:${onceKey}`;
+    if (sentOnceThisVisit.has(key)) return;
     try {
-      const key = `ms_event:${name}:${onceKey}`;
       if (localStorage.getItem(key) === "1") return;
-      localStorage.setItem(key, "1");
+      // Só marca como "já enviado" no aparelho quando houve consentimento: quem recusou e
+      // aceita depois ainda gera o evento. Antes da decisão, o controle fica na memória.
+      if (getConsent()?.analytics === true || hasMarketingConsent()) localStorage.setItem(key, "1");
     } catch {
       /* analytics dedupe is best-effort */
     }
+    sentOnceThisVisit.add(key);
   }
 
   trackEvent(name, { ...utmContext(), ...props });
@@ -551,7 +644,7 @@ export function trackCheckoutStarted(meta: CheckoutStartedMeta) {
       params.currency = "BRL";
       params.value = meta.price_brl;
     }
-    window.fbq?.("track", "InitiateCheckout", params);
+    metaTrack("track", "InitiateCheckout", params);
   } catch {
     /* noop */
   }

@@ -20,6 +20,13 @@ export default function ConfirmarEmail() {
     return fromState || params.get("email") || "";
   }, [location.state, params]);
 
+  // Tira o e-mail da barra de endereço (fica só no state da navegação): URLs vão
+  // para histórico, logs e ferramentas de medição.
+  useEffect(() => {
+    if (!params.get("email") || !email) return;
+    navigate(location.pathname, { replace: true, state: { ...(location.state as object | null), email } });
+  }, [email, location.pathname, location.state, navigate, params]);
+
   const [seconds, setSeconds] = useState(RESEND_COOLDOWN);
   const [sending, setSending] = useState(false);
 
@@ -123,7 +130,10 @@ export default function ConfirmarEmail() {
         </div>
 
         <p className="text-[11px] text-muted-foreground">
-          © {new Date().getFullYear()} MedStation · LGPD
+          © {new Date().getFullYear()} MedStation ·{" "}
+            <a href="/privacidade" target="_blank" rel="noopener noreferrer" className="underline-offset-4 hover:underline">
+              Privacidade
+            </a>
         </p>
       </motion.div>
     </div>
