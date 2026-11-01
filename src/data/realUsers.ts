@@ -43,6 +43,8 @@ export const REAL_USERS: RealUser[] = [
     photo: pedroReboucas.url,
     location: "São Luís, MA",
     practice: "Medicina Intensiva e Medicina de Emergência",
+    quote:
+      "A MedStation mudou completamente a forma que eu trabalho, otimizando meu tempo de um jeito que eu nunca imaginei. Recomendo muito o Examinus para resumir exames!",
   },
   {
     name: "Dra. Luciara Duarte",
