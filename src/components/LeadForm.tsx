@@ -33,6 +33,23 @@ function collectUtm() {
   return out;
 }
 
+/** Traduz o erro do Supabase Auth para uma frase em português (nunca mostra o texto cru em inglês). */
+function otpErrorMessage(error: { message?: string; status?: number; code?: string } | null | undefined): string {
+  const msg = (error?.message ?? "").toLowerCase();
+  if (
+    error?.status === 429 ||
+    error?.code === "over_email_send_rate_limit" ||
+    msg.includes("rate limit") ||
+    msg.includes("for security purposes")
+  ) {
+    return "Muitas tentativas. Aguarde um minuto e tente de novo.";
+  }
+  if (msg.includes("invalid") && msg.includes("email")) {
+    return "Confira o e-mail digitado e tente de novo.";
+  }
+  return "Algo deu errado ao enviar o link. Tente de novo em instantes.";
+}
+
 /**
  * Cadastro de menor fricção possível:
  * - Google como primeira opção visível.
@@ -50,6 +67,7 @@ export function LeadForm({
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
+  const sentRef = useRef<HTMLDivElement>(null);
   const [googleAutoStart] = useState(() => consumeLandingShellAction("google"));
 
   const saveLead = async (normalizedEmail: string) => {
@@ -98,7 +116,7 @@ export function LeadForm({
         toast({
           variant: "destructive",
           title: "Não conseguimos enviar o link",
-          description: error.message,
+          description: otpErrorMessage(error),
         });
         return;
       }
@@ -121,12 +139,18 @@ export function LeadForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Leitores de tela e teclado vão direto para a confirmação de envio.
+  useEffect(() => {
+    if (sent) sentRef.current?.focus();
+  }, [sent]);
+
   return (
     <div
+      id="lead-form"
       className={`rounded-3xl border border-border/70 bg-card/90 backdrop-blur-sm p-5 md:p-7 shadow-[0_24px_60px_-32px_hsl(var(--primary)/0.45)] ${className}`}
     >
       {sent ? (
-        <div>
+        <div ref={sentRef} tabIndex={-1} className="outline-none">
           <div className="flex items-center gap-2">
             <MailCheck className="w-5 h-5 text-primary shrink-0" />
             <p className="text-sm font-semibold">Confira seu e-mail</p>
@@ -134,6 +158,9 @@ export function LeadForm({
           <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
             Enviamos um link seguro para entrar na MedStation. Ele foi enviado para{" "}
             <span className="text-foreground">{email.trim().toLowerCase()}</span>.
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Não chegou? Confira o spam ou a aba Promoções.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Button

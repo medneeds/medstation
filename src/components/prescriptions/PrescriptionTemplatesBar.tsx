@@ -20,6 +20,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { BookmarkPlus, ChevronDown, Library, Trash2 } from "lucide-react";
 
 export interface TemplateMedication {
@@ -61,6 +71,10 @@ export function PrescriptionTemplatesBar({ medications, observations, onApply }:
   const [saveOpen, setSaveOpen] = useState(false);
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
+  // Modelo aguardando confirmação de exclusão.
+  const [toDelete, setToDelete] = useState<Template | null>(null);
+  // Menu controlado: fecha antes de abrir a confirmação (evita a tela travada do Radix).
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const load = async () => {
     const { data } = await supabase
@@ -122,7 +136,8 @@ export function PrescriptionTemplatesBar({ medications, observations, onApply }:
 
   return (
     <div className="flex flex-wrap gap-2">
-      <DropdownMenu>
+      {/* modal={false}: o menu não trava o body, então só o AlertDialog mexe em pointer-events */}
+      <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen} modal={false}>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm">
             <Library className="h-4 w-4 mr-2" />
@@ -150,11 +165,12 @@ export function PrescriptionTemplatesBar({ medications, observations, onApply }:
               <button
                 type="button"
                 aria-label={`Excluir modelo ${t.name}`}
-                className="p-1 text-muted-foreground hover:text-destructive"
+                className="flex min-h-11 min-w-11 items-center justify-center p-1 text-muted-foreground hover:text-destructive md:min-h-0 md:min-w-0"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  remove(t);
+                  setMenuOpen(false);
+                  setToDelete(t);
                 }}
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -190,10 +206,33 @@ export function PrescriptionTemplatesBar({ medications, observations, onApply }:
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSaveOpen(false)}>Cancelar</Button>
-            <Button onClick={save} disabled={!name.trim() || saving}>Salvar modelo</Button>
+            <Button onClick={save} disabled={!name.trim() || saving}>{saving ? "Salvando..." : "Salvar modelo"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir modelo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              O modelo "{toDelete?.name}" deixa de aparecer em Meus modelos. Receitas já feitas não mudam.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (toDelete) remove(toDelete);
+                setToDelete(null);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

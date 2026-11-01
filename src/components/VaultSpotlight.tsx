@@ -7,32 +7,48 @@ import { Vault, Star, Folder, Plus, Upload, FileText, StickyNote, ArrowRight } f
 type Fav = { id: string; name: string; is_favorite: boolean };
 type Recent = { id: string; title: string; kind: "note" | "file"; at: string };
 
+/** Linhas neutras enquanto as consultas rodam, para não mostrar o texto de "vazio" antes da hora. */
+function SkeletonRows() {
+  return (
+    <div className="space-y-2" aria-hidden="true">
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="h-8 w-full animate-pulse rounded-lg bg-muted" />
+      ))}
+    </div>
+  );
+}
+
 export function VaultSpotlight() {
   const navigate = useNavigate();
   const [folders, setFolders] = useState<Fav[]>([]);
   const [recent, setRecent] = useState<Recent[]>([]);
   const [total, setTotal] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const [f, n, fl, nc, fc] = await Promise.all([
-        supabase.from("vault_folders").select("id,name,is_favorite").eq("user_id", user.id)
-          .order("is_favorite", { ascending: false }).order("sort_order").limit(6),
-        supabase.from("notes").select("id,title,updated_at").eq("user_id", user.id).order("updated_at", { ascending: false }).limit(4),
-        supabase.from("vault_files").select("id,name,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(4),
-        supabase.from("notes").select("id", { count: "exact", head: true }).eq("user_id", user.id),
-        supabase.from("vault_files").select("id", { count: "exact", head: true }).eq("user_id", user.id),
-      ]);
-      setFolders((f.data as Fav[]) || []);
-      setTotal((nc.count || 0) + (fc.count || 0));
-      setRecent(
-        [
-          ...(n.data || []).map((x) => ({ id: x.id, title: x.title || "Sem título", kind: "note" as const, at: x.updated_at })),
-          ...(fl.data || []).map((x) => ({ id: x.id, title: x.name, kind: "file" as const, at: x.created_at })),
-        ].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 4),
-      );
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const [f, n, fl, nc, fc] = await Promise.all([
+          supabase.from("vault_folders").select("id,name,is_favorite").eq("user_id", user.id)
+            .order("is_favorite", { ascending: false }).order("sort_order").limit(6),
+          supabase.from("notes").select("id,title,updated_at").eq("user_id", user.id).order("updated_at", { ascending: false }).limit(4),
+          supabase.from("vault_files").select("id,name,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(4),
+          supabase.from("notes").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+          supabase.from("vault_files").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+        ]);
+        setFolders((f.data as Fav[]) || []);
+        setTotal((nc.count || 0) + (fc.count || 0));
+        setRecent(
+          [
+            ...(n.data || []).map((x) => ({ id: x.id, title: x.title || "Sem título", kind: "note" as const, at: x.updated_at })),
+            ...(fl.data || []).map((x) => ({ id: x.id, title: x.name, kind: "file" as const, at: x.created_at })),
+          ].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 4),
+        );
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 
@@ -73,7 +89,9 @@ export function VaultSpotlight() {
       <div className="mt-4 md:mt-5 grid gap-3 md:gap-4 lg:grid-cols-2">
         <div className="min-w-0">
           <p className="label-mono mb-2 text-muted-foreground">Pastas</p>
-          {folders.length === 0 ? (
+          {loading ? (
+            <SkeletonRows />
+          ) : folders.length === 0 ? (
             <p className="text-sm text-muted-foreground">Crie pastas e marque as favoritas com a estrela para vê-las aqui.</p>
           ) : (
             <div className="-mx-1 flex gap-2 overflow-x-auto no-scrollbar px-1 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0">
@@ -88,7 +106,9 @@ export function VaultSpotlight() {
         </div>
         <div className="min-w-0">
           <p className="label-mono mb-2 text-muted-foreground">Últimos guardados</p>
-          {recent.length === 0 ? (
+          {loading ? (
+            <SkeletonRows />
+          ) : recent.length === 0 ? (
             <p className="text-sm text-muted-foreground">Use "Salvar no Cofre" nas respostas dos assistentes para guardar condutas em um clique.</p>
           ) : (
             <ul className="divide-y rounded-lg border bg-card">

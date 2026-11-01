@@ -143,7 +143,7 @@ function DashboardLayoutInner({ children }: DashboardLayoutProps) {
             <header className={`sticky top-0 ${isAssistant ? "z-40" : "z-20"} flex h-14 items-center justify-between hairline-b bg-background/85 backdrop-blur-md px-3 md:px-5`}>
               <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
                 <SidebarTrigger
-                  className="h-8 w-8 rounded-sm border border-hairline hover:bg-accent hover:border-foreground/40 transition-colors"
+                  className="h-11 w-11 md:h-8 md:w-8 rounded-sm border border-hairline hover:bg-accent hover:border-foreground/40 transition-colors"
                 />
 
                 <div className={isAssistant ? "hidden" : "hidden md:flex items-center gap-3 min-w-0"}>
@@ -165,11 +165,11 @@ function DashboardLayoutInner({ children }: DashboardLayoutProps) {
                   type="button"
                   onClick={() => setSearchOpen(true)}
                   aria-label="Buscar"
-                  className={`${isAssistant ? "hidden xl:flex xl:max-w-[260px]" : "ml-auto flex md:w-full md:max-w-xs"} items-center gap-2 h-8 rounded-sm border border-hairline bg-transparent text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors px-2 md:px-3`}
+                  className={`${isAssistant ? "hidden xl:flex xl:max-w-[260px] h-8" : "ml-auto flex h-11 w-11 justify-center md:h-8 md:w-full md:max-w-xs md:justify-start"} items-center gap-2 rounded-sm border border-hairline bg-transparent text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors px-2 md:px-3`}
                 >
                   <Search className="h-3.5 w-3.5 shrink-0" />
                   <span className="hidden md:inline text-sm flex-1 text-left truncate">
-                    Buscar pacientes, casos, assistentes...
+                    Buscar casos, notas e assistentes...
                   </span>
                   <kbd className="hidden md:inline font-mono text-2xs border border-hairline rounded-sm px-1.5 py-0.5 leading-none">
                     ⌘K
@@ -184,7 +184,7 @@ function DashboardLayoutInner({ children }: DashboardLayoutProps) {
                   onClick={() => setConciergeOpen(true)}
                   aria-label="Como usar a plataforma"
                   title="Como usar"
-                  className={`${isAssistant ? "hidden md:inline-flex" : "inline-flex"} h-8 w-8 items-center justify-center rounded-sm border border-hairline text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors`}
+                  className={`${isAssistant ? "hidden md:inline-flex" : "inline-flex"} h-11 w-11 md:h-8 md:w-8 items-center justify-center rounded-sm border border-hairline text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors`}
                 >
                   <HelpCircle className="h-3.5 w-3.5" />
                 </button>

@@ -242,7 +242,16 @@ export default function NotificationBell() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          aria-label={
+            unreadCount > 0
+              ? `Notificações, ${unreadCount} ${unreadCount === 1 ? "não lida" : "não lidas"}`
+              : "Notificações"
+          }
+        >
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <Badge

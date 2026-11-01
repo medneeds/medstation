@@ -18,6 +18,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -29,6 +39,14 @@ import { z } from "zod";
 import VoiceRecorder from "@/components/VoiceRecorder";
 import { PrescriptionTemplatesBar } from "@/components/prescriptions/PrescriptionTemplatesBar";
 import { allergyHits } from "@/lib/patientClinical";
+import { patientSchema } from "@/lib/validations";
+import {
+  decideDictatedPatient,
+  isMedicationFilled,
+  matchDictatedPatient,
+  mergeDictatedMedications,
+  parseValidityDays,
+} from "@/lib/prescriptionForm";
 
 const medicationSchema = z.object({
   name: z.string().min(1, "Nome do medicamento é obrigatório").max(200),
@@ -59,7 +77,9 @@ export default function NewPrescription() {
   const location = useLocation();
   const { toast } = useToast();
   const { profile } = useProfile();
-  const [loading, setLoading] = useState(false);
+  // Qual botão está salvando (null = nenhum): mostra "Salvando..." só nele e trava os dois.
+  const [savingAs, setSavingAs] = useState<"draft" | "pending_signature" | null>(null);
+  const loading = savingAs !== null;
   const [patients, setPatients] = useState<Patient[]>([]);
   const [selectedPatient, setSelectedPatient] = useState("");
   const [selectedPatientData, setSelectedPatientData] = useState<Patient | null>(null);
@@ -73,6 +93,12 @@ export default function NewPrescription() {
   
   // New patient form state
   const [newPatientDialogOpen, setNewPatientDialogOpen] = useState(false);
+  const [creatingPatient, setCreatingPatient] = useState(false);
+  const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false);
+  // Medicamento a remover (índice + nome no momento do pedido) e se a confirmação está aberta.
+  // O item fica guardado depois de fechar para o título não piscar vazio na animação de saída.
+  const [medToRemove, setMedToRemove] = useState<{ index: number; name: string } | null>(null);
+  const [medRemoveOpen, setMedRemoveOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [newPatient, setNewPatient] = useState({
     name: "",
@@ -80,6 +106,7 @@ export default function NewPrescription() {
     date_of_birth: "",
     phone: "",
     email: "",
+    allergies: "",
     notes: "",
   });
 
@@ -120,6 +147,29 @@ export default function NewPrescription() {
     }
   }, [location.state]);
 
+  // Há conteúdo que se perderia ao sair da página?
+  const isDirty =
+    diagnosis.trim() !== "" ||
+    cidCode.trim() !== "" ||
+    observations.trim() !== "" ||
+    medications.some(isMedicationFilled);
+
+  // Aviso do navegador (recarregar/fechar aba) só enquanto houver conteúdo não salvo.
+  useEffect(() => {
+    if (!isDirty || loading) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [isDirty, loading]);
+
+  const handleBack = () => {
+    if (isDirty) setLeaveConfirmOpen(true);
+    else navigate("/prescricoes");
+  };
+
   const handleVoiceTranscription = (data: any) => {
     // Fill diagnosis
     if (data.diagnosis) {
@@ -131,15 +181,16 @@ export default function NewPrescription() {
       setCidCode(data.cid_code);
     }
 
-    // Fill medications
+    // Fill medications — o ditado entra depois do que já foi digitado (nunca apaga)
     if (data.medications && data.medications.length > 0) {
-      setMedications(data.medications.map((med: any) => ({
+      const dictated: Medication[] = data.medications.map((med: any) => ({
         name: med.name || "",
         dosage: med.dosage || "",
         frequency: med.frequency || "",
         duration: med.duration || "",
         instructions: med.instructions || "",
-      })));
+      }));
+      setMedications((current) => mergeDictatedMedications(current, dictated));
     }
 
     // Fill observations
@@ -152,17 +203,33 @@ export default function NewPrescription() {
       setValidityDays(data.validity_days.toString());
     }
 
-    // Try to match patient by name
+    // Paciente pelo nome ditado: só seleciona quando ninguém está selecionado e há um único
+    // nome completo idêntico. Com paciente já selecionado, nunca troca — só avisa se divergir.
     if (data.patient_name) {
-      const matchedPatient = patients.find(p => 
-        p.name.toLowerCase().includes(data.patient_name.toLowerCase()) ||
-        data.patient_name.toLowerCase().includes(p.name.toLowerCase())
-      );
-      if (matchedPatient) {
-        setSelectedPatient(matchedPatient.id);
+      const dictatedName = String(data.patient_name);
+      const selectedName = selectedPatient
+        ? selectedPatientData?.name ?? patients.find((pt) => pt.id === selectedPatient)?.name ?? ""
+        : null;
+      const decision = decideDictatedPatient(selectedName, matchDictatedPatient(patients, dictatedName), dictatedName);
+      if (decision.action === "select") {
+        setSelectedPatient(decision.patient.id);
         toast({
           title: "Paciente identificado",
-          description: `${matchedPatient.name} selecionado automaticamente`,
+          description: `${decision.patient.name} selecionado automaticamente. Confira antes de salvar.`,
+        });
+      } else if (decision.action === "warn") {
+        toast({
+          title: "Paciente diferente do ditado",
+          description: `O paciente ditado (${dictatedName}) é diferente do selecionado (${selectedName}). Confira antes de salvar.`,
+          variant: "destructive",
+        });
+      } else if (decision.action === "ask") {
+        toast({
+          title: "Selecione o paciente",
+          description:
+            decision.reason === "ambiguous"
+              ? `Nome ditado: "${dictatedName}". Há ${decision.count} pacientes com esse nome; escolha na lista.`
+              : `Nome ditado: "${dictatedName}". Nenhum paciente com esse nome completo; escolha na lista.`,
         });
       }
     }
@@ -192,29 +259,36 @@ export default function NewPrescription() {
   };
 
   const createNewPatient = async () => {
-    try {
-      if (!newPatient.name.trim() || !newPatient.cpf.trim()) {
-        toast({
-          title: "Campos obrigatórios",
-          description: "Nome e CPF são obrigatórios",
-          variant: "destructive",
-        });
-        return;
-      }
+    // Mesma validação/normalização do cadastro de pacientes (CPF opcional).
+    const parsed = patientSchema.safeParse({
+      name: newPatient.name,
+      cpf: newPatient.cpf,
+      date_of_birth: newPatient.date_of_birth,
+      phone: newPatient.phone,
+      email: newPatient.email,
+      notes: newPatient.notes,
+    });
+    if (!parsed.success) {
+      toast({
+        title: "Confira os dados do paciente",
+        description: parsed.error.issues[0]?.message || "Dados inválidos",
+        variant: "destructive",
+      });
+      return;
+    }
 
+    setCreatingPatient(true);
+    try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
       const { data, error } = await supabase
         .from("patients")
         .insert({
+          ...parsed.data,
+          // Mesma regra de src/pages/Patients.tsx: é este campo que dispara o aviso de alergia.
+          allergies: newPatient.allergies.trim().slice(0, 300) || null,
           user_id: user.id,
-          name: newPatient.name.trim(),
-          cpf: newPatient.cpf.trim(),
-          date_of_birth: newPatient.date_of_birth || null,
-          phone: newPatient.phone.trim() || null,
-          email: newPatient.email.trim() || null,
-          notes: newPatient.notes.trim() || null,
         })
         .select()
         .single();
@@ -233,6 +307,7 @@ export default function NewPrescription() {
         date_of_birth: "",
         phone: "",
         email: "",
+        allergies: "",
         notes: "",
       });
       setNewPatientDialogOpen(false);
@@ -246,6 +321,8 @@ export default function NewPrescription() {
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setCreatingPatient(false);
     }
   };
 
@@ -259,6 +336,16 @@ export default function NewPrescription() {
   const removeMedication = (index: number) => {
     if (medications.length > 1) {
       setMedications(medications.filter((_, i) => i !== index));
+    }
+  };
+
+  // Card com conteúdo pede confirmação; card vazio sai direto.
+  const requestRemoveMedication = (index: number) => {
+    if (isMedicationFilled(medications[index])) {
+      setMedToRemove({ index, name: medications[index].name.trim() });
+      setMedRemoveOpen(true);
+    } else {
+      removeMedication(index);
     }
   };
 
@@ -345,7 +432,7 @@ export default function NewPrescription() {
   const savePrescription = async (status: "draft" | "pending_signature") => {
     if (!validateForm()) return;
 
-    setLoading(true);
+    setSavingAs(status);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
@@ -363,7 +450,7 @@ export default function NewPrescription() {
           prescription_number: numberData,
           diagnosis: diagnosis.trim(),
           cid_code: cidCode.trim() || null,
-          validity_days: parseInt(validityDays),
+          validity_days: parseValidityDays(validityDays),
           observations: observations.trim() || null,
           medications: medications.filter(m => m.name.trim()) as any,
           status,
@@ -381,7 +468,11 @@ export default function NewPrescription() {
             : "Aguardando assinatura digital",
       });
 
-      navigate(`/prescricoes/${data.id}`);
+      // "Criar e Solicitar Assinatura" já abre o assistente do PDF oficial no detalhe.
+      navigate(
+        `/prescricoes/${data.id}`,
+        status === "pending_signature" ? { state: { openOfficialPdf: true } } : undefined,
+      );
     } catch (error: any) {
       console.error("Error saving prescription:", error);
       toast({
@@ -390,7 +481,7 @@ export default function NewPrescription() {
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setSavingAs(null);
     }
   };
 
@@ -398,7 +489,7 @@ export default function NewPrescription() {
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/prescricoes")}>
+        <Button variant="ghost" size="icon" onClick={handleBack} aria-label="Voltar para prescrições">
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
@@ -521,7 +612,7 @@ export default function NewPrescription() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="new-cpf">CPF *</Label>
+                        <Label htmlFor="new-cpf">CPF</Label>
                         <Input
                           id="new-cpf"
                           value={newPatient.cpf}
@@ -564,12 +655,23 @@ export default function NewPrescription() {
                       />
                     </div>
                     <div className="space-y-2">
+                      <Label htmlFor="new-allergies">Alergias</Label>
+                      <Input
+                        id="new-allergies"
+                        value={newPatient.allergies}
+                        onChange={(e) => setNewPatient({ ...newPatient, allergies: e.target.value })}
+                        placeholder="Ex: dipirona, penicilina (separe por vírgula)"
+                        maxLength={300}
+                      />
+                      <p className="text-xs text-muted-foreground">Avisa você ao prescrever um medicamento listado aqui.</p>
+                    </div>
+                    <div className="space-y-2">
                       <Label htmlFor="new-notes">Observações</Label>
                       <Textarea
                         id="new-notes"
                         value={newPatient.notes}
                         onChange={(e) => setNewPatient({ ...newPatient, notes: e.target.value })}
-                        placeholder="Alergias, condições especiais, etc..."
+                        placeholder="Condições especiais, preferências de contato, etc..."
                         rows={3}
                         maxLength={500}
                       />
@@ -581,8 +683,8 @@ export default function NewPrescription() {
                       >
                         Cancelar
                       </Button>
-                      <Button onClick={createNewPatient}>
-                        Cadastrar Paciente
+                      <Button onClick={createNewPatient} disabled={creatingPatient}>
+                        {creatingPatient ? "Salvando..." : "Cadastrar Paciente"}
                       </Button>
                     </div>
                   </div>
@@ -687,6 +789,7 @@ export default function NewPrescription() {
                 max="365"
                 value={validityDays}
                 onChange={(e) => setValidityDays(e.target.value)}
+                onBlur={() => setValidityDays(String(parseValidityDays(validityDays)))}
               />
             </div>
           </div>
@@ -724,8 +827,9 @@ export default function NewPrescription() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => removeMedication(index)}
-                      className="text-destructive hover:text-destructive"
+                      onClick={() => requestRemoveMedication(index)}
+                      aria-label={`Remover medicamento ${index + 1}`}
+                      className="min-h-11 min-w-11 md:min-h-0 md:min-w-0 text-destructive hover:text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -818,7 +922,7 @@ export default function NewPrescription() {
           className="flex-1"
         >
           <Save className="mr-2 h-4 w-4" />
-          Salvar Rascunho
+          {savingAs === "draft" ? "Salvando..." : "Salvar Rascunho"}
         </Button>
         <Button
           onClick={() => savePrescription("pending_signature")}
@@ -826,9 +930,56 @@ export default function NewPrescription() {
           className="flex-1"
         >
           <FileSignature className="mr-2 h-4 w-4" />
-          Criar e Solicitar Assinatura
+          {savingAs === "pending_signature" ? "Salvando..." : "Criar e Solicitar Assinatura"}
         </Button>
       </div>
+
+      {/* Confirmação ao sair com conteúdo não salvo */}
+      <AlertDialog open={leaveConfirmOpen} onOpenChange={setLeaveConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sair sem salvar?</AlertDialogTitle>
+            <AlertDialogDescription>
+              O que você preencheu nesta prescrição será perdido. Para guardar, use "Salvar Rascunho".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Continuar editando</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => navigate("/prescricoes")}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Sair sem salvar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirmação ao remover medicamento preenchido */}
+      <AlertDialog open={medRemoveOpen} onOpenChange={setMedRemoveOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover medicamento {medToRemove ? medToRemove.index + 1 : ""}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {medToRemove?.name
+                ? `${medToRemove.name} sairá desta prescrição.`
+                : "Os dados deste medicamento sairão desta prescrição."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (medToRemove) removeMedication(medToRemove.index);
+                setMedRemoveOpen(false);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

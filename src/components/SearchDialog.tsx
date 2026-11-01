@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -172,6 +173,11 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!open) return;
 
+      if ((e.key === "ArrowDown" || e.key === "ArrowUp") && totalItems === 0) {
+        // Sem itens: nada a navegar (evita módulo por zero → NaN).
+        e.preventDefault();
+        return;
+      }
       if (e.key === "ArrowDown") {
         e.preventDefault();
         setSelectedIndex((prev) => (prev + 1) % totalItems);
@@ -229,7 +235,8 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden">
+      <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden" aria-describedby={undefined}>
+        <DialogTitle className="sr-only">Buscar</DialogTitle>
         <div className="flex items-center border-b px-4">
           <Search className="h-5 w-5 text-muted-foreground shrink-0" />
           <Input

@@ -425,6 +425,8 @@ export function AgentChat({
 
 
   const [validationAnnouncement, setValidationAnnouncement] = useState("");
+  // Leitor de tela: avisa uma vez que a resposta terminou (não lê o texto inteiro)
+  const [responseAnnouncement, setResponseAnnouncement] = useState("");
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const [lastConversation, setLastConversation] = useState<Conversation | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -973,6 +975,7 @@ export function AgentChat({
       setMessage("");
       setRadiologyAttachments([]);
       setIsLoading(true);
+      setResponseAnnouncement("");
       setCurrentConversation(optimisticConversation);
     });
 
@@ -981,6 +984,7 @@ export function AgentChat({
     if (!user || !session) {
       setCurrentConversation(baseConversation);
       setRadiologyAttachments(pendingFiles);
+      setMessage((prev) => prev || typedText);
       setIsLoading(false);
       toast({ title: "Sessão expirada", description: "Faça login novamente para continuar a conversa.", variant: "destructive" });
       navigate("/auth");
@@ -1167,6 +1171,7 @@ export function AgentChat({
       setConversations((prev) =>
         prev.map((c) => (c.id === conversation!.id ? { ...c, last_message: lastPreview, updated_at: new Date().toISOString() } : c)),
       );
+      setResponseAnnouncement("Resposta pronta");
     } catch (error: unknown) {
       console.error("[interpretador] error:", error);
       const errorMessage = error instanceof Error ? error.message : typeof (error as { message?: unknown })?.message === "string" ? String((error as { message: string }).message) : "";
@@ -1220,6 +1225,9 @@ export function AgentChat({
     }
     setValidationAnnouncement("");
 
+    // Texto do campo: volta para o campo se o envio falhar. Envios prontos (ex.: Comprimir)
+    // não usam nem limpam o campo, então não há o que devolver.
+    const typedText = presetContent ? "" : message;
     const messageContent = presetContent ?? message;
     const baseConversation = currentConversation;
     const modeMetadata = agentType === "clinicus"
@@ -1262,8 +1270,9 @@ export function AgentChat({
         };
 
     flushSync(() => {
-      setMessage("");
+      if (!presetContent) setMessage("");
       setIsLoading(true);
+      setResponseAnnouncement("");
       setCurrentConversation(optimisticConversation);
     });
 
@@ -1273,6 +1282,7 @@ export function AgentChat({
     if (!user) {
       // rollback optimistic UI
       setCurrentConversation(baseConversation);
+      setMessage((prev) => prev || typedText);
       setIsLoading(false);
       toast({
         title: "Sessão expirada",
@@ -1284,6 +1294,8 @@ export function AgentChat({
     }
 
     let conversation = baseConversation;
+    // Mensagem do médico gravada no banco (null = não gravou); lida no catch.
+    let savedUserMessage: Promise<Message | null> | null = null;
 
     try {
       // Create conversation if it doesn't exist (background)
@@ -1310,16 +1322,24 @@ export function AgentChat({
       }
 
       // Persist user message in background; do NOT block UI
-      const userInsertPromise = supabase
-        .from("messages")
-        .insert({
-          conversation_id: conversation.id,
-          role: "user",
-          content: messageContent,
-          ...(modeMetadata && { metadata: modeMetadata }),
-        })
-        .select()
-        .single();
+      // O builder do PostgREST é "thenable" e dispara a query a cada await/then:
+      // Promise.resolve garante um único INSERT mesmo lendo o resultado de novo no catch.
+      const userInsertPromise = Promise.resolve(
+        supabase
+          .from("messages")
+          .insert({
+            conversation_id: conversation.id,
+            role: "user",
+            content: messageContent,
+            ...(modeMetadata && { metadata: modeMetadata }),
+          })
+          .select()
+          .single(),
+      );
+      savedUserMessage = userInsertPromise.then(
+        ({ data, error }) => (error || !data ? null : { ...data, role: data.role as "user" | "assistant" }),
+        () => null,
+      );
 
       // Reconcile optimistic ID once persisted (non-blocking) and clear pending state
       userInsertPromise.then(({ data: userMsgData, error: userError }) => {
@@ -1455,21 +1475,37 @@ export function AgentChat({
         .eq("id", conversation.id);
 
       setCurrentConversation({ ...conversation, messages: finalMessages, last_message: messageContent });
-      setConversations(conversations.map(c => 
-        c.id === conversation.id 
-          ? { ...c, last_message: messageContent, updated_at: new Date().toISOString() } 
+      setConversations(conversations.map(c =>
+        c.id === conversation.id
+          ? { ...c, last_message: messageContent, updated_at: new Date().toISOString() }
           : c
       ));
+      setResponseAnnouncement("Resposta pronta");
 
     } catch (error: any) {
       console.error("Error sending message:", error);
-      
-      // Remove streaming message on error
+
       if (conversation) {
+        // Se a mensagem do médico foi gravada, ela continua visível (e copiável) na conversa;
+        // senão, o texto volta para o campo. Assim não perde o texto nem duplica ao reenviar.
+        let savedUser: Message | null = null;
+        try {
+          savedUser = savedUserMessage ? await savedUserMessage : null;
+        } catch {
+          savedUser = null;
+        }
         const messagesWithoutStreaming = conversation.messages.filter(m => m.id !== "streaming-temp");
-        setCurrentConversation({ ...conversation, messages: messagesWithoutStreaming });
+        setCurrentConversation({
+          ...conversation,
+          messages: savedUser ? [...messagesWithoutStreaming, savedUser] : messagesWithoutStreaming,
+        });
+        if (!savedUser) setMessage((prev) => prev || typedText);
+      } else {
+        // A conversa nem chegou a ser criada: volta ao estado anterior e devolve o texto
+        setCurrentConversation(baseConversation);
+        setMessage((prev) => prev || typedText);
       }
-      
+
       toast({
         title: "Erro ao enviar mensagem",
         description: error.message || "Não foi possível processar sua mensagem.",
@@ -1477,7 +1513,8 @@ export function AgentChat({
       });
     } finally {
       setIsLoading(false);
-      requestAnimationFrame(() => textareaRef.current?.focus());
+      // No celular, focar o campo abriria o teclado por cima da resposta
+      if (!isMobile) requestAnimationFrame(() => textareaRef.current?.focus());
     }
   };
 
@@ -1523,6 +1560,20 @@ export function AgentChat({
   // Handle voice transcription
   const handleVoiceTranscription = (transcription: string, options?: VoiceDeliveryOptions) => {
     setMessage((prev) => applySpoken(prev, transcription, options?.replace));
+  };
+
+  /** Cópia sem marcar mensagem (caixa alta, "Copiar tudo"): só confirma se a cópia deu certo. */
+  const copyTextWithToast = async (text: string, success: { title?: string; description: string }) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast(success);
+    } catch {
+      toast({
+        title: "Erro ao copiar",
+        description: "Não foi possível copiar o texto.",
+        variant: "destructive",
+      });
+    }
   };
 
   const copyToClipboard = async (text: string, messageId: string) => {
@@ -2326,7 +2377,7 @@ export function AgentChat({
                         ? "bg-muted/60 py-2 md:py-2.5"
                         : workflowMode
                           ? "bg-muted/15 border border-border/40 py-2 px-3"
-                          : "bg-muted/25 border border-border/50 pt-4 md:pt-5 px-4 md:px-6 pb-9 md:pb-11"
+                          : "bg-muted/25 border border-border/50 pt-4 md:pt-5 px-4 md:px-6 pb-14 md:pb-11"
                   }`}
                 >
                   {msg.audioBlob && msg.audioUrl ? (
@@ -2459,46 +2510,45 @@ export function AgentChat({
                         variant="ghost"
                         size="sm"
                         onClick={() => setReadingMessage(msg)}
-                        className="h-7 px-2 gap-1.5 text-xs"
+                        className="h-11 min-w-11 md:h-7 md:min-w-0 px-2 gap-1.5 text-xs"
                         title="Abrir em leitura ampliada"
                       >
                         <BookOpen className="h-3 w-3" />
-                        <span className="hidden md:inline">Ler</span>
+                        <span className="sr-only md:not-sr-only">Ler</span>
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => {
-                          const upperText = visibleContent(msg.content).toUpperCase();
-                          navigator.clipboard.writeText(upperText);
-                          toast({
+                        onClick={() =>
+                          copyTextWithToast(visibleContent(msg.content).toUpperCase(), {
                             description: "Texto em caixa alta copiado!",
-                          });
-                        }}
-                        className="h-7 px-2 gap-1.5 text-xs"
+                          })
+                        }
+                        className="h-11 min-w-11 md:h-7 md:min-w-0 px-2 gap-1.5 text-xs"
                         title="Copiar em caixa alta"
                       >
                         <FileUp className="h-3 w-3" />
-                        <span className="hidden md:inline">Maiúscula</span>
+                        <span className="sr-only md:not-sr-only">Maiúscula</span>
                       </Button>
                       <SaveToVaultButton content={visibleContent(msg.content)} assistantLabel={agentName} />
                       <SaveToPatientButton content={visibleContent(msg.content)} assistantLabel={agentName} />
+                      {/* Ação principal: copiar para o prontuário (rótulo visível também no celular) */}
                       <Button
-                        variant="ghost"
+                        variant="secondary"
                         size="sm"
                         onClick={() => copyToClipboard(visibleContent(msg.content), msg.id)}
-                        className="h-7 px-2 gap-1.5 text-xs"
+                        className="h-11 min-w-11 md:h-7 md:min-w-0 px-2 gap-1.5 text-xs"
                         title="Copiar texto"
                       >
                         {copiedMessageId === msg.id ? (
                           <>
                             <Check className="h-3 w-3 text-primary" />
-                            <span className="text-primary hidden md:inline">Copiado</span>
+                            <span className="text-primary">Copiado</span>
                           </>
                         ) : (
                           <>
                             <Copy className="h-3 w-3" />
-                            <span className="hidden md:inline">Copiar</span>
+                            <span>Copiar</span>
                           </>
                         )}
                       </Button>
@@ -3201,12 +3251,7 @@ export function AgentChat({
               ref={textareaRef}
               value={message}
               onChange={(e) => setMessage(subscribed ? e.target.value : e.target.value.slice(0, FREE_CHAR_LIMIT))}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  sendMessage();
-                }
-              }}
+              // Celular: Enter quebra linha (casos clínicos têm vários parágrafos); envio só pelo botão
               placeholder={radiologyActive
                 ? copy.placeholder
                 : agentType === "examinus" && examSuggestMode
@@ -3214,7 +3259,7 @@ export function AgentChat({
                   : "Escreva ou dite o caso…"}
               maxLength={subscribed ? undefined : FREE_CHAR_LIMIT}
               rows={1}
-              enterKeyHint="send"
+              enterKeyHint="enter"
               aria-invalid={(message.length > 0 && !message.trim()) || overLimit}
               className="min-h-[36px] max-h-[40vh] flex-1 resize-none rounded-none border-0 bg-transparent px-1.5 py-[7px] text-base leading-snug shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
               disabled={isLoading}
@@ -3448,6 +3493,10 @@ export function AgentChat({
             <span role="status" aria-live="assertive" className="sr-only">
               {validationAnnouncement}
             </span>
+            {/* SR-only: avisa uma vez que a resposta terminou de chegar */}
+            <span aria-live="polite" className="sr-only">
+              {responseAnnouncement}
+            </span>
           </div>
           <span
             className={`text-xs tabular-nums shrink-0 ${
@@ -3457,7 +3506,6 @@ export function AgentChat({
                 ? "text-amber-600 dark:text-amber-400"
                 : "text-muted-foreground"
             }`}
-            aria-live="polite"
           >
             {subscribed
               ? `${message.length.toLocaleString("pt-BR")} caracteres · sem limite`
@@ -3493,10 +3541,12 @@ export function AgentChat({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => {
-                        navigator.clipboard.writeText(visibleContent(lastAnswer.content).replace(/\*\*/g, "").toUpperCase());
-                        toast({ title: "Texto em caixa alta copiado", description: "Documento pronto para colar no prontuário." });
-                      }}
+                      onClick={() =>
+                        copyTextWithToast(visibleContent(lastAnswer.content).replace(/\*\*/g, "").toUpperCase(), {
+                          title: "Texto em caixa alta copiado",
+                          description: "Documento pronto para colar no prontuário.",
+                        })
+                      }
                       title="Copiar tudo em MAIÚSCULAS"
                     >
                       <FileUp className="h-4 w-4" />
@@ -3505,10 +3555,12 @@ export function AgentChat({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        navigator.clipboard.writeText(visibleContent(lastAnswer.content).replace(/\*\*/g, ""));
-                        toast({ title: "Texto copiado", description: "Documento pronto para colar no prontuário." });
-                      }}
+                      onClick={() =>
+                        copyTextWithToast(visibleContent(lastAnswer.content).replace(/\*\*/g, ""), {
+                          title: "Texto copiado",
+                          description: "Documento pronto para colar no prontuário.",
+                        })
+                      }
                     >
                       <Copy className="h-4 w-4" />
                       <span className="ml-2">Copiar tudo</span>
@@ -3595,10 +3647,11 @@ export function AgentChat({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    navigator.clipboard.writeText(visibleContent(readingMessage.content).toUpperCase());
-                    toast({ description: "Texto em caixa alta copiado!" });
-                  }}
+                  onClick={() =>
+                    copyTextWithToast(visibleContent(readingMessage.content).toUpperCase(), {
+                      description: "Texto em caixa alta copiado!",
+                    })
+                  }
                   className="gap-1.5"
                 >
                   <FileUp className="h-3.5 w-3.5" />

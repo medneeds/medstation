@@ -78,7 +78,7 @@ export function AnnouncementsBanner() {
                 </a>
               )}
             </div>
-            <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => dismiss(a.id)}>
+            <Button variant="ghost" size="icon" className="h-11 w-11 md:h-6 md:w-6 shrink-0" aria-label="Fechar aviso" onClick={() => dismiss(a.id)}>
               <X className="h-3.5 w-3.5" />
             </Button>
           </div>

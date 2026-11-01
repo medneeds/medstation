@@ -22,9 +22,9 @@ export function SaveToVaultButton({ content, assistantLabel }: { content: string
   };
 
   return (
-    <Button variant="ghost" size="sm" onClick={save} disabled={state === "saving"} className="h-7 px-2 gap-1.5 text-xs" title="Salvar no Cofre Inteligente">
+    <Button variant="ghost" size="sm" onClick={save} disabled={state === "saving"} className="h-11 min-w-11 md:h-7 md:min-w-0 px-2 gap-1.5 text-xs" title="Salvar no Cofre Inteligente">
       {state === "saved" ? <Check className="h-3 w-3 text-primary" /> : <Vault className="h-3 w-3" />}
-      <span className={state === "saved" ? "text-primary hidden md:inline" : "hidden md:inline"}>
+      <span className={state === "saved" ? "text-primary sr-only md:not-sr-only" : "sr-only md:not-sr-only"}>
         {state === "saved" ? "No Cofre" : "Salvar no Cofre"}
       </span>
     </Button>

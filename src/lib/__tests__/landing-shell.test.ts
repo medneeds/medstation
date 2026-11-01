@@ -48,4 +48,13 @@ describe("topo instantâneo da landing", () => {
       .trim();
     expect(shellTitle).toBe(lp3Title);
   });
+
+  it("na Black, o botão principal da cópia usa o mesmo rótulo do Lp3", () => {
+    const html = readFileSync(resolve(__dirname, "../../../index.html"), "utf8");
+    const lp3 = readFileSync(resolve(__dirname, "../../pages/Lp3.tsx"), "utf8");
+    const lp3Label = lp3.match(/\{blackOn \? "([^"]+)" : "Assinar agora"\}/)?.[1];
+    expect(lp3Label).toBe("Assinar Black anual");
+    expect(html).toMatch(/querySelector\('\[data-ms-action="subscribe"\]'\)/);
+    expect(html).toContain(`sb.firstChild.textContent = "${lp3Label} "`);
+  });
 });
