@@ -1,20 +1,15 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Stethoscope,
   FlaskConical,
   Pill,
   FileText,
-  Users,
   Activity,
-  TrendingUp,
-  AlertCircle,
   Crown,
-  TestTube,
-  Folder,
   Wind,
   FileCheck,
   BookOpen,
@@ -30,48 +25,6 @@ import { MedStationDiscovery, AllToolsSection } from "@/components/MedStationDis
 import { FreeExaminusSpotlight } from "@/components/FreeExaminusSpotlight";
 import { AnnualBonusCard } from "@/components/AnnualBonusCard";
 import { VaultSpotlight } from "@/components/VaultSpotlight";
-
-interface Stats {
-  totalPatients: number;
-  totalCases: number;
-  totalPrescriptions: number;
-  totalExamRequests: number;
-}
-
-const practiceModules = [
-  {
-    title: "Pacientes",
-    description: "Gerencie seus pacientes e históricos clínicos",
-    icon: Users,
-    url: "/patients",
-    color: "text-primary",
-    isPremium: false,
-  },
-  {
-    title: "Casos Clínicos",
-    description: "Acompanhamento e evolução de casos",
-    icon: Folder,
-    url: "/cases",
-    color: "text-secondary",
-    isPremium: false,
-  },
-  {
-    title: "Prescrições",
-    description: "Prescrições médicas digitais e assinadas",
-    icon: Pill,
-    url: "/prescricoes",
-    color: "text-accent",
-    isPremium: false,
-  },
-  {
-    title: "Solicitação de Exames",
-    description: "Solicite e gerencie exames médicos",
-    icon: TestTube,
-    url: "/exames",
-    color: "text-warning",
-    isPremium: false,
-  },
-];
 
 const agentModules = [
   {
@@ -176,84 +129,20 @@ const agentModules = [
 export default function Dashboard() {
   const { subscribed, isAnnual } = useSubscription();
   const [accountEmail, setAccountEmail] = useState<string | null>(null);
-  const [stats, setStats] = useState<Stats>({
-    totalPatients: 0,
-    totalCases: 0,
-    totalPrescriptions: 0,
-    totalExamRequests: 0,
-  });
-  const [loading, setLoading] = useState(true);
 
+  // Só o e-mail da conta (cartão do bônus anual); sem contagens que nada exibe.
   useEffect(() => {
-    fetchStats();
+    let active = true;
+    supabase.auth
+      .getUser()
+      .then(({ data: { user } }) => {
+        if (active) setAccountEmail(user?.email ?? null);
+      })
+      .catch((error) => console.error("Error fetching user:", error));
+    return () => {
+      active = false;
+    };
   }, []);
-
-  const fetchStats = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      setAccountEmail(user.email ?? null);
-
-      const [patientsRes, casesRes, prescriptionsRes, examsRes] = await Promise.all([
-        supabase
-          .from("patients")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", user.id)
-          .eq("archived", false),
-        supabase
-          .from("cases")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", user.id)
-          .eq("status", "active"),
-        supabase
-          .from("prescriptions")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", user.id),
-        supabase
-          .from("exam_requests")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", user.id),
-      ]);
-
-      setStats({
-        totalPatients: patientsRes.count || 0,
-        totalCases: casesRes.count || 0,
-        totalPrescriptions: prescriptionsRes.count || 0,
-        totalExamRequests: examsRes.count || 0,
-      });
-    } catch (error) {
-      console.error("Error fetching stats:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const quickStats = [
-    {
-      label: "Pacientes Ativos",
-      value: loading ? "..." : stats.totalPatients.toString(),
-      icon: Users,
-      trend: "Total cadastrados"
-    },
-    {
-      label: "Casos em Andamento",
-      value: loading ? "..." : stats.totalCases.toString(),
-      icon: FileText,
-      trend: "Casos ativos"
-    },
-    {
-      label: "Prescrições",
-      value: loading ? "..." : stats.totalPrescriptions.toString(),
-      icon: Pill,
-      trend: "Total emitidas"
-    },
-    {
-      label: "Exames Solicitados",
-      value: loading ? "..." : stats.totalExamRequests.toString(),
-      icon: TestTube,
-      trend: "Total solicitados"
-    },
-  ];
 
   return (
     <div className="space-y-6">
@@ -266,43 +155,6 @@ export default function Dashboard() {
 
       {isAnnual && <AnnualBonusCard variant="member" accountEmail={accountEmail} />}
 
-
-
-      {/* <div>
-        <div className="flex items-center gap-2 mb-4">
-          <Stethoscope className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-          <h2 className="text-xl md:text-2xl font-bold">Prática Médica</h2>
-        </div>
-        <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          {practiceModules.map((module) => (
-            <Link key={module.title} to={module.url}>
-              <Card className="h-full hover:shadow-elevated hover:border-primary/50 transition-all cursor-pointer group relative">
-                <CardHeader className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className={`rounded-xl p-4 bg-gradient-to-br from-primary/10 to-primary/5 ${module.color}`}>
-                      <module.icon className="h-8 w-8" />
-                    </div>
-                  </div>
-                  <div>
-                    <CardTitle className="text-xl mb-2 group-hover:text-primary transition-colors">
-                      {module.title}
-                    </CardTitle>
-                    <CardDescription className="text-sm leading-relaxed">
-                      {module.description}
-                    </CardDescription>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all">
-                    Acessar
-                  </Button>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </div> */}
-
       {/* Grade completa — colapsada, para usuários recorrentes */}
       <AllToolsSection>
       <div>
@@ -312,7 +164,7 @@ export default function Dashboard() {
         </div>
         <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {agentModules.map((module) => (
-            <Link key={module.title} to={module.url} className="group/card focus:outline-none">
+            <Link key={module.title} to={module.url} className="group/card rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
               <Card className="h-full cursor-pointer relative overflow-hidden border-border/60 bg-card/80 backdrop-blur-sm transition-all duration-300 ease-out hover:border-primary/40 hover:shadow-elevated hover:-translate-y-0.5">
                 {/* Soft hover glow */}
                 <div className="pointer-events-none absolute inset-0 opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 bg-[radial-gradient(ellipse_at_top_left,hsl(var(--primary)/0.08),transparent_60%)]" />
@@ -340,7 +192,14 @@ export default function Dashboard() {
                   </div>
                 </CardHeader>
                 <CardContent className="relative">
-                  <Button variant="outline" className="w-full transition-all duration-300 group-hover/card:bg-primary group-hover/card:text-primary-foreground group-hover/card:border-primary">
+                  {/* Visual de botão dentro do link (botão real dentro de <a> é aninhamento inválido). */}
+                  <span
+                    className={buttonVariants({
+                      variant: "outline",
+                      className:
+                        "w-full transition-all duration-300 group-hover/card:bg-primary group-hover/card:text-primary-foreground group-hover/card:border-primary",
+                    })}
+                  >
                     {module.isPremium && !subscribed ? (
                       <>
                         <Crown className="mr-2 h-4 w-4" />
@@ -349,7 +208,7 @@ export default function Dashboard() {
                     ) : (
                       "Acessar Assistente"
                     )}
-                  </Button>
+                  </span>
                 </CardContent>
               </Card>
             </Link>
@@ -357,58 +216,6 @@ export default function Dashboard() {
         </div>
       </div>
       </AllToolsSection>
-
-      {/* Quick stats - HIDDEN */}
-      {/* <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {quickStats.map((stat) => (
-          <Card key={stat.label}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {stat.label}
-              </CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground mt-1">{stat.trend}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div> */}
-
-      {/* Recent alerts - HIDDEN */}
-      {/* <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-warning" />
-            Alertas e Pendências
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
-              <div className="flex items-center gap-3">
-                <Activity className="h-5 w-5 text-warning" />
-                <div>
-                  <p className="text-sm font-medium">Paciente com exame crítico</p>
-                  <p className="text-xs text-muted-foreground">João Silva - K+ 6.2 mEq/L</p>
-                </div>
-              </div>
-              <Button size="sm" variant="outline">Ver</Button>
-            </div>
-            <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
-              <div className="flex items-center gap-3">
-                <FileText className="h-5 w-5 text-destructive" />
-                <div>
-                  <p className="text-sm font-medium">Relatório aguardando assinatura</p>
-                  <p className="text-xs text-muted-foreground">Maria Santos - Transferência UTI</p>
-                </div>
-              </div>
-              <Button size="sm" variant="outline">Assinar</Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card> */}
     </div>
   );
 }

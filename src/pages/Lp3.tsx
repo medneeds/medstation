@@ -31,11 +31,10 @@ import { DISPLAY_PRICING, HAS_LAUNCH_DISCOUNT, brl } from "@/lib/subscription-ti
 import { BlackFridayBanner } from "@/components/landing/BlackFridayBanner";
 import { BLACK_OFFER, isBlackActive } from "@/lib/pricingSchedule";
 
-import { ArrowRight, Check, Quote } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { FounderSection } from "@/components/landing/FounderSection";
 import { RealUsersCarousel } from "@/components/landing/RealUsersCarousel";
 import { SiteFooter } from "@/components/SiteFooter";
-import { REAL_USERS } from "@/data/realUsers";
 import { AnnualBonusCard } from "@/components/AnnualBonusCard";
 import { ANNUAL_BONUS } from "@/lib/annualBonus";
 
@@ -53,14 +52,7 @@ const proof = [
   { value: "Fluxo", label: "menos trabalho repetitivo na rotina" },
 ];
 
-
-// Depoimentos só de quem autorizou nome, foto e texto (src/data/realUsers.ts).
-// Nada de depoimento sem autorização registrada — CDC art. 37 e CONAR.
-const testimonials = REAL_USERS.filter((u) => u.quote).map((u) => ({
-  name: u.name,
-  role: u.practice,
-  text: u.quote as string,
-}));
+// Depoimentos: só no RealUsersCarousel, que lê src/data/realUsers.ts (autorizados — CDC art. 37 e CONAR).
 
 const faq = [
   {
@@ -124,7 +116,10 @@ export default function Lp3() {
 
   const goForm = (label: string) => {
     trackCtaClick({ cta: label, section: "lp3", destination: "#comecar" });
-    document.getElementById("comecar")?.scrollIntoView({ behavior: "smooth" });
+    // Leva ao cartão do cadastro (não ao topo da seção) e já deixa o e-mail pronto para digitar.
+    const card = document.getElementById("lead-form");
+    (card ?? document.getElementById("comecar"))?.scrollIntoView({ behavior: "smooth", block: "center" });
+    document.getElementById("lead-email")?.focus({ preventScroll: true });
   };
 
   const price = DISPLAY_PRICING.bundle[billing];
@@ -293,34 +288,6 @@ export default function Lp3() {
 
         <RealUsersCarousel className="border-b border-border/50" />
         <FounderSection className="border-b border-border/50" />
-
-        {/* 5. Prova social */}
-        <section className="bg-muted/25 border-b border-border/50">
-          <div className="container mx-auto px-4 md:px-8 py-14 md:py-20">
-            <h2 className="text-2xl md:text-4xl font-semibold tracking-tight text-center">
-              O que dizem os médicos que usam
-            </h2>
-            <div className="mt-8 grid md:grid-cols-2 gap-4">
-              {testimonials.map((t) => (
-                <figure key={t.name} className="relative rounded-2xl border border-border/60 bg-background p-6">
-                  <Quote className="absolute top-5 right-5 w-7 h-7 text-primary/15" aria-hidden="true" />
-                  <blockquote className="text-sm md:text-base leading-relaxed text-muted-foreground">
-                    “{t.text}”
-                  </blockquote>
-                  <figcaption className="mt-5 flex items-center gap-3">
-                    <span className="w-9 h-9 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center">
-                      {t.name.split(" ").slice(-2).map((n) => n[0]).join("")}
-                    </span>
-                    <span>
-                      <span className="block text-sm font-medium">{t.name}</span>
-                      <span className="block text-xs text-muted-foreground">{t.role}</span>
-                    </span>
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
-          </div>
-        </section>
 
         {/* 6. Preço + FAQ + CTA final */}
         <section id="planos" className="container mx-auto px-4 md:px-8 py-14 md:py-24">

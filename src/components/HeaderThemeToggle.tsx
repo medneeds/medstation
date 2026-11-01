@@ -15,7 +15,7 @@ export function HeaderThemeToggle() {
       title={label}
       onClick={() => setTheme(mode === "system" ? "light" : mode === "light" ? "dark" : "system")}
       className={cn(
-        "relative h-8 w-8 rounded-sm border border-hairline grid place-items-center overflow-hidden",
+        "relative h-11 w-11 md:h-8 md:w-8 rounded-sm border border-hairline grid place-items-center overflow-hidden",
         "hover:bg-accent hover:border-foreground/40 transition-colors outline-none",
         "focus-visible:border-primary",
       )}

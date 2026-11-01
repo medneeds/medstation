@@ -61,7 +61,7 @@ export function NpsWidget() {
     <Card className="fixed bottom-6 right-6 z-40 w-[320px] p-4 shadow-xl border animate-in slide-in-from-bottom-4">
       <div className="flex items-start justify-between mb-2">
         <div className="text-sm font-medium">Como foi sua experiência?</div>
-        <Button variant="ghost" size="icon" className="h-6 w-6 -mr-1 -mt-1" onClick={close}>
+        <Button variant="ghost" size="icon" className="h-6 w-6 -mr-1 -mt-1" aria-label="Fechar avaliação" onClick={close}>
           <X className="h-3.5 w-3.5" />
         </Button>
       </div>

@@ -436,7 +436,7 @@ export function AppSidebar() {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  tooltip="Suporte MedPocket"
+                  tooltip="Suporte"
                   onClick={() => window.dispatchEvent(new CustomEvent(SUPPORT_CHAT_EVENT))}
                   className={cn(
                     "group flex items-center gap-3 rounded-sm px-3 h-9 text-sm font-medium",
