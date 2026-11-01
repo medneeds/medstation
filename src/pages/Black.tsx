@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { PlatformDemo } from "@/components/landing/PlatformDemo";
 import { FounderSection } from "@/components/landing/FounderSection";
 import { RealUsersCarousel } from "@/components/landing/RealUsersCarousel";
+import { VslVideo } from "@/components/landing/VslVideo";
 import { FormLegalNotice } from "@/components/legal/FormLegalNotice";
 import { SiteFooter } from "@/components/SiteFooter";
 import { checkoutTracking } from "@/lib/conversion";
@@ -603,7 +604,7 @@ export default function Black() {
               "radial-gradient(700px 380px at 85% 20%, hsl(var(--offer-gold) / 0.18), transparent 60%), radial-gradient(800px 420px at 5% 0%, hsl(var(--offer-accent) / 0.16), transparent 60%)",
           }}
         />
-        <div className="relative container mx-auto px-4 md:px-8 pt-10 pb-16 md:pt-16 md:pb-24 grid lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-14 items-center">
+        <div className="relative container mx-auto px-4 md:px-8 pt-10 pb-16 md:pt-16 md:pb-24 grid lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-14 items-center lg:items-start">
           <div className="motion-safe:animate-slide-up">
             <span className="inline-flex items-center gap-2 rounded-full border border-offer-gold/40 bg-offer-gold/10 px-3 py-1 font-mono text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-offer-gold">
               <Sparkles className="w-3.5 h-3.5" /> Black MedStation · só em novembro
@@ -653,6 +654,7 @@ export default function Black() {
                 O pagamento não foi concluído. Sua oferta continua aqui até 30/11.
               </p>
             )}
+            <VslVideo className="mb-6" />
             <CheckoutCard status={status} />
           </div>
         </div>
