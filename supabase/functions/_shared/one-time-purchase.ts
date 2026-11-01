@@ -346,3 +346,22 @@ export function utmFromMetadata(metadata: Record<string, string> | null | undefi
     utm_campaign: m.utm_campaign ?? null,
   };
 }
+
+/**
+ * Texto da página de pagamento do Stripe (custom_text.submit), acima do botão.
+ * Mantém benefícios e a garantia incondicional de 7 dias visíveis na hora de
+ * pagar; a regra fica aqui para os dois checkouts usarem o mesmo texto.
+ */
+export function checkoutSubmitMessage(plan: OneTimePlan | null | undefined): string {
+  const guarantee = "Garantia incondicional de 7 dias: se não servir para você, devolvemos 100% do valor.";
+  const assistants = "acesso completo aos 12 assistentes de IA da MedStation (Clínicus, Examinus, Prescriptus, Modo Escuta e mais)";
+  if (!plan) return `Assinatura mensal com ${assistants}. Cancele quando quiser. ${guarantee}`;
+  if (plan.slug === BLACK_ANNUAL_PLAN_SLUG) {
+    return `Black MedStation: 12 meses de ${assistants}, em pagamento único e sem renovação automática. ${guarantee}`;
+  }
+  if (plan.category === "annual_one_time") {
+    const bonus = plan.includesArsenalBonus ? " Inclui o bônus Arsenal Med." : "";
+    return `Plano anual: 12 meses de ${assistants}, em pagamento único e sem renovação automática.${bonus} ${guarantee}`;
+  }
+  return `30 dias de ${assistants}. ${guarantee}`;
+}

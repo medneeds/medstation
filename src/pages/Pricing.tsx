@@ -17,6 +17,7 @@ import { describeCheckoutError } from "@/lib/checkoutErrors";
 import { AnnualBonusCard } from "@/components/AnnualBonusCard";
 import { ANNUAL_BONUS } from "@/lib/annualBonus";
 import { SiteFooter } from "@/components/SiteFooter";
+import { checkoutTracking } from "@/lib/conversion";
 
 
 const included = [
@@ -73,7 +74,7 @@ export default function Pricing() {
     });
     try {
       const { data, error } = await supabase.functions.invoke("guest-checkout", {
-        body: { email, plan: p, couponCode: couponApplied ? couponCode.trim() : undefined },
+        body: { tracking: checkoutTracking(), email, plan: p, couponCode: couponApplied ? couponCode.trim() : undefined },
       });
       if (error) throw error;
       if (data?.url) window.location.href = data.url;
@@ -106,7 +107,7 @@ export default function Pricing() {
           coupon: couponApplied ? couponCode.trim() : null,
         });
         const { data, error } = await supabase.functions.invoke("create-checkout", {
-          body: { plan: p, couponCode: couponApplied ? couponCode.trim() : undefined },
+          body: { tracking: checkoutTracking(), plan: p, couponCode: couponApplied ? couponCode.trim() : undefined },
         });
         if (error) throw error;
         if (data?.url) window.location.href = data.url;

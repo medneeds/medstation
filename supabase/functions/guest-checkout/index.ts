@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import {
+  checkoutSubmitMessage,
   buildOneTimeLineItem,
   BLACK_ANNUAL_PLAN_SLUG,
   getOneTimePlan,
@@ -16,6 +17,7 @@ import {
 import { monthlySubscriptionLineItem, pricingCohort } from "../_shared/pricing-schedule.ts";
 import { recordPurchaseAttempt } from "../_shared/purchase-attempts.ts";
 import { allowsPurchaseWithActiveSubscription } from "../_shared/annual-switch.ts";
+import { trackingMetadata } from "../_shared/meta-capi.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -131,6 +133,11 @@ serve(async (req) => {
       billing_period: billingPeriod,
       pricing_cohort: oneTimePlan?.offer ?? pricingCohort(),
       acquisition: "guest_checkout",
+      // Aceite de marketing do navegador: libera o envio da compra pela API de Conversões.
+      ...trackingMetadata(body.tracking, {
+        ip: req.headers.get("x-forwarded-for"),
+        userAgent: req.headers.get("user-agent"),
+      }),
     };
 
     const oneTimeMetadata: Record<string, string> = oneTimePlan
@@ -160,6 +167,8 @@ serve(async (req) => {
         success_url: `${origin}/obrigado?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: oneTimePlan.offer ? `${origin}/black?canceled=true` : `${origin}/?canceled=true`,
         billing_address_collection: "auto",
+        // Benefícios e garantia na própria página de pagamento do Stripe.
+        custom_text: { submit: { message: checkoutSubmitMessage(oneTimePlan) } },
         metadata: oneTimeMetadata,
         payment_intent_data: { metadata: oneTimeMetadata },
         // Quem desiste ganha um link para retomar o mesmo pagamento (painel Black).
@@ -177,6 +186,8 @@ serve(async (req) => {
         payment_method_collection: "always",
         phone_number_collection: { enabled: false },
         billing_address_collection: "auto",
+        // Benefícios e garantia na própria página de pagamento do Stripe.
+        custom_text: { submit: { message: checkoutSubmitMessage(oneTimePlan) } },
         allow_promotion_codes: !couponCode,
         metadata: baseMetadata,
         subscription_data: { metadata: baseMetadata },
