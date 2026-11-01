@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -54,6 +54,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { copyText } from "@/lib/clipboard";
 import { buildAnamnesisText, countFilledSections } from "@/lib/anamnesis";
+import { buildTranscriptText } from "@/lib/consultationTranscript";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ConsultationModeProps {
@@ -282,24 +283,17 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     );
   }, [buildStructuredText]);
 
+  const transcriptText = useMemo(() => buildTranscriptText(segments, unifiedMode), [segments, unifiedMode]);
+
   const handleCopyTranscript = useCallback(async () => {
-    const text = segments
-      .map((s) => {
-        const t = s.text.trim();
-        if (!t) return '';
-        if (unifiedMode) return t;
-        const who = s.speaker === 'doctor' ? 'Médico' : s.speaker === 'patient' ? 'Paciente' : 'Acompanhante';
-        return `${who}: ${t}`;
-      })
-      .filter(Boolean)
-      .join('\n\n');
+    const text = transcriptText;
     if (!text) {
       toast.error('Ainda não há transcrição.');
       return;
     }
     const ok = await copyText(text);
     toast[ok ? 'success' : 'error'](ok ? 'Transcrição copiada 👏' : 'Não foi possível copiar.');
-  }, [segments, unifiedMode]);
+  }, [transcriptText]);
 
   const handleSendToAssistant = useCallback(
     (route: string) => {
@@ -1035,6 +1029,8 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           isSavingCase={isSavingCase}
           savedCaseId={savedCaseId}
           onSaveCase={handleSaveCase}
+          anamnesisText={showFinishDialog ? buildStructuredText() : ""}
+          transcriptText={transcriptText}
           onCopyAnamnesis={handleCopyToClipboard}
           onCopyTranscript={handleCopyTranscript}
           onRetry={() => void runFinalizeFlow({ alreadyStopped: true })}
