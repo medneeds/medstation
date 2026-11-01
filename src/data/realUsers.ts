@@ -5,6 +5,7 @@ import luciaraDuarte from "@/assets/real-users/dra-luciara-duarte.jpg.asset.json
 import daianeCordeiro from "@/assets/real-users/dra-daiane-cordeiro.jpg.asset.json";
 import joseLindoso from "@/assets/real-users/dr-jose-alexandre-lindoso.jpg.asset.json";
 import marcellaQueiroz from "@/assets/real-users/dra-marcella-queiroz.jpg.asset.json";
+import leandroAlbuquerque from "@/assets/real-users/dr-leandro-albuquerque.jpeg.asset.json";
 import alvaroFialho from "@/assets/real-users/dr-alvaro-fialho.jpg.asset.json";
 
 /** Médicos reais que usam a MedStation (uso de foto e nome autorizado pelo dono). */
@@ -73,5 +74,13 @@ export const REAL_USERS: RealUser[] = [
     practice: "Medicina do Trabalho e Medicina de Emergência",
     quote:
       "A MedStation tem facilitado minha rotina médica. É uma ferramenta extremamente útil, prática e inteligente, que otimiza meu tempo, auxilia na tomada de decisões e me ajuda a esclarecer dúvidas no dia a dia. Em meio à correria dos plantões, ter um recurso assim faz toda a diferença.",
+  },
+  {
+    name: "Dr. Leandro Albuquerque",
+    photo: leandroAlbuquerque.url,
+    location: "São Luís, MA",
+    practice: "Especialista em Clínica Médica",
+    quote:
+      "Utilizar o Medstation possibilitou otimizar meu processo de trabalho tanto do ponto de vista técnico como no auxílio na tomada de decisões nas condutas, além disso, consigo executar hoje minhas atividades de trabalho de forma mais ágil e acurada, melhorando consequentemente a qualidade da assistência prestada ao paciente! Pois com a otimização do tempo é possível uma avaliação mais minuciosa e criteriosa e isso interfere diretamente na melhora da qualidade da assistência prestada!",
   },
 ];
