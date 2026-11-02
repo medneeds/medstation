@@ -30,7 +30,7 @@ export function SharedComputerToggle({ checked, onCheckedChange }: SharedCompute
   return (
     <div
       className={cn(
-        "rounded-2xl border p-3.5 transition-colors",
+        "rounded-2xl border p-3.5 lg:p-3 transition-colors",
         checked ? "border-primary/35 bg-primary/[0.06]" : "border-hairline bg-muted/30",
       )}
     >
@@ -60,7 +60,7 @@ export function SharedComputerToggle({ checked, onCheckedChange }: SharedCompute
         />
       </div>
 
-      <ul id="shared-computer-rules" className="mt-3 space-y-1 border-t border-hairline pt-2.5" aria-live="polite">
+      <ul id="shared-computer-rules" className="mt-3 space-y-1 border-t border-hairline pt-2.5 lg:mt-2.5 lg:pt-2 xl:flex xl:flex-wrap xl:gap-x-4 xl:gap-y-1 xl:space-y-0" aria-live="polite">
         {points.map((point) => (
           <li key={point} className="flex items-start gap-2 text-xs text-muted-foreground leading-snug">
             <Check className={cn("h-3.5 w-3.5 mt-px shrink-0", checked ? "text-primary" : "text-muted-foreground")} aria-hidden />
@@ -68,7 +68,7 @@ export function SharedComputerToggle({ checked, onCheckedChange }: SharedCompute
           </li>
         ))}
       </ul>
-      <p className="mt-2 text-[0.7rem] text-muted-foreground/80 leading-snug">
+      <p className="mt-2 lg:mt-1.5 text-[0.7rem] text-muted-foreground/80 leading-snug">
         {checked
           ? "Desligue só se este aparelho for seu. Em qualquer opção, saímos após 30 min sem uso."
           : "Em qualquer opção, saímos após 30 min sem uso."}

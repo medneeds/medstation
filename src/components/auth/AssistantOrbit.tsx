@@ -1,7 +1,4 @@
-import { Suspense, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Html } from "@react-three/drei";
-import * as THREE from "three";
+import { useState } from "react";
 import {
   Stethoscope, Activity, Wind, Calculator, Sigma, Pill,
   FileCheck, BookOpen, Compass, FileText, MessagesSquare, Scale,
@@ -9,11 +6,11 @@ import {
 import type { LucideIcon } from "lucide-react";
 
 /**
- * Anel 3D com os 12 assistentes da MedStation orbitando lentamente.
- * As placas de vidro são DOM (Html do drei), então sempre encaram a câmera;
- * a profundidade vem da rotação do grupo, do anel-guia inclinado e do parallax
- * que segue o mouse. Ao passar o mouse sobre um assistente, a placa reage
- * (escala + brilho) e revela uma frase de efeito.
+ * Anel com os 12 assistentes da MedStation girando lentamente num círculo
+ * perfeito (de frente, sem inclinação — nunca oval). O círculo é sempre
+ * quadrado (aspect-square) e cabe na altura da tela. Cada placa gira no
+ * sentido contrário para continuar em pé. Ao passar o mouse, a órbita pausa,
+ * a placa cresce e mostra uma frase de efeito.
  */
 
 type Assistant = { name: string; Icon: LucideIcon; tagline: string };
@@ -33,116 +30,34 @@ const ASSISTANTS: Assistant[] = [
   { name: "Legalis", Icon: Scale, tagline: "Blindagem jurídica e ética do registro." },
 ];
 
-const RADIUS = 2.35;
-
-function OrbitRing() {
-  // Anel-guia: torus fino inclinado que dá a sensação de "trilho" da órbita.
-  const geometry = useMemo(() => new THREE.TorusGeometry(RADIUS, 0.006, 8, 128), []);
-  return (
-    <mesh geometry={geometry} rotation-x={Math.PI / 2}>
-      <meshBasicMaterial color="#4ade80" transparent opacity={0.22} />
-    </mesh>
-  );
-}
-
-function AssistantPlates() {
-  const group = useRef<THREE.Group>(null);
-  const [hovered, setHovered] = useState<number | null>(null);
-
-  useFrame((state, delta) => {
-    if (!group.current) return;
-    const dt = Math.min(delta, 0.05);
-    // Órbita lenta e contínua (pausa levemente quando um assistente está em foco)
-    group.current.rotation.y += dt * (hovered === null ? 0.22 : 0.06);
-    // Parallax sutil seguindo o mouse (com easing independente de framerate)
-    const { x, y } = state.pointer;
-    group.current.rotation.x = THREE.MathUtils.damp(group.current.rotation.x, 0.62 + y * 0.14, 2.5, dt);
-    group.current.rotation.z = THREE.MathUtils.damp(group.current.rotation.z, -x * 0.07, 2.5, dt);
-    // Flutuação vertical suave (base deslocada p/ cima para os rótulos inferiores caberem)
-    group.current.position.y = 0.34 + Math.sin(state.clock.elapsedTime * 0.6) * 0.08;
-  });
-
-  return (
-    <group ref={group} rotation-x={0.62}>
-      <OrbitRing />
-      {ASSISTANTS.map(({ name, Icon, tagline }, i) => {
-        const angle = (i / ASSISTANTS.length) * Math.PI * 2;
-        const x = Math.cos(angle) * RADIUS;
-        const z = Math.sin(angle) * RADIUS;
-        const isHover = hovered === i;
-        const dim = hovered !== null && !isHover;
-        return (
-          <Html
-            key={name}
-            position={[x, 0, z]}
-            center
-            zIndexRange={[20, 0]}
-            style={{ pointerEvents: "none" }}
-          >
-            <div
-              className="relative flex flex-col items-center gap-1.5 select-none cursor-pointer pointer-events-auto transition-transform duration-200"
-              style={{
-                animation: `orb-bob 3.6s ease-in-out ${i * 0.3}s infinite`,
-                transform: isHover ? "scale(1.35)" : "scale(1)",
-                opacity: dim ? 0.45 : 1,
-                zIndex: isHover ? 30 : 1,
-              }}
-              onMouseEnter={() => setHovered(i)}
-              onMouseLeave={() => setHovered(null)}
-            >
-              {/* Frase de efeito no hover */}
-              <div
-                className={`absolute bottom-full mb-2.5 whitespace-nowrap rounded-full border border-primary/40 bg-background/90 px-3 py-1.5 text-[11px] font-medium text-foreground shadow-lg backdrop-blur-md transition-all duration-200 ${
-                  isHover ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1 pointer-events-none"
-                }`}
-              >
-                {tagline}
-              </div>
-              <div
-                className={`h-16 w-16 rounded-2xl border grid place-items-center transition-all duration-200 ${
-                  isHover
-                    ? "border-primary bg-primary/20 shadow-[0_16px_36px_-10px_hsl(var(--primary)/0.8),inset_0_1px_0_hsl(var(--primary)/0.5)]"
-                    : "border-primary/30 bg-primary/10 shadow-[0_12px_28px_-12px_hsl(var(--primary)/0.6),inset_0_1px_0_hsl(var(--primary)/0.35)]"
-                }`}
-              >
-                <Icon className="h-[26px] w-[26px] text-primary" strokeWidth={1.6} />
-              </div>
-              <span
-                className={`text-[12px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors duration-200 ${
-                  isHover ? "text-primary" : "text-muted-foreground/80"
-                }`}
-              >
-                {name}
-              </span>
-            </div>
-          </Html>
-        );
-      })}
-    </group>
-  );
-}
+/** Raio do anel, em % do lado do quadrado (sobra espaço para os rótulos). */
+const RADIUS_PCT = 41;
+const SPIN_SECONDS = 90;
 
 export function AssistantOrbit() {
+  const [hovered, setHovered] = useState<number | null>(null);
+  const playState = hovered === null ? "running" : "paused";
+
   return (
-    <div className="relative h-[560px] xl:h-[680px] w-full" aria-hidden="true">
+    <div
+      className="relative mx-auto aspect-square"
+      style={{ width: "min(100%, 44rem, calc(100vh - 7rem))", minWidth: "26rem" }}
+      aria-hidden="true"
+    >
       {/* brilho ambiente atrás da órbita */}
       <div className="pointer-events-none absolute inset-0 grid place-items-center">
-        <div className="h-72 w-72 rounded-full bg-primary/15 blur-3xl" />
+        <div className="h-1/2 w-1/2 rounded-full bg-primary/15 blur-3xl" />
       </div>
-      <Canvas
-        dpr={[1, 1.75]}
-        camera={{ position: [0, 1.7, 9.6], fov: 36 }}
-        gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
-        style={{ background: "transparent" }}
-        onCreated={({ camera }) => camera.lookAt(0, 0, 0)}
-      >
-        <Suspense fallback={null}>
-          <AssistantPlates />
-        </Suspense>
-      </Canvas>
+
+      {/* Anel-guia: círculo perfeito */}
+      <div
+        className="pointer-events-none absolute rounded-full border border-primary/25"
+        style={{ inset: `${50 - RADIUS_PCT}%` }}
+      />
+
       {/* Texto central dentro da órbita */}
-      <div className="pointer-events-none absolute inset-0 z-0 flex flex-col items-center justify-center text-center px-6">
-        <div className="inline-flex items-center gap-2.5 text-[0.85rem] uppercase tracking-[0.25em] text-muted-foreground">
+      <div className="pointer-events-none absolute inset-0 z-0 flex flex-col items-center justify-center text-center px-[18%]">
+        <div className="inline-flex items-center gap-2.5 text-[0.8rem] xl:text-[0.85rem] uppercase tracking-[0.25em] text-muted-foreground">
           <span className="h-px w-9 bg-primary/70" />
           Para médicos ocupados
         </div>
@@ -155,10 +70,81 @@ export function AssistantOrbit() {
           Documentação, Decisão e Fluxo em uma só plataforma. Em segundos, no seu fluxo.
         </p>
       </div>
+
+      {/* Órbita girando */}
+      <div
+        className="orb-spin absolute inset-0 z-10"
+        style={{ animationDuration: `${SPIN_SECONDS}s`, animationPlayState: playState }}
+      >
+        {ASSISTANTS.map(({ name, Icon, tagline }, i) => {
+          const angle = (i / ASSISTANTS.length) * Math.PI * 2 - Math.PI / 2;
+          const left = 50 + Math.cos(angle) * RADIUS_PCT;
+          const top = 50 + Math.sin(angle) * RADIUS_PCT;
+          const isHover = hovered === i;
+          const dim = hovered !== null && !isHover;
+          return (
+            <div
+              key={name}
+              className="absolute -translate-x-1/2 -translate-y-1/2"
+              style={{ left: `${left}%`, top: `${top}%`, zIndex: isHover ? 30 : 1 }}
+            >
+              {/* gira ao contrário para a placa ficar sempre em pé */}
+              <div
+                className="orb-spin-rev"
+                style={{ animationDuration: `${SPIN_SECONDS}s`, animationPlayState: playState }}
+              >
+                <div
+                  className="orb-bob relative flex flex-col items-center gap-1.5 select-none cursor-pointer transition-[transform,opacity] duration-200"
+                  style={{
+                    animationDelay: `${i * 0.3}s`,
+                    transform: isHover ? "scale(1.3)" : "scale(1)",
+                    opacity: dim ? 0.45 : 1,
+                  }}
+                  onMouseEnter={() => setHovered(i)}
+                  onMouseLeave={() => setHovered(null)}
+                >
+                  <div
+                    className={`absolute bottom-full mb-2.5 whitespace-nowrap rounded-full border border-primary/40 bg-background/90 px-3 py-1.5 text-[11px] font-medium text-foreground shadow-lg backdrop-blur-md transition-all duration-200 ${
+                      isHover ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1 pointer-events-none"
+                    }`}
+                  >
+                    {tagline}
+                  </div>
+                  <div
+                    className={`h-14 w-14 xl:h-16 xl:w-16 rounded-2xl border grid place-items-center backdrop-blur-sm transition-all duration-200 ${
+                      isHover
+                        ? "border-primary bg-primary/20 shadow-[0_16px_36px_-10px_hsl(var(--primary)/0.8),inset_0_1px_0_hsl(var(--primary)/0.5)]"
+                        : "border-primary/30 bg-primary/10 shadow-[0_12px_28px_-12px_hsl(var(--primary)/0.6),inset_0_1px_0_hsl(var(--primary)/0.35)]"
+                    }`}
+                  >
+                    <Icon className="h-6 w-6 xl:h-[26px] xl:w-[26px] text-primary" strokeWidth={1.6} />
+                  </div>
+                  <span
+                    className={`text-[11px] xl:text-[12px] uppercase tracking-[0.12em] font-medium whitespace-nowrap transition-colors duration-200 ${
+                      isHover ? "text-primary" : "text-muted-foreground/80"
+                    }`}
+                  >
+                    {name}
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
       <style>{`
-        @keyframes orb-bob {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-6px); }
+        @keyframes orb-spin-kf { to { transform: rotate(360deg); } }
+        @keyframes orb-spin-rev-kf { to { transform: rotate(-360deg); } }
+        @keyframes orb-bob-kf {
+          0%, 100% { translate: 0 0; }
+          50% { translate: 0 -6px; }
+        }
+        .orb-spin { animation: orb-spin-kf linear infinite; }
+        .orb-spin-rev { animation: orb-spin-rev-kf linear infinite; }
+        .orb-bob { animation: orb-bob-kf 3.6s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .orb-spin, .orb-spin-rev, .orb-bob { animation: none; }
         }
       `}</style>
     </div>
