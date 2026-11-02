@@ -236,8 +236,7 @@ export default function Auth() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-          className="relative z-10 lg:order-1 flex items-start lg:items-center justify-center px-5 pt-8 pb-10 sm:p-10 lg:px-10 lg:py-3 xl:px-14"
-          style={{ paddingBottom: "max(2.5rem, env(safe-area-inset-bottom))" }}
+          className="relative z-10 lg:order-1 flex items-start lg:items-center justify-center px-5 pt-8 sm:p-10 pb-[max(2.5rem,env(safe-area-inset-bottom))] sm:pb-[max(2.5rem,env(safe-area-inset-bottom))] lg:px-10 lg:py-3 xl:px-14"
         >
           <motion.div
             initial={{ opacity: 0, y: 26, scale: 0.965 }}
