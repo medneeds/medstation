@@ -17,6 +17,7 @@ import { trackLifecycleEvent } from "@/lib/analytics";
 import { Eye, EyeOff, MailCheck, Lock } from "lucide-react";
 import { SharedComputerToggle } from "@/components/auth/SharedComputerToggle";
 import { markFreshLogin, getSharedPreference } from "@/lib/deviceGuard";
+import { AuthDividerMarks } from "@/components/auth/AuthDividerMarks";
 
 const AssistantOrbit = lazy(() =>
   import("@/components/auth/AssistantOrbit").then((m) => ({ default: m.AssistantOrbit }))
@@ -200,21 +201,24 @@ export default function Auth() {
         <div className="absolute inset-0 opacity-[0.035] [background-image:radial-gradient(hsl(var(--foreground))_1px,transparent_1px)] [background-size:24px_24px]" />
       </div>
 
-      <div className="relative z-10 grid min-h-screen lg:grid-cols-[1.1fr_1fr]">
-        {/* Editorial side — asymmetric */}
+      <div className="relative z-10 grid min-h-screen lg:grid-cols-[1fr_1.1fr]">
+        {/* Editorial side — on desktop sits on the right; login comes first on the left */}
         <motion.aside
-          initial={{ opacity: 0, x: -24 }}
+          initial={{ opacity: 0, x: 24 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="relative hidden lg:flex flex-col p-10 xl:p-14 border-r border-hairline"
+          className="relative hidden lg:flex lg:order-2 flex-col p-10 xl:p-14"
         >
+          {/* Logo elements drifting discreetly along the divider */}
+          <AuthDividerMarks />
+
           {/* Cabeçalho e rodapé sobrepostos — não consomem espaço da órbita */}
-          <div className="pointer-events-none absolute top-10 left-10 xl:top-14 xl:left-14 z-20">
+          <div className="pointer-events-none absolute top-10 right-10 xl:top-14 xl:right-14 z-20">
             <Logo size="md" />
           </div>
-          <p className="pointer-events-none absolute bottom-10 left-10 xl:bottom-14 xl:left-14 z-20 text-[0.7rem] uppercase tracking-[0.18em] font-mono text-muted-foreground">
+          <p className="pointer-events-none absolute bottom-10 right-10 xl:bottom-14 xl:right-14 z-20 text-[0.7rem] uppercase tracking-[0.18em] font-mono text-muted-foreground">
             © {new Date().getFullYear()} MedStation ·{" "}
-            <a href="/privacidade" target="_blank" rel="noopener noreferrer" className="underline-offset-4 hover:underline">
+            <a href="/privacidade" target="_blank" rel="noopener noreferrer" className="pointer-events-auto underline-offset-4 hover:underline">
               Privacidade
             </a>
           </p>
@@ -232,7 +236,7 @@ export default function Auth() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-          className="flex items-start lg:items-center justify-center px-5 pt-8 pb-10 sm:p-10 lg:p-16"
+          className="relative z-10 lg:order-1 flex items-start lg:items-center justify-center px-5 pt-8 pb-10 sm:p-10 lg:p-16"
           style={{ paddingBottom: "max(2.5rem, env(safe-area-inset-bottom))" }}
         >
           <motion.div

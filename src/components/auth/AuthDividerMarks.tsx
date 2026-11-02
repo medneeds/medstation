@@ -42,7 +42,7 @@ export function AuthDividerMarks() {
       className="pointer-events-none absolute inset-y-0 left-0 z-0 w-56 -translate-x-1/2 [mask-image:linear-gradient(to_bottom,transparent,black_18%,black_82%,transparent)] [-webkit-mask-image:linear-gradient(to_bottom,transparent,black_18%,black_82%,transparent)]"
     >
       {/* Hairline with a slow light travelling along it */}
-      <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-hairline" />
+      <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-[hsl(var(--hairline))]" />
       {!reduce && (
         <motion.div
           className="absolute left-1/2 h-40 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-primary/60 to-transparent"
