@@ -251,35 +251,37 @@ export default function Auth() {
               </p>
             </div>
 
-            {/* Cabeçalho com reflexo espelhado (estilo tela inicial de streaming) */}
-            <div className="space-y-1.5 lg:space-y-2 text-center lg:text-left">
-              <div className="relative pb-3">
-                <h2 className="font-display text-2xl lg:text-4xl tracking-tight text-foreground">
-                  Bem-vindo
-                </h2>
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute left-0 right-0 top-full -mt-1 block h-3 overflow-hidden font-display text-2xl lg:text-4xl leading-none tracking-tight text-foreground opacity-[0.14] blur-[0.6px] [transform:scaleY(-1)] [mask-image:linear-gradient(to_top,transparent_10%,black_100%)] [-webkit-mask-image:linear-gradient(to_top,transparent_10%,black_100%)] text-center lg:text-left"
-                >
-                  Bem-vindo
-                </span>
-              </div>
-
-              <p className="text-sm text-muted-foreground">
-                Entre na sua conta ou comece seu teste em segundos.
-              </p>
-            </div>
-
-
             <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 rounded-full h-11">
-                <TabsTrigger value="signin" className="rounded-full data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
-                  Entrar
-                </TabsTrigger>
-                <TabsTrigger value="signup" className="rounded-full data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
-                  Criar conta
-                </TabsTrigger>
-              </TabsList>
+              {/* No computador, título à esquerda e Entrar/Criar conta à direita, na mesma linha */}
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                {/* Cabeçalho com reflexo espelhado (estilo tela inicial de streaming) */}
+                <div className="space-y-1.5 lg:space-y-1 text-center lg:text-left min-w-0">
+                  <div className="relative pb-3">
+                    <h2 className="font-display text-2xl lg:text-4xl tracking-tight text-foreground">
+                      Bem-vindo
+                    </h2>
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute left-0 right-0 top-full -mt-1 block h-3 overflow-hidden font-display text-2xl lg:text-4xl leading-none tracking-tight text-foreground opacity-[0.14] blur-[0.6px] [transform:scaleY(-1)] [mask-image:linear-gradient(to_top,transparent_10%,black_100%)] [-webkit-mask-image:linear-gradient(to_top,transparent_10%,black_100%)] text-center lg:text-left"
+                    >
+                      Bem-vindo
+                    </span>
+                  </div>
+
+                  <p className="text-sm text-muted-foreground">
+                    Entre na sua conta ou comece seu teste em segundos.
+                  </p>
+                </div>
+
+                <TabsList className="grid w-full lg:w-56 xl:w-64 shrink-0 grid-cols-2 bg-muted/50 p-1 rounded-full h-11">
+                  <TabsTrigger value="signin" className="rounded-full data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
+                    Entrar
+                  </TabsTrigger>
+                  <TabsTrigger value="signup" className="rounded-full data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
+                    Criar conta
+                  </TabsTrigger>
+                </TabsList>
+              </div>
 
               <AnimatePresence mode="wait">
                 <TabsContent value="signin" key="signin">

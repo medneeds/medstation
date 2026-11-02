@@ -62,7 +62,7 @@ export function SharedComputerToggle({ checked, onCheckedChange }: SharedCompute
 
       <ul
         id="shared-computer-rules"
-        className="mt-3 space-y-1 border-t border-hairline pt-2.5 lg:grid lg:grid-cols-3 lg:gap-x-4 lg:space-y-0"
+        className="mt-3 space-y-1 border-t border-hairline pt-2.5 xl:grid xl:grid-cols-3 xl:gap-x-4 xl:space-y-0"
         aria-live="polite"
       >
         {points.map((point) => (
