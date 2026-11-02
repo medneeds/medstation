@@ -69,6 +69,8 @@ export function useWard() {
   const [beds, setBeds] = useState<WardBed[]>([]);
   const [admissions, setAdmissions] = useState<WardAdmission[]>([]);
   const [todayRounds, setTodayRounds] = useState<Record<string, WardRound>>({});
+  /** Pacientes discutidos hoje em um round multiprofissional gravado. */
+  const [roundToday, setRoundToday] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -99,8 +101,15 @@ export function useWard() {
       const map: Record<string, WardRound> = {};
       ((rounds as WardRound[]) || []).forEach((r) => { map[r.admission_id] = r; });
       setTodayRounds(map);
+      const { data: items } = await supabase
+        .from("ward_round_items")
+        .select("admission_id")
+        .eq("round_date", todayISO())
+        .in("admission_id", adm.map((x) => x.id));
+      setRoundToday(new Set(((items as { admission_id: string | null }[]) || []).map((i) => i.admission_id).filter(Boolean) as string[]));
     } else {
       setTodayRounds({});
+      setRoundToday(new Set());
     }
     setLoading(false);
   }, []);
@@ -223,6 +232,7 @@ export function useWard() {
     beds,
     admissions,
     todayRounds,
+    roundToday,
     loading,
     reload: load,
     createUnit,

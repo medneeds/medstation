@@ -7,6 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { AssistantGlyph } from "@/components/AssistantGlyph";
+import { AgentVoiceInput } from "@/components/AgentVoiceInput";
+import { CarpeDiemFileButton } from "@/components/rotina/CarpeDiemFileButton";
+import { applySpoken } from "@/lib/voiceAccess";
+import { appendBlock, CARPE_DIEM_MAX_CHANGES, type WardRoundItem } from "@/lib/wardRound";
 import { copyText } from "@/lib/clipboard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +18,7 @@ import {
   ageFromDob, daysOfStay, todayISO,
   type WardAdmission, type WardBed, type WardRound, type WardUnit,
 } from "@/hooks/useWard";
-import { Check, Copy, Loader2, LogOut, Move, Save, Sparkles, Sun, History, Pencil } from "lucide-react";
+import { Check, Copy, Loader2, LogOut, Move, Save, Sparkles, Sun, History, Pencil, Users, ArrowDownToLine } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -47,18 +51,29 @@ export function RoundSheet({
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [moveTo, setMoveTo] = useState("");
+  const [roundItems, setRoundItems] = useState<WardRoundItem[]>([]);
 
   const date = todayISO();
 
   const load = useCallback(async () => {
     if (!admission) return;
     setLoading(true);
-    const { data } = await supabase
-      .from("ward_rounds")
-      .select("*")
-      .eq("admission_id", admission.id)
-      .order("round_date", { ascending: false });
+    const [{ data }, { data: items }] = await Promise.all([
+      supabase
+        .from("ward_rounds")
+        .select("*")
+        .eq("admission_id", admission.id)
+        .order("round_date", { ascending: false }),
+      supabase
+        .from("ward_round_items")
+        .select("*")
+        .eq("admission_id", admission.id)
+        .order("round_date", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(15),
+    ]);
     const rows = (data as WardRound[]) || [];
+    setRoundItems((items as WardRoundItem[]) || []);
     setHistory(rows);
     const today = rows.find((r) => r.round_date === date) || null;
     const prev = rows.find((r) => r.round_date < date) || null;
@@ -77,6 +92,29 @@ export function RoundSheet({
   }, [admission, date]);
 
   useEffect(() => { if (open) void load(); }, [open, load]);
+
+  /** Acrescenta texto lido de arquivo ou tópicos do round ao campo do Carpe Diem. */
+  const addBlock = (block: string) => {
+    setChanges((prev) => {
+      const next = appendBlock(prev, block);
+      if (next.length > CARPE_DIEM_MAX_CHANGES) {
+        toast({
+          title: "Texto longo demais",
+          description: "O Carpe Diem lê até 10.000 caracteres. Apague o que não for necessário antes de atualizar.",
+          variant: "destructive",
+        });
+      }
+      return next;
+    });
+  };
+
+  const applyRoundItem = async (item: WardRoundItem) => {
+    addBlock(`[Round multiprofissional de ${item.round_date.split("-").reverse().join("/")}]\n${item.content}`);
+    const at = new Date().toISOString();
+    setRoundItems((prev) => prev.map((x) => (x.id === item.id ? { ...x, applied_to_round_at: at } : x)));
+    await supabase.from("ward_round_items").update({ applied_to_round_at: at }).eq("id", item.id);
+    toast({ title: "Tópicos do round no campo do Carpe Diem", description: "Revise e toque em Atualizar evolução de hoje." });
+  };
 
   const patientMeta = useMemo(() => {
     if (!admission) return null;
@@ -204,15 +242,25 @@ export function RoundSheet({
 
         <div className="mt-5 space-y-5">
           <div className="rounded-lg border border-hairline bg-primary/5 p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Carpe Diem — o que mudou hoje?</span>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <Sparkles className="h-4 w-4 text-primary shrink-0" />
+                <span className="text-sm font-medium">Carpe Diem — o que mudou hoje?</span>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <CarpeDiemFileButton onText={addBlock} disabled={generating} />
+                <AgentVoiceInput
+                  context="Evolução médica diária de enfermaria e UTI. Termos clínicos, medicações e doses."
+                  disabled={generating}
+                  onTranscription={(t, o) => setChanges((prev) => applySpoken(prev, t, o?.replace))}
+                />
+              </div>
             </div>
             <Textarea
               rows={3}
               value={changes}
               onChange={(e) => setChanges(e.target.value)}
-              placeholder="Febre 38,5 durante a noite, retirado cateter central, D5 de meropenem, desmame de noradrenalina..."
+              placeholder="Febre 38,5 durante a noite, retirado cateter central, D5 de meropenem, desmame de noradrenalina... Você também pode ditar ou anexar foto e PDF de exames."
             />
             <Button onClick={runCarpeDiem} disabled={generating} className="w-full sm:w-auto">
               {generating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
@@ -224,6 +272,41 @@ export function RoundSheet({
               </p>
             )}
           </div>
+
+          {roundItems.length > 0 && (
+            <div className="rounded-lg border border-hairline p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">Round multiprofissional</span>
+              </div>
+              {roundItems.slice(0, 1).map((it) => (
+                <div key={it.id} className="space-y-2">
+                  <p className="text-2xs font-mono uppercase tracking-mono text-muted-foreground">
+                    {it.round_date.split("-").reverse().join("/")}
+                    {it.round_date === date ? " · hoje" : ""}
+                  </p>
+                  <pre className="max-h-72 overflow-y-auto whitespace-pre-wrap font-mono text-[0.78rem] leading-relaxed">{it.content}</pre>
+                  <Button size="sm" variant={it.applied_to_round_at ? "outline" : "default"} onClick={() => void applyRoundItem(it)}>
+                    <ArrowDownToLine className="h-3.5 w-3.5 mr-1.5" />
+                    {it.applied_to_round_at ? "Usar de novo na evolução" : "Usar na evolução de hoje"}
+                  </Button>
+                </div>
+              ))}
+              {roundItems.length > 1 && (
+                <div className="space-y-2 pt-1">
+                  {roundItems.slice(1).map((it) => (
+                    <details key={it.id} className="rounded-md border border-hairline p-2.5">
+                      <summary className="cursor-pointer text-sm">Round de {it.round_date.split("-").reverse().join("/")}</summary>
+                      <pre className="mt-2 whitespace-pre-wrap font-mono text-[0.76rem] text-muted-foreground">{it.content}</pre>
+                      <Button size="sm" variant="ghost" className="mt-1" onClick={() => void applyRoundItem(it)}>
+                        <ArrowDownToLine className="h-3.5 w-3.5 mr-1.5" /> Usar na evolução de hoje
+                      </Button>
+                    </details>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">

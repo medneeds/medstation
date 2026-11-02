@@ -259,6 +259,33 @@ export type Database = {
         }
         Relationships: []
       }
+      black_recovery_emails: {
+        Row: {
+          email: string
+          id: string
+          outcome: string
+          purchase_id: string | null
+          sent_at: string
+          step: string
+        }
+        Insert: {
+          email: string
+          id?: string
+          outcome?: string
+          purchase_id?: string | null
+          sent_at?: string
+          step: string
+        }
+        Update: {
+          email?: string
+          id?: string
+          outcome?: string
+          purchase_id?: string | null
+          sent_at?: string
+          step?: string
+        }
+        Relationships: []
+      }
       case_folders: {
         Row: {
           color: string | null
@@ -2443,6 +2470,131 @@ export type Database = {
             columns: ["admission_id"]
             isOneToOne: false
             referencedRelation: "ward_admissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ward_round_items: {
+        Row: {
+          admission_id: string | null
+          applied_to_round_at: string | null
+          bed_label: string | null
+          content: string
+          created_at: string
+          id: string
+          patient_label: string | null
+          round_date: string
+          session_id: string
+          topics: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admission_id?: string | null
+          applied_to_round_at?: string | null
+          bed_label?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          patient_label?: string | null
+          round_date?: string
+          session_id: string
+          topics?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admission_id?: string | null
+          applied_to_round_at?: string | null
+          bed_label?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          patient_label?: string | null
+          round_date?: string
+          session_id?: string
+          topics?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ward_round_items_admission_id_fkey"
+            columns: ["admission_id"]
+            isOneToOne: false
+            referencedRelation: "ward_admissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ward_round_items_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ward_round_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ward_round_sessions: {
+        Row: {
+          audio_paths: string[]
+          consent_confirmed_at: string
+          created_at: string
+          duration_seconds: number
+          ended_at: string | null
+          error_message: string | null
+          id: string
+          part_transcripts: Json
+          round_date: string
+          started_at: string
+          status: string
+          transcript: string
+          unit_id: string | null
+          unit_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          audio_paths?: string[]
+          consent_confirmed_at?: string
+          created_at?: string
+          duration_seconds?: number
+          ended_at?: string | null
+          error_message?: string | null
+          id?: string
+          part_transcripts?: Json
+          round_date?: string
+          started_at?: string
+          status?: string
+          transcript?: string
+          unit_id?: string | null
+          unit_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          audio_paths?: string[]
+          consent_confirmed_at?: string
+          created_at?: string
+          duration_seconds?: number
+          ended_at?: string | null
+          error_message?: string | null
+          id?: string
+          part_transcripts?: Json
+          round_date?: string
+          started_at?: string
+          status?: string
+          transcript?: string
+          unit_id?: string | null
+          unit_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ward_round_sessions_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "ward_units"
             referencedColumns: ["id"]
           },
         ]

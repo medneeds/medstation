@@ -80,3 +80,11 @@ ARTE FINAL — CARROSSEL CLÍNICO
 - [ ] Bloco de assinatura com QR Code de validação
 - [ ] Conferir telas logado (bloqueado pela confirmação do aparelho por código)
 - [ ] Publicar somente mediante solicitação
+
+## Modo Rotineiro · Carpe Diem com arquivos/voz + Round multiprofissional
+- [x] Campo do Carpe Diem: ditado e anexo de foto/PDF (paciente e evolução avulsa); regra de fidelidade no Carpe Diem
+- [x] Botão "Gravar round" por setor: gravação até 90 min em partes, transcrição integral, áudio guardado
+- [x] Organização por paciente em tópicos, "Não identificado" com escolha de leito, bloco no paciente e "Usar na evolução de hoje"
+- [x] Marca "Round" no mapa de leitos e "Rounds anteriores" com áudio e transcrição; 6 testes
+- [ ] Implantar as funções round-transcribe, round-structure e carpe-diem-round (aguardando autorização)
+- [ ] Testar gravação real com microfone (bloqueado: precisa das funções implantadas e de um aparelho com microfone)

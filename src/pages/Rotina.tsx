@@ -9,8 +9,9 @@ import { AdmitPatientDialog } from "@/components/rotina/AdmitPatientDialog";
 import { EditPatientDialog } from "@/components/rotina/EditPatientDialog";
 import { RoundSheet } from "@/components/rotina/RoundSheet";
 import { QuickRoundDialog } from "@/components/rotina/QuickRoundDialog";
+import { RoundRecorderSheet } from "@/components/rotina/RoundRecorderSheet";
 import { daysOfStay, useWard, type WardAdmission, type WardBed } from "@/hooks/useWard";
-import { BedDouble, Settings2, Sun, Plus, CheckCircle2, CircleDashed, Clock, Archive, Loader2, Sparkles } from "lucide-react";
+import { BedDouble, Settings2, Sun, Plus, CheckCircle2, CircleDashed, Clock, Archive, Loader2, Sparkles, Mic, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,7 @@ function RotinaInner() {
   const [admitBed, setAdmitBed] = useState<WardBed | null>(null);
   const [openAdmissionId, setOpenAdmissionId] = useState<string | null>(null);
   const [editAdmission, setEditAdmission] = useState<WardAdmission | null>(null);
+  const [roundUnitId, setRoundUnitId] = useState<string | null>(null);
 
 
   const occupiedBedIds = useMemo(
@@ -120,9 +122,14 @@ function RotinaInner() {
                     <h2 className="font-display text-lg font-semibold tracking-tight">{unit.name}</h2>
                     <Badge variant="secondary" className="font-mono text-2xs uppercase">{unit.kind}</Badge>
                   </div>
-                  <span className="font-mono text-2xs text-muted-foreground">
-                    {unitBeds.filter((b) => occupiedBedIds.has(b.id)).length}/{unitBeds.length} ocupados
-                  </span>
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <span className="font-mono text-2xs text-muted-foreground">
+                      {unitBeds.filter((b) => occupiedBedIds.has(b.id)).length}/{unitBeds.length} ocupados
+                    </span>
+                    <Button size="sm" variant="outline" className="h-8 px-2.5" onClick={() => setRoundUnitId(unit.id)}>
+                      <Mic className="h-3.5 w-3.5 mr-1.5" /> Gravar round
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -148,6 +155,12 @@ function RotinaInner() {
                             Leito {bed.label}
                           </span>
                           {adm ? (
+                            <span className="flex items-center gap-1">
+                            {ward.roundToday.has(adm.id) && (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-2xs font-medium text-primary" title="Discutido no round de hoje">
+                                <Users className="h-3 w-3" /> Round
+                              </span>
+                            )}
                             <span
                               className={cn(
                                 "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-medium",
@@ -155,6 +168,7 @@ function RotinaInner() {
                               )}
                             >
                               {done ? "Evoluído" : round ? "Rascunho" : "Pendente"}
+                            </span>
                             </span>
                           ) : (
                             <Plus className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
@@ -221,6 +235,17 @@ function RotinaInner() {
       />
 
       <QuickRoundDialog open={quickOpen} onOpenChange={setQuickOpen} />
+
+      <RoundRecorderSheet
+        open={!!roundUnitId}
+        onOpenChange={(v) => !v && setRoundUnitId(null)}
+        unit={ward.units.find((u) => u.id === roundUnitId) || null}
+        patients={ward.beds
+          .filter((b) => b.unit_id === roundUnitId && admissionByBed[b.id])
+          .map((b) => ({ admissionId: admissionByBed[b.id].id, bed: b.label, name: admissionByBed[b.id].patient_name }))}
+        onOpenPatient={(id) => { setRoundUnitId(null); setOpenAdmissionId(id); }}
+        onSaved={ward.reload}
+      />
 
       <EditPatientDialog
         admission={editAdmission}
