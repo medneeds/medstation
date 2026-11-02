@@ -6,7 +6,7 @@ const now = Date.parse("2026-10-29T12:00:00Z");
 const ago = (ms: number) => new Date(now - ms).toISOString();
 
 describe("confirmação por e-mail após tempo sem uso", () => {
-  it("acesso pessoal: 11h59 sem uso entra sem código", () => {
+  it("acesso pessoal: 23h59 sem uso entra sem código", () => {
     expect(isTrustStillValid(ago(24 * H - 60_000), false, now)).toBe(true);
   });
 
