@@ -108,7 +108,7 @@ export function RoundSheet({
     });
   };
 
-  const useRoundItem = async (item: WardRoundItem) => {
+  const applyRoundItem = async (item: WardRoundItem) => {
     addBlock(`[Round multiprofissional de ${item.round_date.split("-").reverse().join("/")}]\n${item.content}`);
     const at = new Date().toISOString();
     setRoundItems((prev) => prev.map((x) => (x.id === item.id ? { ...x, applied_to_round_at: at } : x)));
