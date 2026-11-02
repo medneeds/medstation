@@ -29,6 +29,7 @@ export default function Auth() {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
+  const [authTab, setAuthTab] = useState("signin");
   const [loading, setLoading] = useState(false);
 
   const [resetLoading, setResetLoading] = useState(false);
