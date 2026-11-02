@@ -297,7 +297,7 @@ export default function Auth() {
                     <form onSubmit={handleSignIn} className="space-y-4 lg:space-y-3.5" autoComplete="off">
                       <div className="grid gap-4 lg:grid-cols-2">
                       <div className="space-y-1.5">
-                        <div className="flex min-h-5 items-center">
+                        <div className="flex lg:min-h-5 items-center">
                           <Label htmlFor="signin-email" className="text-xs uppercase tracking-wider text-muted-foreground">Email</Label>
                         </div>
                         <Input
@@ -316,7 +316,7 @@ export default function Auth() {
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <div className="flex min-h-5 items-center justify-between">
+                        <div className="flex lg:min-h-5 items-center justify-between">
                           <Label htmlFor="signin-password" className="text-xs uppercase tracking-wider text-muted-foreground">Senha</Label>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
