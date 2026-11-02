@@ -15,7 +15,7 @@ const SHARED_POINTS = [
 
 const PERSONAL_POINTS = [
   "Continua conectado ao fechar o navegador",
-  "Só pede o código de novo após 12 horas sem uso",
+  "Só pede o código de novo após 24 horas sem uso",
   "Use só no seu computador ou celular",
 ];
 

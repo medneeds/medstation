@@ -19,7 +19,7 @@ function maskEmail(email: string) {
 }
 
 // Decide se este aparelho pode entrar direto ou precisa de código por e-mail.
-// O código só volta depois de 12 h (pessoal) ou 6 h (compartilhado) sem uso neste aparelho.
+// O código só volta depois de 24 h (pessoal) ou 6 h (compartilhado) sem uso neste aparelho.
 // Body: { device_id, label?, fresh?: boolean, shared?: boolean, resend?: boolean, touch?: boolean }
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })

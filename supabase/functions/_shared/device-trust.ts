@@ -1,8 +1,8 @@
 // Regra de confiança do aparelho (sem dependências, testada no app).
 // O código por e-mail só volta a ser pedido depois de um período SEM USO
-// naquele computador: 12 h no acesso pessoal e 6 h no compartilhado.
+// naquele computador: 24 h no acesso pessoal e 6 h no compartilhado.
 
-export const TRUST_PERSONAL_HOURS = 12
+export const TRUST_PERSONAL_HOURS = 24
 export const TRUST_SHARED_HOURS = 6
 
 /** Atualiza a marca de uso no máximo a cada 5 min enquanto há movimento. */

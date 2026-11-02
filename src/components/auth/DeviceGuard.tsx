@@ -21,7 +21,7 @@ import {
 } from "@/lib/deviceGuard";
 
 const HEARTBEAT_MS = 60 * 1000;
-/** Movimento no sistema renova o tempo sem código (12 h pessoal, 6 h compartilhado). */
+/** Movimento no sistema renova o tempo sem código (24 h pessoal, 6 h compartilhado). */
 const TRUST_TOUCH_MS = 5 * 60 * 1000;
 const ACTIVITY_EVENTS = ["pointerdown", "keydown", "wheel", "touchstart"] as const;
 

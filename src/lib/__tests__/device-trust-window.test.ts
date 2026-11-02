@@ -7,11 +7,11 @@ const ago = (ms: number) => new Date(now - ms).toISOString();
 
 describe("confirmação por e-mail após tempo sem uso", () => {
   it("acesso pessoal: 11h59 sem uso entra sem código", () => {
-    expect(isTrustStillValid(ago(12 * H - 60_000), false, now)).toBe(true);
+    expect(isTrustStillValid(ago(24 * H - 60_000), false, now)).toBe(true);
   });
 
-  it("acesso pessoal: 12h sem uso pede o código de novo", () => {
-    expect(isTrustStillValid(ago(12 * H), false, now)).toBe(false);
+  it("acesso pessoal: 24h sem uso pede o código de novo", () => {
+    expect(isTrustStillValid(ago(24 * H), false, now)).toBe(false);
   });
 
   it("computador compartilhado: 5h59 sem uso entra sem código", () => {
