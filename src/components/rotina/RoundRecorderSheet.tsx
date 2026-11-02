@@ -356,11 +356,12 @@ export function RoundRecorderSheet({ open, onOpenChange, unit, patients, onOpenP
   };
 
   const handleOpenChange = (v: boolean) => {
-    if (!v && (phase === "recording" || phase === "finishing" || phase === "structuring")) {
+    const busy = phase === "finishing" && (finishingRef.current || partsRef.current.some((p) => p.status === "uploading" || p.status === "transcribing"));
+    if (!v && (phase === "recording" || phase === "structuring" || busy)) {
       toast({ title: phase === "recording" ? "Finalize o round antes de fechar" : "Aguarde terminar de organizar" });
       return;
     }
-    if (!v && phase === "review") resetToIntro();
+    if (!v && (phase === "review" || phase === "finishing")) resetToIntro();
     onOpenChange(v);
   };
 
