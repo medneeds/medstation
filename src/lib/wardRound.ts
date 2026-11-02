@@ -46,6 +46,17 @@ export interface WardRoundItem {
   created_at: string;
 }
 
+/** Limite do campo "o que mudou hoje" aceito pelo Carpe Diem. */
+export const CARPE_DIEM_MAX_CHANGES = 10_000;
+
+/** Acrescenta um bloco (arquivo lido, tópicos do round) ao campo, separado por linha em branco. */
+export function appendBlock(prev: string, block: string): string {
+  const a = (prev || "").trimEnd();
+  const b = (block || "").trim();
+  if (!b) return prev || "";
+  return a ? `${a}\n\n${b}` : b;
+}
+
 export function formatRoundTopics(topics: RoundTopics): string {
   return ROUND_TOPICS
     .filter((t) => topics[t.key]?.length)

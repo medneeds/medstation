@@ -7,6 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { AssistantGlyph } from "@/components/AssistantGlyph";
+import { AgentVoiceInput } from "@/components/AgentVoiceInput";
+import { CarpeDiemFileButton } from "@/components/rotina/CarpeDiemFileButton";
+import { applySpoken } from "@/lib/voiceAccess";
+import { appendBlock, CARPE_DIEM_MAX_CHANGES, type WardRoundItem } from "@/lib/wardRound";
 import { copyText } from "@/lib/clipboard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +18,7 @@ import {
   ageFromDob, daysOfStay, todayISO,
   type WardAdmission, type WardBed, type WardRound, type WardUnit,
 } from "@/hooks/useWard";
-import { Check, Copy, Loader2, LogOut, Move, Save, Sparkles, Sun, History, Pencil } from "lucide-react";
+import { Check, Copy, Loader2, LogOut, Move, Save, Sparkles, Sun, History, Pencil, Users, ArrowDownToLine } from "lucide-react";
 
 interface Props {
   open: boolean;
