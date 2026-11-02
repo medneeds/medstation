@@ -7,6 +7,8 @@ import { Separator } from "@/components/ui/separator";
 import { AssistantGlyph } from "@/components/AssistantGlyph";
 import { AgentVoiceInput } from "@/components/AgentVoiceInput";
 import { applySpoken } from "@/lib/voiceAccess";
+import { appendBlock, CARPE_DIEM_MAX_CHANGES } from "@/lib/wardRound";
+import { CarpeDiemFileButton } from "@/components/rotina/CarpeDiemFileButton";
 import { copyText } from "@/lib/clipboard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -158,7 +160,11 @@ export function QuickRoundDialog({ open, onOpenChange }: Props) {
             <div className="flex items-center justify-between gap-2">
               <Label htmlFor="quick-changes">O que mudou hoje</Label>
               <div className="flex items-center gap-1.5">
-                <span className="text-[11px] text-muted-foreground hidden sm:inline">Ditar</span>
+                <span className="text-[11px] text-muted-foreground hidden sm:inline">Anexar ou ditar</span>
+                <CarpeDiemFileButton
+                  disabled={generating}
+                  onText={(t) => setChanges((prev) => appendBlock(prev, t))}
+                />
                 <AgentVoiceInput
                   context="Evolução médica diária de enfermaria e UTI. Termos clínicos, medicações e doses."
                   disabled={generating}
@@ -170,9 +176,14 @@ export function QuickRoundDialog({ open, onOpenChange }: Props) {
               id="quick-changes"
               value={changes}
               onChange={(e) => setChanges(e.target.value)}
-              placeholder="Ex.: febre à noite, retirado o cateter central, D5 de meropenem, desmame de noradrenalina."
+              placeholder="Ex.: febre à noite, retirado o cateter central, D5 de meropenem, desmame de noradrenalina. Você também pode anexar foto ou PDF de exames."
               className="min-h-[110px]"
             />
+            {changes.length > CARPE_DIEM_MAX_CHANGES && (
+              <p className="text-xs text-destructive">
+                O Carpe Diem lê até 10.000 caracteres. Apague o que não for necessário antes de atualizar.
+              </p>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-2">
