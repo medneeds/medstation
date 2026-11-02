@@ -201,7 +201,7 @@ export default function Auth() {
         <div className="absolute inset-0 opacity-[0.035] [background-image:radial-gradient(hsl(var(--foreground))_1px,transparent_1px)] [background-size:24px_24px]" />
       </div>
 
-      <div className="relative z-10 grid min-h-screen lg:grid-cols-[1fr_1fr] xl:grid-cols-[1.12fr_1fr]">
+      <div className="relative z-10 grid min-h-screen lg:grid-cols-[1fr_1fr] 2xl:grid-cols-[1.12fr_1fr]">
         {/* Editorial side — on desktop sits on the right; login comes first on the left */}
         <motion.aside
           initial={{ opacity: 0, x: 24 }}
