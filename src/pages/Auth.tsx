@@ -236,14 +236,14 @@ export default function Auth() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-          className="relative z-10 lg:order-1 flex items-start lg:items-center justify-center px-5 pt-8 pb-10 sm:p-10 lg:p-16"
+          className="relative z-10 lg:order-1 flex items-start lg:items-center justify-center px-5 pt-8 pb-10 sm:p-10 lg:px-10 lg:py-6 xl:px-14"
           style={{ paddingBottom: "max(2.5rem, env(safe-area-inset-bottom))" }}
         >
           <motion.div
             initial={{ opacity: 0, y: 26, scale: 0.965 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
-            className="w-full max-w-md space-y-6 lg:space-y-8 rounded-3xl border border-hairline bg-card/60 backdrop-blur-xl p-6 sm:p-8 shadow-[0_40px_120px_-40px_hsl(var(--primary)/0.35)]"
+            className="w-full max-w-md lg:max-w-xl space-y-6 lg:space-y-5 rounded-3xl border border-hairline bg-card/60 backdrop-blur-xl p-6 sm:p-8 xl:p-10 shadow-[0_40px_120px_-40px_hsl(var(--primary)/0.35)]"
           >
             <div className="lg:hidden flex flex-col items-center gap-3 text-center">
               <Logo size="md" />
@@ -288,12 +288,13 @@ export default function Auth() {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
-                    className="mt-6 lg:mt-8 space-y-4 lg:space-y-5"
+                    className="mt-6 lg:mt-5 space-y-4"
                   >
 
                     <GoogleAuthButton label="Continuar com Google" sharedComputer={sharedComputer} />
 
                     <form onSubmit={handleSignIn} className="space-y-4" autoComplete="off">
+                      <div className="space-y-4 xl:space-y-0 xl:grid xl:grid-cols-2 xl:gap-4">
                       <div className="space-y-1.5">
                         <Label htmlFor="signin-email" className="text-xs uppercase tracking-wider text-muted-foreground">Email</Label>
                         <Input
@@ -364,6 +365,7 @@ export default function Auth() {
                             {showSignInPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </button>
                         </div>
+                      </div>
                       </div>
                       <Button
                         type="submit"
