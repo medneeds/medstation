@@ -254,12 +254,12 @@ export default function Auth() {
             {/* Cabeçalho com reflexo espelhado (estilo tela inicial de streaming) */}
             <div className="space-y-1.5 lg:space-y-2 text-center lg:text-left">
               <div className="relative pb-3">
-                <h2 className="font-display text-2xl lg:text-3xl tracking-tight text-foreground">
+                <h2 className="font-display text-2xl lg:text-4xl tracking-tight text-foreground">
                   Bem-vindo
                 </h2>
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute left-0 right-0 top-full -mt-1 block h-3 overflow-hidden font-display text-2xl lg:text-3xl leading-none tracking-tight text-foreground opacity-[0.14] blur-[0.6px] [transform:scaleY(-1)] [mask-image:linear-gradient(to_top,transparent_10%,black_100%)] [-webkit-mask-image:linear-gradient(to_top,transparent_10%,black_100%)] text-center lg:text-left"
+                  className="pointer-events-none absolute left-0 right-0 top-full -mt-1 block h-3 overflow-hidden font-display text-2xl lg:text-4xl leading-none tracking-tight text-foreground opacity-[0.14] blur-[0.6px] [transform:scaleY(-1)] [mask-image:linear-gradient(to_top,transparent_10%,black_100%)] [-webkit-mask-image:linear-gradient(to_top,transparent_10%,black_100%)] text-center lg:text-left"
                 >
                   Bem-vindo
                 </span>
@@ -287,12 +287,13 @@ export default function Auth() {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
-                    className="mt-6 lg:mt-8 space-y-4 lg:space-y-5"
+                    className="mt-6 lg:mt-5 flex flex-col gap-4"
                   >
 
                     <GoogleAuthButton label="Continuar com Google" sharedComputer={sharedComputer} />
 
                     <form onSubmit={handleSignIn} className="space-y-4" autoComplete="off">
+                      <div className="grid gap-4 lg:grid-cols-2">
                       <div className="space-y-1.5">
                         <Label htmlFor="signin-email" className="text-xs uppercase tracking-wider text-muted-foreground">Email</Label>
                         <Input
@@ -364,6 +365,7 @@ export default function Auth() {
                           </button>
                         </div>
                       </div>
+                      </div>
                       <Button
                         type="submit"
                         className="w-full h-12 rounded-xl text-base font-medium transition-all hover:translate-y-[-1px] active:translate-y-0"
@@ -379,7 +381,10 @@ export default function Auth() {
                       </p>
                     </form>
 
-                    <SharedComputerToggle checked={sharedComputer} onCheckedChange={setSharedComputer} />
+                    {/* No computador a escolha vem primeiro, antes do Google e do e-mail; no celular segue no fim */}
+                    <div className="lg:order-first">
+                      <SharedComputerToggle checked={sharedComputer} onCheckedChange={setSharedComputer} />
+                    </div>
                   </motion.div>
                 </TabsContent>
 
