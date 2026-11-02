@@ -201,7 +201,7 @@ export default function Auth() {
         <div className="absolute inset-0 opacity-[0.035] [background-image:radial-gradient(hsl(var(--foreground))_1px,transparent_1px)] [background-size:24px_24px]" />
       </div>
 
-      <div className="relative z-10 grid min-h-screen lg:grid-cols-[1.12fr_1fr]">
+      <div className="relative z-10 grid min-h-screen lg:grid-cols-[1fr_1fr] xl:grid-cols-[1.12fr_1fr]">
         {/* Editorial side — on desktop sits on the right; login comes first on the left */}
         <motion.aside
           initial={{ opacity: 0, x: 24 }}
@@ -242,7 +242,7 @@ export default function Auth() {
             initial={{ opacity: 0, y: 26, scale: 0.965 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
-            className="w-full max-w-md lg:max-w-[46rem] lg:flex lg:flex-col lg:justify-center space-y-6 lg:space-y-5 rounded-3xl border border-hairline bg-card/60 backdrop-blur-xl p-6 sm:p-8 lg:px-12 lg:py-7 xl:px-16 shadow-[0_40px_120px_-40px_hsl(var(--primary)/0.35)]"
+            className="w-full max-w-md lg:max-w-[46rem] lg:flex lg:flex-col lg:justify-center space-y-6 lg:space-y-5 rounded-3xl border border-hairline bg-card/60 backdrop-blur-xl p-6 sm:p-8 lg:px-10 lg:py-6 xl:px-14 shadow-[0_40px_120px_-40px_hsl(var(--primary)/0.35)]"
           >
             <div className="lg:hidden flex flex-col items-center gap-3 text-center">
               <Logo size="md" />
