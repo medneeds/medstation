@@ -41,7 +41,7 @@ export function AssistantOrbit() {
   return (
     <div
       className="relative mx-auto aspect-square"
-      style={{ width: "min(100%, 44rem, calc(100vh - 6rem))", minWidth: "26rem" }}
+      style={{ width: "min(100%, 44rem, calc(100vh - 7rem))", minWidth: "26rem" }}
       aria-hidden="true"
     >
       {/* brilho ambiente atrás da órbita */}

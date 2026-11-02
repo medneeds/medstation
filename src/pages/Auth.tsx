@@ -207,7 +207,7 @@ export default function Auth() {
           initial={{ opacity: 0, x: 24 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="relative hidden lg:flex lg:order-2 flex-col p-10 xl:p-14"
+          className="relative hidden lg:flex lg:order-2 flex-col px-10 py-4 xl:px-14"
         >
           {/* Logo elements drifting discreetly along the divider */}
           <AuthDividerMarks />
@@ -236,7 +236,7 @@ export default function Auth() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-          className="relative z-10 lg:order-1 flex items-start lg:items-center justify-center px-5 pt-8 pb-10 sm:p-10 lg:px-10 lg:py-4 xl:px-14"
+          className="relative z-10 lg:order-1 flex items-start lg:items-center justify-center px-5 pt-8 pb-10 sm:p-10 lg:px-10 lg:py-3 xl:px-14"
           style={{ paddingBottom: "max(2.5rem, env(safe-area-inset-bottom))" }}
         >
           <motion.div
