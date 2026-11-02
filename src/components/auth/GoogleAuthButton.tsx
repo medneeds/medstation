@@ -107,7 +107,7 @@ export function GoogleAuthButton({
   }, []);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 lg:space-y-3">
       <Button
         type="button"
         variant="outline"
