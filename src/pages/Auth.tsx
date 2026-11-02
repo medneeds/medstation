@@ -314,7 +314,7 @@ export default function Auth() {
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
+                        <div className="flex min-h-5 items-center justify-between">
                           <Label htmlFor="signin-password" className="text-xs uppercase tracking-wider text-muted-foreground">Senha</Label>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
