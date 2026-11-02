@@ -18,6 +18,7 @@ import { Eye, EyeOff, MailCheck, Lock } from "lucide-react";
 import { SharedComputerToggle } from "@/components/auth/SharedComputerToggle";
 import { markFreshLogin, getSharedPreference } from "@/lib/deviceGuard";
 import { AuthDividerMarks } from "@/components/auth/AuthDividerMarks";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const AssistantOrbit = lazy(() =>
   import("@/components/auth/AssistantOrbit").then((m) => ({ default: m.AssistantOrbit }))
@@ -201,6 +202,11 @@ export default function Auth() {
         <div className="absolute inset-0 opacity-[0.035] [background-image:radial-gradient(hsl(var(--foreground))_1px,transparent_1px)] [background-size:24px_24px]" />
       </div>
 
+      {/* Claro/escuro no celular (no computador fica ao lado da marca) */}
+      <div className="lg:hidden absolute top-3 right-3 z-30 rounded-full border border-hairline bg-card/70 backdrop-blur">
+        <ThemeToggle />
+      </div>
+
       <div className="relative z-10 grid min-h-screen lg:grid-cols-[1fr_1fr] 2xl:grid-cols-[1.12fr_1fr]">
         {/* Editorial side — on desktop sits on the right; login comes first on the left */}
         <motion.aside
@@ -213,8 +219,11 @@ export default function Auth() {
           <AuthDividerMarks />
 
           {/* Cabeçalho e rodapé sobrepostos — não consomem espaço da órbita */}
-          <div className="pointer-events-none absolute top-6 right-8 xl:top-8 xl:right-10 z-20">
-            <Logo size="md" />
+          <div className="absolute top-6 right-8 xl:top-8 xl:right-10 z-40 flex items-center gap-3">
+            <div className="rounded-full border border-hairline bg-card/70 backdrop-blur" title="Modo claro ou escuro">
+              <ThemeToggle />
+            </div>
+            <div className="pointer-events-none"><Logo size="md" /></div>
           </div>
           <p className="pointer-events-none absolute bottom-6 right-8 xl:bottom-8 xl:right-10 z-20 text-[0.7rem] uppercase tracking-[0.18em] font-mono text-muted-foreground">
             © {new Date().getFullYear()} MedStation ·{" "}
