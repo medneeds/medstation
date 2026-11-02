@@ -295,7 +295,7 @@ export default function Auth() {
                     <form onSubmit={handleSignIn} className="space-y-4 lg:space-y-3" autoComplete="off">
                       <div className="space-y-4 lg:space-y-3 xl:space-y-0 xl:grid xl:grid-cols-2 xl:gap-4">
                       <div className="space-y-1.5">
-                        <Label htmlFor="signin-email" className="text-xs uppercase tracking-wider text-muted-foreground">Email</Label>
+                        <Label htmlFor="signin-email" className="flex h-4 items-center text-xs uppercase tracking-wider text-muted-foreground">Email</Label>
                         <Input
                           id="signin-email"
                           type="email"
