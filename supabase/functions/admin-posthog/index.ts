@@ -153,6 +153,8 @@ serve(async (req) => {
         "process-document": "ocr",
         "extract-case-from-document": "ocr",
         "carpe-diem-round": "modo_rotineiro",
+        "round-transcribe": "modo_rotineiro",
+        "round-structure": "modo_rotineiro",
         "support-chat": "suporte",
         "public-assistants-chat": "guia-publico",
       };
