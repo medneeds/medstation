@@ -284,12 +284,13 @@ export default function Auth() {
                   </p>
                 </div>
 
-                <TabsList className="grid w-full lg:w-56 xl:w-60 shrink-0 grid-cols-2 bg-muted/50 p-1 rounded-full h-11">
-                  <TabsTrigger value="signin" className="rounded-full data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
+                <TabsList className="grid w-full lg:w-64 xl:w-72 shrink-0 grid-cols-2 bg-muted/50 p-1 rounded-2xl h-14">
+                  <TabsTrigger value="signin" className="h-full rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
                     Entrar
                   </TabsTrigger>
-                  <TabsTrigger value="signup" className="rounded-full data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
-                    Criar conta
+                  <TabsTrigger value="signup" className="h-full rounded-xl flex flex-col items-center justify-center gap-0 leading-tight data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
+                    <span>Criar conta</span>
+                    <span className="text-[10px] font-medium text-primary">(teste gratuito de 7 dias)</span>
                   </TabsTrigger>
                 </TabsList>
               </div>
