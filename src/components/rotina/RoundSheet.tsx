@@ -51,18 +51,29 @@ export function RoundSheet({
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [moveTo, setMoveTo] = useState("");
+  const [roundItems, setRoundItems] = useState<WardRoundItem[]>([]);
 
   const date = todayISO();
 
   const load = useCallback(async () => {
     if (!admission) return;
     setLoading(true);
-    const { data } = await supabase
-      .from("ward_rounds")
-      .select("*")
-      .eq("admission_id", admission.id)
-      .order("round_date", { ascending: false });
+    const [{ data }, { data: items }] = await Promise.all([
+      supabase
+        .from("ward_rounds")
+        .select("*")
+        .eq("admission_id", admission.id)
+        .order("round_date", { ascending: false }),
+      supabase
+        .from("ward_round_items")
+        .select("*")
+        .eq("admission_id", admission.id)
+        .order("round_date", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(15),
+    ]);
     const rows = (data as WardRound[]) || [];
+    setRoundItems((items as WardRoundItem[]) || []);
     setHistory(rows);
     const today = rows.find((r) => r.round_date === date) || null;
     const prev = rows.find((r) => r.round_date < date) || null;
@@ -81,6 +92,29 @@ export function RoundSheet({
   }, [admission, date]);
 
   useEffect(() => { if (open) void load(); }, [open, load]);
+
+  /** Acrescenta texto lido de arquivo ou tópicos do round ao campo do Carpe Diem. */
+  const addBlock = (block: string) => {
+    setChanges((prev) => {
+      const next = appendBlock(prev, block);
+      if (next.length > CARPE_DIEM_MAX_CHANGES) {
+        toast({
+          title: "Texto longo demais",
+          description: "O Carpe Diem lê até 10.000 caracteres. Apague o que não for necessário antes de atualizar.",
+          variant: "destructive",
+        });
+      }
+      return next;
+    });
+  };
+
+  const useRoundItem = async (item: WardRoundItem) => {
+    addBlock(`[Round multiprofissional de ${item.round_date.split("-").reverse().join("/")}]\n${item.content}`);
+    const at = new Date().toISOString();
+    setRoundItems((prev) => prev.map((x) => (x.id === item.id ? { ...x, applied_to_round_at: at } : x)));
+    await supabase.from("ward_round_items").update({ applied_to_round_at: at }).eq("id", item.id);
+    toast({ title: "Tópicos do round no campo do Carpe Diem", description: "Revise e toque em Atualizar evolução de hoje." });
+  };
 
   const patientMeta = useMemo(() => {
     if (!admission) return null;
