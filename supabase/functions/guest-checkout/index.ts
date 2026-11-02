@@ -123,6 +123,8 @@ serve(async (req) => {
     }
 
     const origin = req.headers.get("origin") || "https://medstation-ai.com.br";
+    // Compra iniciada na página da Black (planos alternativos): volta para lá se desistir.
+    const fromBlackPage = body.entry === "black_page";
     const annual = isAnnualPlan(plan);
     const oneTimePlan = resolveOneTimePlan(plan);
     // Oferta fechada não acumula cupom nem desconto de indicação.
@@ -133,6 +135,7 @@ serve(async (req) => {
       billing_period: billingPeriod,
       pricing_cohort: oneTimePlan?.offer ?? pricingCohort(),
       acquisition: "guest_checkout",
+      ...(fromBlackPage ? { entry: "black_page" } : {}),
       // Aceite de marketing do navegador: libera o envio da compra pela API de Conversões.
       ...utmMetadata(body.utm),
       ...trackingMetadata(body.tracking, {
@@ -166,7 +169,7 @@ serve(async (req) => {
         payment_method_options: oneTimePaymentMethodOptions(oneTimePaymentMethodTypes(oneTimePlan, true)) as
           Stripe.Checkout.SessionCreateParams.PaymentMethodOptions | undefined,
         success_url: `${origin}/obrigado?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: oneTimePlan.offer ? `${origin}/black?canceled=true` : `${origin}/?canceled=true`,
+        cancel_url: oneTimePlan.offer || fromBlackPage ? `${origin}/black?canceled=true` : `${origin}/?canceled=true`,
         billing_address_collection: "auto",
         // Benefícios e garantia na própria página de pagamento do Stripe.
         custom_text: { submit: { message: checkoutSubmitMessage(oneTimePlan) } },
@@ -183,7 +186,7 @@ serve(async (req) => {
           Stripe.Checkout.SessionCreateParams.LineItem[],
         mode: "subscription",
         success_url: `${origin}/obrigado?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/?canceled=true`,
+        cancel_url: fromBlackPage ? `${origin}/black?canceled=true` : `${origin}/?canceled=true`,
         payment_method_collection: "always",
         phone_number_collection: { enabled: false },
         billing_address_collection: "auto",

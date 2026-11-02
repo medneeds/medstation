@@ -1,7 +1,11 @@
 import { supabase } from "@/integrations/supabase/client";
 
-/** Origem gravada no contato: lista VIP antes da abertura ou checkout iniciado. */
-export type BlackLeadSource = "black_vip" | "black_checkout";
+/**
+ * Origem gravada no contato: lista VIP antes da abertura, checkout da Black
+ * iniciado, ou um dos planos alternativos da página /black (mensal e anual com
+ * Arsenal Med). Só "black_checkout" entra nos e-mails de recuperação da Black.
+ */
+export type BlackLeadSource = "black_vip" | "black_checkout" | "black_page_monthly" | "black_page_annual_arsenal";
 
 function collectUtm(): Record<string, string> {
   if (typeof window === "undefined") return {};

@@ -166,6 +166,8 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin");
     if (!origin) throw new Error("Request origin is required");
+    // Compra iniciada na página da Black (planos alternativos): volta para lá se desistir.
+    const fromBlackPage = body.entry === "black_page";
 
     const annual = isAnnualPlan(plan);
     const oneTimePlan = resolveOneTimePlan(plan);
@@ -177,6 +179,7 @@ serve(async (req) => {
       plan,
       pricing_cohort: oneTimePlan?.offer ?? pricingCohort(),
       acquisition: "authenticated_checkout",
+      ...(fromBlackPage ? { entry: "black_page" } : {}),
       // Aceite de marketing do navegador: libera o envio da compra pela API de Conversões.
       ...utmMetadata(body.utm),
       ...trackingMetadata(body.tracking, {
@@ -210,7 +213,7 @@ serve(async (req) => {
         payment_method_options: oneTimePaymentMethodOptions(oneTimePaymentMethodTypes(oneTimePlan, true)) as
           Stripe.Checkout.SessionCreateParams.PaymentMethodOptions | undefined,
         success_url: `${origin}/obrigado?success=true&plan=${plan}&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: oneTimePlan.offer ? `${origin}/black?canceled=true` : `${origin}/pricing?canceled=true`,
+        cancel_url: oneTimePlan.offer || fromBlackPage ? `${origin}/black?canceled=true` : `${origin}/pricing?canceled=true`,
         billing_address_collection: "auto",
         // Benefícios e garantia na própria página de pagamento do Stripe.
         custom_text: { submit: { message: checkoutSubmitMessage(oneTimePlan) } },
@@ -227,7 +230,7 @@ serve(async (req) => {
           Stripe.Checkout.SessionCreateParams.LineItem[],
         mode: "subscription",
         success_url: `${origin}/obrigado?success=true&plan=${plan}&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/pricing?canceled=true`,
+        cancel_url: fromBlackPage ? `${origin}/black?canceled=true` : `${origin}/pricing?canceled=true`,
         payment_method_collection: "always",
         phone_number_collection: { enabled: false },
         billing_address_collection: "auto",

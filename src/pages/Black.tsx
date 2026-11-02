@@ -23,6 +23,8 @@ import { FormLegalNotice } from "@/components/legal/FormLegalNotice";
 import { SiteFooter } from "@/components/SiteFooter";
 import { checkoutTracking } from "@/lib/conversion";
 import { WhatsAppFloatingButton, WhatsAppInlineButton } from "@/components/landing/WhatsAppContact";
+import { ANNUAL_BONUS } from "@/lib/annualBonus";
+import { BLACK_PAGE_PLANS, type BlackPagePlanKey } from "@/lib/blackPagePlans";
 
 const PRICE = BLACK_OFFER.amountCents / 100;
 // "De/por" e "% off" usam o preço anual efetivamente praticado durante a oferta
@@ -53,6 +55,10 @@ const faq = [
   {
     q: "Como recebo o acesso depois de pagar?",
     a: "Assim que o pagamento é confirmado, enviamos um e-mail para o endereço que você informou com o link para entrar. Se você já tem conta, os 12 meses entram nela automaticamente.",
+  },
+  {
+    q: "E se eu preferir pagar por mês?",
+    a: `Também dá. Logo abaixo do botão da Black você encontra o plano mensal de ${brl(PRICE_TABLE.launch.monthlyCents / 100)} por mês no cartão, que você cancela quando quiser, e o anual de ${brl(PRICE_TABLE.launch.yearlyCents / 100)} com o e-book Arsenal Med incluso. A oferta de ${brl(PRICE)} pelo ano vale só para o plano Black, até 30/11.`,
   },
   {
     q: "Posso parcelar ou pagar com Pix ou boleto?",
@@ -261,6 +267,7 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
   const [email, setEmail] = useState(() => readRememberedEmail());
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingChoice, setLoadingChoice] = useState<BlackPagePlanKey | null>(null);
   const [phone, setPhone] = useState("");
   const [vipSaved, setVipSaved] = useState(false);
   const { toast } = useToast();
@@ -270,48 +277,55 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
     supabase.auth.getSession().then(({ data }) => setSessionEmail(data.session?.user?.email ?? null));
   }, []);
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = (e: React.FormEvent) => {
     e.preventDefault();
+    void startCheckout("black");
+  };
+
+  const startCheckout = async (choice: BlackPagePlanKey) => {
     if (status === "ended" || loading) return;
+    const option = BLACK_PAGE_PLANS[choice];
     const clean = (sessionEmail ?? email).trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) {
       toast({ variant: "destructive", title: "E-mail inválido", description: "Confira o e-mail e tente de novo." });
       return;
     }
     setLoading(true);
+    setLoadingChoice(choice);
 
     // Antes da abertura: entra na lista VIP e é avisado à meia-noite.
     if (status === "upcoming") {
       trackCtaClick({ cta: "black_vip", section: "black", destination: "vip_list" });
       await saveBlackLead(clean, "black_vip", phone);
       setLoading(false);
+      setLoadingChoice(null);
       setVipSaved(true);
       return;
     }
 
     // Guarda o contato antes do pagamento para recuperar quem desistir.
-    await saveBlackLead(clean, "black_checkout", phone);
+    await saveBlackLead(clean, option.leadSource, phone);
     if (!sessionEmail) rememberCheckoutEmail(clean);
     try {
-      if (hasMarketingConsent()) (window as { fbq?: (...a: unknown[]) => void }).fbq?.("track", "Lead", { content_name: BLACK_OFFER.slug });
+      if (hasMarketingConsent()) (window as { fbq?: (...a: unknown[]) => void }).fbq?.("track", "Lead", { content_name: option.plan });
     } catch {
       /* noop */
     }
     trackCheckoutStarted({
       origin: "black_2026",
       product: "pro_completo",
-      plan: BLACK_OFFER.slug,
-      billing_period: "yearly",
-      price_brl: PRICE,
+      plan: option.plan,
+      billing_period: option.billingPeriod,
+      price_brl: option.priceBrl,
       auth_state: sessionEmail ? "authenticated" : "guest",
     });
     try {
       const { data, error } = sessionEmail
         ? await supabase.functions.invoke("create-checkout", {
-          body: { tracking: checkoutTracking(), utm: campaignUtm(), plan: BLACK_OFFER.slug, billingPeriod: "yearly" },
+          body: { tracking: checkoutTracking(), utm: campaignUtm(), plan: option.plan, billingPeriod: option.billingPeriod, entry: "black_page" },
         })
         : await supabase.functions.invoke("guest-checkout", {
-          body: { tracking: checkoutTracking(), utm: campaignUtm(), email: clean, product: "pro_completo", billingPeriod: "yearly", plan: BLACK_OFFER.slug },
+          body: { tracking: checkoutTracking(), utm: campaignUtm(), email: clean, product: "pro_completo", billingPeriod: option.billingPeriod, plan: option.plan, entry: "black_page" },
         });
       if (error) {
         let message = error.message;
@@ -332,6 +346,7 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
         description: friendlyCheckoutError((err as Error)?.message),
       });
       setLoading(false);
+      setLoadingChoice(null);
     }
   };
 
@@ -462,7 +477,7 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
           {!loading && (
             <span className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-offer-foreground/40 to-transparent motion-safe:animate-brand-sweep" />
           )}
-          {loading ? (
+          {loading && (upcoming || loadingChoice === "black") ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" /> {upcoming ? "Salvando..." : "Abrindo pagamento..."}
             </>
@@ -476,10 +491,13 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
             </>
           )}
         </Button>
+        {!upcoming && (
+          <OtherPlans loading={loading} loadingChoice={loadingChoice} onChoose={(choice) => void startCheckout(choice)} />
+        )}
       </div>
       )}
 
-      <ul className="mt-5 grid gap-1.5 text-xs text-muted-foreground">
+      <ul className="mt-5 grid gap-1.5 text-xs text-muted-foreground" aria-label="Condições do plano Black anual">
         <li className="flex items-center gap-2">
           <Lock className="w-3.5 h-3.5 text-primary" /> Cartão de crédito, em ambiente seguro
         </li>
@@ -487,11 +505,82 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
           <ShieldCheck className="w-3.5 h-3.5 text-primary" /> 7 dias de garantia incondicional
         </li>
         <li className="flex items-center gap-2">
-          <Check className="w-3.5 h-3.5 text-primary" /> 12 meses de acesso, sem renovação automática
+          <Check className="w-3.5 h-3.5 text-primary" /> Black anual: 12 meses de acesso, sem renovação automática
         </li>
       </ul>
       <FormLegalNotice mentionsReminder mentionsWhatsapp className="mt-4" />
     </form>
+  );
+}
+
+function OtherPlans({
+  loading,
+  loadingChoice,
+  onChoose,
+}: {
+  loading: boolean;
+  loadingChoice: BlackPagePlanKey | null;
+  onChoose: (choice: BlackPagePlanKey) => void;
+}) {
+  const monthly = BLACK_PAGE_PLANS.monthly;
+  const annual = BLACK_PAGE_PLANS.annual_arsenal;
+  return (
+    <div id="outros-planos" className="pt-3">
+      <div className="flex items-center gap-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        <span className="h-px flex-1 bg-border" /> ou escolha outro plano <span className="h-px flex-1 bg-border" />
+      </div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <div className="flex flex-col rounded-xl border border-primary/40 bg-primary/5 p-3.5">
+          <p className="text-sm font-semibold">Mensal</p>
+          <p className="mt-1 flex items-baseline gap-1">
+            <span className="text-2xl font-bold tracking-tight">{brl(monthly.priceBrl)}</span>
+            <span className="text-xs text-muted-foreground">/mês</span>
+          </p>
+          <p className="mt-1 flex-1 text-[0.72rem] leading-snug text-muted-foreground">
+            Cobrança mensal no cartão. Cancele quando quiser.
+          </p>
+          <Button
+            type="button"
+            onClick={() => onChoose("monthly")}
+            disabled={loading}
+            className="mt-3 h-11 w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
+          >
+            {loadingChoice === "monthly" ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Abrindo...
+              </>
+            ) : (
+              "Assinar o mensal"
+            )}
+          </Button>
+        </div>
+        <div className="flex flex-col rounded-xl border border-primary/40 bg-primary/5 p-3.5">
+          <p className="text-sm font-semibold">Anual + {ANNUAL_BONUS.name}</p>
+          <p className="mt-1 flex items-baseline gap-1">
+            <span className="text-2xl font-bold tracking-tight">{brl(annual.priceBrl)}</span>
+            <span className="text-xs text-muted-foreground">/ano</span>
+          </p>
+          <p className="mt-1 flex-1 text-[0.72rem] leading-snug text-muted-foreground">
+            Pagamento único, 12 meses, com o e-book {ANNUAL_BONUS.name} ({ANNUAL_BONUS.valueLabel}) incluso.
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onChoose("annual_arsenal")}
+            disabled={loading}
+            className="mt-3 h-11 w-full border-primary text-primary hover:bg-primary/10 font-semibold"
+          >
+            {loadingChoice === "annual_arsenal" ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Abrindo...
+              </>
+            ) : (
+              "Anual com o Arsenal Med"
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
 
