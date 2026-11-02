@@ -49,3 +49,21 @@ describe("planos da página /black", () => {
     expect(block).not.toMatch(/12x|parcel|boleto|Pix/i);
   });
 });
+
+describe("pop-up de e-mail da /black", () => {
+  const page = read("src/pages/Black.tsx");
+
+  it("o card não tem mais campos abertos de e-mail nem de WhatsApp", () => {
+    const card = page.slice(page.indexOf("function CheckoutCard"), page.indexOf("<Dialog open="));
+    expect(card).not.toContain('id="black-email"');
+    expect(card).not.toContain("black-phone");
+    expect(page).not.toMatch(/WhatsApp \(opcional\)|setPhone/);
+  });
+
+  it("todos os botões de compra abrem o pop-up; quem está logado vai direto ao pagamento", () => {
+    expect(page).not.toContain("scrollToCheckout");
+    expect(page).toContain("OPEN_CHECKOUT_EVENT");
+    expect(page).toMatch(/if \(sessionEmail\) \{\s*void startCheckout\(choice\);/);
+    expect(page).toContain('id="black-email"');
+  });
+});

@@ -5,6 +5,7 @@ import { Seo } from "@/components/Seo";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -257,19 +258,27 @@ function Countdown({ target, label }: { target: string; label: string }) {
   );
 }
 
-function scrollToCheckout(cta: string) {
-  trackCtaClick({ cta, section: "black", destination: "#assinar" });
-  document.getElementById("assinar")?.scrollIntoView({ behavior: "smooth", block: "center" });
-  window.setTimeout(() => document.getElementById("black-email")?.focus({ preventScroll: true }), 600);
+const OPEN_CHECKOUT_EVENT = "black:open-checkout";
+
+/** Qualquer botão de compra da página abre o pop-up de e-mail no card. */
+function openCheckout(cta: string, choice: BlackPagePlanKey = "black") {
+  trackCtaClick({ cta, section: "black", destination: "checkout_popup" });
+  window.dispatchEvent(new CustomEvent(OPEN_CHECKOUT_EVENT, { detail: { choice } }));
 }
+
+const POPUP_TITLE: Record<BlackPagePlanKey, string> = {
+  black: "Plano Black anual",
+  monthly: "Plano mensal",
+  annual_arsenal: "Anual + Arsenal Med 3.0",
+};
 
 function CheckoutCard({ status }: { status: BlackStatus }) {
   const [email, setEmail] = useState(() => readRememberedEmail());
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingChoice, setLoadingChoice] = useState<BlackPagePlanKey | null>(null);
-  const [phone, setPhone] = useState("");
   const [vipSaved, setVipSaved] = useState(false);
+  const [popupChoice, setPopupChoice] = useState<BlackPagePlanKey | null>(null);
   const { toast } = useToast();
   const upcoming = status === "upcoming";
 
@@ -277,9 +286,30 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
     supabase.auth.getSession().then(({ data }) => setSessionEmail(data.session?.user?.email ?? null));
   }, []);
 
-  const submit = (e: React.FormEvent) => {
+  // Botão clicado: quem está logado vai direto ao pagamento; os demais informam o e-mail no pop-up.
+  const requestCheckout = (choice: BlackPagePlanKey) => {
+    if (status === "ended" || loading) return;
+    if (sessionEmail) {
+      void startCheckout(choice);
+      return;
+    }
+    setPopupChoice(choice);
+  };
+
+  const requestRef = useRef(requestCheckout);
+  requestRef.current = requestCheckout;
+  useEffect(() => {
+    const onOpen = (event: Event) => {
+      const choice = (event as CustomEvent<{ choice?: BlackPagePlanKey }>).detail?.choice ?? "black";
+      requestRef.current(choice);
+    };
+    window.addEventListener(OPEN_CHECKOUT_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_CHECKOUT_EVENT, onOpen);
+  }, []);
+
+  const submitPopup = (e: React.FormEvent) => {
     e.preventDefault();
-    void startCheckout("black");
+    if (popupChoice) void startCheckout(popupChoice);
   };
 
   const startCheckout = async (choice: BlackPagePlanKey) => {
@@ -296,15 +326,16 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
     // Antes da abertura: entra na lista VIP e é avisado à meia-noite.
     if (status === "upcoming") {
       trackCtaClick({ cta: "black_vip", section: "black", destination: "vip_list" });
-      await saveBlackLead(clean, "black_vip", phone);
+      await saveBlackLead(clean, "black_vip");
       setLoading(false);
       setLoadingChoice(null);
+      setPopupChoice(null);
       setVipSaved(true);
       return;
     }
 
     // Guarda o contato antes do pagamento para recuperar quem desistir.
-    await saveBlackLead(clean, option.leadSource, phone);
+    await saveBlackLead(clean, option.leadSource);
     if (!sessionEmail) rememberCheckoutEmail(clean);
     try {
       if (hasMarketingConsent()) (window as { fbq?: (...a: unknown[]) => void }).fbq?.("track", "Lead", { content_name: option.plan });
@@ -365,9 +396,8 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
   }
 
   return (
-    <form
+    <div
       id="assinar"
-      onSubmit={submit}
       className="relative overflow-hidden rounded-2xl border-2 border-offer-gold bg-card text-card-foreground p-5 md:p-7 shadow-[0_30px_80px_-30px_hsl(var(--offer-gold)/0.55)] scroll-mt-24"
     >
       {/* Tarja diagonal */}
@@ -408,65 +438,17 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
             A Black abre à meia-noite de 1º de novembro. Entre na lista VIP e seja avisado primeiro.
           </p>
         )}
-        {sessionEmail ? (
+        {sessionEmail && (
           <p className="rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
             Você vai assinar com a conta <span className="font-medium text-foreground">{sessionEmail}</span>.
           </p>
-        ) : (
-          <div>
-            <label htmlFor="black-email" className="text-xs font-medium">
-              Seu melhor e-mail
-            </label>
-            <Input
-              id="black-email"
-              type="email"
-              inputMode="email"
-              autoComplete="email"
-              placeholder="voce@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={loading}
-              className="mt-1.5 h-12"
-              required
-            />
-            {suggestEmailFix(email) ? (
-              <button
-                type="button"
-                onClick={() => setEmail(suggestEmailFix(email) ?? email)}
-                className="mt-1 text-left text-[0.75rem] font-medium text-offer-hot underline underline-offset-2"
-              >
-                Você quis dizer {suggestEmailFix(email)}? Toque para corrigir.
-              </button>
-            ) : (
-              <p className="mt-1 text-[0.7rem] text-muted-foreground">
-                Seu acesso chega neste e-mail. Se já tem conta na MedStation, use o mesmo.
-              </p>
-            )}
-          </div>
         )}
-        <div>
-          <label htmlFor="black-phone" className="text-xs font-medium">
-            WhatsApp (opcional)
-          </label>
-          <Input
-            id="black-phone"
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            placeholder="(11) 99999-9999"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value.slice(0, 20))}
-            disabled={loading}
-            className="mt-1.5 h-12"
-          />
-          {!upcoming && (
-            <p className="mt-1 text-[0.7rem] text-muted-foreground">
-              Para te avisar se o pagamento não for concluído.
-            </p>
-          )}
-        </div>
         <Button
-          type="submit"
+          type="button"
+          onClick={() => {
+            trackCtaClick({ cta: "black_card", section: "black", destination: "checkout_popup" });
+            requestCheckout("black");
+          }}
           className={cn(
             "relative w-full h-14 text-base md:text-lg overflow-hidden",
             GOLD_BUTTON,
@@ -492,7 +474,14 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
           )}
         </Button>
         {!upcoming && (
-          <OtherPlans loading={loading} loadingChoice={loadingChoice} onChoose={(choice) => void startCheckout(choice)} />
+          <OtherPlans
+            loading={loading}
+            loadingChoice={loadingChoice}
+            onChoose={(choice) => {
+              trackCtaClick({ cta: `black_card_${choice}`, section: "black", destination: "checkout_popup" });
+              requestCheckout(choice);
+            }}
+          />
         )}
       </div>
       )}
@@ -508,8 +497,84 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
           <Check className="w-3.5 h-3.5 text-primary" /> Black anual: 12 meses de acesso, sem renovação automática
         </li>
       </ul>
-      <FormLegalNotice mentionsReminder mentionsWhatsapp className="mt-4" />
-    </form>
+      <Dialog open={popupChoice !== null} onOpenChange={(open) => !open && !loading && setPopupChoice(null)}>
+        <DialogContent className="sm:max-w-md">
+          <form onSubmit={submitPopup} className="space-y-4">
+            <DialogHeader>
+              <DialogTitle>
+                {upcoming ? "Entrar na lista VIP" : popupChoice ? POPUP_TITLE[popupChoice] : ""}
+                {!upcoming && popupChoice && (
+                  <span className={cn("ml-2 font-bold", popupChoice === "black" ? "text-offer-gold" : "text-primary")}>
+                    {brl(BLACK_PAGE_PLANS[popupChoice].priceBrl)}
+                    {BLACK_PAGE_PLANS[popupChoice].billingPeriod === "monthly" ? "/mês" : "/ano"}
+                  </span>
+                )}
+              </DialogTitle>
+              <DialogDescription>
+                {upcoming
+                  ? "Informe seu e-mail e avisamos assim que a Black abrir."
+                  : "Informe seu melhor e-mail para seguir ao pagamento. Seu acesso chega nele."}
+              </DialogDescription>
+            </DialogHeader>
+            <div>
+              <label htmlFor="black-email" className="text-xs font-medium">
+                Seu melhor e-mail
+              </label>
+              <Input
+                id="black-email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                autoFocus
+                placeholder="voce@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+                className="mt-1.5 h-12"
+                required
+              />
+              {suggestEmailFix(email) ? (
+                <button
+                  type="button"
+                  onClick={() => setEmail(suggestEmailFix(email) ?? email)}
+                  className="mt-1 text-left text-[0.75rem] font-medium text-offer-hot underline underline-offset-2"
+                >
+                  Você quis dizer {suggestEmailFix(email)}? Toque para corrigir.
+                </button>
+              ) : (
+                <p className="mt-1 text-[0.7rem] text-muted-foreground">
+                  Se já tem conta na MedStation, use o mesmo e-mail.
+                </p>
+              )}
+            </div>
+            <Button
+              type="submit"
+              disabled={loading}
+              className={cn(
+                "w-full h-12 text-base font-semibold",
+                popupChoice === "black" || upcoming ? GOLD_BUTTON : "bg-primary text-primary-foreground hover:bg-primary/90",
+              )}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> {upcoming ? "Salvando..." : "Abrindo pagamento..."}
+                </>
+              ) : upcoming ? (
+                "Quero entrar na lista VIP"
+              ) : (
+                <>
+                  Continuar para o pagamento <ArrowRight className="w-4 h-4 ml-1.5" />
+                </>
+              )}
+            </Button>
+            <p className="flex items-center justify-center gap-1.5 text-[0.7rem] text-muted-foreground">
+              <Lock className="w-3 h-3" /> Pagamento seguro pela Stripe · 7 dias de garantia
+            </p>
+            <FormLegalNotice mentionsReminder />
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
 
@@ -588,7 +653,7 @@ function GoldCta({ cta, className }: { cta: string; className?: string }) {
   return (
     <Button
       size="lg"
-      onClick={() => scrollToCheckout(cta)}
+      onClick={() => openCheckout(cta)}
       className={cn("h-14 px-7 text-base motion-safe:animate-cta-pulse", GOLD_BUTTON, className)}
     >
       {CTA_LABEL} <ArrowRight className="w-5 h-5 ml-1.5" />
@@ -677,7 +742,7 @@ export default function Black() {
                 </Link>
               </Button>
               {active && (
-                <Button size="sm" className={GOLD_BUTTON} onClick={() => scrollToCheckout("black_header")}>
+                <Button size="sm" className={GOLD_BUTTON} onClick={() => openCheckout("black_header")}>
                   Assinar Black
                 </Button>
               )}
@@ -717,7 +782,7 @@ export default function Black() {
             {active && (
               <Button
                 className={cn("mt-4 h-auto min-h-12 w-full whitespace-normal py-3 text-base leading-snug lg:hidden", GOLD_BUTTON)}
-                onClick={() => scrollToCheckout("black_hero_mobile")}
+                onClick={() => openCheckout("black_hero_mobile")}
               >
                 Quero garantir meu ano com a MedStation agora <ArrowRight className="w-4 h-4 ml-1.5 shrink-0" />
               </Button>
@@ -887,7 +952,7 @@ export default function Black() {
               <p className="text-[0.65rem] text-offer-muted line-through">{brl(CURRENT_YEARLY)}</p>
               <p className="text-base font-bold text-offer-gold">{brl(PRICE)}<span className="text-xs font-normal text-offer-muted">/ano</span></p>
             </div>
-            <Button className={cn("h-12 flex-1 text-sm motion-safe:animate-cta-pulse", GOLD_BUTTON)} onClick={() => scrollToCheckout("black_sticky_mobile")}>
+            <Button className={cn("h-12 flex-1 text-sm motion-safe:animate-cta-pulse", GOLD_BUTTON)} onClick={() => openCheckout("black_sticky_mobile")}>
               {CTA_LABEL}
             </Button>
           </div>
