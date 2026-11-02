@@ -1,3 +1,4 @@
+import { CreditCard } from "lucide-react";
 import { useState, useEffect, lazy, Suspense } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -442,8 +443,12 @@ export default function Auth() {
                     ) : (
                       <>
                         <GoogleAuthButton label="Cadastrar com Google" trackAsSignup source="auth" />
-                        <p className="text-xs text-muted-foreground text-center">
-                          7 dias de acesso completo. Sem cartão de crédito.
+                        <p className="flex flex-wrap items-center justify-center gap-2 text-xs text-muted-foreground text-center">
+                          <span>7 dias de acesso completo.</span>
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/15 px-3 py-1 text-sm font-semibold text-primary">
+                            <CreditCard className="h-4 w-4" aria-hidden />
+                            Sem cartão de crédito
+                          </span>
                         </p>
 
                         <form onSubmit={handleSignUp} className="space-y-4">
