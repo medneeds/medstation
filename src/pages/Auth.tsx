@@ -29,6 +29,7 @@ export default function Auth() {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
+  const [authTab, setAuthTab] = useState("signin");
   const [loading, setLoading] = useState(false);
 
   const [resetLoading, setResetLoading] = useState(false);
@@ -260,20 +261,20 @@ export default function Auth() {
               </p>
             </div>
 
-            <Tabs defaultValue="signin" className="w-full">
+            <Tabs value={authTab} onValueChange={setAuthTab} className="w-full">
               {/* No computador, título à esquerda e Entrar/Criar conta à direita, na mesma linha */}
               <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                 {/* Cabeçalho com reflexo espelhado (estilo tela inicial de streaming) */}
                 <div className="space-y-1.5 lg:space-y-1 text-center lg:text-left min-w-0">
                   <div className="relative pb-3">
                     <h2 className="font-display text-2xl lg:text-4xl tracking-tight whitespace-nowrap text-foreground">
-                      Área do assinante
+                      {authTab === "signup" ? "Teste gratuito" : "Área do assinante"}
                     </h2>
                     <span
                       aria-hidden
                       className="pointer-events-none absolute left-0 right-0 top-full -mt-1 block h-3 overflow-hidden font-display text-2xl lg:text-4xl leading-none tracking-tight text-foreground opacity-[0.14] blur-[0.6px] [transform:scaleY(-1)] [mask-image:linear-gradient(to_top,transparent_10%,black_100%)] [-webkit-mask-image:linear-gradient(to_top,transparent_10%,black_100%)] text-center lg:text-left"
                     >
-                      Área do assinante
+                      {authTab === "signup" ? "Teste gratuito" : "Área do assinante"}
                     </span>
                   </div>
 
