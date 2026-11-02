@@ -242,7 +242,7 @@ export default function Auth() {
             initial={{ opacity: 0, y: 26, scale: 0.965 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
-            className="w-full max-w-md lg:max-w-[46rem] lg:flex lg:flex-col lg:justify-center space-y-6 lg:space-y-5 rounded-3xl border border-hairline bg-card/60 backdrop-blur-xl p-6 sm:p-8 lg:px-10 lg:py-5 xl:px-12 xl:py-7 shadow-[0_40px_120px_-40px_hsl(var(--primary)/0.35)]"
+            className="w-full max-w-md lg:max-w-[46rem] lg:flex lg:flex-col lg:justify-center space-y-6 lg:space-y-5 rounded-3xl border border-hairline bg-card/60 backdrop-blur-xl p-6 sm:p-8 lg:px-10 lg:py-5 xl:px-12 xl:py-6 shadow-[0_40px_120px_-40px_hsl(var(--primary)/0.35)]"
           >
             <div className="lg:hidden flex flex-col items-center gap-3 text-center">
               <Logo size="md" />
