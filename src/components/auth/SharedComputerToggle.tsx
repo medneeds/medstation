@@ -60,7 +60,11 @@ export function SharedComputerToggle({ checked, onCheckedChange }: SharedCompute
         />
       </div>
 
-      <ul id="shared-computer-rules" className="mt-3 space-y-1 border-t border-hairline pt-2.5" aria-live="polite">
+      <ul
+        id="shared-computer-rules"
+        className="mt-3 space-y-1 border-t border-hairline pt-2.5 2xl:grid 2xl:grid-cols-3 2xl:gap-x-4 2xl:space-y-0"
+        aria-live="polite"
+      >
         {points.map((point) => (
           <li key={point} className="flex items-start gap-2 text-xs text-muted-foreground leading-snug">
             <Check className={cn("h-3.5 w-3.5 mt-px shrink-0", checked ? "text-primary" : "text-muted-foreground")} aria-hidden />

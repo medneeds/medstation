@@ -124,7 +124,7 @@ function AssistantPlates() {
 
 export function AssistantOrbit() {
   return (
-    <div className="relative h-[560px] xl:h-[680px] w-full" aria-hidden="true">
+    <div className="relative h-[560px] xl:h-[min(680px,calc(50vw-4rem))] w-full" aria-hidden="true">
       {/* brilho ambiente atrás da órbita */}
       <div className="pointer-events-none absolute inset-0 grid place-items-center">
         <div className="h-72 w-72 rounded-full bg-primary/15 blur-3xl" />

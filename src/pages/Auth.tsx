@@ -201,22 +201,22 @@ export default function Auth() {
         <div className="absolute inset-0 opacity-[0.035] [background-image:radial-gradient(hsl(var(--foreground))_1px,transparent_1px)] [background-size:24px_24px]" />
       </div>
 
-      <div className="relative z-10 grid min-h-screen lg:grid-cols-[1fr_1.1fr]">
+      <div className="relative z-10 grid min-h-screen lg:grid-cols-[1fr_1fr] 2xl:grid-cols-[1.12fr_1fr]">
         {/* Editorial side — on desktop sits on the right; login comes first on the left */}
         <motion.aside
           initial={{ opacity: 0, x: 24 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="relative hidden lg:flex lg:order-2 flex-col p-10 xl:p-14"
+          className="relative hidden lg:flex lg:order-2 flex-col p-6 xl:p-8"
         >
           {/* Logo elements drifting discreetly along the divider */}
           <AuthDividerMarks />
 
           {/* Cabeçalho e rodapé sobrepostos — não consomem espaço da órbita */}
-          <div className="pointer-events-none absolute top-10 right-10 xl:top-14 xl:right-14 z-20">
+          <div className="pointer-events-none absolute top-6 right-8 xl:top-8 xl:right-10 z-20">
             <Logo size="md" />
           </div>
-          <p className="pointer-events-none absolute bottom-10 right-10 xl:bottom-14 xl:right-14 z-20 text-[0.7rem] uppercase tracking-[0.18em] font-mono text-muted-foreground">
+          <p className="pointer-events-none absolute bottom-6 right-8 xl:bottom-8 xl:right-10 z-20 text-[0.7rem] uppercase tracking-[0.18em] font-mono text-muted-foreground">
             © {new Date().getFullYear()} MedStation ·{" "}
             <a href="/privacidade" target="_blank" rel="noopener noreferrer" className="pointer-events-auto underline-offset-4 hover:underline">
               Privacidade
@@ -236,14 +236,13 @@ export default function Auth() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-          className="relative z-10 lg:order-1 flex items-start lg:items-center justify-center px-5 pt-8 pb-10 sm:p-10 lg:p-16"
-          style={{ paddingBottom: "max(2.5rem, env(safe-area-inset-bottom))" }}
+          className="relative z-10 lg:order-1 flex items-start lg:items-stretch justify-center px-5 pt-8 pb-[max(2.5rem,env(safe-area-inset-bottom))] sm:px-10 sm:pt-10 lg:pl-8 lg:pr-4 lg:py-4 xl:pl-12 xl:pr-6 xl:py-6"
         >
           <motion.div
             initial={{ opacity: 0, y: 26, scale: 0.965 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
-            className="w-full max-w-md space-y-6 lg:space-y-8 rounded-3xl border border-hairline bg-card/60 backdrop-blur-xl p-6 sm:p-8 shadow-[0_40px_120px_-40px_hsl(var(--primary)/0.35)]"
+            className="w-full max-w-md lg:max-w-[46rem] lg:flex lg:flex-col lg:justify-center space-y-6 lg:space-y-5 rounded-3xl border border-hairline bg-card/60 backdrop-blur-xl p-6 sm:p-8 lg:px-10 lg:py-5 xl:px-12 xl:py-6 shadow-[0_40px_120px_-40px_hsl(var(--primary)/0.35)]"
           >
             <div className="lg:hidden flex flex-col items-center gap-3 text-center">
               <Logo size="md" />
@@ -252,35 +251,37 @@ export default function Auth() {
               </p>
             </div>
 
-            {/* Cabeçalho com reflexo espelhado (estilo tela inicial de streaming) */}
-            <div className="space-y-1.5 lg:space-y-2 text-center lg:text-left">
-              <div className="relative pb-3">
-                <h2 className="font-display text-2xl lg:text-3xl tracking-tight text-foreground">
-                  Bem-vindo
-                </h2>
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute left-0 right-0 top-full -mt-1 block h-3 overflow-hidden font-display text-2xl lg:text-3xl leading-none tracking-tight text-foreground opacity-[0.14] blur-[0.6px] [transform:scaleY(-1)] [mask-image:linear-gradient(to_top,transparent_10%,black_100%)] [-webkit-mask-image:linear-gradient(to_top,transparent_10%,black_100%)] text-center lg:text-left"
-                >
-                  Bem-vindo
-                </span>
-              </div>
-
-              <p className="text-sm text-muted-foreground">
-                Entre na sua conta ou comece seu teste em segundos.
-              </p>
-            </div>
-
-
             <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 rounded-full h-11">
-                <TabsTrigger value="signin" className="rounded-full data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
-                  Entrar
-                </TabsTrigger>
-                <TabsTrigger value="signup" className="rounded-full data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
-                  Criar conta
-                </TabsTrigger>
-              </TabsList>
+              {/* No computador, título à esquerda e Entrar/Criar conta à direita, na mesma linha */}
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                {/* Cabeçalho com reflexo espelhado (estilo tela inicial de streaming) */}
+                <div className="space-y-1.5 lg:space-y-1 text-center lg:text-left min-w-0">
+                  <div className="relative pb-3">
+                    <h2 className="font-display text-2xl lg:text-4xl tracking-tight whitespace-nowrap text-foreground">
+                      Bem-vindo
+                    </h2>
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute left-0 right-0 top-full -mt-1 block h-3 overflow-hidden font-display text-2xl lg:text-4xl leading-none tracking-tight text-foreground opacity-[0.14] blur-[0.6px] [transform:scaleY(-1)] [mask-image:linear-gradient(to_top,transparent_10%,black_100%)] [-webkit-mask-image:linear-gradient(to_top,transparent_10%,black_100%)] text-center lg:text-left"
+                    >
+                      Bem-vindo
+                    </span>
+                  </div>
+
+                  <p className="text-sm text-muted-foreground">
+                    Entre na sua conta ou comece seu teste em segundos.
+                  </p>
+                </div>
+
+                <TabsList className="grid w-full lg:w-56 xl:w-60 shrink-0 grid-cols-2 bg-muted/50 p-1 rounded-full h-11">
+                  <TabsTrigger value="signin" className="rounded-full data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
+                    Entrar
+                  </TabsTrigger>
+                  <TabsTrigger value="signup" className="rounded-full data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
+                    Criar conta
+                  </TabsTrigger>
+                </TabsList>
+              </div>
 
               <AnimatePresence mode="wait">
                 <TabsContent value="signin" key="signin">
@@ -288,14 +289,17 @@ export default function Auth() {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
-                    className="mt-6 lg:mt-8 space-y-4 lg:space-y-5"
+                    className="mt-6 lg:mt-4 flex flex-col gap-4 lg:gap-3.5"
                   >
 
                     <GoogleAuthButton label="Continuar com Google" sharedComputer={sharedComputer} />
 
-                    <form onSubmit={handleSignIn} className="space-y-4" autoComplete="off">
+                    <form onSubmit={handleSignIn} className="space-y-4 lg:space-y-3.5" autoComplete="off">
+                      <div className="grid gap-4 lg:grid-cols-2">
                       <div className="space-y-1.5">
-                        <Label htmlFor="signin-email" className="text-xs uppercase tracking-wider text-muted-foreground">Email</Label>
+                        <div className="flex lg:min-h-5 items-center">
+                          <Label htmlFor="signin-email" className="text-xs uppercase tracking-wider text-muted-foreground">Email</Label>
+                        </div>
                         <Input
                           id="signin-email"
                           type="email"
@@ -312,7 +316,7 @@ export default function Auth() {
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
+                        <div className="flex lg:min-h-5 items-center justify-between">
                           <Label htmlFor="signin-password" className="text-xs uppercase tracking-wider text-muted-foreground">Senha</Label>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
@@ -365,6 +369,7 @@ export default function Auth() {
                           </button>
                         </div>
                       </div>
+                      </div>
                       <Button
                         type="submit"
                         className="w-full h-12 rounded-xl text-base font-medium transition-all hover:translate-y-[-1px] active:translate-y-0"
@@ -380,7 +385,10 @@ export default function Auth() {
                       </p>
                     </form>
 
-                    <SharedComputerToggle checked={sharedComputer} onCheckedChange={setSharedComputer} />
+                    {/* No computador a escolha vem primeiro, antes do Google e do e-mail; no celular segue no fim */}
+                    <div className="lg:order-first">
+                      <SharedComputerToggle checked={sharedComputer} onCheckedChange={setSharedComputer} />
+                    </div>
                   </motion.div>
                 </TabsContent>
 
