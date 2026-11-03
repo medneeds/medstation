@@ -40,6 +40,19 @@ const PER_DAY = PRICE / 365;
 const SAVINGS = DECEMBER_YEARLY - PRICE;
 const SAVINGS_NOW = CURRENT_YEARLY - PRICE;
 
+/**
+ * Âncora do plantão (decisão do Artur, 03/11): o médico mede dinheiro em
+ * plantões. É comparação de valor com referência de mercado, não "de/por";
+ * a base fica sempre no rodapé (SHIFT_NOTE). Se o preço da Black passar da
+ * referência, a frase deixa de ser verdade — por isso a checagem abaixo.
+ */
+const SHIFT_6H_REF = 500;
+const SHIFT_ANCHOR_OK = PRICE < SHIFT_6H_REF;
+const SHIFT_ANCHOR = "menos que um plantão de 6 horas";
+const SHIFT_NOTE = `** Referência de mercado: plantões de 6 horas costumam pagar a partir de ${brl(SHIFT_6H_REF)}. O valor varia por cidade e serviço.`;
+/** 40 h/mês economizadas ≈ mais de 3 plantões de 12 h. */
+const SHIFTS_12H_SAVED = Math.floor(40 / 12);
+
 const CTA_LABEL = "Assinar plano Black anual";
 const GOLD_BUTTON =
   "bg-offer-gold text-offer-gold-foreground hover:bg-offer-gold/90 font-semibold shadow-[0_10px_30px_-10px_hsl(var(--offer-gold)/0.7)]";
@@ -91,12 +104,12 @@ const faq = [
   },
 ];
 
+// Sem preço na faixa: o valor aparece só no card (âncora do plantão primeiro).
 const MARQUEE_ITEMS = [
   "Black MedStation",
-  `12 meses por ${brl(PRICE)}`,
-  `Anual a ${brl(DECEMBER_YEARLY)} a partir de 1º/12`,
+  "365 dias por menos que um plantão de 6h",
+  "Até 40 horas a menos de burocracia por mês*",
   "Até 30/11",
-  `${brl(PER_DAY)} por dia`,
   "7 dias de garantia",
 ];
 
@@ -376,6 +389,11 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
         <span className="text-sm text-muted-foreground">/ano</span>
       </div>
       <p className="mt-1 text-sm font-medium text-foreground">pagamento único no cartão de crédito</p>
+      {SHIFT_ANCHOR_OK && (
+        <p className="mt-1 text-sm text-offer-gold font-semibold">
+          {SHIFT_ANCHOR.charAt(0).toUpperCase() + SHIFT_ANCHOR.slice(1)}, pelo ano inteiro.
+        </p>
+      )}
       <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
         <span className="rounded-full bg-offer-gold/20 px-2.5 py-1 font-semibold text-foreground">
           {brl(SAVINGS_NOW)} a menos que o anual de hoje
@@ -742,7 +760,7 @@ export default function Black() {
     <div className={cn("dark min-h-screen bg-background text-foreground", active && "pb-20 md:pb-0")}>
       <Seo
         path="/black"
-        title="Black MedStation — um ano inteiro por R$ 399,90"
+        title="Black MedStation — 365 dias por menos que um plantão"
         description={`Só em novembro: o plano anual completo da MedStation de ${brl(CURRENT_YEARLY)} por ${brl(PRICE)}, em pagamento único no cartão. 7 dias de garantia.`}
       />
 
@@ -793,22 +811,22 @@ export default function Black() {
             <span className="inline-flex items-center gap-2 rounded-full border border-offer-gold/40 bg-offer-gold/10 px-3 py-1 font-mono text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-offer-gold">
               <Sparkles className="w-3.5 h-3.5" /> Black MedStation · só em novembro
             </span>
-            <h1 className="mt-5 text-[2.4rem] leading-[1.03] md:text-7xl font-semibold tracking-tight">
-              Um ano inteiro de MedStation por{" "}
-              <span className="relative inline-block text-offer-gold">
-                {brl(PRICE)}
-                <span className="absolute -bottom-1 left-0 h-1.5 w-full rounded-full bg-offer-gold/40" />
-              </span>
-              .
+            <h1 className="mt-5 text-[2.4rem] leading-[1.03] md:text-6xl font-semibold tracking-tight">
+              {SHIFT_ANCHOR_OK ? (
+                <>
+                  365 dias de MedStation por{" "}
+                  <span className="text-offer-gold">{SHIFT_ANCHOR}</span>.<sup className="ml-0.5 text-offer-muted text-[0.35em]">**</sup>
+                </>
+              ) : (
+                <>
+                  Um ano inteiro de MedStation por <span className="text-offer-gold">{brl(PRICE)}</span>.
+                </>
+              )}
             </h1>
             <p className="mt-6 max-w-xl text-lg md:text-2xl font-medium leading-snug text-offer-foreground">
-              Economize até <span className="text-offer-gold">40 horas</span> de trabalho burocrático e repetitivo por mês na
-              sua prática médica.<sup className="text-offer-muted">*</sup>
-            </p>
-            <p className="mt-4 max-w-xl text-sm md:text-base text-offer-muted leading-relaxed">
-              Em 1º de dezembro, o plano anual passa a custar{" "}
-              <span className="text-offer-foreground font-semibold">{brl(DECEMBER_YEARLY)}</span>. Garantindo em novembro,
-              você paga <span className="text-offer-gold font-semibold">{brl(PRICE)}</span> pelos 12 meses, sem reajuste.
+              Até <span className="text-offer-gold">40 horas</span> a menos de burocracia por mês
+              <sup className="text-offer-muted">*</sup>: o tempo de mais de {SHIFTS_12H_SAVED} plantões de 12 horas, devolvido a
+              você todos os meses.
             </p>
             <VslVideo className="mt-6" />
             {active && (
@@ -820,13 +838,13 @@ export default function Black() {
               </Button>
             )}
             <p className="mt-4 max-w-xl text-base md:text-lg text-offer-muted leading-relaxed">
-              Evoluções, receitas, atestados e anamneses prontos em segundos, para você voltar ao que importa: o paciente. Tudo isso
-              por <span className="text-offer-foreground font-semibold">{brl(PER_DAY)} por dia</span>.
+              Evoluções, receitas, atestados e anamneses prontos em segundos, para você voltar ao que importa: o paciente.
             </p>
             <p className="mt-3 max-w-xl text-xs text-offer-muted leading-relaxed">
               * Estimativa baseada em 15 atendimentos por dia, 22 dias por mês, com economia média de 7,5 minutos por
               atendimento. O ganho real depende do seu volume e do seu uso.
             </p>
+            {SHIFT_ANCHOR_OK && <p className="mt-1 max-w-xl text-xs text-offer-muted leading-relaxed">{SHIFT_NOTE}</p>}
 
             <div className="mt-8">
               {active && <Countdown target={BLACK_OFFER.endsAt} label="A oferta termina em" />}
@@ -871,6 +889,12 @@ export default function Black() {
                 <BadgePercent className="w-4 h-4 text-foreground" /> Compare e decida
               </h3>
               <dl className="mt-4 space-y-2 text-sm">
+                {SHIFT_ANCHOR_OK && (
+                  <div className="flex items-center justify-between rounded-lg px-3 py-3">
+                    <dt className="text-muted-foreground">Um plantão de 6 horas</dt>
+                    <dd className="text-muted-foreground">a partir de {brl(SHIFT_6H_REF)}**</dd>
+                  </div>
+                )}
                 <div className="flex items-center justify-between rounded-lg px-3 py-3">
                   <dt className="text-muted-foreground">Mensal, a partir de 1º/12</dt>
                   <dd className="text-muted-foreground">
@@ -955,10 +979,16 @@ export default function Black() {
           <Reveal className="relative container mx-auto px-4 md:px-8 py-16 md:py-20 text-center">
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-offer-gold">Black MedStation · até 30/11</p>
             <h2 className="mt-3 text-3xl md:text-5xl font-semibold tracking-tight">
-              {brl(PRICE)} por 12 meses.
+              {SHIFT_ANCHOR_OK ? (
+                <>
+                  365 dias de MedStation por <span className="text-offer-gold">{SHIFT_ANCHOR}</span>.
+                </>
+              ) : (
+                <>{brl(PRICE)} por 12 meses.</>
+              )}
             </h2>
             <p className="mt-3 text-sm md:text-base text-offer-muted">
-              A partir de 1º/12, o anual passa a {brl(DECEMBER_YEARLY)}.
+              {brl(PRICE)} pelos 12 meses, até 30/11. A partir de 1º/12, o anual passa a {brl(DECEMBER_YEARLY)}.
             </p>
             <GoldCta cta="black_footer" className="mt-8" />
             <p className="mt-3 text-xs text-offer-muted">7 dias de garantia · Cartão de crédito · Sem renovação automática</p>
@@ -974,9 +1004,10 @@ export default function Black() {
       {active && (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-offer-border bg-offer/95 px-4 py-3 text-offer-foreground backdrop-blur md:hidden">
           <div className="flex items-center gap-3">
+            {/* Sem preço na barra: no celular o valor aparece só quando a pessoa chega ao card. */}
             <div className="min-w-0 leading-tight">
-              <p className="text-[0.65rem] text-offer-muted line-through">{brl(CURRENT_YEARLY)}</p>
-              <p className="text-base font-bold text-offer-gold">{brl(PRICE)}<span className="text-xs font-normal text-offer-muted">/ano</span></p>
+              <p className="text-[0.65rem] text-offer-muted">365 dias por</p>
+              <p className="text-sm font-bold text-offer-gold">menos que 1 plantão</p>
             </div>
             <Button className={cn("h-12 flex-1 text-sm", GOLD_BUTTON)} onClick={() => openCheckout("black_sticky_mobile")}>
               {CTA_LABEL}
