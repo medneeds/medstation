@@ -814,7 +814,7 @@ export default function Black() {
             <h1 className="mt-5 text-[2.4rem] leading-[1.03] md:text-6xl font-semibold tracking-tight">
               {SHIFT_ANCHOR_OK ? (
                 <>
-                  365 dias de MedStation por{" "}
+                  Garanta 365 dias de MedStation por{" "}
                   <span className="text-offer-gold">{SHIFT_ANCHOR}</span>.<sup className="ml-0.5 text-offer-muted text-[0.35em]">**</sup>
                 </>
               ) : (
@@ -981,7 +981,7 @@ export default function Black() {
             <h2 className="mt-3 text-3xl md:text-5xl font-semibold tracking-tight">
               {SHIFT_ANCHOR_OK ? (
                 <>
-                  365 dias de MedStation por <span className="text-offer-gold">{SHIFT_ANCHOR}</span>.
+                  Garanta 365 dias de MedStation por <span className="text-offer-gold">{SHIFT_ANCHOR}</span>.
                 </>
               ) : (
                 <>{brl(PRICE)} por 12 meses.</>
