@@ -59,7 +59,7 @@ const faq = [
   },
   {
     q: "E se eu preferir pagar por mês?",
-    a: `Também dá. No card de compra, toque em "Prefere outro plano?" para ver o plano mensal de ${brl(PRICE_TABLE.launch.monthlyCents / 100)} por mês no cartão, que você cancela quando quiser, e o anual de ${brl(PRICE_TABLE.launch.yearlyCents / 100)} com o e-book Arsenal Med incluso. A oferta de ${brl(PRICE)} pelo ano vale só para o plano Black, até 30/11.`,
+    a: `Também dá. Logo abaixo do botão da Black está o plano mensal de ${brl(PRICE_TABLE.launch.monthlyCents / 100)} por mês no cartão, que você cancela quando quiser. Se preferir o anual de ${brl(PRICE_TABLE.launch.yearlyCents / 100)} com o e-book Arsenal Med incluso, ele aparece ao tocar em "Prefere o anual com o e-book". A oferta de ${brl(PRICE)} pelo ano vale só para o plano Black, até 30/11.`,
   },
   {
     q: "Posso parcelar ou pagar com Pix ou boleto?",
@@ -543,11 +543,27 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
   );
 }
 
-/** Dois depoimentos curtos junto ao card de compra (mesma fonte autorizada do carrossel). */
-const CARD_TESTIMONIAL_NAMES = ["Dr. Pedro Rebouças", "Dra. Luciara Duarte"];
+/**
+ * Dois depoimentos junto ao card de compra (mesma fonte autorizada do carrossel).
+ * `excerpt` é um trecho literal do depoimento; se o texto mudar e o trecho
+ * deixar de existir, o depoimento simplesmente não aparece.
+ */
+const CARD_TESTIMONIALS: { name: string; excerpt?: string }[] = [
+  { name: "Dr. Pedro Rebouças" },
+  {
+    name: "Dra. Daiane Cordeiro",
+    excerpt:
+      "Embora eu nunca tenha sido uma grande adepta do uso de IA na prática médica, encontrei na plataforma, pela primeira vez, uma ferramenta capaz de agregar valor real à minha rotina profissional.",
+  },
+];
 
 function CardTestimonials() {
-  const people = REAL_USERS.filter((u) => u.quote && CARD_TESTIMONIAL_NAMES.includes(u.name));
+  const people = CARD_TESTIMONIALS.flatMap(({ name, excerpt }) => {
+    const u = REAL_USERS.find((r) => r.name === name);
+    if (!u?.quote) return [];
+    if (excerpt && !u.quote.includes(excerpt)) return [];
+    return [{ ...u, quote: excerpt ?? u.quote }];
+  });
   if (people.length === 0) return null;
   return (
     <div className="mt-5 space-y-3 border-t border-border pt-4">
@@ -582,56 +598,56 @@ function OtherPlans({
 }) {
   const monthly = BLACK_PAGE_PLANS.monthly;
   const annual = BLACK_PAGE_PLANS.annual_arsenal;
-  // Recolhido por padrão: com os três planos lado a lado, quem estava em dúvida
-  // ficava com o mensal ou não escolhia nenhum. A Black é a decisão principal.
-  const [open, setOpen] = useState(false);
-  if (!open) {
-    return (
-      <div id="outros-planos" className="pt-1 text-center">
-        <button
-          type="button"
-          onClick={() => {
-            trackCtaClick({ cta: "black_card_other_plans", section: "black", destination: "other_plans" });
-            setOpen(true);
-          }}
-          className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
-        >
-          Prefere outro plano? Ver mensal e anual com o Arsenal Med
-        </button>
-      </div>
-    );
-  }
+  // Decisão do Artur (03/11): o mensal fica à vista ao lado da Black, porque
+  // "R$ 49,90/mês ou R$ 399,90 no ano" ancora o preço; o anual com Arsenal Med
+  // fica recolhido para não competir com a Black.
+  const [showArsenal, setShowArsenal] = useState(false);
   return (
     <div id="outros-planos" className="pt-3">
       <div className="flex items-center gap-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-        <span className="h-px flex-1 bg-border" /> outros planos <span className="h-px flex-1 bg-border" />
+        <span className="h-px flex-1 bg-border" /> ou pague por mês <span className="h-px flex-1 bg-border" />
       </div>
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
-        <div className="flex flex-col rounded-xl border border-primary/40 bg-primary/5 p-3.5">
-          <p className="text-sm font-semibold">Mensal</p>
-          <p className="mt-1 flex items-baseline gap-1">
-            <span className="text-2xl font-bold tracking-tight">{brl(monthly.priceBrl)}</span>
+      <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/40 p-3.5">
+        <div className="min-w-0">
+          <p className="flex items-baseline gap-1">
+            <span className="text-xl font-bold tracking-tight">{brl(monthly.priceBrl)}</span>
             <span className="text-xs text-muted-foreground">/mês</span>
           </p>
-          <p className="mt-1 flex-1 text-[0.72rem] leading-snug text-muted-foreground">
-            Cobrança mensal no cartão. Cancele quando quiser.
+          <p className="text-[0.72rem] leading-snug text-muted-foreground">
+            No cartão, cancele quando quiser. Em 12 meses: {brl(monthly.priceBrl * 12)}.
           </p>
-          <Button
-            type="button"
-            onClick={() => onChoose("monthly")}
-            disabled={loading}
-            className="mt-3 h-11 w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
-          >
-            {loadingChoice === "monthly" ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Abrindo...
-              </>
-            ) : (
-              "Assinar o mensal"
-            )}
-          </Button>
         </div>
-        <div className="flex flex-col rounded-xl border border-primary/40 bg-primary/5 p-3.5">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => onChoose("monthly")}
+          disabled={loading}
+          className="h-10 shrink-0 border-primary text-primary hover:bg-primary/10 font-semibold"
+        >
+          {loadingChoice === "monthly" ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Abrindo...
+            </>
+          ) : (
+            "Assinar o mensal"
+          )}
+        </Button>
+      </div>
+      {!showArsenal ? (
+        <div className="mt-2 text-center">
+          <button
+            type="button"
+            onClick={() => {
+              trackCtaClick({ cta: "black_card_show_arsenal", section: "black", destination: "other_plans" });
+              setShowArsenal(true);
+            }}
+            className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+          >
+            Prefere o anual com o e-book {ANNUAL_BONUS.name}?
+          </button>
+        </div>
+      ) : (
+        <div className="mt-3 flex flex-col rounded-xl border border-primary/40 bg-primary/5 p-3.5">
           <p className="text-sm font-semibold">Anual + {ANNUAL_BONUS.name}</p>
           <p className="mt-1 flex items-baseline gap-1">
             <span className="text-2xl font-bold tracking-tight">{brl(annual.priceBrl)}</span>
@@ -656,7 +672,7 @@ function OtherPlans({
             )}
           </Button>
         </div>
-      </div>
+      )}
     </div>
   );
 }
