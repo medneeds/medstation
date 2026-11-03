@@ -262,6 +262,12 @@ function Countdown({ target, label }: { target: string; label: string }) {
 
 const OPEN_CHECKOUT_EVENT = "black:open-checkout";
 
+/** Botão do topo: rola até o card, para a pessoa ver a oferta antes de pagar. */
+function goToOffer(cta: string) {
+  trackCtaClick({ cta, section: "black", destination: "offer_card" });
+  document.getElementById("assinar")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 /** Qualquer botão de compra da página abre o pop-up de e-mail no card. */
 function openCheckout(cta: string, choice: BlackPagePlanKey = "black") {
   trackCtaClick({ cta, section: "black", destination: "checkout_popup" });
@@ -740,7 +746,7 @@ export default function Black() {
   const active = status === "active";
   // No celular, a barra fixa só aparece depois do botão do topo: os dois juntos
   // na primeira tela eram o mesmo botão repetido.
-  const showStickyBar = useScrolledPast(700);
+  const showStickyBar = useScrolledPast(1100);
 
   // A Black é sempre escura: força o tema escuro enquanto a página está aberta
   // (inclui janelas e avisos que abrem fora da página) e restaura ao sair.
@@ -790,25 +796,25 @@ export default function Black() {
               </span>
               <span className="hidden md:inline border-l border-offer-border pl-3 text-sm text-offer-muted">{BRAND_TAGLINE}</span>
             </Link>
-            <div className="flex items-center gap-2">
-              <Button
-                asChild
-                size="sm"
-                variant="ghost"
-                className="h-auto py-1 text-offer-muted hover:bg-offer-foreground/10 hover:text-offer-foreground"
+            {/* Dois caminhos separados para o /auth: "Área do assinante" (Entrar, verde)
+                e "Teste gratuito" (Criar conta, discreto em cinza). */}
+            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+              <Link
+                to="/auth?aba=teste"
+                onClick={() => trackCtaClick({ cta: "black_trial", section: "black", destination: "/auth?aba=teste" })}
+                className="rounded-md px-2 py-1.5 text-xs sm:text-sm text-offer-muted/80 transition-colors hover:bg-offer-foreground/5 hover:text-offer-foreground"
               >
-                {/* /auth tem as abas "Área do assinante" e "Teste gratuito". */}
-                <Link
-                  to="/auth"
-                  onClick={() => trackCtaClick({ cta: "black_login", section: "black", destination: "/auth" })}
-                  className="flex flex-col items-center leading-tight sm:flex-row sm:gap-1"
-                >
-                  <span>Área do assinante</span>
-                  <span className="text-[0.65rem] sm:text-xs text-offer-muted/80">(teste gratuito)</span>
-                </Link>
-              </Button>
+                Teste gratuito
+              </Link>
+              <Link
+                to="/auth"
+                onClick={() => trackCtaClick({ cta: "black_login", section: "black", destination: "/auth" })}
+                className="rounded-md border border-offer-accent/50 px-2.5 py-1.5 text-xs sm:text-sm font-semibold text-offer-accent transition-colors hover:bg-offer-accent/10"
+              >
+                Área do assinante
+              </Link>
               {active && (
-                <Button size="sm" className={GOLD_BUTTON} onClick={() => openCheckout("black_header")}>
+                <Button size="sm" className={cn("hidden md:inline-flex", GOLD_BUTTON)} onClick={() => openCheckout("black_header")}>
                   {CTA_SHORT}
                 </Button>
               )}
@@ -827,66 +833,66 @@ export default function Black() {
               "radial-gradient(700px 380px at 85% 20%, hsl(var(--offer-accent) / 0.10), transparent 60%), radial-gradient(800px 420px at 5% 0%, hsl(var(--offer-accent) / 0.12), transparent 60%)",
           }}
         />
-        <div className="relative container mx-auto px-4 md:px-8 pt-10 pb-16 md:pt-16 md:pb-24 grid lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-14 items-center lg:items-start">
-          <div className="motion-safe:animate-slide-up">
-            <span className="inline-flex items-center gap-2 rounded-full border border-offer-accent/40 bg-offer-accent/10 px-3 py-1 font-mono text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-offer-accent">
-              <Sparkles className="w-3.5 h-3.5" /> Black MedStation · só em novembro
-            </span>
-            <p className="mt-4 max-w-xl text-sm md:text-lg leading-snug text-offer-foreground/90">{PRODUCT_LINE}</p>
-            <h1 className="mt-5 text-[2.4rem] leading-[1.03] md:text-6xl font-semibold tracking-tight">
-              {SHIFT_ANCHOR_OK ? (
-                <>
-                  Garanta 365 dias de MedStation por{" "}
-                  <span className="text-offer-gold">{SHIFT_ANCHOR}</span>.<sup className="ml-0.5 text-offer-muted text-[0.35em]">**</sup>
-                </>
-              ) : (
-                <>
-                  Um ano inteiro de MedStation por <span className="text-offer-gold">{brl(PRICE)}</span>.
-                </>
-              )}
-            </h1>
-            <p className="mt-6 max-w-xl text-lg md:text-2xl font-medium leading-snug text-offer-foreground">
-              Até <span className="text-offer-accent">40 horas</span> por mês a menos digitando.
-              <sup className="text-offer-muted">*</sup>
-            </p>
-            <VslVideo className="mt-6" />
-            {active && (
-              <Button
-                className={cn("mt-4 h-auto min-h-12 w-full whitespace-normal py-3 text-base leading-snug lg:hidden", GOLD_BUTTON)}
-                onClick={() => openCheckout("black_hero_mobile")}
-              >
-                {CTA_LABEL} <ArrowRight className="w-4 h-4 ml-1.5 shrink-0" />
-              </Button>
+        {/*
+          Topo em coluna única (Artur, 03/11), como o bloco final: primeiro a
+          promessa e o vídeo, sem o preço dividindo a tela; o card de compra vem
+          logo abaixo. O botão do topo leva até o card em vez de abrir o pagamento.
+        */}
+        <div className="relative container mx-auto max-w-4xl px-4 md:px-8 pt-10 pb-10 md:pt-16 md:pb-14 text-center motion-safe:animate-slide-up">
+          <span className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-offer-accent/40 bg-offer-accent/10 px-3 py-1 font-mono text-[0.62rem] md:text-[0.68rem] font-semibold uppercase tracking-[0.1em] md:tracking-[0.18em] text-offer-accent">
+            <Sparkles className="w-3.5 h-3.5" /> Black MedStation · só em novembro
+          </span>
+          <p className="mx-auto mt-4 max-w-2xl text-sm md:text-lg leading-snug text-offer-foreground/90">{PRODUCT_LINE}</p>
+          <h1 className="mx-auto mt-5 max-w-3xl text-[2.4rem] leading-[1.03] md:text-6xl lg:text-7xl font-semibold tracking-tight">
+            {SHIFT_ANCHOR_OK ? (
+              <>
+                Garanta 365 dias de MedStation por{" "}
+                <span className="text-offer-gold">{SHIFT_ANCHOR}</span>.<sup className="ml-0.5 text-offer-muted text-[0.35em]">**</sup>
+              </>
+            ) : (
+              <>
+                Um ano inteiro de MedStation por <span className="text-offer-gold">{brl(PRICE)}</span>.
+              </>
             )}
-            <p className="mt-4 max-w-xl text-base md:text-lg text-offer-muted leading-relaxed">
-              Evoluções, receitas, atestados e anamneses prontos em segundos, para você voltar ao que importa: o paciente.
-            </p>
-            {/* Notas legíveis: são a base legal dos números do topo (CDC art. 37). */}
-            <p className="mt-3 max-w-xl text-[0.8125rem] text-offer-foreground/70 leading-relaxed">
-              * Estimativa supondo 15 atendimentos por dia, 22 dias por mês e 7,5 minutos economizados por atendimento. O
-              ganho real depende do seu volume e do seu uso.
-            </p>
-            {SHIFT_ANCHOR_OK && (
-              <p className="mt-1 max-w-xl text-[0.8125rem] text-offer-foreground/70 leading-relaxed">{SHIFT_NOTE}</p>
+          </h1>
+          <p className="mx-auto mt-6 max-w-2xl text-lg md:text-2xl font-medium leading-snug text-offer-foreground">
+            Até <strong className="font-extrabold text-offer-accent">40 horas</strong> por mês a menos digitando.
+            <sup className="text-offer-muted">*</sup>
+          </p>
+          <VslVideo className="mx-auto mt-8 max-w-3xl text-left" />
+          {active && (
+            <Button
+              className={cn("mt-6 h-auto min-h-14 w-full max-w-md whitespace-normal px-7 py-3 text-base leading-snug", GOLD_BUTTON)}
+              onClick={() => goToOffer("black_hero")}
+            >
+              Quero garantir meus 12 meses <ArrowRight className="w-4 h-4 ml-1.5 shrink-0" />
+            </Button>
+          )}
+          <p className="mx-auto mt-5 max-w-2xl text-base md:text-lg text-offer-muted leading-relaxed">
+            Evoluções, receitas, atestados e anamneses prontos em segundos, para você voltar ao que importa: o paciente.
+          </p>
+          <div className="mt-6 flex justify-center">
+            {active && <Countdown target={BLACK_OFFER.endsAt} label="Oferta até 30/11" />}
+            {status === "upcoming" && <Countdown target={BLACK_OFFER.startsAt} label="A Black começa em 1º/11" />}
+            {status === "ended" && (
+              <p className="text-sm text-offer-muted">A oferta foi válida de 1 a 30 de novembro de 2026.</p>
             )}
-
-            <div className="mt-8">
-              {active && <Countdown target={BLACK_OFFER.endsAt} label="Oferta até 30/11" />}
-              {status === "upcoming" && <Countdown target={BLACK_OFFER.startsAt} label="A Black começa em 1º/11" />}
-              {status === "ended" && (
-                <p className="text-sm text-offer-muted">A oferta foi válida de 1 a 30 de novembro de 2026.</p>
-              )}
-            </div>
           </div>
+        </div>
 
-          <div className="text-left motion-safe:animate-slide-up">
-            {canceled && active && (
-              <p className="mb-3 rounded-lg border border-offer-accent/40 bg-offer-accent/10 px-3 py-2 text-xs text-offer-foreground">
-                O pagamento não foi concluído. Sua oferta continua aqui até 30/11.
-              </p>
-            )}
-            <CheckoutCard status={status} />
-          </div>
+        <div className="relative container mx-auto max-w-xl px-4 pb-14 md:pb-20">
+          {canceled && active && (
+            <p className="mb-3 rounded-lg border border-offer-accent/40 bg-offer-accent/10 px-3 py-2 text-xs text-offer-foreground">
+              O pagamento não foi concluído. Sua oferta continua aqui até 30/11.
+            </p>
+          )}
+          <CheckoutCard status={status} />
+          {/* Notas legíveis: são a base legal dos números do topo (CDC art. 37). */}
+          <p className="mt-5 text-[0.8125rem] text-offer-foreground/70 leading-relaxed">
+            * Estimativa supondo 15 atendimentos por dia, 22 dias por mês e 7,5 minutos economizados por atendimento. O ganho
+            real depende do seu volume e do seu uso.
+          </p>
+          {SHIFT_ANCHOR_OK && <p className="mt-1 text-[0.8125rem] text-offer-foreground/70 leading-relaxed">{SHIFT_NOTE}</p>}
         </div>
       </section>
 

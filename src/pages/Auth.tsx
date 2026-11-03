@@ -30,7 +30,9 @@ export default function Auth() {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
-  const [authTab, setAuthTab] = useState("signin");
+  // /auth?aba=teste abre direto em "Criar conta (teste gratuito)" — botão separado
+  // do cabeçalho da /black (Artur, 03/11). Sem o parâmetro, abre em "Entrar".
+  const [authTab, setAuthTab] = useState(() => (searchParams.get("aba") === "teste" ? "signup" : "signin"));
   const [loading, setLoading] = useState(false);
 
   const [resetLoading, setResetLoading] = useState(false);
