@@ -61,8 +61,7 @@ const BRAND_TAGLINE = "Produza mais, digite menos.";
  * O que a MedStation faz, para quem chega frio pelo anúncio. "Agregar valor
  * real" vem do depoimento autorizado da Dra. Daiane Cordeiro.
  */
-const PRODUCT_LINE =
-  "A IA que escreve e organiza sua anamnese, sugere prescrições e agrega valor real à sua prática médica.";
+const PRODUCT_LINE = "MedStation: plataforma de IA que agrega valor real à sua prática médica.";
 const GOLD_BUTTON =
   "bg-offer-gold text-offer-gold-foreground hover:bg-offer-gold/90 font-semibold shadow-[0_10px_30px_-10px_hsl(var(--offer-gold)/0.7)]";
 
