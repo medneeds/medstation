@@ -3,7 +3,7 @@
 // os dois iguais. Quem decide o valor cobrado é sempre o servidor.
 //
 // - Black MedStation: 1 a 30 de novembro de 2026 (Brasília), só anual,
-//   R$ 399,90 à vista, sem o bônus Arsenal Med.
+//   R$ 399,90 à vista, com o bônus Arsenal Med (desde 03/11).
 // - A partir de 1º de dezembro de 2026: mensal R$ 99,90 e anual R$ 999,90.
 
 export const BLACK_OFFER = {

@@ -2,6 +2,7 @@
 // e botão na seção de dúvidas. O clique conta como cta_click (funil interno) e,
 // com consentimento de marketing, como "Contact" no Pixel da Meta.
 
+import { useEffect, useState } from "react";
 import { trackCtaClick } from "@/lib/analytics";
 import { hasMarketingConsent } from "@/lib/consent";
 import { cn } from "@/lib/utils";
@@ -30,8 +31,32 @@ function WhatsAppIcon({ className }: { className?: string }) {
   );
 }
 
+/**
+ * No celular, quantos pixels rolar antes de mostrar o botão: no topo ele
+ * cobria o botão de compra do hero. No computador aparece sempre.
+ */
+function useShowAfterScroll(threshold: number) {
+  const [show, setShow] = useState(threshold <= 0);
+  useEffect(() => {
+    if (threshold <= 0) return;
+    const check = () => setShow(window.scrollY > threshold);
+    check();
+    window.addEventListener("scroll", check, { passive: true });
+    return () => window.removeEventListener("scroll", check);
+  }, [threshold]);
+  return show;
+}
+
 /** Botão redondo fixo no canto; no celular fica acima da barra de compra. */
-export function WhatsAppFloatingButton({ aboveStickyBar = false }: { aboveStickyBar?: boolean }) {
+export function WhatsAppFloatingButton({
+  aboveStickyBar = false,
+  mobileShowAfter = 0,
+}: {
+  aboveStickyBar?: boolean;
+  /** Pixels de rolagem antes de aparecer no celular (0 = sempre). */
+  mobileShowAfter?: number;
+}) {
+  const shown = useShowAfterScroll(mobileShowAfter);
   return (
     <a
       href={salesWhatsAppUrl()}
@@ -40,8 +65,9 @@ export function WhatsAppFloatingButton({ aboveStickyBar = false }: { aboveSticky
       aria-label="Falar com o Artur no WhatsApp"
       onClick={() => trackWhatsApp("black_whatsapp_floating")}
       className={cn(
-        "fixed right-4 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_10px_30px_-8px_rgba(0,0,0,0.5)] transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#25D366] md:bottom-6",
+        "fixed right-4 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_10px_30px_-8px_rgba(0,0,0,0.5)] transition-[transform,opacity] hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#25D366] md:bottom-6 md:pointer-events-auto md:opacity-100",
         aboveStickyBar ? "bottom-24" : "bottom-6",
+        !shown && "pointer-events-none opacity-0",
       )}
     >
       <WhatsAppIcon className="h-7 w-7" />

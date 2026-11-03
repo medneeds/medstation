@@ -33,8 +33,8 @@ export function BlackInAppOffer({ fallback }: { fallback?: ReactNode }) {
 
   const monthly = accessStatus === "paid_active" || accessStatus === "past_due";
   const title = monthly
-    ? "Troque o mensal pelo anual Black: 12 meses por R$ 399,90"
-    : "Black MedStation: 12 meses por R$ 399,90";
+    ? "Troque o mensal pelo anual Black: 12 meses + Arsenal Med por R$ 399,90"
+    : "Black MedStation: 12 meses + Arsenal Med por R$ 399,90";
   const body = monthly
     ? "Seu mensal é encerrado sozinho no fim do mês já pago, sem cobrança dupla. Só até 30/11."
     : isTrial

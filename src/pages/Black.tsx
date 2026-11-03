@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ArrowRight, BadgePercent, CalendarCheck, Check, Flame, Loader2, Lock, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, BadgePercent, CalendarCheck, Check, Loader2, Lock, ShieldCheck, Sparkles } from "lucide-react";
 import { Seo } from "@/components/Seo";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,8 @@ const PRICE = BLACK_OFFER.amountCents / 100;
 // "De/por" e "% off" usam o preço anual efetivamente praticado durante a oferta
 // (novembro = preço de lançamento). Usar como referência um preço que ainda não
 // foi cobrado (o de dezembro) é propaganda enganosa (CDC art. 37 / Procon).
+// Desde 03/11 a Black inclui o Arsenal Med, então o "de" (anual + Arsenal Med,
+// R$ 499,90, à venda no site) e o "por" são o mesmo produto.
 const CURRENT_YEARLY = PRICE_TABLE.launch.yearlyCents / 100;
 /** Preço anual a partir de 1º/12 — só aparece rotulado como preço futuro. */
 const DECEMBER_YEARLY = BLACK_OFFER.anchorCents / 100;
@@ -50,10 +52,17 @@ const SHIFT_6H_REF = 500;
 const SHIFT_ANCHOR_OK = PRICE < SHIFT_6H_REF;
 const SHIFT_ANCHOR = "menos que um plantão de 6 horas";
 const SHIFT_NOTE = `** Referência de mercado: plantões de 6 horas costumam pagar a partir de ${brl(SHIFT_6H_REF)}. O valor varia por cidade e serviço.`;
-/** 40 h/mês economizadas ≈ mais de 3 plantões de 12 h. */
-const SHIFTS_12H_SAVED = Math.floor(40 / 12);
 
-const CTA_LABEL = "Assinar plano Black anual";
+const CTA_LABEL = `Garantir meus 12 meses por ${brl(PRICE)}`;
+const CTA_SHORT = "Garantir Black";
+/** Mensagem da marca (Artur, 03/11). */
+const BRAND_TAGLINE = "Produza mais, digite menos.";
+/**
+ * O que a MedStation faz, para quem chega frio pelo anúncio. "Agregar valor
+ * real" vem do depoimento autorizado da Dra. Daiane Cordeiro.
+ */
+const PRODUCT_LINE =
+  "A IA que escreve e organiza sua anamnese, sugere prescrições e agrega valor real à sua prática médica.";
 const GOLD_BUTTON =
   "bg-offer-gold text-offer-gold-foreground hover:bg-offer-gold/90 font-semibold shadow-[0_10px_30px_-10px_hsl(var(--offer-gold)/0.7)]";
 
@@ -63,16 +72,21 @@ const included = [
   "Modo Rotineiro e Modo Operador para as tarefas repetitivas do plantão",
   "Cofre Inteligente para guardar notas, casos e arquivos importantes",
   "Todas as novidades lançadas durante os seus 12 meses",
+  `E-book ${ANNUAL_BONUS.name}: ${ANNUAL_BONUS.tagline.toLowerCase()} (vendido à parte por ${ANNUAL_BONUS.valueLabel}), incluso`,
 ];
 
 const faq = [
   {
     q: "Como recebo o acesso depois de pagar?",
-    a: "Assim que o pagamento é confirmado, enviamos um e-mail para o endereço que você informou com o link para entrar. Se você já tem conta, os 12 meses entram nela automaticamente.",
+    a: `Assim que o pagamento é confirmado, enviamos um e-mail para o endereço que você informou com o link para entrar. Se você já tem conta, os 12 meses entram nela automaticamente. O ${ANNUAL_BONUS.name} chega por e-mail logo depois, e o acesso é liberado no painel do Arsenal Med com o mesmo e-mail da compra.`,
+  },
+  {
+    q: `O ${ANNUAL_BONUS.name} vem mesmo incluso?`,
+    a: `Vem. A Black inclui o e-book ${ANNUAL_BONUS.name} (${ANNUAL_BONUS.tagline.toLowerCase()}), que é vendido à parte por ${ANNUAL_BONUS.valueLabel}, sem custo extra.`,
   },
   {
     q: "E se eu preferir pagar por mês?",
-    a: `Também dá. Logo abaixo do botão da Black está o plano mensal de ${brl(PRICE_TABLE.launch.monthlyCents / 100)} por mês no cartão, que você cancela quando quiser. Se preferir o anual de ${brl(PRICE_TABLE.launch.yearlyCents / 100)} com o e-book Arsenal Med incluso, ele aparece ao tocar em "Prefere o anual com o e-book". A oferta de ${brl(PRICE)} pelo ano vale só para o plano Black, até 30/11.`,
+    a: `Também dá. Logo abaixo do botão da Black está o plano mensal de ${brl(PRICE_TABLE.launch.monthlyCents / 100)} por mês no cartão, que você cancela quando quiser. O mensal não inclui o ${ANNUAL_BONUS.name}. A oferta de ${brl(PRICE)} pelos 12 meses vale só para a Black, até 30/11.`,
   },
   {
     q: "Posso parcelar ou pagar com Pix ou boleto?",
@@ -85,6 +99,10 @@ const faq = [
   {
     q: "A Black renova sozinha?",
     a: `Não. É um pagamento único de ${brl(PRICE)} que libera 12 meses de acesso, sem cobrança automática no fim.`,
+  },
+  {
+    q: "E depois dos 12 meses?",
+    a: "Nada é cobrado automaticamente. Ao fim dos 12 meses, você decide se quer continuar, pelo preço vigente na época. Se não renovar, o acesso simplesmente se encerra, sem multa nem cobrança.",
   },
   {
     q: "Já tenho conta na MedStation. Posso aproveitar?",
@@ -108,7 +126,8 @@ const faq = [
 const MARQUEE_ITEMS = [
   "Black MedStation",
   "365 dias por menos que um plantão de 6h",
-  "Até 40 horas a menos de burocracia por mês*",
+  `${ANNUAL_BONUS.name} incluso`,
+  "Até 40 horas por mês a menos digitando*",
   "Até 30/11",
   "7 dias de garantia",
 ];
@@ -180,7 +199,7 @@ function Marquee({ tone = "gold", className }: { tone?: "gold" | "dark"; classNa
     <div
       className={cn(
         "overflow-hidden",
-        dark ? "bg-offer text-offer-gold border-b border-offer-border" : "bg-offer-gold text-offer-gold-foreground",
+        dark ? "bg-offer text-offer-accent border-b border-offer-border" : "bg-offer-gold text-offer-gold-foreground",
         className,
       )}
       aria-hidden="true"
@@ -197,7 +216,7 @@ function Marquee({ tone = "gold", className }: { tone?: "gold" | "dark"; classNa
                 )}
               >
                 {item}
-                <span className={cn("h-1.5 w-1.5 rotate-45", dark ? "bg-offer-accent" : "bg-offer-gold-foreground/70")} />
+                <span className={cn("h-1.5 w-1.5 rotate-45", dark ? "bg-offer-muted/60" : "bg-offer-gold-foreground/70")} />
               </span>
             ))}
           </div>
@@ -208,30 +227,24 @@ function Marquee({ tone = "gold", className }: { tone?: "gold" | "dark"; classNa
 }
 
 /**
- * Contador único da página (no topo). Sóbrio de propósito: sem ponto piscando
- * nem segundos em vermelho — o público é médico e desconfia de urgência de varejo.
+ * Prazo da oferta em uma linha de texto. Sem blocos de segundos correndo: o
+ * público é médico e desconfia de urgência de varejo (auditoria de 03/11).
+ * Atualiza de minuto em minuto, o suficiente para a virada do último dia.
  */
 function Countdown({ target, label }: { target: string; label: string }) {
-  const now = useClock();
+  const now = useClock(60_000);
   const t = timeLeft(target, now);
-  const parts = [
-    { v: t.days, l: "dias" },
-    { v: t.hours, l: "horas" },
-    { v: t.minutes, l: "min" },
-    { v: t.seconds, l: "seg" },
-  ];
+  const left =
+    t.days >= 1
+      ? `faltam ${t.days} ${t.days === 1 ? "dia" : "dias"}`
+      : `faltam ${t.hours}h ${String(t.minutes).padStart(2, "0")}min`;
   return (
-    <div>
-      <p className="text-xs uppercase tracking-[0.18em] font-mono text-offer-muted">{label}</p>
-      <div className="mt-2 flex gap-2" role="timer" aria-live="off">
-        {parts.map((p) => (
-          <div key={p.l} className="min-w-[3.8rem] rounded-lg border border-offer-border bg-offer-foreground/5 px-2 py-2 text-center">
-            <div className="text-xl md:text-3xl font-semibold tabular-nums">{String(p.v).padStart(2, "0")}</div>
-            <div className="text-[0.65rem] text-offer-muted">{p.l}</div>
-          </div>
-        ))}
-      </div>
-    </div>
+    <p className="flex items-center gap-2 text-sm text-offer-muted" role="timer" aria-live="off">
+      <CalendarCheck className="h-4 w-4 text-offer-accent" />
+      <span>
+        {label} · <span className="font-semibold text-offer-foreground">{left}</span>
+      </span>
+    </p>
   );
 }
 
@@ -244,7 +257,7 @@ function openCheckout(cta: string, choice: BlackPagePlanKey = "black") {
 }
 
 const POPUP_TITLE: Record<BlackPagePlanKey, string> = {
-  black: "Plano Black anual",
+  black: "Black: 12 meses + Arsenal Med",
   monthly: "Plano mensal",
   annual_arsenal: "Anual + Arsenal Med 3.0",
 };
@@ -375,30 +388,46 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
   return (
     <div
       id="assinar"
-      className="relative overflow-hidden rounded-2xl border-2 border-offer-gold bg-card text-card-foreground p-5 md:p-7 shadow-[0_30px_80px_-30px_hsl(var(--offer-gold)/0.55)] scroll-mt-24"
+      className="relative overflow-hidden rounded-2xl border-2 border-primary/60 bg-card text-card-foreground p-5 md:p-7 shadow-[0_30px_80px_-30px_hsl(var(--primary)/0.45)] scroll-mt-24"
     >
       <div className="flex items-center gap-2">
-        <Flame className="w-4 h-4 text-offer-hot" />
-        <span className="text-sm font-semibold">Plano Black anual</span>
+        <Sparkles className="w-4 h-4 text-primary" />
+        <span className="text-sm font-semibold">Black: 12 meses + {ANNUAL_BONUS.name}</span>
       </div>
+      {/* "De" = anual + Arsenal Med à venda hoje (mesmo produto da Black). */}
       <p className="mt-4 text-sm text-muted-foreground">
-        de <span className="line-through decoration-offer-hot decoration-2">{brl(CURRENT_YEARLY)}</span> por
+        Anual + {ANNUAL_BONUS.name}: de <span className="line-through decoration-muted-foreground decoration-2">{brl(CURRENT_YEARLY)}</span> por
       </p>
       <div className="flex items-baseline gap-1.5">
         <span className="text-5xl md:text-6xl font-bold tracking-tight">{brl(PRICE)}</span>
-        <span className="text-sm text-muted-foreground">/ano</span>
+        <span className="text-sm text-muted-foreground">pelos 12 meses</span>
       </div>
       <p className="mt-1 text-sm font-medium text-foreground">pagamento único no cartão de crédito</p>
       {SHIFT_ANCHOR_OK && (
-        <p className="mt-1 text-sm text-offer-gold font-semibold">
+        <p className="mt-1 text-sm text-primary font-semibold">
           {SHIFT_ANCHOR.charAt(0).toUpperCase() + SHIFT_ANCHOR.slice(1)}, pelo ano inteiro.
         </p>
       )}
       <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-        <span className="rounded-full bg-offer-gold/20 px-2.5 py-1 font-semibold text-foreground">
-          {brl(SAVINGS_NOW)} a menos que o anual de hoje
+        <span className="rounded-full bg-primary/15 px-2.5 py-1 font-semibold text-foreground">
+          {brl(SAVINGS_NOW)} a menos, com o e-book incluso
         </span>
         <span className="text-muted-foreground">Menos de {brl(Math.ceil(PER_DAY * 100) / 100)} por dia</span>
+      </div>
+      <div className="mt-3 rounded-lg border border-border bg-muted/40 px-3 py-2.5 text-xs leading-snug">
+        <p className="font-semibold text-foreground">O que vem na Black</p>
+        <ul className="mt-1.5 space-y-1 text-muted-foreground">
+          <li className="flex gap-2">
+            <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" /> MedStation completa por 12 meses, com os 12 assistentes
+          </li>
+          <li className="flex gap-2">
+            <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+            <span>
+              E-book {ANNUAL_BONUS.name}, vendido à parte por {ANNUAL_BONUS.valueLabel}:{" "}
+              <span className="font-semibold text-foreground">incluso sem custo</span>
+            </span>
+          </li>
+        </ul>
       </div>
       <p className="mt-3 rounded-lg border border-offer-gold/40 bg-offer-gold/10 px-3 py-2 text-xs leading-snug text-foreground">
         A partir de 1º/12 o anual passa a custar <span className="font-semibold">{brl(DECEMBER_YEARLY)}</span>. Garantindo
@@ -415,7 +444,7 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
       ) : (
       <div className="mt-6 space-y-3">
         {upcoming && (
-          <p className="rounded-lg bg-offer-hot/10 px-3 py-2 text-xs text-foreground">
+          <p className="rounded-lg bg-primary/10 px-3 py-2 text-xs text-foreground">
             A Black abre à meia-noite de 1º de novembro. Entre na lista VIP e seja avisado primeiro.
           </p>
         )}
@@ -433,13 +462,9 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
           className={cn(
             "relative w-full h-14 text-base md:text-lg overflow-hidden",
             GOLD_BUTTON,
-            !loading && "motion-safe:animate-cta-pulse",
           )}
           disabled={loading}
         >
-          {!loading && (
-            <span className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-offer-foreground/40 to-transparent motion-safe:animate-brand-sweep" />
-          )}
           {loading && (upcoming || loadingChoice === "black") ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" /> {upcoming ? "Salvando..." : "Abrindo pagamento..."}
@@ -475,7 +500,7 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
           <ShieldCheck className="w-3.5 h-3.5 text-primary" /> 7 dias de garantia incondicional
         </li>
         <li className="flex items-center gap-2">
-          <Check className="w-3.5 h-3.5 text-primary" /> Black anual: 12 meses de acesso, sem renovação automática
+          <Check className="w-3.5 h-3.5 text-primary" /> 12 meses de acesso, sem renovação automática
         </li>
       </ul>
 
@@ -520,7 +545,7 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
                 <button
                   type="button"
                   onClick={() => setEmail(suggestEmailFix(email) ?? email)}
-                  className="mt-1 text-left text-[0.75rem] font-medium text-offer-hot underline underline-offset-2"
+                  className="mt-1 text-left text-[0.75rem] font-medium text-primary underline underline-offset-2"
                 >
                   Você quis dizer {suggestEmailFix(email)}? Toque para corrigir.
                 </button>
@@ -614,12 +639,10 @@ function OtherPlans({
   loadingChoice: BlackPagePlanKey | null;
   onChoose: (choice: BlackPagePlanKey) => void;
 }) {
-  const monthly = BLACK_PAGE_PLANS.monthly;
-  const annual = BLACK_PAGE_PLANS.annual_arsenal;
   // Decisão do Artur (03/11): o mensal fica à vista ao lado da Black, porque
-  // "R$ 49,90/mês ou R$ 399,90 no ano" ancora o preço; o anual com Arsenal Med
-  // fica recolhido para não competir com a Black.
-  const [showArsenal, setShowArsenal] = useState(false);
+  // "R$ 49,90/mês ou R$ 399,90 pelos 12 meses" ancora o preço. O anual + Arsenal
+  // Med de R$ 499,90 saiu da página: a Black já inclui o e-book por menos.
+  const monthly = BLACK_PAGE_PLANS.monthly;
   return (
     <div id="outros-planos" className="pt-3">
       <div className="flex items-center gap-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
@@ -632,7 +655,7 @@ function OtherPlans({
             <span className="text-xs text-muted-foreground">/mês</span>
           </p>
           <p className="text-[0.72rem] leading-snug text-muted-foreground">
-            No cartão, cancele quando quiser. Em 12 meses: {brl(monthly.priceBrl * 12)}.
+            No cartão, cancele quando quiser. Em 12 meses: {brl(monthly.priceBrl * 12)}, sem o e-book.
           </p>
         </div>
         <Button
@@ -651,46 +674,6 @@ function OtherPlans({
           )}
         </Button>
       </div>
-      {!showArsenal ? (
-        <div className="mt-2 text-center">
-          <button
-            type="button"
-            onClick={() => {
-              trackCtaClick({ cta: "black_card_show_arsenal", section: "black", destination: "other_plans" });
-              setShowArsenal(true);
-            }}
-            className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
-          >
-            Prefere o anual com o e-book {ANNUAL_BONUS.name}?
-          </button>
-        </div>
-      ) : (
-        <div className="mt-3 flex flex-col rounded-xl border border-primary/40 bg-primary/5 p-3.5">
-          <p className="text-sm font-semibold">Anual + {ANNUAL_BONUS.name}</p>
-          <p className="mt-1 flex items-baseline gap-1">
-            <span className="text-2xl font-bold tracking-tight">{brl(annual.priceBrl)}</span>
-            <span className="text-xs text-muted-foreground">/ano</span>
-          </p>
-          <p className="mt-1 flex-1 text-[0.72rem] leading-snug text-muted-foreground">
-            Pagamento único, 12 meses, com o e-book {ANNUAL_BONUS.name} ({ANNUAL_BONUS.valueLabel}) incluso.
-          </p>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onChoose("annual_arsenal")}
-            disabled={loading}
-            className="mt-3 h-11 w-full border-primary text-primary hover:bg-primary/10 font-semibold"
-          >
-            {loadingChoice === "annual_arsenal" ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Abrindo...
-              </>
-            ) : (
-              "Anual com o Arsenal Med"
-            )}
-          </Button>
-        </div>
-      )}
     </div>
   );
 }
@@ -710,8 +693,8 @@ function GoldCta({ cta, className }: { cta: string; className?: string }) {
 const highlights = [
   {
     icon: Lock,
-    title: "Preço travado por 12 meses",
-    text: `Em dezembro a MedStation sobe para ${brl(DECEMBER_YEARLY)} por ano. Você segue o ano inteiro sem nenhum reajuste.`,
+    title: `Seu ano fica em ${brl(PRICE)}`,
+    text: `Em 1º/12 o anual passa a ${brl(DECEMBER_YEARLY)}. Garantindo na Black, os seus 12 meses já ficam pagos por ${brl(PRICE)}, com o ${ANNUAL_BONUS.name} incluso.`,
   },
   {
     icon: ShieldCheck,
@@ -761,34 +744,44 @@ export default function Black() {
       <Seo
         path="/black"
         title="Black MedStation — 365 dias por menos que um plantão"
-        description={`Só em novembro: o plano anual completo da MedStation de ${brl(CURRENT_YEARLY)} por ${brl(PRICE)}, em pagamento único no cartão. 7 dias de garantia.`}
+        description={`Só em novembro: 12 meses de MedStation + o e-book ${ANNUAL_BONUS.name} de ${brl(CURRENT_YEARLY)} por ${brl(PRICE)}, em pagamento único no cartão. 7 dias de garantia.`}
       />
 
       <div className="sticky top-0 z-30">
         <Marquee tone="dark" />
         <header className="border-b border-offer-border bg-offer/90 text-offer-foreground backdrop-blur-md">
           <div className="container mx-auto px-4 md:px-8 h-16 flex items-center justify-between gap-3">
-            <Link to="/" aria-label="MedStation" className="flex items-center gap-3">
-              <Logo size="sm" className="[&>span]:text-offer-foreground" />
+            <Link to="/" aria-label="MedStation" className="flex min-w-0 items-center gap-3">
+              <span className="flex flex-col">
+                <Logo size="sm" className="[&>span]:text-offer-foreground" />
+                {/* Mensagem da marca: no celular fica sob o logo, no computador ao lado. */}
+                <span className="mt-0.5 whitespace-nowrap text-[0.62rem] leading-none text-offer-muted md:hidden">{BRAND_TAGLINE}</span>
+              </span>
               <span className="hidden sm:inline-flex rounded-sm border border-offer-gold/50 px-1.5 py-0.5 font-mono text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-offer-gold">
                 Black
               </span>
+              <span className="hidden md:inline border-l border-offer-border pl-3 text-sm text-offer-muted">{BRAND_TAGLINE}</span>
             </Link>
             <div className="flex items-center gap-2">
               <Button
                 asChild
                 size="sm"
                 variant="ghost"
-                className="text-offer-muted hover:bg-offer-foreground/10 hover:text-offer-foreground"
+                className="h-auto py-1 text-offer-muted hover:bg-offer-foreground/10 hover:text-offer-foreground"
               >
-                <Link to="/auth" onClick={() => trackCtaClick({ cta: "black_login", section: "black", destination: "/auth" })}>
-                  <span className="sm:hidden">Entrar</span>
-                  <span className="hidden sm:inline">Já sou cliente</span>
+                {/* /auth tem as abas "Área do assinante" e "Teste gratuito". */}
+                <Link
+                  to="/auth"
+                  onClick={() => trackCtaClick({ cta: "black_login", section: "black", destination: "/auth" })}
+                  className="flex flex-col items-center leading-tight sm:flex-row sm:gap-1"
+                >
+                  <span>Área do assinante</span>
+                  <span className="text-[0.65rem] sm:text-xs text-offer-muted/80">(teste gratuito)</span>
                 </Link>
               </Button>
               {active && (
                 <Button size="sm" className={GOLD_BUTTON} onClick={() => openCheckout("black_header")}>
-                  Assinar Black
+                  {CTA_SHORT}
                 </Button>
               )}
             </div>
@@ -800,17 +793,18 @@ export default function Black() {
         {/* Brilhos de fundo */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 motion-safe:animate-orb-float"
+          className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(700px 380px at 85% 20%, hsl(var(--offer-gold) / 0.18), transparent 60%), radial-gradient(800px 420px at 5% 0%, hsl(var(--offer-accent) / 0.16), transparent 60%)",
+              "radial-gradient(700px 380px at 85% 20%, hsl(var(--offer-accent) / 0.10), transparent 60%), radial-gradient(800px 420px at 5% 0%, hsl(var(--offer-accent) / 0.12), transparent 60%)",
           }}
         />
         <div className="relative container mx-auto px-4 md:px-8 pt-10 pb-16 md:pt-16 md:pb-24 grid lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-14 items-center lg:items-start">
           <div className="motion-safe:animate-slide-up">
-            <span className="inline-flex items-center gap-2 rounded-full border border-offer-gold/40 bg-offer-gold/10 px-3 py-1 font-mono text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-offer-gold">
+            <span className="inline-flex items-center gap-2 rounded-full border border-offer-accent/40 bg-offer-accent/10 px-3 py-1 font-mono text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-offer-accent">
               <Sparkles className="w-3.5 h-3.5" /> Black MedStation · só em novembro
             </span>
+            <p className="mt-4 max-w-xl text-sm md:text-lg leading-snug text-offer-foreground/90">{PRODUCT_LINE}</p>
             <h1 className="mt-5 text-[2.4rem] leading-[1.03] md:text-6xl font-semibold tracking-tight">
               {SHIFT_ANCHOR_OK ? (
                 <>
@@ -824,9 +818,8 @@ export default function Black() {
               )}
             </h1>
             <p className="mt-6 max-w-xl text-lg md:text-2xl font-medium leading-snug text-offer-foreground">
-              Até <span className="text-offer-gold">40 horas</span> a menos de burocracia e trabalho repetitivo por mês
-              <sup className="text-offer-muted">*</sup>: o tempo de mais de {SHIFTS_12H_SAVED} plantões de 12 horas devolvido a
-              você todos os meses.
+              Até <span className="text-offer-accent">40 horas</span> por mês a menos digitando.
+              <sup className="text-offer-muted">*</sup>
             </p>
             <VslVideo className="mt-6" />
             {active && (
@@ -834,21 +827,24 @@ export default function Black() {
                 className={cn("mt-4 h-auto min-h-12 w-full whitespace-normal py-3 text-base leading-snug lg:hidden", GOLD_BUTTON)}
                 onClick={() => openCheckout("black_hero_mobile")}
               >
-                Quero garantir meu ano com a MedStation agora <ArrowRight className="w-4 h-4 ml-1.5 shrink-0" />
+                {CTA_LABEL} <ArrowRight className="w-4 h-4 ml-1.5 shrink-0" />
               </Button>
             )}
             <p className="mt-4 max-w-xl text-base md:text-lg text-offer-muted leading-relaxed">
               Evoluções, receitas, atestados e anamneses prontos em segundos, para você voltar ao que importa: o paciente.
             </p>
-            <p className="mt-3 max-w-xl text-xs text-offer-muted leading-relaxed">
-              * Estimativa baseada em 15 atendimentos por dia, 22 dias por mês, com economia média de 7,5 minutos por
-              atendimento. O ganho real depende do seu volume e do seu uso.
+            {/* Notas legíveis: são a base legal dos números do topo (CDC art. 37). */}
+            <p className="mt-3 max-w-xl text-[0.8125rem] text-offer-foreground/70 leading-relaxed">
+              * Estimativa supondo 15 atendimentos por dia, 22 dias por mês e 7,5 minutos economizados por atendimento. O
+              ganho real depende do seu volume e do seu uso.
             </p>
-            {SHIFT_ANCHOR_OK && <p className="mt-1 max-w-xl text-xs text-offer-muted leading-relaxed">{SHIFT_NOTE}</p>}
+            {SHIFT_ANCHOR_OK && (
+              <p className="mt-1 max-w-xl text-[0.8125rem] text-offer-foreground/70 leading-relaxed">{SHIFT_NOTE}</p>
+            )}
 
             <div className="mt-8">
-              {active && <Countdown target={BLACK_OFFER.endsAt} label="A oferta termina em" />}
-              {status === "upcoming" && <Countdown target={BLACK_OFFER.startsAt} label="A Black começa em" />}
+              {active && <Countdown target={BLACK_OFFER.endsAt} label="Oferta até 30/11" />}
+              {status === "upcoming" && <Countdown target={BLACK_OFFER.startsAt} label="A Black começa em 1º/11" />}
               {status === "ended" && (
                 <p className="text-sm text-offer-muted">A oferta foi válida de 1 a 30 de novembro de 2026.</p>
               )}
@@ -857,7 +853,7 @@ export default function Black() {
 
           <div className="text-left motion-safe:animate-slide-up">
             {canceled && active && (
-              <p className="mb-3 rounded-lg border border-offer-gold/40 bg-offer-gold/10 px-3 py-2 text-xs text-offer-foreground">
+              <p className="mb-3 rounded-lg border border-offer-accent/40 bg-offer-accent/10 px-3 py-2 text-xs text-offer-foreground">
                 O pagamento não foi concluído. Sua oferta continua aqui até 30/11.
               </p>
             )}
@@ -890,36 +886,31 @@ export default function Black() {
               </h3>
               <dl className="mt-4 space-y-2 text-sm">
                 {SHIFT_ANCHOR_OK && (
-                  <div className="flex items-center justify-between rounded-lg px-3 py-3">
+                  <div className="flex items-center justify-between gap-3 rounded-lg px-3 py-3">
                     <dt className="text-muted-foreground">Um plantão de 6 horas</dt>
-                    <dd className="text-muted-foreground">a partir de {brl(SHIFT_6H_REF)}**</dd>
+                    <dd className="text-right text-muted-foreground">a partir de {brl(SHIFT_6H_REF)}**</dd>
                   </div>
                 )}
-                <div className="flex items-center justify-between rounded-lg px-3 py-3">
-                  <dt className="text-muted-foreground">Mensal, a partir de 1º/12</dt>
-                  <dd className="text-muted-foreground">
-                    {brl(MONTHLY_FULL * 12)}/ano
-                  </dd>
+                <div className="flex items-center justify-between gap-3 rounded-lg px-3 py-3">
+                  <dt className="text-muted-foreground">Mensal hoje (12 × {brl(PRICE_TABLE.launch.monthlyCents / 100)}), sem e-book</dt>
+                  <dd className="text-right text-muted-foreground">{brl((PRICE_TABLE.launch.monthlyCents / 100) * 12)}</dd>
                 </div>
-                <div className="flex items-center justify-between rounded-lg px-3 py-3">
-                  <dt className="text-muted-foreground">Anual hoje, até 30/11</dt>
-                  <dd className="text-muted-foreground">
-                    <span className="line-through">{brl(CURRENT_YEARLY)}</span>/ano
-                  </dd>
+                <div className="flex items-center justify-between gap-3 rounded-lg px-3 py-3">
+                  <dt className="text-muted-foreground">Anual + {ANNUAL_BONUS.name}, hoje</dt>
+                  <dd className="text-right text-muted-foreground">{brl(CURRENT_YEARLY)}</dd>
                 </div>
-                <div className="flex items-center justify-between rounded-lg px-3 py-3">
+                <div className="flex items-center justify-between gap-3 rounded-lg px-3 py-3">
                   <dt className="text-muted-foreground">Anual, a partir de 1º/12</dt>
-                  <dd className="text-muted-foreground">
-                    {brl(DECEMBER_YEARLY)}/ano
-                  </dd>
+                  <dd className="text-right text-muted-foreground">{brl(DECEMBER_YEARLY)}</dd>
                 </div>
-                <div className="flex items-center justify-between rounded-lg border-2 border-offer-gold bg-offer-gold/10 px-3 py-3">
-                  <dt className="font-semibold">Black MedStation</dt>
+                <div className="flex items-center justify-between gap-3 rounded-lg border-2 border-primary/60 bg-primary/10 px-3 py-3">
+                  <dt className="font-semibold">Black: 12 meses + {ANNUAL_BONUS.name}</dt>
                   <dd className="text-right"><span className="block text-lg font-bold">{brl(PRICE)}</span><span className="text-xs text-muted-foreground">pagamento único</span></dd>
                 </div>
               </dl>
               <p className="mt-4 text-sm">
-                São <span className="font-semibold">{brl(SAVINGS)} a menos</span> que o anual a partir de 1º/12.
+                São <span className="font-semibold">{brl(SAVINGS_NOW)} a menos</span> que o anual + {ANNUAL_BONUS.name} de hoje e{" "}
+                <span className="font-semibold">{brl(SAVINGS)} a menos</span> que o anual a partir de 1º/12.
               </p>
             </div>
           </Reveal>
@@ -938,9 +929,9 @@ export default function Black() {
         <section className="grid md:grid-cols-3 gap-4 md:gap-6">
           {highlights.map((h, i) => (
             <Reveal key={h.title} delay={i * 120}>
-              <div className="group h-full rounded-2xl border border-border bg-card p-5 md:p-6 transition-all duration-300 hover:-translate-y-1 hover:border-offer-gold/60 hover:shadow-[0_20px_40px_-20px_hsl(var(--offer-gold)/0.5)]">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-offer-gold/15">
-                  <h.icon className="w-5 h-5 text-foreground" />
+              <div className="group h-full rounded-2xl border border-border bg-card p-5 md:p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15">
+                  <h.icon className="w-5 h-5 text-primary" />
                 </span>
                 <h3 className="mt-4 text-base font-semibold">{h.title}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">{h.text}</p>
@@ -974,10 +965,10 @@ export default function Black() {
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0"
-            style={{ background: "radial-gradient(600px 300px at 50% 120%, hsl(var(--offer-gold) / 0.25), transparent 70%)" }}
+            style={{ background: "radial-gradient(600px 300px at 50% 120%, hsl(var(--offer-accent) / 0.18), transparent 70%)" }}
           />
           <Reveal className="relative container mx-auto px-4 md:px-8 py-16 md:py-20 text-center">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-offer-gold">Black MedStation · até 30/11</p>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-offer-accent">Black MedStation · até 30/11</p>
             <h2 className="mt-3 text-3xl md:text-5xl font-semibold tracking-tight">
               {SHIFT_ANCHOR_OK ? (
                 <>
@@ -988,7 +979,8 @@ export default function Black() {
               )}
             </h2>
             <p className="mt-3 text-sm md:text-base text-offer-muted">
-              {brl(PRICE)} pelos 12 meses, até 30/11. A partir de 1º/12, o anual passa a {brl(DECEMBER_YEARLY)}.
+              {brl(PRICE)} pelos 12 meses, com o {ANNUAL_BONUS.name} incluso, até 30/11. A partir de 1º/12, o anual passa a{" "}
+              {brl(DECEMBER_YEARLY)}.
             </p>
             <GoldCta cta="black_footer" className="mt-8" />
             <p className="mt-3 text-xs text-offer-muted">7 dias de garantia · Cartão de crédito · Sem renovação automática</p>
@@ -998,21 +990,15 @@ export default function Black() {
 
       <SiteFooter />
 
-      <WhatsAppFloatingButton aboveStickyBar={active} />
+      <WhatsAppFloatingButton aboveStickyBar={active} mobileShowAfter={1400} />
 
       {/* Barra fixa no celular */}
       {active && (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-offer-border bg-offer/95 px-4 py-3 text-offer-foreground backdrop-blur md:hidden">
-          <div className="flex items-center gap-3">
-            {/* Sem preço na barra: no celular o valor aparece só quando a pessoa chega ao card. */}
-            <div className="min-w-0 leading-tight">
-              <p className="text-[0.65rem] text-offer-muted">365 dias por</p>
-              <p className="text-sm font-bold text-offer-gold">menos que 1 plantão</p>
-            </div>
-            <Button className={cn("h-12 flex-1 text-sm", GOLD_BUTTON)} onClick={() => openCheckout("black_sticky_mobile")}>
-              {CTA_LABEL}
-            </Button>
-          </div>
+          {/* Só o botão: o texto do CTA já traz o prazo do produto e o valor. */}
+          <Button className={cn("h-12 w-full text-sm", GOLD_BUTTON)} onClick={() => openCheckout("black_sticky_mobile")}>
+            {CTA_LABEL}
+          </Button>
         </div>
       )}
     </div>

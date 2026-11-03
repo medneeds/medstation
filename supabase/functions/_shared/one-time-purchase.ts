@@ -53,7 +53,7 @@ export type OneTimePlan = {
   /** Env var opcional com um Price one-time dedicado. */
   priceEnvVar: string;
   label: string;
-  /** Compra que dá direito ao bônus Arsenal Med (a Black não dá). */
+  /** Compra que dá direito ao bônus Arsenal Med (anual e Black, desde 03/11/2026). */
   includesArsenalBonus: boolean;
   /** Etiqueta de campanha gravada na compra (metadata.offer). */
   offer?: string;
@@ -92,8 +92,10 @@ export const ONE_TIME_PLANS: Record<string, OneTimePlan> = {
     paymentMethodTypes: ["card"],
     // Sempre price_data com o valor da oferta: nenhum Price por env.
     priceEnvVar: "",
-    label: "MedStation Completo — 12 meses (Black MedStation)",
-    includesArsenalBonus: false,
+    label: "MedStation Completo — 12 meses + Arsenal Med (Black MedStation)",
+    // Decisão do Artur (03/11/2026): a Black passa a incluir o Arsenal Med sem
+    // acréscimo, para comparar com o anual + Arsenal de R$ 499,90 (mesmo produto).
+    includesArsenalBonus: true,
     offer: "black_2026",
   },
   [MONTHLY_PIX_PLAN_SLUG]: {
@@ -143,7 +145,7 @@ export function resolveOneTimePlan(
   return { ...base };
 }
 
-/** Compra que não dá direito ao bônus Arsenal Med (ex.: Black). */
+/** Compra que não dá direito ao bônus Arsenal Med (ex.: Pix mensal). */
 export function planExcludesArsenalBonus(plan: string | undefined | null): boolean {
   const found = getOneTimePlan(plan);
   return found ? !found.includesArsenalBonus : false;
@@ -360,7 +362,7 @@ export function checkoutSubmitMessage(plan: OneTimePlan | null | undefined): str
   const assistants = "acesso completo aos 12 assistentes de IA da MedStation (Clínicus, Examinus, Prescriptus, Modo Escuta e mais)";
   if (!plan) return `Assinatura mensal com ${assistants}. Cancele quando quiser. ${guarantee}`;
   if (plan.slug === BLACK_ANNUAL_PLAN_SLUG) {
-    return `Black MedStation: 12 meses de ${assistants}, em pagamento único e sem renovação automática. ${guarantee}`;
+    return `Black MedStation: 12 meses de ${assistants} + o e-book Arsenal Med, em pagamento único e sem renovação automática. ${guarantee}`;
   }
   if (plan.category === "annual_one_time") {
     const bonus = plan.includesArsenalBonus ? " Inclui o bônus Arsenal Med." : "";

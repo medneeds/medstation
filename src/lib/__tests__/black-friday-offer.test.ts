@@ -43,8 +43,8 @@ describe("Black MedStation (novembro/2026)", () => {
     expect(plan?.paymentMethodTypes).toEqual(["card"]);
   });
 
-  it("não dá direito ao bônus Arsenal Med", () => {
-    expect(planExcludesArsenalBonus(BLACK_ANNUAL_PLAN_SLUG)).toBe(true);
+  it("dá direito ao bônus Arsenal Med, como o anual (decisão de 03/11/2026)", () => {
+    expect(planExcludesArsenalBonus(BLACK_ANNUAL_PLAN_SLUG)).toBe(false);
     expect(planExcludesArsenalBonus("pro_completo_yearly")).toBe(false);
     const row = {
       email: "medico@example.com",
@@ -53,7 +53,7 @@ describe("Black MedStation (novembro/2026)", () => {
       access_end: "2027-11-15T00:00:00.000Z",
     };
     const now = Date.parse("2026-11-15T12:00:00.000Z");
-    expect(purchaseEligibility({ ...row, plan: BLACK_ANNUAL_PLAN_SLUG }, now)).toEqual({ eligible: false });
+    expect(purchaseEligibility({ ...row, plan: BLACK_ANNUAL_PLAN_SLUG }, now).eligible).toBe(true);
     expect(purchaseEligibility({ ...row, plan: "pro_completo_yearly" }, now).eligible).toBe(true);
   });
 });

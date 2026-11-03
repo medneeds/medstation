@@ -3,7 +3,7 @@
 //
 // Regras (Artur, out/2026):
 // - Black MedStation: 1 a 30 de novembro de 2026 (horário de Brasília), só no
-//   plano anual, R$ 399,90 à vista, SEM o bônus Arsenal Med.
+//   plano anual, R$ 399,90 à vista, COM o bônus Arsenal Med (desde 03/11).
 // - A partir de 1º de dezembro de 2026 (Brasília) o preço de lançamento acaba:
 //   mensal R$ 99,90 e anual R$ 999,90. Assinaturas já ativas mantêm o valor.
 //

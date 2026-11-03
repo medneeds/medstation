@@ -35,6 +35,7 @@ const BENEFITS = [
   'Assistentes clínicos para anamnese, evolução, prescrição, exames e atestados',
   'Modo Escuta: a consulta vira anamnese enquanto você atende',
   'Todas as novidades lançadas durante os seus 12 meses',
+  'E-book Arsenal Med 3.0 incluso, sem custo extra',
 ]
 
 const COPY: Record<Step, { preview: string; subject: string; title: string; intro: string[]; button: string }> = {
@@ -54,7 +55,7 @@ const COPY: Record<Step, { preview: string; subject: string; title: string; intr
     title: 'A Black MedStation vai até 30/11',
     intro: [
       'Ontem você começou a garantir a Black MedStation e a compra ficou pela metade.',
-      'A oferta vale até 30 de novembro: R$ 399,90 por 12 meses, pagamento único no cartão, sem renovação automática. A partir de 1º/12, o plano anual passa a custar R$ 999,90.',
+      'A oferta vale até 30 de novembro: R$ 399,90 pelos 12 meses, com o e-book Arsenal Med 3.0 incluso, pagamento único no cartão e sem renovação automática. A partir de 1º/12, o plano anual passa a custar R$ 999,90.',
     ],
     button: 'Garantir meu ano',
   },

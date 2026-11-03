@@ -506,7 +506,7 @@ export function buildCopilotPriceFacts(schedule: CopilotPriceSchedule, now: numb
 
   if (blackActive) {
     lines.push(
-      `- Black MedStation (no ar até ${brDate(blackEnd - 1)}, horário de Brasília): plano anual por ${formatBRL(schedule.black.amountCents)}, pagamento único à vista no cartão de crédito. Não tem parcelamento, boleto nem Pix. Não inclui o bônus Arsenal Med. Destino: id "black".`,
+      `- Black MedStation (no ar até ${brDate(blackEnd - 1)}, horário de Brasília): plano anual por ${formatBRL(schedule.black.amountCents)}, pagamento único à vista no cartão de crédito. Não tem parcelamento, boleto nem Pix. Inclui o e-book Arsenal Med 3.0 sem custo extra. Destino: id "black".`,
       `- Plano mensal: ${formatBRL(phase.monthlyCents)} por mês.`,
     );
   } else {

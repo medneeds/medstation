@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import { REAL_USERS } from "@/data/realUsers";
+
+/**
+ * Quem tem depoimento escrito aparece primeiro; os demais vêm depois, para
+ * todos continuarem no carrossel (Artur, 03/11). A ordem original se mantém
+ * dentro de cada grupo.
+ */
+const ORDERED_USERS = [...REAL_USERS.filter((u) => u.quote), ...REAL_USERS.filter((u) => !u.quote)];
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -22,7 +29,7 @@ export function RealUsersCarousel({
   const scrollTo = (i: number) => {
     const el = track.current;
     if (!el) return;
-    const n = REAL_USERS.length;
+    const n = ORDERED_USERS.length;
     const next = ((i % n) + n) % n;
     const card = el.children[next] as HTMLElement | undefined;
     if (card) el.scrollTo({ left: card.offsetLeft - el.offsetLeft, behavior: "smooth" });
@@ -76,7 +83,7 @@ export function RealUsersCarousel({
             onScroll={onScroll}
             className="flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            {REAL_USERS.map((u) => (
+            {ORDERED_USERS.map((u) => (
               <figure
                 key={u.name}
                 className="snap-start shrink-0 w-[78%] sm:w-[46%] lg:w-[calc(25%-12px)] overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm"
@@ -126,7 +133,7 @@ export function RealUsersCarousel({
         </div>
 
         <div className="mt-5 flex justify-center gap-1.5">
-          {REAL_USERS.map((u, i) => (
+          {ORDERED_USERS.map((u, i) => (
             <button
               key={u.name}
               type="button"

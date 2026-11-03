@@ -556,7 +556,7 @@ async function grantOneTimeAccess(
     }
   }
 
-  // A Black MedStation (anual a R$ 399,90) não dá direito ao Arsenal Med.
+  // Anual e Black MedStation dão direito ao Arsenal Med (regra em one-time-purchase.ts).
   const bonusExcluded = planExcludesArsenalBonus(session.metadata?.plan ?? plan?.slug);
   if (accessPeriod === "annual_12m" && !bonusExcluded) {
     await deliverAnnualBonus(supabase, email ?? null, session.id);

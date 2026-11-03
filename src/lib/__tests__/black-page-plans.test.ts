@@ -43,7 +43,8 @@ describe("planos da página /black", () => {
     const page = read("src/pages/Black.tsx");
     expect(page.match(/entry: "black_page"/g)?.length).toBe(2);
     expect(page).toContain("Assinar o mensal");
-    expect(page).toContain("Anual com o Arsenal Med");
+    // Desde 03/11 a Black inclui o Arsenal Med; o anual + Arsenal de R$ 499,90 saiu da página.
+    expect(page).not.toContain("Anual com o Arsenal Med");
     const block = page.slice(page.indexOf("function OtherPlans"), page.indexOf("function GoldCta"));
     expect(block.length).toBeGreaterThan(200);
     expect(block).not.toMatch(/12x|parcel|boleto|Pix/i);
