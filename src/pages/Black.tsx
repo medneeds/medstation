@@ -26,6 +26,7 @@ import { checkoutTracking } from "@/lib/conversion";
 import { WhatsAppFloatingButton, WhatsAppInlineButton } from "@/components/landing/WhatsAppContact";
 import { ANNUAL_BONUS } from "@/lib/annualBonus";
 import { BLACK_PAGE_PLANS, type BlackPagePlanKey } from "@/lib/blackPagePlans";
+import { REAL_USERS } from "@/data/realUsers";
 
 const PRICE = BLACK_OFFER.amountCents / 100;
 // "De/por" e "% off" usam o preço anual efetivamente praticado durante a oferta
@@ -35,7 +36,6 @@ const CURRENT_YEARLY = PRICE_TABLE.launch.yearlyCents / 100;
 /** Preço anual a partir de 1º/12 — só aparece rotulado como preço futuro. */
 const DECEMBER_YEARLY = BLACK_OFFER.anchorCents / 100;
 const MONTHLY_FULL = PRICE_TABLE.full.monthlyCents / 100;
-const DISCOUNT_PCT = Math.round((1 - PRICE / CURRENT_YEARLY) * 100);
 const PER_DAY = PRICE / 365;
 const SAVINGS = DECEMBER_YEARLY - PRICE;
 const SAVINGS_NOW = CURRENT_YEARLY - PRICE;
@@ -59,7 +59,7 @@ const faq = [
   },
   {
     q: "E se eu preferir pagar por mês?",
-    a: `Também dá. Logo abaixo do botão da Black você encontra o plano mensal de ${brl(PRICE_TABLE.launch.monthlyCents / 100)} por mês no cartão, que você cancela quando quiser, e o anual de ${brl(PRICE_TABLE.launch.yearlyCents / 100)} com o e-book Arsenal Med incluso. A oferta de ${brl(PRICE)} pelo ano vale só para o plano Black, até 30/11.`,
+    a: `Também dá. No card de compra, toque em "Prefere outro plano?" para ver o plano mensal de ${brl(PRICE_TABLE.launch.monthlyCents / 100)} por mês no cartão, que você cancela quando quiser, e o anual de ${brl(PRICE_TABLE.launch.yearlyCents / 100)} com o e-book Arsenal Med incluso. A oferta de ${brl(PRICE)} pelo ano vale só para o plano Black, até 30/11.`,
   },
   {
     q: "Posso parcelar ou pagar com Pix ou boleto?",
@@ -93,10 +93,9 @@ const faq = [
 
 const MARQUEE_ITEMS = [
   "Black MedStation",
-  `${DISCOUNT_PCT}% off no anual`,
-  `de ${brl(CURRENT_YEARLY)} por ${brl(PRICE)}`,
-  "Só em novembro",
-  "Até 40 horas a menos de burocracia por mês*",
+  `12 meses por ${brl(PRICE)}`,
+  `Anual a ${brl(DECEMBER_YEARLY)} a partir de 1º/12`,
+  "Até 30/11",
   `${brl(PER_DAY)} por dia`,
   "7 dias de garantia",
 ];
@@ -195,23 +194,10 @@ function Marquee({ tone = "gold", className }: { tone?: "gold" | "dark"; classNa
   );
 }
 
-function HeaderTimer() {
-  const now = useClock();
-  const t = timeLeft(BLACK_OFFER.endsAt, now);
-  return (
-    <span className="hidden md:inline-flex items-center gap-2 rounded-full border border-offer-border bg-offer-foreground/5 px-3 py-1 text-xs text-offer-muted">
-      <span className="relative flex h-1.5 w-1.5">
-        <span className="absolute inline-flex h-full w-full rounded-full bg-offer-hot opacity-75 motion-safe:animate-ping" />
-        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-offer-hot" />
-      </span>
-      Termina em
-      <span className="font-mono tabular-nums text-offer-foreground">
-        {t.days}d {String(t.hours).padStart(2, "0")}h {String(t.minutes).padStart(2, "0")}m
-      </span>
-    </span>
-  );
-}
-
+/**
+ * Contador único da página (no topo). Sóbrio de propósito: sem ponto piscando
+ * nem segundos em vermelho — o público é médico e desconfia de urgência de varejo.
+ */
 function Countdown({ target, label }: { target: string; label: string }) {
   const now = useClock();
   const t = timeLeft(target, now);
@@ -223,33 +209,11 @@ function Countdown({ target, label }: { target: string; label: string }) {
   ];
   return (
     <div>
-      <p className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] font-mono text-offer-hot">
-        <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full rounded-full bg-offer-hot opacity-75 motion-safe:animate-ping" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-offer-hot" />
-        </span>
-        {label}
-      </p>
+      <p className="text-xs uppercase tracking-[0.18em] font-mono text-offer-muted">{label}</p>
       <div className="mt-2 flex gap-2" role="timer" aria-live="off">
-        {parts.map((p, i) => (
-          <div
-            key={p.l}
-            className={cn(
-              "min-w-[3.8rem] rounded-lg border px-2 py-2 text-center",
-              i === parts.length - 1
-                ? "border-offer-hot/50 bg-offer-hot/10"
-                : "border-offer-border bg-offer-foreground/5",
-            )}
-          >
-            <div
-              key={i === parts.length - 1 ? p.v : undefined}
-              className={cn(
-                "text-xl md:text-3xl font-semibold tabular-nums",
-                i === parts.length - 1 && "text-offer-hot motion-safe:animate-fade-in",
-              )}
-            >
-              {String(p.v).padStart(2, "0")}
-            </div>
+        {parts.map((p) => (
+          <div key={p.l} className="min-w-[3.8rem] rounded-lg border border-offer-border bg-offer-foreground/5 px-2 py-2 text-center">
+            <div className="text-xl md:text-3xl font-semibold tabular-nums">{String(p.v).padStart(2, "0")}</div>
             <div className="text-[0.65rem] text-offer-muted">{p.l}</div>
           </div>
         ))}
@@ -400,11 +364,6 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
       id="assinar"
       className="relative overflow-hidden rounded-2xl border-2 border-offer-gold bg-card text-card-foreground p-5 md:p-7 shadow-[0_30px_80px_-30px_hsl(var(--offer-gold)/0.55)] scroll-mt-24"
     >
-      {/* Tarja diagonal */}
-      <div className="pointer-events-none absolute -right-12 top-5 rotate-45 bg-offer-hot px-12 py-1 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-offer-foreground shadow-md">
-        {DISCOUNT_PCT}% off
-      </div>
-
       <div className="flex items-center gap-2">
         <Flame className="w-4 h-4 text-offer-hot" />
         <span className="text-sm font-semibold">Plano Black anual</span>
@@ -423,6 +382,10 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
         </span>
         <span className="text-muted-foreground">Menos de {brl(Math.ceil(PER_DAY * 100) / 100)} por dia</span>
       </div>
+      <p className="mt-3 rounded-lg border border-offer-gold/40 bg-offer-gold/10 px-3 py-2 text-xs leading-snug text-foreground">
+        A partir de 1º/12 o anual passa a custar <span className="font-semibold">{brl(DECEMBER_YEARLY)}</span>. Garantindo
+        agora, os seus 12 meses ficam em {brl(PRICE)}.
+      </p>
 
       {upcoming && vipSaved ? (
         <div className="mt-6 rounded-xl border border-offer-gold/50 bg-offer-gold/10 p-4 text-sm" role="status">
@@ -497,6 +460,8 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
           <Check className="w-3.5 h-3.5 text-primary" /> Black anual: 12 meses de acesso, sem renovação automática
         </li>
       </ul>
+
+      <CardTestimonials />
       <Dialog open={popupChoice !== null} onOpenChange={(open) => !open && !loading && setPopupChoice(null)}>
         <DialogContent className="sm:max-w-md">
           <form onSubmit={submitPopup} className="space-y-4">
@@ -578,6 +543,34 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
   );
 }
 
+/** Dois depoimentos curtos junto ao card de compra (mesma fonte autorizada do carrossel). */
+const CARD_TESTIMONIAL_NAMES = ["Dr. Pedro Rebouças", "Dra. Luciara Duarte"];
+
+function CardTestimonials() {
+  const people = REAL_USERS.filter((u) => u.quote && CARD_TESTIMONIAL_NAMES.includes(u.name));
+  if (people.length === 0) return null;
+  return (
+    <div className="mt-5 space-y-3 border-t border-border pt-4">
+      {people.map((u) => (
+        <figure key={u.name} className="flex gap-3">
+          <img
+            src={u.photo}
+            alt={`Foto de ${u.name}`}
+            loading="lazy"
+            className="h-10 w-10 shrink-0 rounded-full object-cover object-top"
+          />
+          <div className="min-w-0">
+            <blockquote className="text-xs italic leading-snug text-foreground/85">“{u.quote}”</blockquote>
+            <figcaption className="mt-1 text-[0.7rem] text-muted-foreground">
+              <span className="font-medium text-foreground">{u.name}</span> · {u.practice}
+            </figcaption>
+          </div>
+        </figure>
+      ))}
+    </div>
+  );
+}
+
 function OtherPlans({
   loading,
   loadingChoice,
@@ -589,10 +582,29 @@ function OtherPlans({
 }) {
   const monthly = BLACK_PAGE_PLANS.monthly;
   const annual = BLACK_PAGE_PLANS.annual_arsenal;
+  // Recolhido por padrão: com os três planos lado a lado, quem estava em dúvida
+  // ficava com o mensal ou não escolhia nenhum. A Black é a decisão principal.
+  const [open, setOpen] = useState(false);
+  if (!open) {
+    return (
+      <div id="outros-planos" className="pt-1 text-center">
+        <button
+          type="button"
+          onClick={() => {
+            trackCtaClick({ cta: "black_card_other_plans", section: "black", destination: "other_plans" });
+            setOpen(true);
+          }}
+          className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+        >
+          Prefere outro plano? Ver mensal e anual com o Arsenal Med
+        </button>
+      </div>
+    );
+  }
   return (
     <div id="outros-planos" className="pt-3">
       <div className="flex items-center gap-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-        <span className="h-px flex-1 bg-border" /> ou escolha outro plano <span className="h-px flex-1 bg-border" />
+        <span className="h-px flex-1 bg-border" /> outros planos <span className="h-px flex-1 bg-border" />
       </div>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <div className="flex flex-col rounded-xl border border-primary/40 bg-primary/5 p-3.5">
@@ -654,7 +666,7 @@ function GoldCta({ cta, className }: { cta: string; className?: string }) {
     <Button
       size="lg"
       onClick={() => openCheckout(cta)}
-      className={cn("h-14 px-7 text-base motion-safe:animate-cta-pulse", GOLD_BUTTON, className)}
+      className={cn("h-14 px-7 text-base", GOLD_BUTTON, className)}
     >
       {CTA_LABEL} <ArrowRight className="w-5 h-5 ml-1.5" />
     </Button>
@@ -728,7 +740,6 @@ export default function Black() {
                 Black
               </span>
             </Link>
-            {active && <HeaderTimer />}
             <div className="flex items-center gap-2">
               <Button
                 asChild
@@ -778,6 +789,11 @@ export default function Black() {
               Economize até <span className="text-offer-gold">40 horas</span> de trabalho burocrático e repetitivo por mês na
               sua prática médica.<sup className="text-offer-muted">*</sup>
             </p>
+            <p className="mt-4 max-w-xl text-sm md:text-base text-offer-muted leading-relaxed">
+              Em 1º de dezembro, o plano anual passa a custar{" "}
+              <span className="text-offer-foreground font-semibold">{brl(DECEMBER_YEARLY)}</span>. Garantindo em novembro,
+              você paga <span className="text-offer-gold font-semibold">{brl(PRICE)}</span> pelos 12 meses, sem reajuste.
+            </p>
             <VslVideo className="mt-6" />
             {active && (
               <Button
@@ -789,8 +805,7 @@ export default function Black() {
             )}
             <p className="mt-4 max-w-xl text-base md:text-lg text-offer-muted leading-relaxed">
               Evoluções, receitas, atestados e anamneses prontos em segundos, para você voltar ao que importa: o paciente. Tudo isso
-              por <span className="text-offer-foreground font-semibold">{brl(PER_DAY)} por dia</span>, com{" "}
-              {DISCOUNT_PCT}% de desconto no plano anual.
+              por <span className="text-offer-foreground font-semibold">{brl(PER_DAY)} por dia</span>.
             </p>
             <p className="mt-3 max-w-xl text-xs text-offer-muted leading-relaxed">
               * Estimativa baseada em 15 atendimentos por dia, 22 dias por mês, com economia média de 7,5 minutos por
@@ -816,11 +831,6 @@ export default function Black() {
           </div>
         </div>
       </section>
-
-      {/* Tarja diagonal entre seções */}
-      <div className="relative -mt-4 overflow-hidden py-4" aria-hidden="true">
-        <Marquee className="-rotate-1 scale-[1.02]" />
-      </div>
 
       <main className="container mx-auto px-4 md:px-8 py-12 md:py-20 space-y-16 md:space-y-20">
         <section className="grid md:grid-cols-2 gap-8 md:gap-12 items-start">
@@ -927,13 +937,13 @@ export default function Black() {
             style={{ background: "radial-gradient(600px 300px at 50% 120%, hsl(var(--offer-gold) / 0.25), transparent 70%)" }}
           />
           <Reveal className="relative container mx-auto px-4 md:px-8 py-16 md:py-20 text-center">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-offer-gold">Última chance do ano</p>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-offer-gold">Black MedStation · até 30/11</p>
             <h2 className="mt-3 text-3xl md:text-5xl font-semibold tracking-tight">
-              {brl(PRICE)} por 12 meses. <span className="text-offer-gold">Só até 30/11.</span>
+              {brl(PRICE)} por 12 meses.
             </h2>
-            <div className="mt-8 flex justify-center">
-              <Countdown target={BLACK_OFFER.endsAt} label="Termina em" />
-            </div>
+            <p className="mt-3 text-sm md:text-base text-offer-muted">
+              A partir de 1º/12, o anual passa a {brl(DECEMBER_YEARLY)}.
+            </p>
             <GoldCta cta="black_footer" className="mt-8" />
             <p className="mt-3 text-xs text-offer-muted">7 dias de garantia · Cartão de crédito · Sem renovação automática</p>
           </Reveal>
@@ -952,7 +962,7 @@ export default function Black() {
               <p className="text-[0.65rem] text-offer-muted line-through">{brl(CURRENT_YEARLY)}</p>
               <p className="text-base font-bold text-offer-gold">{brl(PRICE)}<span className="text-xs font-normal text-offer-muted">/ano</span></p>
             </div>
-            <Button className={cn("h-12 flex-1 text-sm motion-safe:animate-cta-pulse", GOLD_BUTTON)} onClick={() => openCheckout("black_sticky_mobile")}>
+            <Button className={cn("h-12 flex-1 text-sm", GOLD_BUTTON)} onClick={() => openCheckout("black_sticky_mobile")}>
               {CTA_LABEL}
             </Button>
           </div>
