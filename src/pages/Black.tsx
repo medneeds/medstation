@@ -824,8 +824,8 @@ export default function Black() {
               )}
             </h1>
             <p className="mt-6 max-w-xl text-lg md:text-2xl font-medium leading-snug text-offer-foreground">
-              Até <span className="text-offer-gold">40 horas</span> a menos de burocracia por mês
-              <sup className="text-offer-muted">*</sup>: o tempo de mais de {SHIFTS_12H_SAVED} plantões de 12 horas, devolvido a
+              Até <span className="text-offer-gold">40 horas</span> a menos de burocracia e trabalho repetitivo por mês
+              <sup className="text-offer-muted">*</sup>: o tempo de mais de {SHIFTS_12H_SAVED} plantões de 12 horas devolvido a
               você todos os meses.
             </p>
             <VslVideo className="mt-6" />
