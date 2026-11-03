@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import { REAL_USERS } from "@/data/realUsers";
+import { cn } from "@/lib/utils";
 
 /**
  * Quem tem depoimento escrito aparece primeiro; os demais vêm depois, para
@@ -8,7 +9,6 @@ import { REAL_USERS } from "@/data/realUsers";
  * dentro de cada grupo.
  */
 const ORDERED_USERS = [...REAL_USERS.filter((u) => u.quote), ...REAL_USERS.filter((u) => !u.quote)];
-import { cn } from "@/lib/utils";
 
 type Props = {
   title?: string;

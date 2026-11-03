@@ -157,7 +157,12 @@ export function purchasedPlanSummary(plan: string | null | undefined): Purchased
     case "black_anual_2026":
       return {
         name: "Black MedStation",
-        details: ["12 meses de acesso completo", "Pagamento único no cartão de crédito", "Sem renovação automática"],
+        details: [
+          "12 meses de acesso completo",
+          "E-book Arsenal Med 3.0 incluso (acesso durante os 12 meses)",
+          "Pagamento único no cartão de crédito",
+          "Sem renovação automática",
+        ],
       };
     case "pro_completo_yearly":
       return {

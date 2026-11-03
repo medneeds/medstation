@@ -33,7 +33,7 @@ const PRICE = BLACK_OFFER.amountCents / 100;
 // (novembro = preço de lançamento). Usar como referência um preço que ainda não
 // foi cobrado (o de dezembro) é propaganda enganosa (CDC art. 37 / Procon).
 // Desde 03/11 a Black inclui o Arsenal Med, então o "de" (anual + Arsenal Med,
-// R$ 499,90, à venda no site) e o "por" são o mesmo produto.
+// R$ 499,90, que segue à venda no card e para quem está logado) e o "por" são o mesmo produto.
 const CURRENT_YEARLY = PRICE_TABLE.launch.yearlyCents / 100;
 /** Preço anual a partir de 1º/12 — só aparece rotulado como preço futuro. */
 const DECEMBER_YEARLY = BLACK_OFFER.anchorCents / 100;
@@ -72,17 +72,17 @@ const included = [
   "Modo Rotineiro e Modo Operador para as tarefas repetitivas do plantão",
   "Cofre Inteligente para guardar notas, casos e arquivos importantes",
   "Todas as novidades lançadas durante os seus 12 meses",
-  `E-book ${ANNUAL_BONUS.name}: ${ANNUAL_BONUS.tagline.toLowerCase()} (vendido à parte por ${ANNUAL_BONUS.valueLabel}), incluso`,
+  `E-book ${ANNUAL_BONUS.name}: ${ANNUAL_BONUS.tagline.toLowerCase()}, com acesso durante os seus 12 meses`,
 ];
 
 const faq = [
   {
     q: "Como recebo o acesso depois de pagar?",
-    a: `Assim que o pagamento é confirmado, enviamos um e-mail para o endereço que você informou com o link para entrar. Se você já tem conta, os 12 meses entram nela automaticamente. O ${ANNUAL_BONUS.name} chega por e-mail logo depois, e o acesso é liberado no painel do Arsenal Med com o mesmo e-mail da compra.`,
+    a: `Assim que o pagamento é confirmado, enviamos um e-mail para o endereço que você informou com o link para entrar. Se você já tem conta, os 12 meses entram nela automaticamente. As instruções do ${ANNUAL_BONUS.name} chegam por e-mail depois da confirmação, e o acesso fica no painel do Arsenal Med, com o mesmo e-mail da compra.`,
   },
   {
     q: `O ${ANNUAL_BONUS.name} vem mesmo incluso?`,
-    a: `Vem. A Black inclui o e-book ${ANNUAL_BONUS.name} (${ANNUAL_BONUS.tagline.toLowerCase()}), que é vendido à parte por ${ANNUAL_BONUS.valueLabel}, sem custo extra.`,
+    a: `Vem, sem custo extra. A Black inclui acesso ao e-book ${ANNUAL_BONUS.name} (${ANNUAL_BONUS.tagline.toLowerCase()}) durante os seus 12 meses de MedStation.`,
   },
   {
     q: "E se eu preferir pagar por mês?",
@@ -153,6 +153,18 @@ function useBlackStatus(intervalMs = 1000): BlackStatus {
     return () => window.clearInterval(id);
   }, [intervalMs]);
   return status;
+}
+
+/** true depois que a página rolou mais que `px` (barra fixa do celular). */
+function useScrolledPast(px: number) {
+  const [past, setPast] = useState(false);
+  useEffect(() => {
+    const check = () => setPast(window.scrollY > px);
+    check();
+    window.addEventListener("scroll", check, { passive: true });
+    return () => window.removeEventListener("scroll", check);
+  }, [px]);
+  return past;
 }
 
 /** Fades a block in the first time it scrolls into view. */
@@ -259,7 +271,7 @@ function openCheckout(cta: string, choice: BlackPagePlanKey = "black") {
 const POPUP_TITLE: Record<BlackPagePlanKey, string> = {
   black: "Black: 12 meses + Arsenal Med",
   monthly: "Plano mensal",
-  annual_arsenal: "Anual + Arsenal Med 3.0",
+  annual_arsenal: "Anual regular + Arsenal Med",
 };
 
 function CheckoutCard({ status }: { status: BlackStatus }) {
@@ -423,7 +435,7 @@ function CheckoutCard({ status }: { status: BlackStatus }) {
           <li className="flex gap-2">
             <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
             <span>
-              E-book {ANNUAL_BONUS.name}, vendido à parte por {ANNUAL_BONUS.valueLabel}:{" "}
+              E-book {ANNUAL_BONUS.name}, com acesso durante os 12 meses:{" "}
               <span className="font-semibold text-foreground">incluso sem custo</span>
             </span>
           </li>
@@ -641,7 +653,7 @@ function OtherPlans({
 }) {
   // Decisão do Artur (03/11): o mensal fica à vista ao lado da Black, porque
   // "R$ 49,90/mês ou R$ 399,90 pelos 12 meses" ancora o preço. O anual + Arsenal
-  // Med de R$ 499,90 saiu da página: a Black já inclui o e-book por menos.
+  // Med de R$ 499,90 fica só como link discreto: a Black já inclui o e-book por menos.
   const monthly = BLACK_PAGE_PLANS.monthly;
   return (
     <div id="outros-planos" className="pt-3">
@@ -674,6 +686,19 @@ function OtherPlans({
           )}
         </Button>
       </div>
+      {/* O "de R$ 499,90" é o anual + Arsenal Med praticado hoje: ele continua à
+          venda (aqui e para quem está logado), para a referência ter lastro (CDC art. 37). */}
+      <p className="mt-2 text-center text-[0.72rem] text-muted-foreground">
+        O anual regular com o Arsenal Med segue à venda por {brl(BLACK_PAGE_PLANS.annual_arsenal.priceBrl)}.{" "}
+        <button
+          type="button"
+          onClick={() => onChoose("annual_arsenal")}
+          disabled={loading}
+          className="underline underline-offset-2 hover:text-foreground"
+        >
+          {loadingChoice === "annual_arsenal" ? "Abrindo..." : "Assinar o anual regular"}
+        </button>
+      </p>
     </div>
   );
 }
@@ -713,6 +738,9 @@ export default function Black() {
   const [params] = useSearchParams();
   const canceled = params.get("canceled") === "true";
   const active = status === "active";
+  // No celular, a barra fixa só aparece depois do botão do topo: os dois juntos
+  // na primeira tela eram o mesmo botão repetido.
+  const showStickyBar = useScrolledPast(700);
 
   // A Black é sempre escura: força o tema escuro enquanto a página está aberta
   // (inclui janelas e avisos que abrem fora da página) e restaura ao sair.
@@ -994,7 +1022,12 @@ export default function Black() {
 
       {/* Barra fixa no celular */}
       {active && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-offer-border bg-offer/95 px-4 py-3 text-offer-foreground backdrop-blur md:hidden">
+        <div
+          className={cn(
+            "fixed inset-x-0 bottom-0 z-40 border-t border-offer-border bg-offer/95 px-4 py-3 text-offer-foreground backdrop-blur transition-transform duration-300 md:hidden",
+            showStickyBar ? "translate-y-0" : "pointer-events-none invisible translate-y-full",
+          )}
+        >
           {/* Só o botão: o texto do CTA já traz o prazo do produto e o valor. */}
           <Button className={cn("h-12 w-full text-sm", GOLD_BUTTON)} onClick={() => openCheckout("black_sticky_mobile")}>
             {CTA_LABEL}

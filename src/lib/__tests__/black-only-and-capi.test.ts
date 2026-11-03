@@ -105,6 +105,7 @@ describe("texto da página de pagamento do Stripe", () => {
     const black = checkoutSubmitMessage(resolveOneTimePlan("black_anual_2026", NOV_10));
     expect(black).toContain("Black MedStation");
     expect(black).toContain("sem renovação automática");
+    expect(black).toContain("Arsenal Med");
     expect(checkoutSubmitMessage(null)).toContain("Cancele quando quiser");
     for (const text of [black, checkoutSubmitMessage(null)]) {
       expect(text).toContain("Garantia incondicional de 7 dias");

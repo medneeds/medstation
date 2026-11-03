@@ -103,6 +103,7 @@ describe("auth-email-hook: e-mail de compra", () => {
     expect(black?.name).toBe("Black MedStation");
     expect(black?.details).toEqual([
       "12 meses de acesso completo",
+      "E-book Arsenal Med 3.0 incluso (acesso durante os 12 meses)",
       "Pagamento único no cartão de crédito",
       "Sem renovação automática",
     ]);
