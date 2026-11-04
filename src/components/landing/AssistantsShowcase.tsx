@@ -2,6 +2,7 @@
 // aparece pela função que cumpre ("Organizador de histórias clínicas"), com o
 // nome do produto em segundo plano. As descrições seguem o catálogo do
 // Copiloto (supabase/functions/copilot-chat/catalog.ts): nada além do que existe.
+// Componente reutilizável: base da divulgação depois da Black (aceita className).
 
 import type { LucideIcon } from "lucide-react";
 import {
@@ -28,24 +29,24 @@ type Item = { icon: LucideIcon; role: string; text: string; name: string };
 const GROUPS: { title: string; subtitle: string; items: Item[] }[] = [
   {
     title: "Você manda, ela escreve",
-    subtitle: "Cole, dite ou fotografe. O texto volta pronto para copiar no prontuário.",
+    subtitle: "Cole, dite ou fotografe. Volta pronto para o prontuário.",
     items: [
       {
         icon: ClipboardList,
         role: "Organizador de histórias clínicas",
-        text: "Joga os dados soltos e recebe anamnese, evolução ou alta prontas.",
+        text: "Dados soltos viram anamnese, evolução ou alta prontas.",
         name: "Clínicus",
       },
       {
         icon: FlaskConical,
         role: "Resumidor de exames",
-        text: "Manda a foto ou o PDF e recebe tudo resumido. Lê até ECG e raio-X.",
+        text: "Texto bruto, foto ou PDF: recebe tudo resumido e organizado. Lê até ECG e raio-X.",
         name: "Examinus",
       },
       {
         icon: MessagesSquare,
         role: "Redator de pareceres",
-        text: "Pede parecer, vaga de UTI ou transferência sem quebrar a cabeça com o texto.",
+        text: "Parecer, vaga de UTI ou transferência, sem quebrar a cabeça com o texto.",
         name: "Mediscuss",
       },
       {
@@ -57,19 +58,19 @@ const GROUPS: { title: string; subtitle: string; items: Item[] }[] = [
       {
         icon: HeartHandshake,
         role: "Orientador de alta",
-        text: "Orientações de alta que o paciente entende, prontas para entregar.",
+        text: "Orientações que o paciente entende, prontas para entregar.",
         name: "Orientus",
       },
     ],
   },
   {
     title: "Respostas na hora, sem trocar de aplicativo",
-    subtitle: "Cálculo, escore e protocolo no mesmo lugar onde você já está escrevendo.",
+    subtitle: "Cálculo, escore e protocolo onde você já está escrevendo.",
     items: [
       {
         icon: Droplets,
         role: "Intérprete de gasometria",
-        text: "Cola os valores e recebe a leitura completa, com conduta sugerida.",
+        text: "Cola os valores e recebe a leitura completa, com conduta.",
         name: "Gasometrus",
       },
       {
@@ -93,7 +94,7 @@ const GROUPS: { title: string; subtitle: string; items: Item[] }[] = [
       {
         icon: Pill,
         role: "Consultor de prescrição",
-        text: "Tira a dúvida de dose e interação e já sai com a receita formatada.",
+        text: "Tira a dúvida de dose e interação e sai com a receita pronta.",
         name: "Prescriptus",
       },
       {
@@ -105,7 +106,7 @@ const GROUPS: { title: string; subtitle: string; items: Item[] }[] = [
       {
         icon: Scale,
         role: "Consultor ético-jurídico",
-        text: "Saiba como registrar e agir nas situações delicadas do plantão.",
+        text: "Como registrar e agir nas situações delicadas do plantão.",
         name: "Legalis",
       },
     ],
@@ -136,7 +137,7 @@ const MODES: Item[] = [
 /** Funções curtas para a nuvem de etiquetas do topo da página. */
 export const ASSISTANT_CHIPS = [
   "Organiza histórias clínicas",
-  "Resume exames",
+  "Resume exames de texto, foto ou PDF",
   "Interpreta gasometria",
   "Lê ECG e raio-X",
   "Calcula doses",
@@ -175,7 +176,7 @@ export function AssistantsShowcase({ className }: { className?: string }) {
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-primary">12 assistentes · 3 modos</p>
         <h2 className="mt-3 text-2xl md:text-4xl font-semibold tracking-tight">Tudo o que te toma tempo, resolvido num só lugar</h2>
         <p className="mt-3 text-sm md:text-base text-muted-foreground">
-          Sem decorar comando, sem trocar de aplicativo. Você descreve, a MedStation entrega pronto e você só revisa.
+          Você descreve, a MedStation entrega pronto. Você só revisa.
         </p>
       </div>
 
