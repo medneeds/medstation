@@ -24,7 +24,14 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Item = { icon: LucideIcon; role: string; text: string; name: string };
+type Item = {
+  icon: LucideIcon;
+  role: string;
+  text: string;
+  name: string;
+  /** Até 3 linhas curtas para assistentes com mais de um jeito de usar. */
+  points?: { label: string; text: string }[];
+};
 
 const GROUPS: { title: string; subtitle: string; items: Item[] }[] = [
   {
@@ -68,6 +75,17 @@ const GROUPS: { title: string; subtitle: string; items: Item[] }[] = [
     subtitle: "Cálculo, escore e protocolo onde você já está escrevendo.",
     items: [
       {
+        icon: Pill,
+        role: "Assistente de prescrição",
+        text: "Três jeitos de prescrever mais rápido:",
+        name: "Prescriptus",
+        points: [
+          { label: "Do caso à prescrição", text: "descreve o paciente e recebe a sugestão" },
+          { label: "Bula inteligente", text: "dose, interação e ajuste em segundos" },
+          { label: "Modo Receita", text: "a receita sai formatada, pronta para usar" },
+        ],
+      },
+      {
         icon: Droplets,
         role: "Intérprete de gasometria",
         text: "Cola os valores e recebe a leitura completa, com conduta.",
@@ -90,12 +108,6 @@ const GROUPS: { title: string; subtitle: string; items: Item[] }[] = [
         role: "Consultor de protocolos",
         text: "A conduta da diretriz em segundos, sem procurar PDF.",
         name: "Protocolus",
-      },
-      {
-        icon: Pill,
-        role: "Consultor de prescrição",
-        text: "Tira a dúvida de dose e interação e sai com a receita pronta.",
-        name: "Prescriptus",
       },
       {
         icon: Hash,
@@ -143,7 +155,7 @@ export const ASSISTANT_CHIPS = [
   "Calcula doses",
   "Aplica escores",
   "Consulta protocolos",
-  "Sugere prescrições",
+  "Sugere prescrições e monta a receita",
   "Gera atestados com CID",
   "Escreve pareceres",
 ];
@@ -160,9 +172,19 @@ function Card({ item, wide = false }: { item: Item; wide?: boolean }) {
       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15">
         <Icon className="h-5 w-5 text-primary" />
       </span>
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <p className="text-[0.95rem] font-semibold leading-snug">{item.role}</p>
         <p className="mt-1 text-sm leading-snug text-muted-foreground">{item.text}</p>
+        {item.points && (
+          <ul className="mt-3 grid gap-2 md:grid-cols-3">
+            {item.points.map((pt) => (
+              <li key={pt.label} className="rounded-xl border border-border bg-muted/40 px-3 py-2.5 text-sm leading-snug">
+                <span className="block font-semibold text-foreground">{pt.label}</span>
+                <span className="text-muted-foreground">{pt.text}</span>
+              </li>
+            ))}
+          </ul>
+        )}
         <p className="mt-2 font-mono text-[0.68rem] uppercase tracking-[0.14em] text-primary/80">{item.name}</p>
       </div>
     </div>
@@ -189,7 +211,10 @@ export function AssistantsShowcase({ className }: { className?: string }) {
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {g.items.map((item) => (
-                <Card key={item.name} item={item} />
+                // Assistente com mais de um jeito de usar ganha a linha inteira.
+                <div key={item.name} className={cn(item.points && "sm:col-span-2 lg:col-span-3")}>
+                  <Card item={item} />
+                </div>
               ))}
             </div>
           </div>
