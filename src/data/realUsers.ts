@@ -8,6 +8,7 @@ import marcellaQueiroz from "@/assets/real-users/dra-marcella-queiroz.jpg.asset.
 import solonAlves from "@/assets/real-users/dr-solon-alves.jpeg.asset.json";
 import leandroAlbuquerque from "@/assets/real-users/dr-leandro-albuquerque.jpeg.asset.json";
 import rodrigoMartins from "@/assets/real-users/dr-rodrigo-martins.jpeg.asset.json";
+import diogoNeto from "@/assets/real-users/dr-diogo-neto.jpeg.asset.json";
 import alvaroFialho from "@/assets/real-users/dr-alvaro-fialho.jpg.asset.json";
 
 /** Médicos reais que usam a MedStation (uso de foto e nome autorizado pelo dono). */
@@ -102,5 +103,12 @@ export const REAL_USERS: RealUser[] = [
     practice: "Médico da Força Aérea Brasileira e atuação em Medicina de Emergência",
     quote:
       "A MedStation tem facilitado muito minha rotina de trabalho, me proporciou agilidade e eficiência nos atendimentos. Com a plataforma, consigo dedicar mais tempo olhando para o paciente, em vez de ficar concentrado no computador. Além de otimizar o processo, a ferramenta contribui para meu desenvolvimento técnico e para uma assistência mais humanizada. Tem sido uma experiência muito positiva!",
+  },
+  {
+    name: "Dr. Diôgo Neto",
+    photo: diogoNeto.url,
+    practice: "Médico",
+    quote:
+      "A MedStation é uma ferramenta que tem me ajudado a recuperar um tempo precioso para assistir melhor o paciente. A rotina burocrática é essencial e importante, mas consome uma parte considerável do plantão. Com a medstation otimizo isso e ganho espaço para ouvir o paciente, examiná-lo com atenção e conversar com a família.",
   },
 ];
