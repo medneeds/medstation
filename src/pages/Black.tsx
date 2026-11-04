@@ -27,6 +27,7 @@ import { WhatsAppFloatingButton, WhatsAppInlineButton } from "@/components/landi
 import { ANNUAL_BONUS } from "@/lib/annualBonus";
 import { BLACK_PAGE_PLANS, type BlackPagePlanKey } from "@/lib/blackPagePlans";
 import { REAL_USERS } from "@/data/realUsers";
+import { ASSISTANT_CHIPS, AssistantsShowcase } from "@/components/landing/AssistantsShowcase";
 
 const PRICE = BLACK_OFFER.amountCents / 100;
 // "De/por" e "% off" usam o preço anual efetivamente praticado durante a oferta
@@ -66,7 +67,7 @@ const GOLD_BUTTON =
   "bg-offer-gold text-offer-gold-foreground hover:bg-offer-gold/90 font-semibold shadow-[0_10px_30px_-10px_hsl(var(--offer-gold)/0.7)]";
 
 const included = [
-  "12 assistentes clínicos: anamnese, evolução, prescrição, exames, atestados e mais",
+  "Os 12 assistentes clínicos e os 3 modos, todos liberados",
   "Modo Escuta: a consulta vira anamnese enquanto você atende",
   "Modo Rotineiro e Modo Operador para as tarefas repetitivas do plantão",
   "Cofre Inteligente para guardar notas, casos e arquivos importantes",
@@ -867,9 +868,29 @@ export default function Black() {
               Quero garantir meus 12 meses <ArrowRight className="w-4 h-4 ml-1.5 shrink-0" />
             </Button>
           )}
-          <p className="mx-auto mt-5 max-w-2xl text-base md:text-lg text-offer-muted leading-relaxed">
-            Evoluções, receitas, atestados e anamneses prontos em segundos, para você voltar ao que importa: o paciente.
+          {/* O que a MedStation faz por você, em etiquetas (detalhes na vitrine #assistentes). */}
+          <p className="mx-auto mt-6 max-w-2xl text-sm md:text-base text-offer-muted">
+            Tudo numa plataforma só, sem trocar de aplicativo:
           </p>
+          <ul className="mx-auto mt-3 flex max-w-3xl flex-wrap justify-center gap-2" aria-label="O que a MedStation faz">
+            {ASSISTANT_CHIPS.map((chip) => (
+              <li
+                key={chip}
+                className="rounded-full border border-offer-accent/30 bg-offer-accent/10 px-3 py-1 text-xs md:text-sm text-offer-foreground"
+              >
+                {chip}
+              </li>
+            ))}
+            <li>
+              <a
+                href="#assistentes"
+                onClick={() => trackCtaClick({ cta: "black_hero_ver_assistentes", section: "black", destination: "#assistentes" })}
+                className="inline-block rounded-full px-3 py-1 text-xs md:text-sm font-semibold text-offer-accent underline underline-offset-2"
+              >
+                e mais
+              </a>
+            </li>
+          </ul>
           <div className="mt-6 flex justify-center">
             {active && <Countdown target={BLACK_OFFER.endsAt} label="Oferta até 30/11" />}
             {status === "upcoming" && <Countdown target={BLACK_OFFER.startsAt} label="A Black começa em 1º/11" />}
@@ -896,6 +917,7 @@ export default function Black() {
       </section>
 
       <main className="container mx-auto px-4 md:px-8 py-12 md:py-20 space-y-16 md:space-y-20">
+        <AssistantsShowcase />
         <section className="grid md:grid-cols-2 gap-8 md:gap-12 items-start">
           <Reveal>
             <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">Tudo o que entra no seu ano</h2>
