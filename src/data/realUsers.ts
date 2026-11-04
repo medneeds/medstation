@@ -107,7 +107,8 @@ export const REAL_USERS: RealUser[] = [
   {
     name: "Dr. Diôgo Neto",
     photo: diogoNeto.url,
-    practice: "Médico",
+    location: "São Luís, MA",
+    practice: "Médico Residente em Terapia Intensiva",
     quote:
       "A MedStation é uma ferramenta que tem me ajudado a recuperar um tempo precioso para assistir melhor o paciente. A rotina burocrática é essencial e importante, mas consome uma parte considerável do plantão. Com a medstation otimizo isso e ganho espaço para ouvir o paciente, examiná-lo com atenção e conversar com a família.",
   },
