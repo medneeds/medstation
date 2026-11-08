@@ -87,6 +87,7 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 
 import { SaveToVaultButton } from "@/components/chat/SaveToVaultButton";
 import { SaveToPatientButton } from "@/components/chat/SaveToPatientButton";
+import { CustomizeReplyButton } from "@/components/chat/CustomizeReplyButton";
 import { 
   Send, 
   Paperclip, 
@@ -2530,6 +2531,13 @@ export function AgentChat({
                         <FileUp className="h-3 w-3" />
                         <span className="sr-only md:not-sr-only">Maiúscula</span>
                       </Button>
+                      {agentType === "clinicus" && (
+                        <CustomizeReplyButton
+                          content={visibleContent(msg.content)}
+                          assistantLabel={agentName}
+                          returnTo={window.location.pathname}
+                        />
+                      )}
                       <SaveToVaultButton content={visibleContent(msg.content)} assistantLabel={agentName} />
                       <SaveToPatientButton content={visibleContent(msg.content)} assistantLabel={agentName} />
                       {/* Ação principal: copiar para o prontuário (rótulo visível também no celular) */}

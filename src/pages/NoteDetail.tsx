@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ import {
   History,
   Clock,
   RotateCcw,
+  Copy,
 } from "lucide-react";
 import { z } from "zod";
 
@@ -51,6 +52,10 @@ export default function NoteDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  // Only same-app paths are accepted as the return target.
+  const rawBack = searchParams.get("voltar");
+  const backTo = rawBack && rawBack.startsWith("/") && !rawBack.startsWith("//") ? rawBack : null;
   const [note, setNote] = useState<Note | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -251,11 +256,13 @@ export default function NoteDetail() {
         <div className="flex items-center gap-2 md:gap-4">
           <Button
             variant="ghost"
-            size="icon"
-            onClick={() => navigate("/notes")}
-            className="shrink-0"
+            size={backTo ? "sm" : "icon"}
+            onClick={() => navigate(backTo ?? "/notes")}
+            className="shrink-0 gap-1.5"
+            title={backTo ? "Voltar ao assistente" : "Voltar às notas"}
           >
             <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
+            {backTo && <span className="hidden sm:inline">Voltar ao Clínicus</span>}
           </Button>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -273,7 +280,35 @@ export default function NoteDetail() {
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <div
+            className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-sm font-semibold text-primary tabular-nums"
+            aria-live="polite"
+            title="Contagem de caracteres em tempo real"
+          >
+            <span>{content.length.toLocaleString("pt-BR")}</span>
+            <span className="font-normal">caracteres</span>
+            <span className="font-normal text-primary/70">
+              · {(content.trim() ? content.trim().split(/\s+/).length : 0).toLocaleString("pt-BR")} palavras
+            </span>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(content);
+                toast({ description: "Texto copiado para o prontuário." });
+              } catch {
+                toast({ title: "Não foi possível copiar", variant: "destructive" });
+              }
+            }}
+            className="flex-1 sm:flex-none"
+            title="Copiar texto"
+          >
+            <Copy className="h-4 w-4 md:mr-2" />
+            <span className="hidden sm:inline">Copiar</span>
+          </Button>
           <Button
             variant="outline"
             size="sm"
