@@ -8,6 +8,7 @@ import { isReceitaRequest, RECEITA_FINAL_RULES } from "./receita.ts";
 import { selectAgentModel } from "./model-routing.ts";
 import { buildOperadorPrompt, isOperadorAction, validateOperadorRequest } from "./operador.ts";
 import { buildAfastamentoPrompt, validateCodexusRequest } from "./codexus-afastamento.ts";
+import { clinicusPrimaryCarePrompt, isPrimaryCareTemplate } from "../_shared/primary-care-notes.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -2877,7 +2878,9 @@ DECISÃO FINAL É DO MÉDICO ASSISTENTE — sugestões não substituem julgament
       systemPrompt = examSuggestPrompt;
     }
     if (agentType === "clinicus" && directAHEMode) {
-      if (aheTemplate === "consultorio") {
+      if (isPrimaryCareTemplate(aheTemplate)) {
+        systemPrompt = clinicusPrimaryCarePrompt(aheTemplate, utiRefDate) + `\n\n${contextData}`;
+      } else if (aheTemplate === "consultorio") {
         systemPrompt = consultorioPrompt;
       } else if (aheTemplate === "emergencia_inicial") {
         systemPrompt = emergenciaInicialPrompt;
@@ -2898,7 +2901,8 @@ DECISÃO FINAL É DO MÉDICO ASSISTENTE — sugestões não substituem julgament
 
       // Bloco comum a TODOS os modelos de anamnese: hipóteses diagnósticas explícitas,
       // sem confundir com diagnósticos ativos nem com antecedentes prévios.
-      if (!isUtiEvolucaoTemplate(aheTemplate) && aheTemplate !== "desfecho_alta") systemPrompt += `
+      // PSF e SOAP já trazem a avaliação (problemas x hipóteses) dentro do próprio modelo.
+      if (!isUtiEvolucaoTemplate(aheTemplate) && aheTemplate !== "desfecho_alta" && !isPrimaryCareTemplate(aheTemplate)) systemPrompt += `
 
 REGRA OBRIGATÓRIA — HIPÓTESES DIAGNÓSTICAS
 Todo documento deve conter um bloco próprio de HIPÓTESES DIAGNÓSTICAS, posicionado logo após os diagnósticos ativos (ou, quando o modelo não tiver esse campo, após a história/impressão).

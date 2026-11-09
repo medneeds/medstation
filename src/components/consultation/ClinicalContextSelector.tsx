@@ -1,4 +1,4 @@
-import { Building2, Siren } from "lucide-react";
+import { Building2, ClipboardList, Siren, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ClinicalContext } from "@/hooks/useConsultation";
 
@@ -6,6 +6,8 @@ export const CLINICAL_CONTEXT_TITLES: Record<ClinicalContext, string> = {
   consultorio: "Anamnese · Consultório",
   emergencia_rapida: "Emergência · Avaliação rápida",
   emergencia_admissao: "Emergência · Admissão completa",
+  psf: "PSF · Saúde da Família",
+  soap: "Nota SOAP",
 };
 
 interface Props {
@@ -14,9 +16,9 @@ interface Props {
   className?: string;
 }
 
-/** Consultório ou Emergência; na Emergência, avaliação rápida ou admissão completa. */
+/** Consultório, PSF, SOAP ou Emergência; na Emergência, avaliação rápida ou admissão completa. */
 export function ClinicalContextSelector({ value, onChange, className }: Props) {
-  const isEmergency = value !== "consultorio";
+  const isEmergency = value === "emergencia_rapida" || value === "emergencia_admissao";
   const pill = (active: boolean) =>
     cn(
       "inline-flex items-center justify-center gap-1.5 h-7 px-2.5 rounded-lg text-[11px] font-medium transition-all whitespace-nowrap",
@@ -26,9 +28,17 @@ export function ClinicalContextSelector({ value, onChange, className }: Props) {
   return (
     <div className={cn("flex items-center gap-1.5", className)}>
       <div className="inline-flex items-center gap-0.5 rounded-xl bg-muted/60 border border-border/60 p-0.5" role="group" aria-label="Contexto do atendimento">
-        <button type="button" aria-pressed={!isEmergency} onClick={() => onChange("consultorio")} className={pill(!isEmergency)}>
+        <button type="button" aria-pressed={value === "consultorio"} onClick={() => onChange("consultorio")} className={pill(value === "consultorio")}>
           <Building2 className="h-3.5 w-3.5" />
           Consultório
+        </button>
+        <button type="button" aria-pressed={value === "psf"} onClick={() => onChange("psf")} className={pill(value === "psf")} title="Estratégia Saúde da Família">
+          <Users className="h-3.5 w-3.5" />
+          PSF
+        </button>
+        <button type="button" aria-pressed={value === "soap"} onClick={() => onChange("soap")} className={pill(value === "soap")} title="Subjetivo, Objetivo, Avaliação e Plano">
+          <ClipboardList className="h-3.5 w-3.5" />
+          SOAP
         </button>
         <button
           type="button"

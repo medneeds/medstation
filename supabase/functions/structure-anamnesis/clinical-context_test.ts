@@ -9,6 +9,8 @@ Deno.test("cada contexto usa seu modelo", () => {
   assert(documentPromptFor("emergencia_rapida").includes("AVALIAÇÃO RÁPIDA"));
   assert(documentPromptFor("emergencia_admissao").includes("INDICAÇÃO DE INTERNAÇÃO"));
   assert(documentPromptFor("consultorio").includes("QUEIXA PRINCIPAL:"));
+  assert(documentPromptFor("soap").includes("S | SUBJETIVO:"));
+  assert(documentPromptFor("psf").includes("ESTRATÉGIA SAÚDE DA FAMÍLIA"));
 });
 Deno.test("admissão exige acolhimento familiar", () => {
   assert(documentPromptFor("emergencia_admissao").includes("acolhimento do paciente e da família"));

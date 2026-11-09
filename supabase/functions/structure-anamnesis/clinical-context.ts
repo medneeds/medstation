@@ -1,7 +1,8 @@
-// Contextos do Modo Escuta: consultório, emergência rápida e admissão completa.
+// Contextos do Modo Escuta: consultório, emergência rápida, admissão completa, PSF e SOAP.
 // O documento final segue os títulos e as regras de fidelidade do Clínicus.
+import { primaryCareModel } from "../_shared/primary-care-notes.ts";
 
-export const CLINICAL_CONTEXTS = ["consultorio", "emergencia_rapida", "emergencia_admissao"] as const;
+export const CLINICAL_CONTEXTS = ["consultorio", "emergencia_rapida", "emergencia_admissao", "psf", "soap"] as const;
 export type ClinicalContext = typeof CLINICAL_CONTEXTS[number];
 
 export function parseClinicalContext(value: unknown): ClinicalContext {
@@ -171,7 +172,20 @@ IMPRESSÃO CLÍNICA E INDICAÇÃO DE INTERNAÇÃO:
 PLANO TERAPÊUTICO:
 [Ações por problema + acolhimento familiar.]`;
 
+/** PSF e SOAP: mesmo modelo do Clínicus, com as regras de fidelidade da consulta transcrita. */
+function primaryCarePrompt(context: "psf" | "soap"): string {
+  const name = context === "soap" ? "NOTA SOAP" : "NOTA DE ATENDIMENTO DA ESTRATÉGIA SAÚDE DA FAMÍLIA (PSF)";
+  return `Você é o Clínicus no Modo Escuta, transformando a transcrição de uma consulta em ${name} para prontuário, em português do Brasil, técnica e objetiva.
+
+${FIDELITY_RULES}
+
+${primaryCareModel(context)}
+
+DATA: use a data de hoje informada abaixo.`;
+}
+
 export function documentPromptFor(context: ClinicalContext): string {
+  if (context === "psf" || context === "soap") return primaryCarePrompt(context);
   if (context === "emergencia_rapida") return EMERGENCIA_RAPIDA;
   if (context === "emergencia_admissao") return EMERGENCIA_ADMISSAO;
   return CONSULTORIO;
@@ -180,6 +194,8 @@ export function documentPromptFor(context: ClinicalContext): string {
 /** Orientação curta para a estruturação ao vivo por campos. */
 export function liveContextHint(context: ClinicalContext): string {
   if (context === "consultorio") return "";
+  if (context === "psf") return `\n\nCONTEXTO: atendimento na Atenção Primária (Estratégia Saúde da Família). Priorize adesão ao tratamento, controle das condições crônicas, contexto familiar e social, prevenção e retorno.`;
+  if (context === "soap") return `\n\nCONTEXTO: registro no formato SOAP. Relato do paciente fica em anamnese; medidas e exame físico só se verbalizados.`;
   return `\n\nCONTEXTO: atendimento de PRONTO-SOCORRO (${context === "emergencia_rapida" ? "avaliação rápida" : "admissão completa"}). Priorize tempo de início, sinais de alarme presentes e negados, sinais vitais, exame dirigido, condutas feitas no pronto-socorro e destino. Revisão de sistemas e história familiar só se ditas.`;
 }
 

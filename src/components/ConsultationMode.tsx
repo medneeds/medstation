@@ -750,7 +750,11 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
         <span className="hidden md:inline text-[11px] text-muted-foreground truncate">
           {clinicalContext === 'consultorio'
             ? 'Anamnese completa de consultório'
-            : clinicalContext === 'emergencia_rapida'
+            : clinicalContext === 'psf'
+              ? 'Atenção primária: adesão, condições crônicas, família, prevenção e retorno'
+              : clinicalContext === 'soap'
+                ? 'Nota em quatro partes: subjetivo, objetivo, avaliação e plano'
+                : clinicalContext === 'emergencia_rapida'
               ? 'Registro curto de pronto-socorro, com sinais de alarme e destino'
               : 'Admissão de emergência completa, com indicação de internação'}
         </span>

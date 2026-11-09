@@ -8,12 +8,12 @@ export type SpeakerType = 'doctor' | 'patient' | 'companion';
 /** backup = sem texto ao vivo; a consulta segue gravada e o texto vem ao encerrar. */
 export type ListeningHealth = 'idle' | 'live' | 'reconnecting' | 'down' | 'backup';
 
-export type ClinicalContext = 'consultorio' | 'emergencia_rapida' | 'emergencia_admissao';
+export type ClinicalContext = 'consultorio' | 'emergencia_rapida' | 'emergencia_admissao' | 'psf' | 'soap';
 const CONTEXT_KEY = 'consultorio-clinical-context';
 function readContext(): ClinicalContext {
   try {
     const v = localStorage.getItem(CONTEXT_KEY);
-    if (v === 'emergencia_rapida' || v === 'emergencia_admissao') return v;
+    if (v === 'emergencia_rapida' || v === 'emergencia_admissao' || v === 'psf' || v === 'soap') return v;
   } catch { /* ignore */ }
   return 'consultorio';
 }
