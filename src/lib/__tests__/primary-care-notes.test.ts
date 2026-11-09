@@ -42,6 +42,14 @@ describe("contextos PSF e SOAP", () => {
     }
   });
 
+  it("não acrescenta tipo de doença não informado e só calcula o IMC", () => {
+    for (const t of ["psf", "soap"] as const) {
+      const m = primaryCareModel(t);
+      expect(m).toContain('não escreva "tipo 2" se o tipo do diabetes não foi dito');
+      expect(m).toContain("Nenhum outro valor é calculado ou estimado");
+    }
+  });
+
   it("Clínicus recebe a data de hoje", () => {
     expect(clinicusPrimaryCarePrompt("soap", "09/11/2026")).toContain("09/11/2026");
   });

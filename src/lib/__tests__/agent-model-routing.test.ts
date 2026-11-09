@@ -9,6 +9,10 @@ describe("IA de cada assistente", () => {
   it("evolução de UTI do Clínicus continua na IA mais forte", () => {
     expect(selectAgentModel({ agentType: "clinicus", directAHEMode: true, aheTemplate: "uti_evolucao_v2" }).model).toBe("openai/gpt-6-astra");
   });
+  it("PSF do Clínicus usa a IA mais forte; SOAP segue na rápida", () => {
+    expect(selectAgentModel({ agentType: "clinicus", directAHEMode: true, aheTemplate: "psf" }).model).toBe("openai/gpt-6-astra");
+    expect(selectAgentModel({ agentType: "clinicus", directAHEMode: true, aheTemplate: "soap" }).model).toBe("google/gemini-3-flash-preview");
+  });
   it("os demais assistentes seguem na IA rápida", () => {
     for (const agentType of ["clinicus", "examinus", "prescriptus", "legalis"]) {
       expect(selectAgentModel({ agentType }).model).toBe("google/gemini-3-flash-preview");

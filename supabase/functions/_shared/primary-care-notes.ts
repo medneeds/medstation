@@ -19,6 +19,8 @@ const ASSESSMENT_RULES = `REGRAS DA AVALIAÇÃO
 
 const COMMON_RULES = `REGRAS GERAIS
 - Use somente o que foi informado. Nunca invente sinais vitais, achados de exame físico, resultados, doses, diagnósticos ou condutas.
+- Não acrescente tipo, estágio ou classificação de doença que não foram informados (ex.: não escreva "tipo 2" se o tipo do diabetes não foi dito).
+- IMC: quando peso e altura forem informados, calcule com uma casa decimal e marque "(calculado)". Nenhum outro valor é calculado ou estimado.
 - Exame solicitado não é exame realizado: pedido vai no plano; só o resultado citado entra nos exames.
 - Dado ausente em seção obrigatória: "Não informado". Seções marcadas como opcionais são omitidas inteiras quando o assunto não foi abordado.
 - Preserve as negativas relatadas e não acrescente negativas que não foram ditas.

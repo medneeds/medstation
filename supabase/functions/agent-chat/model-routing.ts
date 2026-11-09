@@ -2,6 +2,7 @@
 // Responses; os demais seguem na IA rápida padrão.
 import { OPERADOR_FAST_ACTIONS, isOperadorAction } from "./operador.ts";
 import { isUtiEvolucaoTemplate } from "./uti-evolucao.ts";
+import { isPrimaryCareTemplate } from "../_shared/primary-care-notes.ts";
 
 export const FAST_AGENT_MODEL = "google/gemini-3-flash-preview";
 export const STRONG_AGENT_MODEL = "openai/gpt-6-astra";
@@ -20,6 +21,8 @@ export function selectAgentModel({ agentType, directAHEMode, aheTemplate, operad
 } {
   // Evoluções de UTI (plantão e institucional): fidelidade aos dados vem antes da velocidade.
   const utiEvolucao = agentType === "clinicus" && Boolean(directAHEMode) && isUtiEvolucaoTemplate(aheTemplate);
+  // PSF (Medicina de Família): modelo rico em regras de fidelidade; mesma IA do Modo Escuta.
+  const psf = agentType === "clinicus" && Boolean(directAHEMode) && aheTemplate === "psf";
   // Mediscuss: a IA mais forte zerou quase todos os dados inventados na auditoria de out/2026.
   // Modo Operador: ações que reescrevem documento clínico pedem a mesma fidelidade.
   const operadorDocument = agentType === "operador"
@@ -27,7 +30,7 @@ export function selectAgentModel({ agentType, directAHEMode, aheTemplate, operad
     && !OPERADOR_FAST_ACTIONS.includes(operadorAction);
   // CODexus D.A.: CID e dias de afastamento vão para o atestado; mesma fidelidade.
   const codexusAfastamento = agentType === "codexus" && afastamentoMode === true;
-  const strong = utiEvolucao || agentType === "mediscuss" || operadorDocument || codexusAfastamento;
+  const strong = utiEvolucao || psf || agentType === "mediscuss" || operadorDocument || codexusAfastamento;
   return strong
     ? { model: STRONG_AGENT_MODEL, useResponsesApi: true }
     : { model: FAST_AGENT_MODEL, useResponsesApi: false };
