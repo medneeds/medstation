@@ -57,7 +57,7 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
-import { StudioSidebarSection } from "@/components/studio/StudioSidebarSection";
+import { StudioSidebarCollapsed, StudioSidebarSection } from "@/components/studio/StudioSidebarSection";
 import { setStudioEnabled, useStudioStore } from "@/lib/studio";
 
 const homeModule = { title: "Início", url: "/dashboard", icon: Home, code: "00" };
@@ -190,7 +190,7 @@ export function AppSidebar() {
           </div>
         )}
 
-        {studio.enabled && !collapsed ? <StudioSidebarSection /> : <>
+        {studio.enabled ? (collapsed ? <StudioSidebarCollapsed /> : <StudioSidebarSection />) : <>
         {/* Início */}
         <SidebarGroup className="py-3 group-data-[collapsible=icon]:px-1">
           <SidebarGroupContent>

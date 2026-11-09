@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { Bot, Library, MessageSquare, Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { createThread, deleteThread, timelineGroup, useStudioStore, type StudioAssistant } from "@/lib/studio";
 import { NEW_STUDIO_ASSISTANT, StudioAssistantDialog } from "@/components/studio/StudioAssistantDialog";
 
@@ -73,5 +74,44 @@ export function StudioSidebarSection() {
 
       <StudioAssistantDialog value={editing} onClose={() => setEditing(null)} />
     </div>
+  );
+}
+
+const iconBtn = "group-data-[collapsible=icon]:!size-10 mx-auto justify-center rounded-md text-sidebar-foreground/80 hover:bg-primary/10 hover:text-foreground";
+
+/** Menu recolhido do Studio: só os atalhos do Studio, sem os assistentes clínicos. */
+export function StudioSidebarCollapsed() {
+  const { threads, assistants } = useStudioStore();
+  const navigate = useNavigate();
+  const recent = threads[0];
+  const items = [
+    { label: "Nova conversa", icon: Plus, onClick: () => navigate(`/studio/${createThread().id}`), primary: true },
+    { label: "Prompteca", icon: Library, to: "/prompteca" },
+    ...(recent ? [{ label: `Última conversa: ${recent.title}`, icon: MessageSquare, to: `/studio/${recent.id}` }] : []),
+    ...assistants.slice(0, 6).map((a) => ({ label: a.name, icon: Bot, onClick: () => navigate(`/studio/${createThread(a).id}`) })),
+  ];
+  return (
+    <SidebarGroup className="py-3 px-1">
+      <SidebarGroupContent>
+        <SidebarMenu className="gap-1.5">
+          {items.map((it, i) => (
+            <SidebarMenuItem key={`${it.label}-${i}`}>
+              {"to" in it && it.to ? (
+                <SidebarMenuButton asChild tooltip={it.label} className={iconBtn}>
+                  <NavLink to={it.to} aria-label={it.label} className={({ isActive }) => cn(isActive && "bg-sidebar-accent text-foreground")}>
+                    <it.icon className="h-4 w-4 text-primary" />
+                  </NavLink>
+                </SidebarMenuButton>
+              ) : (
+                <SidebarMenuButton tooltip={it.label} aria-label={it.label} onClick={it.onClick}
+                  className={cn(iconBtn, "primary" in it && it.primary && "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground")}>
+                  <it.icon className="h-4 w-4" />
+                </SidebarMenuButton>
+              )}
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
   );
 }
