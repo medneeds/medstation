@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Copy, Loader2, SendHorizonal, Bot, Paperclip, X, FileText, Check, ChevronDown, Plus, Sparkles } from "lucide-react";
+import { Copy, Loader2, SendHorizonal, Bot, Paperclip, X, FileText, Check, ChevronDown, Plus, Sparkles, Library } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { NEW_STUDIO_ASSISTANT, StudioAssistantDialog } from "@/components/studio/StudioAssistantDialog";
+import { STUDIO_PREFILL_KEY } from "@/lib/prompteca";
 import { AgentVoiceInput, type VoiceDeliveryOptions } from "@/components/AgentVoiceInput";
 import { applySpoken } from "@/lib/voiceAccess";
 import { STUDIO_FILE_ACCEPT, composeStudioMessage, readStudioFile } from "@/lib/studioFiles";
@@ -42,7 +43,9 @@ export default function Studio() {
     const t = getThread(threadId);
     if (!t) { navigate("/studio", { replace: true }); return; }
     setThread(t);
-    setInput("");
+    const prefill = sessionStorage.getItem(STUDIO_PREFILL_KEY);
+    if (prefill) sessionStorage.removeItem(STUDIO_PREFILL_KEY);
+    setInput(prefill ? prefill.slice(0, MAX_STUDIO_CHARS) : "");
     setAttachments([]);
     inputRef.current?.focus();
   }, [threadId, navigate]);
@@ -225,6 +228,9 @@ export default function Studio() {
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => setEditingAssistant({ ...NEW_STUDIO_ASSISTANT })} className="gap-2">
                 <Plus className="h-4 w-4" /> Criar assistente
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => navigate("/prompteca")} className="gap-2">
+                <Library className="h-4 w-4" /> Explorar a Prompteca
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

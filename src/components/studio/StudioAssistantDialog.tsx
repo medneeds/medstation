@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Loader2, Sparkles, Undo2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Library, Loader2, Sparkles, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ export function StudioAssistantDialog({
   onClose: () => void;
   onSaved?: (a: StudioAssistant) => void;
 }) {
+  const navigate = useNavigate();
   const [editing, setEditing] = useState<Partial<StudioAssistant> | null>(value);
   const [request, setRequest] = useState("");
   const [drafting, setDrafting] = useState(false);
@@ -102,6 +104,12 @@ export function StudioAssistantDialog({
           </div>
         )}
         <DialogFooter className="gap-2">
+          {editing?.id && (
+            <Button variant="outline" className="gap-1.5" disabled={drafting}
+              onClick={() => { const id = editing.id!; onClose(); navigate(`/prompteca?publicar=${id}`); }}>
+              <Library className="h-4 w-4" /> Publicar na Prompteca
+            </Button>
+          )}
           {editing?.id && (
             <Button variant="outline" className="text-destructive" onClick={() => { deleteAssistant(editing.id!); onClose(); }}>Excluir</Button>
           )}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Bot, MessageSquare, Pencil, Plus, Trash2 } from "lucide-react";
+import { Bot, Library, MessageSquare, Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { createThread, deleteThread, timelineGroup, useStudioStore, type StudioAssistant } from "@/lib/studio";
@@ -23,6 +23,9 @@ export function StudioSidebarSection() {
   return (
     <div className="flex flex-col gap-4 px-2 py-3">
       <Button onClick={() => open()} className="w-full justify-start gap-2"><Plus className="h-4 w-4" /> Nova conversa</Button>
+      <NavLink to="/prompteca" className={({ isActive }) => cn(row, "-mt-2", isActive && "bg-sidebar-accent font-semibold text-foreground")}>
+        <Library className="h-4 w-4 shrink-0 text-primary" /> Prompteca
+      </NavLink>
 
       <div>
         <div className="label-mono mb-1 flex items-center justify-between px-2">

@@ -46,6 +46,8 @@ const NOT_IN_COPILOT = new Set([
   "/reset-password", "/redefinir-senha", "/consultorio-landing", "/obrigado", "/welcome", "/onboarding",
   "/welcome-tour", "/admin/login", "/admin", "/admin/subscribers", "/ad-video", "/privacidade", "/privacy",
   "/termos", "/termos-de-uso", "/descadastrar", "*",
+  // Beta junto com o Studio (que também fica fora do Copiloto por enquanto).
+  "/prompteca",
 ]);
 
 const SCHEDULE = { black: BLACK_OFFER, fullPriceStartsAt: FULL_PRICE_STARTS_AT, table: PRICE_TABLE };

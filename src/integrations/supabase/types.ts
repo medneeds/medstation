@@ -1522,6 +1522,95 @@ export type Database = {
         }
         Relationships: []
       }
+      prompt_library_items: {
+        Row: {
+          author_id: string
+          author_name: string
+          author_specialty: string
+          category: string
+          content: string
+          created_at: string
+          description: string
+          hidden: boolean
+          id: string
+          kind: string
+          model: string | null
+          rating_avg: number
+          rating_count: number
+          title: string
+          updated_at: string
+          use_count: number
+        }
+        Insert: {
+          author_id: string
+          author_name?: string
+          author_specialty?: string
+          category?: string
+          content: string
+          created_at?: string
+          description?: string
+          hidden?: boolean
+          id?: string
+          kind: string
+          model?: string | null
+          rating_avg?: number
+          rating_count?: number
+          title: string
+          updated_at?: string
+          use_count?: number
+        }
+        Update: {
+          author_id?: string
+          author_name?: string
+          author_specialty?: string
+          category?: string
+          content?: string
+          created_at?: string
+          description?: string
+          hidden?: boolean
+          id?: string
+          kind?: string
+          model?: string | null
+          rating_avg?: number
+          rating_count?: number
+          title?: string
+          updated_at?: string
+          use_count?: number
+        }
+        Relationships: []
+      }
+      prompt_library_ratings: {
+        Row: {
+          created_at: string
+          item_id: string
+          stars: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          item_id: string
+          stars: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          item_id?: string
+          stars?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prompt_library_ratings_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "prompt_library_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rate_limits: {
         Row: {
           created_at: string | null
@@ -2725,6 +2814,11 @@ export type Database = {
       intern_spots_taken: { Args: never; Returns: number }
       is_feature_enabled: { Args: { _key: string }; Returns: boolean }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      prompt_library_count_use: { Args: { p_item: string }; Returns: undefined }
+      prompt_library_set_hidden: {
+        Args: { p_hidden: boolean; p_item: string }
+        Returns: undefined
+      }
       search_cases: {
         Args: { search_query: string; user_uuid: string }
         Returns: {

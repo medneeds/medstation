@@ -44,6 +44,7 @@ const Rotina = lazy(() => import("./pages/Rotina"));
 const RotinaArquivo = lazy(() => import("./pages/RotinaArquivo"));
 const Operador = lazy(() => import("./pages/Operador"));
 const Studio = lazy(() => import("./pages/Studio"));
+const Prompteca = lazy(() => import("./pages/Prompteca"));
 
 const Examinus = lazy(() => import("./pages/Examinus"));
 const Scorius = lazy(() => import("./pages/Scorius"));
@@ -206,6 +207,16 @@ const App = () => (
                 }
               />
             ))}
+            <Route
+              path="/prompteca"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <Prompteca />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
 
             <Route path="/obrigado" element={<Obrigado />} />
             <Route path="/welcome" element={<Obrigado />} />
