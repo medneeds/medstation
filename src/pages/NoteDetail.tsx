@@ -39,7 +39,8 @@ import {
   Rows3,
   SpellCheck,
   Undo2,
-  Gauge,
+  Target,
+  AlertTriangle,
   Loader2,
   CloudOff,
   Save,
@@ -61,6 +62,7 @@ import {
   countWords,
   LIMIT_PRESETS,
   limitStatus,
+  excessRange,
   MAX_NOTE_CHARS,
   parseCharLimit,
   removeSpecialChars,
@@ -104,6 +106,12 @@ const STATUS_TEXT: Record<LimitStatus, string> = {
   ok: "text-primary",
   near: "text-warning",
   over: "text-destructive",
+};
+const GOAL_BUTTON: Record<LimitStatus, string> = {
+  none: "border-border bg-background text-foreground",
+  ok: "border-primary/40 bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary",
+  near: "border-warning/50 bg-warning/10 text-warning hover:bg-warning/15 hover:text-warning",
+  over: "border-destructive bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:text-destructive-foreground",
 };
 const STATUS_BAR: Record<LimitStatus, string> = {
   none: "bg-primary",
@@ -154,7 +162,7 @@ function CharCounter({ length, words, limit, compact }: { length: number; words:
         </div>
       ) : null}
       <p className={cn("mt-1 text-2xs tabular-nums", status === "over" ? "text-destructive font-medium" : "text-muted-foreground")}>
-        {status === "over" ? `${fmt(length - (limit ?? 0))} acima do limite` : `${fmt(words)} palavras`}
+        {status === "over" ? `${fmt(length - (limit ?? 0))} acima da meta` : `${fmt(words)} palavras`}
       </p>
     </div>
   );
@@ -496,6 +504,27 @@ export default function NoteDetail() {
   if (!note) return null;
 
   const words = countWords(content);
+  const limitState = limitStatus(content.length, limit);
+  const excess = excessRange(content.length, limit);
+  /** Selects the text past the goal (from the goal position to the end) so the doctor sees what to trim. */
+  const selectExcess = () => {
+    const el = textareaRef.current;
+    if (!el || !excess) return;
+    el.focus();
+    el.setSelectionRange(excess.start, excess.end, "backward");
+    // Bring the start of the extra text into view: measure the wrapped text before it in a hidden copy.
+    const cs = getComputedStyle(el);
+    const mirror = document.createElement("div");
+    for (const prop of ["font", "letterSpacing", "lineHeight", "padding", "boxSizing", "tabSize"] as const) {
+      mirror.style[prop] = cs[prop];
+    }
+    Object.assign(mirror.style, { position: "absolute", visibility: "hidden", top: "0", left: "-9999px", whiteSpace: "pre-wrap", overflowWrap: "break-word", width: `${el.clientWidth}px` });
+    mirror.textContent = el.value.slice(0, excess.start);
+    document.body.appendChild(mirror);
+    const y = mirror.scrollHeight;
+    mirror.remove();
+    el.scrollTop = Math.max(0, y - el.clientHeight / 3);
+  };
 
   const saveLabel =
     saveState === "saving" ? "Salvando..." :
@@ -587,19 +616,43 @@ export default function NoteDetail() {
         {spelling ? "Corrigindo..." : "Corrigir ortografia"}
       </Button>
 
-      <div className="ml-auto pl-2">
+    </>
+  );
+
+  // Kept outside the scrolling tool row so the goal stays visible on any screen width.
+  const goalControl = (
+      <div className="shrink-0 pl-2">
         <Popover open={limitOpen} onOpenChange={setLimitOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className={cn(toolBtn, "bg-background")}>
-              <Gauge className="h-4 w-4" />
-              {limit ? `Limite ${fmt(limit)}` : "Definir limite"}
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn(toolBtn, "border font-medium", GOAL_BUTTON[limitState])}
+              title={limit ? `Meta de ${fmt(limit)} caracteres · clique para mudar` : "Escolher uma meta de caracteres (ex.: limite do prontuário)"}
+            >
+              {limitState === "over" ? <AlertTriangle className="h-4 w-4" /> : <Target className="h-4 w-4" />}
+              {!limit ? (
+                <span>Meta<span className="hidden sm:inline"> de caracteres</span></span>
+              ) : excess ? (
+                <span>+{fmt(excess.over)}<span className="hidden sm:inline"> acima da meta</span></span>
+              ) : (
+                <span>Meta {fmt(limit)}</span>
+              )}
+              <ChevronDown className="h-3 w-3 opacity-60" />
             </Button>
           </PopoverTrigger>
           <PopoverContent align="end" className="w-64 space-y-3">
             <div>
-              <p className="text-sm font-medium">Limite de caracteres</p>
-              <p className="text-xs text-muted-foreground">Ex.: o limite do campo do prontuário. Fica salvo neste aparelho.</p>
+              <p className="text-sm font-medium">Meta de caracteres</p>
+              <p className="text-xs text-muted-foreground">Ex.: o limite do campo do prontuário. Fica salva neste aparelho.</p>
             </div>
+            {limit ? (
+              <div className={cn("rounded-md border px-2.5 py-2 text-xs", GOAL_BUTTON[limitState])}>
+                {excess
+                  ? `${fmt(excess.over)} caracteres acima da meta de ${fmt(limit)}.`
+                  : `${fmt(content.length)} de ${fmt(limit)} · faltam ${fmt(limit - content.length)}.`}
+              </div>
+            ) : null}
             <div className="grid grid-cols-3 gap-1.5">
               {LIMIT_PRESETS.map((p) => (
                 <Button key={p} variant={limit === p ? "default" : "outline"} size="sm" className="h-8 text-xs" onClick={() => chooseLimit(p)}>
@@ -607,7 +660,7 @@ export default function NoteDetail() {
                 </Button>
               ))}
               <Button variant={limit ? "ghost" : "secondary"} size="sm" className="h-8 text-xs" onClick={() => chooseLimit(null)}>
-                Sem limite
+                Sem meta
               </Button>
             </div>
             <form
@@ -632,7 +685,6 @@ export default function NoteDetail() {
           </PopoverContent>
         </Popover>
       </div>
-    </>
   );
 
   return (
@@ -663,6 +715,7 @@ export default function NoteDetail() {
                 <div className="shrink-0">{saveStatus}</div>
                 <span className="mx-2 h-4 w-px shrink-0 bg-border" aria-hidden />
                 <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto [scrollbar-width:none]">{tools}</div>
+                {goalControl}
               </div>
             ) : (
               saveStatus
@@ -697,8 +750,27 @@ export default function NoteDetail() {
 
         {/* Quick tools (own row below large screens) */}
         {!wide && (
-          <div className="flex items-center gap-1 overflow-x-auto border-b border-border bg-muted/40 px-2 py-1.5 md:px-4 [scrollbar-width:none]">
-            {tools}
+          <div className="flex items-center border-b border-border bg-muted/40 px-2 py-1.5 md:px-4">
+            <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto [scrollbar-width:none]">{tools}</div>
+            {goalControl}
+          </div>
+        )}
+
+        {/* Past the goal: always-visible warning with a shortcut to the extra text */}
+        {excess && (
+          <div role="status" className="flex items-center gap-2 border-b border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive md:px-4 md:text-sm">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            <p className="min-w-0 flex-1">
+              <span className="font-semibold">Fora da meta:</span> {fmt(excess.over)} caracteres acima de {fmt(limit ?? 0)}.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={selectExcess}
+              className="h-8 shrink-0 border-destructive/40 bg-background px-2.5 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+            >
+              Mostrar o excesso
+            </Button>
           </div>
         )}
 

@@ -116,3 +116,15 @@ describe("desfazer e refazer", () => {
     expect(firstDifference("evolução estável", "evolução instável")).toBe(9);
   });
 });
+
+import { excessRange } from "../noteTools";
+
+describe("fora da meta de caracteres", () => {
+  it("dentro da meta não há excesso", () => {
+    expect(excessRange(4000, 4000)).toBeNull();
+    expect(excessRange(100, null)).toBeNull();
+  });
+  it("acima da meta marca do caractere da meta até o fim", () => {
+    expect(excessRange(4229, 4000)).toEqual({ start: 4000, end: 4229, over: 229 });
+  });
+});

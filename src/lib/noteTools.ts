@@ -189,3 +189,9 @@ export function firstDifference(a: string, b: string): number {
   while (i < n && a[i] === b[i]) i++;
   return i;
 }
+
+/** Part of the text past the doctor's character goal (to select and trim it); null when within the goal. */
+export function excessRange(length: number, limit: number | null): { start: number; end: number; over: number } | null {
+  if (!limit || limit <= 0 || length <= limit) return null;
+  return { start: limit, end: length, over: length - limit };
+}
