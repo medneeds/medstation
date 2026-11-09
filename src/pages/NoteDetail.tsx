@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback, useRef, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -29,7 +29,12 @@ import {
   Copy,
   Check,
   MoreHorizontal,
+  CaseSensitive,
   CaseUpper,
+  CaseLower,
+  ChevronDown,
+  Redo2,
+  Type,
   Eraser,
   Rows3,
   SpellCheck,
@@ -42,6 +47,15 @@ import {
 import { cn } from "@/lib/utils";
 import {
   applyToRange,
+  emptyHistory,
+  firstDifference,
+  recordEdit,
+  redoEdit,
+  undoEdit,
+  toLowerPtBr,
+  toSentenceCasePtBr,
+  toTitleCasePtBr,
+  type EditHistory,
   CHAR_LIMIT_STORAGE_KEY,
   collapseBlankLines,
   countWords,
@@ -168,7 +182,9 @@ export default function NoteDetail() {
   const [limit, setLimit] = useState<number | null>(readLimit);
   const [customLimit, setCustomLimit] = useState("");
   const [limitOpen, setLimitOpen] = useState(false);
-  const [undo, setUndo] = useState<{ content: string; label: string } | null>(null);
+  const [history, setHistory] = useState<EditHistory>(emptyHistory);
+  // Typing is grouped into bursts so one "Desfazer" removes a stretch of typing, not one letter.
+  const typingRef = useRef({ lastAt: 0, startedAt: 0 });
   const [spelling, setSpelling] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -270,6 +286,62 @@ export default function NoteDetail() {
     setContent(value);
     if (savedRef.current && !savingRef.current) setSaveState(differsFromSaved(title, value) ? "dirty" : "saved");
   };
+  /** Records the current text before a tool/restore edit so it can be undone. */
+  const editWithHistory = (value: string, label: string) => {
+    setHistory((h) => recordEdit(h, content, label));
+    typingRef.current = { lastAt: 0, startedAt: 0 };
+    changeContent(value);
+  };
+  const typeContent = (value: string) => {
+    const now = Date.now();
+    const t = typingRef.current;
+    if (now - t.lastAt > 1000 || now - t.startedAt > 5000) {
+      setHistory((h) => recordEdit(h, content, "digitação"));
+      t.startedAt = now;
+    }
+    t.lastAt = now;
+    changeContent(value);
+  };
+  const placeCursor = (from: string, to: string) => {
+    const el = textareaRef.current;
+    if (!el) return;
+    const at = firstDifference(from, to);
+    requestAnimationFrame(() => {
+      el.focus();
+      el.setSelectionRange(at, at);
+    });
+  };
+  const undoStep = () => {
+    const r = undoEdit(history, content);
+    if (!r) return;
+    setHistory(r.history);
+    typingRef.current = { lastAt: 0, startedAt: 0 };
+    changeContent(r.content);
+    placeCursor(content, r.content);
+  };
+  const redoStep = () => {
+    const r = redoEdit(history, content);
+    if (!r) return;
+    setHistory(r.history);
+    typingRef.current = { lastAt: 0, startedAt: 0 };
+    changeContent(r.content);
+    placeCursor(content, r.content);
+  };
+  const onEditorKeyDown = (e: ReactKeyboardEvent<HTMLTextAreaElement>) => {
+    if (!(e.ctrlKey || e.metaKey)) return;
+    const k = e.key.toLowerCase();
+    if (k === "z" && !e.shiftKey) {
+      e.preventDefault();
+      undoStep();
+    } else if ((k === "z" && e.shiftKey) || k === "y") {
+      e.preventDefault();
+      redoStep();
+    }
+  };
+  const lastUndo = history.past[history.past.length - 1];
+  const lastRedo = history.future[history.future.length - 1];
+  const stepLabel = (label: string) => (label === "digitação" ? "a digitação" : label);
+
   const changeTitle = (value: string) => {
     setTitle(value);
     if (savedRef.current && !savingRef.current) setSaveState(differsFromSaved(value, content) ? "dirty" : "saved");
@@ -296,7 +368,7 @@ export default function NoteDetail() {
     const start = el?.selectionStart ?? 0;
     const end = el?.selectionEnd ?? 0;
     if (needsSelection && start === end) {
-      toast({ description: "Selecione o trecho que quer deixar em MAIÚSCULAS." });
+      toast({ description: "Selecione o trecho que quer ajustar e escolha o formato de novo." });
       return;
     }
     const result = applyToRange(content, start, end, transform);
@@ -304,8 +376,7 @@ export default function NoteDetail() {
       toast({ description: "Nada para alterar." });
       return;
     }
-    setUndo({ content, label });
-    changeContent(result.text);
+    editWithHistory(result.text, label);
     requestAnimationFrame(() => {
       if (!el) return;
       el.focus();
@@ -381,6 +452,7 @@ export default function NoteDetail() {
     }
     savedRef.current = { title: version.title, content: version.content };
     setTitle(version.title);
+    if (version.content !== content) setHistory((h) => recordEdit(h, content, `versão ${version.version_number}`));
     setContent(version.content);
     setSaveState("saved");
     setSavedAt(new Date());
@@ -454,9 +526,56 @@ export default function NoteDetail() {
 
   const tools = (
     <>
-      <Button variant="ghost" size="sm" className={toolBtn} onClick={() => runTool("MAIÚSCULAS", toUpperPtBr, true)} title="Deixar o trecho selecionado em MAIÚSCULAS">
-        <CaseUpper className="h-4 w-4" /> MAIÚSCULAS
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-9 w-9 shrink-0 md:h-8 md:w-8"
+        onClick={undoStep}
+        disabled={!lastUndo}
+        aria-label="Desfazer"
+        title={lastUndo ? `Desfazer ${stepLabel(lastUndo.label)} (Ctrl+Z)` : "Nada para desfazer"}
+      >
+        <Undo2 className="h-4 w-4" />
       </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-9 w-9 shrink-0 md:h-8 md:w-8"
+        onClick={redoStep}
+        disabled={!lastRedo}
+        aria-label="Refazer"
+        title={lastRedo ? `Refazer ${stepLabel(lastRedo.label)} (Ctrl+Shift+Z)` : "Nada para refazer"}
+      >
+        <Redo2 className="h-4 w-4" />
+      </Button>
+      <span className="mx-1 h-4 w-px shrink-0 bg-border" aria-hidden />
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm" className={toolBtn} title="Mudar maiúsculas e minúsculas do trecho selecionado">
+            <CaseSensitive className="h-4 w-4" /> Maiúsc. <ChevronDown className="h-3 w-3 opacity-60" />
+          </Button>
+        </DropdownMenuTrigger>
+        {/* Keep the doctor's selection: don't move focus back to the button when the menu closes. */}
+        <DropdownMenuContent align="start" onCloseAutoFocus={(e) => e.preventDefault()}>
+          <DropdownMenuItem onClick={() => runTool("MAIÚSCULAS", toUpperPtBr, true)}>
+            <CaseUpper className="mr-2 h-4 w-4" /> MAIÚSCULAS
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => runTool("minúsculas", toLowerPtBr, true)}>
+            <CaseLower className="mr-2 h-4 w-4" /> minúsculas
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => runTool("Padrão", toSentenceCasePtBr, true)}>
+            <Type className="mr-2 h-4 w-4" />
+            <span>
+              Padrão <span className="text-xs text-muted-foreground">(início de frase)</span>
+            </span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => runTool("Iniciais Maiúsculas", toTitleCasePtBr, true)}>
+            <CaseSensitive className="mr-2 h-4 w-4" /> Iniciais Maiúsculas
+          </DropdownMenuItem>
+          <p className="px-2 pb-1.5 pt-1 text-2xs text-muted-foreground">Siglas como HAS, PA e SpO2 são mantidas.</p>
+        </DropdownMenuContent>
+      </DropdownMenu>
       <Button variant="ghost" size="sm" className={toolBtn} onClick={() => runTool("Remover símbolos", removeSpecialChars)} title="Remove asteriscos, #, emojis e símbolos decorativos">
         <Eraser className="h-4 w-4" /> Remover símbolos
       </Button>
@@ -467,20 +586,6 @@ export default function NoteDetail() {
         {spelling ? <Loader2 className="h-4 w-4 animate-spin" /> : <SpellCheck className="h-4 w-4" />}
         {spelling ? "Corrigindo..." : "Corrigir ortografia"}
       </Button>
-      {undo && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn(toolBtn, "text-primary")}
-          onClick={() => {
-            changeContent(undo.content);
-            setUndo(null);
-          }}
-          title={`Desfazer: ${undo.label}`}
-        >
-          <Undo2 className="h-4 w-4" /> Desfazer
-        </Button>
-      )}
 
       <div className="ml-auto pl-2">
         <Popover open={limitOpen} onOpenChange={setLimitOpen}>
@@ -602,7 +707,8 @@ export default function NoteDetail() {
           <textarea
             ref={textareaRef}
             value={content}
-            onChange={(e) => changeContent(e.target.value)}
+            onChange={(e) => typeContent(e.target.value)}
+            onKeyDown={onEditorKeyDown}
             placeholder="Comece a escrever..."
             maxLength={MAX_NOTE_CHARS}
             spellCheck

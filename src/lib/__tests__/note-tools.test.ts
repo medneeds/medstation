@@ -60,3 +60,59 @@ describe("correção ortográfica não altera o conteúdo clínico", () => {
     expect(checkSpellingOnly("A\nB", "A B").ok).toBe(false);
   });
 });
+
+import {
+  emptyHistory,
+  firstDifference,
+  recordEdit,
+  redoEdit,
+  toLowerPtBr,
+  toSentenceCasePtBr,
+  toTitleCasePtBr,
+  undoEdit,
+  HISTORY_LIMIT,
+} from "../noteTools";
+
+describe("maiúsculas, minúsculas e padrão no trecho selecionado", () => {
+  it("minúsculas com acentos", () => {
+    expect(applyToRange("HIPÓTESE: PNEUMONIA", 10, 19, toLowerPtBr).text).toBe("HIPÓTESE: pneumonia");
+  });
+  it("padrão põe maiúscula só no início de cada frase e linha", () => {
+    expect(toSentenceCasePtBr("PACIENTE ESTÁVEL. SEM QUEIXAS\nREFERE DOR")).toBe("Paciente estável. Sem queixas\nRefere dor");
+  });
+  it("padrão mantém siglas clínicas", () => {
+    expect(toSentenceCasePtBr("PORTADOR DE HAS E DM2, SPO2 94%, ATB D3")).toBe("Portador de HAS e DM2, SpO2 94%, atb D3");
+  });
+  it("iniciais maiúsculas sem capitalizar conectivos", () => {
+    expect(toTitleCasePtBr("MARIA DA SILVA E SOUZA")).toBe("Maria da Silva e Souza");
+  });
+});
+
+describe("desfazer e refazer", () => {
+  it("desfaz em ordem e refaz o que foi desfeito", () => {
+    let h = recordEdit(emptyHistory(), "a", "digitação");
+    h = recordEdit(h, "ab", "MAIÚSCULAS");
+    const u1 = undoEdit(h, "AB")!;
+    expect(u1.content).toBe("ab");
+    const u2 = undoEdit(u1.history, u1.content)!;
+    expect(u2.content).toBe("a");
+    expect(undoEdit(u2.history, u2.content)).toBeNull();
+    const r1 = redoEdit(u2.history, u2.content)!;
+    expect(r1.content).toBe("ab");
+  });
+  it("nova edição apaga o que podia ser refeito", () => {
+    const h = recordEdit(emptyHistory(), "a", "digitação");
+    const u = undoEdit(h, "ab")!;
+    const h2 = recordEdit(u.history, "a", "digitação");
+    expect(redoEdit(h2, "ax")).toBeNull();
+  });
+  it(`guarda no máximo ${HISTORY_LIMIT} passos`, () => {
+    let h = emptyHistory();
+    for (let i = 0; i < 150; i++) h = recordEdit(h, String(i), "digitação");
+    expect(h.past.length).toBe(100);
+    expect(h.past[0].content).toBe("50");
+  });
+  it("cursor volta para onde o texto mudou", () => {
+    expect(firstDifference("evolução estável", "evolução instável")).toBe(9);
+  });
+});
