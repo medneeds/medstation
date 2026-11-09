@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Copy, Loader2, SendHorizonal, Bot } from "lucide-react";
+import { Copy, Loader2, SendHorizonal, Bot, Paperclip, X, FileText } from "lucide-react";
+import { AgentVoiceInput, type VoiceDeliveryOptions } from "@/components/AgentVoiceInput";
+import { applySpoken } from "@/lib/voiceAccess";
+import { STUDIO_FILE_ACCEPT, composeStudioMessage, readStudioFile } from "@/lib/studioFiles";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -18,6 +21,9 @@ export default function Studio() {
   const [thread, setThread] = useState<StudioThread | undefined>(() => (threadId ? getThread(threadId) : undefined));
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [attachments, setAttachments] = useState<{ id: string; name: string; text: string }[]>([]);
+  const [reading, setReading] = useState(0);
+  const fileRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
@@ -31,6 +37,7 @@ export default function Studio() {
     if (!t) { navigate("/studio", { replace: true }); return; }
     setThread(t);
     setInput("");
+    setAttachments([]);
     inputRef.current?.focus();
   }, [threadId, navigate]);
 
@@ -49,14 +56,32 @@ export default function Studio() {
 
   const update = (t: StudioThread) => { setThread(t); saveThread(t); };
 
+  const addFiles = async (files: File[]) => {
+    for (const f of files) {
+      setReading((n) => n + 1);
+      try {
+        const text = await readStudioFile(f);
+        setAttachments((prev) => [...prev, { id: `${Date.now()}-${f.name}`, name: f.name, text }]);
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : `Não consegui ler ${f.name}`);
+      } finally {
+        setReading((n) => n - 1);
+      }
+    }
+    inputRef.current?.focus();
+  };
+
   const send = async () => {
-    const text = input.trim();
-    if (!text || busy) return;
+    if (busy || reading > 0 || (!input.trim() && attachments.length === 0)) return;
+    const typed = input;
+    const sentAttachments = attachments;
+    const text = composeStudioMessage(input, attachments, MAX_STUDIO_CHARS);
     const messages = [...thread.messages, { role: "user" as const, content: text }];
-    const title = thread.messages.length === 0 && !assistant ? text.slice(0, 60) : thread.title;
+    const title = thread.messages.length === 0 && !assistant ? (typed.trim() || sentAttachments[0]?.name || "Nova conversa").slice(0, 60) : thread.title;
     let current: StudioThread = { ...thread, title, messages, updatedAt: Date.now() };
     update(current);
     setInput("");
+    setAttachments([]);
     setBusy(true);
     try {
       const { data, error } = await supabase.functions.invoke("studio-chat", {
@@ -67,7 +92,9 @@ export default function Studio() {
       update(current);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Não foi possível responder agora.");
-      setInput(text);
+      update({ ...current, messages: thread.messages });
+      setInput(typed);
+      setAttachments(sentAttachments);
     } finally {
       setBusy(false);
       inputRef.current?.focus();
@@ -115,13 +142,48 @@ export default function Studio() {
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-3xl">
-        <div className="flex items-end gap-2 rounded-2xl border border-border bg-card p-2">
+      <div
+        className="mx-auto w-full max-w-3xl"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => { e.preventDefault(); if (e.dataTransfer.files.length) addFiles(Array.from(e.dataTransfer.files)); }}
+      >
+        {(attachments.length > 0 || reading > 0) && (
+          <div className="mb-2 flex flex-wrap gap-2">
+            {attachments.map((a) => (
+              <span key={a.id} className="inline-flex max-w-[240px] items-center gap-1.5 rounded-full border border-border bg-muted px-3 py-1 text-xs">
+                <FileText className="h-3.5 w-3.5 shrink-0 text-primary" />
+                <span className="truncate">{a.name}</span>
+                <button type="button" aria-label={`Remover ${a.name}`} onClick={() => setAttachments((p) => p.filter((x) => x.id !== a.id))}>
+                  <X className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+                </button>
+              </span>
+            ))}
+            {reading > 0 && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Lendo arquivo...
+              </span>
+            )}
+          </div>
+        )}
+        <div className="flex items-end gap-1.5 rounded-2xl border border-border bg-card p-2">
+          <input ref={fileRef} type="file" multiple accept={STUDIO_FILE_ACCEPT} className="hidden"
+            onChange={(e) => { const f = Array.from(e.target.files ?? []); e.target.value = ""; if (f.length) addFiles(f); }} />
+          <Button type="button" variant="ghost" size="icon" className="shrink-0 rounded-full" disabled={busy}
+            onClick={() => fileRef.current?.click()} aria-label="Anexar foto ou arquivo" title="Anexar foto ou arquivo">
+            <Paperclip className="h-4 w-4" />
+          </Button>
           <Textarea ref={inputRef} autoFocus value={input} maxLength={MAX_STUDIO_CHARS} rows={2}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-            placeholder="Escreva sua mensagem..." className="min-h-[52px] resize-none border-0 bg-transparent shadow-none focus-visible:ring-0" />
-          <Button size="icon" onClick={send} disabled={busy || !input.trim()} aria-label="Enviar">
+            onPaste={(e) => { const f = Array.from(e.clipboardData.files); if (f.length) { e.preventDefault(); addFiles(f); } }}
+            placeholder="Escreva, fale ou anexe uma foto ou arquivo..." className="min-h-[52px] resize-none border-0 bg-transparent shadow-none focus-visible:ring-0" />
+          <AgentVoiceInput
+            onTranscription={(t: string, o?: VoiceDeliveryOptions) => setInput((prev) => applySpoken(prev, t, o?.replace))}
+            disabled={busy}
+            context="studio"
+            compact
+          />
+          <Button size="icon" onClick={send} disabled={busy || reading > 0 || (!input.trim() && attachments.length === 0)} aria-label="Enviar">
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <SendHorizonal className="h-4 w-4" />}
           </Button>
         </div>
