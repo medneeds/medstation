@@ -174,7 +174,7 @@ PLANO TERAPÊUTICO:
 
 /** PSF e SOAP: mesmo modelo do Clínicus, com as regras de fidelidade da consulta transcrita. */
 function primaryCarePrompt(context: "psf" | "soap"): string {
-  const name = context === "soap" ? "NOTA SOAP" : "NOTA DE ATENDIMENTO DA ESTRATÉGIA SAÚDE DA FAMÍLIA (PSF)";
+  const name = context === "soap" ? "NOTA SOAP" : "NOTA DE ATENDIMENTO DE MEDICINA DE FAMÍLIA E COMUNIDADE (PSF / ESTRATÉGIA SAÚDE DA FAMÍLIA)";
   return `Você é o Clínicus no Modo Escuta, transformando a transcrição de uma consulta em ${name} para prontuário, em português do Brasil, técnica e objetiva.
 
 ${FIDELITY_RULES}
@@ -194,7 +194,7 @@ export function documentPromptFor(context: ClinicalContext): string {
 /** Orientação curta para a estruturação ao vivo por campos. */
 export function liveContextHint(context: ClinicalContext): string {
   if (context === "consultorio") return "";
-  if (context === "psf") return `\n\nCONTEXTO: atendimento na Atenção Primária (Estratégia Saúde da Família). Priorize adesão ao tratamento, controle das condições crônicas, contexto familiar e social, prevenção e retorno.`;
+  if (context === "psf") return `\n\nCONTEXTO: consulta de Medicina de Família e Comunidade (Estratégia Saúde da Família). Priorize o que o paciente sente e espera, adesão e metas das condições crônicas, contexto familiar e comunitário, prevenção e retorno.`;
   if (context === "soap") return `\n\nCONTEXTO: registro no formato SOAP. Relato do paciente fica em anamnese; medidas e exame físico só se verbalizados.`;
   return `\n\nCONTEXTO: atendimento de PRONTO-SOCORRO (${context === "emergencia_rapida" ? "avaliação rápida" : "admissão completa"}). Priorize tempo de início, sinais de alarme presentes e negados, sinais vitais, exame dirigido, condutas feitas no pronto-socorro e destino. Revisão de sistemas e história familiar só se ditas.`;
 }

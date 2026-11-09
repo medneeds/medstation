@@ -324,7 +324,7 @@ const LEGALIS_TOPICS = [
 
 const CLINICUS_CONTEXTS = [
   { value: "consultorio", label: "Consultório" },
-  { value: "psf", label: "PSF · Saúde da Família" },
+  { value: "psf", label: "PSF · Medicina de Família" },
   { value: "soap", label: "Modelo SOAP" },
   { value: "enfermaria", label: "Enfermaria / Clínica Médica" },
   { value: "emergencia_inicial", label: "Emergência · Avaliação Inicial" },

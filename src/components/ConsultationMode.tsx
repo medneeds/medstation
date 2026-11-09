@@ -751,7 +751,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           {clinicalContext === 'consultorio'
             ? 'Anamnese completa de consultório'
             : clinicalContext === 'psf'
-              ? 'Atenção primária: adesão, condições crônicas, família, prevenção e retorno'
+              ? 'Medicina de Família: pessoa, família, condições crônicas, prevenção e retorno'
               : clinicalContext === 'soap'
                 ? 'Nota em quatro partes: subjetivo, objetivo, avaliação e plano'
                 : clinicalContext === 'emergencia_rapida'

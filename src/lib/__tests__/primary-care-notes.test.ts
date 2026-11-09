@@ -16,11 +16,21 @@ describe("contextos PSF e SOAP", () => {
     expect([...pos].sort((a, b) => a - b)).toEqual(pos);
   });
 
-  it("PSF traz linha de cuidado, contexto familiar e retorno", () => {
+  it("PSF segue Medicina de Família: pessoa, família, SOAP e coordenação do cuidado", () => {
     const m = primaryCareModel("psf");
-    expect(m).toContain("LINHA DE CUIDADO");
-    expect(m).toContain("CONTEXTO FAMILIAR E SOCIAL");
-    expect(m).toContain("RETORNO E ACOMPANHAMENTO:");
+    expect(m).toContain("Método Clínico Centrado na Pessoa");
+    expect(m).toContain("EXPERIÊNCIA DA DOENÇA");
+    expect(m).toContain("CONTEXTO FAMILIAR E COMUNITÁRIO");
+    expect(m).toContain("Demora permitida");
+    expect(m).toContain("RETORNO E COORDENAÇÃO DO CUIDADO:");
+    const pos = ["S | SUBJETIVO", "O | OBJETIVO", "A | AVALIAÇÃO", "P | PLANO"].map((t) => m.lastIndexOf(t));
+    expect([...pos].sort((a, b) => a - b)).toEqual(pos);
+  });
+
+  it("PSF: cuidados preventivos não abordados entram só como sugestão, no máximo 3", () => {
+    const m = primaryCareModel("psf");
+    expect(m).toContain("no máximo 3");
+    expect(m).toContain('começa com "Sugestão:" e nunca é escrito como feito ou solicitado');
   });
 
   it("os dois separam problemas ativos de hipóteses e não inventam CID", () => {

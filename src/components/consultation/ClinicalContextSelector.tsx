@@ -6,7 +6,7 @@ export const CLINICAL_CONTEXT_TITLES: Record<ClinicalContext, string> = {
   consultorio: "Anamnese · Consultório",
   emergencia_rapida: "Emergência · Avaliação rápida",
   emergencia_admissao: "Emergência · Admissão completa",
-  psf: "PSF · Saúde da Família",
+  psf: "PSF · Medicina de Família e Comunidade",
   soap: "Nota SOAP",
 };
 
@@ -32,7 +32,7 @@ export function ClinicalContextSelector({ value, onChange, className }: Props) {
           <Building2 className="h-3.5 w-3.5" />
           Consultório
         </button>
-        <button type="button" aria-pressed={value === "psf"} onClick={() => onChange("psf")} className={pill(value === "psf")} title="Estratégia Saúde da Família">
+        <button type="button" aria-pressed={value === "psf"} onClick={() => onChange("psf")} className={pill(value === "psf")} title="Medicina de Família e Comunidade · Estratégia Saúde da Família">
           <Users className="h-3.5 w-3.5" />
           PSF
         </button>
