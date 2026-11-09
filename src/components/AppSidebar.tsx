@@ -179,7 +179,7 @@ export function AppSidebar() {
         {!collapsed && (
           <div className="flex items-center justify-between gap-2 hairline-b px-4 py-2.5">
             <label htmlFor="studio-toggle" className="flex items-center gap-2 text-sm font-medium text-foreground cursor-pointer">
-              MedStation Studio
+              Studio
               <span className="rounded-full border border-primary/40 bg-primary/10 px-1.5 py-px text-[9px] font-semibold tracking-wider text-primary">BETA</span>
             </label>
             <Switch

@@ -39,8 +39,8 @@ export default function Studio() {
   if (!enabled) {
     return (
       <div className="mx-auto max-w-md py-20 text-center space-y-3">
-        <h1 className="text-xl font-semibold">MedStation Studio está desligado</h1>
-        <p className="text-sm text-muted-foreground">Ligue a chave "MedStation Studio (Beta)" no topo da barra lateral para usar.</p>
+        <h1 className="text-xl font-semibold">Studio está desligado</h1>
+        <p className="text-sm text-muted-foreground">Ligue a chave "Studio (Beta)" no topo da barra lateral para usar.</p>
       </div>
     );
   }
