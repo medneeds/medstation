@@ -2018,6 +2018,69 @@ export type Database = {
         }
         Relationships: []
       }
+      studio_assistants: {
+        Row: {
+          created_at: string
+          id: string
+          instructions: string
+          model: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructions?: string
+          model: string
+          name: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructions?: string
+          model?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      studio_threads: {
+        Row: {
+          assistant_id: string | null
+          created_at: string
+          id: string
+          messages: Json
+          model: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assistant_id?: string | null
+          created_at?: string
+          id?: string
+          messages?: Json
+          model: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          assistant_id?: string | null
+          created_at?: string
+          id?: string
+          messages?: Json
+          model?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       support_messages: {
         Row: {
           content: string

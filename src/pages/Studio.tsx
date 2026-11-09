@@ -23,7 +23,7 @@ import {
 export default function Studio() {
   const { threadId } = useParams();
   const navigate = useNavigate();
-  const { enabled, assistants } = useStudioStore();
+  const { enabled, assistants, loaded, saveStatus } = useStudioStore();
   const [editingAssistant, setEditingAssistant] = useState<Partial<StudioAssistant> | null>(null);
   const [thread, setThread] = useState<StudioThread | undefined>(() => (threadId ? getThread(threadId) : undefined));
   const [input, setInput] = useState("");
@@ -41,14 +41,20 @@ export default function Studio() {
       return;
     }
     const t = getThread(threadId);
-    if (!t) { navigate("/studio", { replace: true }); return; }
+    if (!t) {
+      // Ainda buscando a linha do tempo da conta: espera antes de concluir que não existe.
+      if (loaded) navigate("/studio", { replace: true });
+      return;
+    }
+    if (thread?.id === t.id) return;
     setThread(t);
     const prefill = sessionStorage.getItem(STUDIO_PREFILL_KEY);
     if (prefill) sessionStorage.removeItem(STUDIO_PREFILL_KEY);
     setInput(prefill ? prefill.slice(0, MAX_STUDIO_CHARS) : "");
     setAttachments([]);
     inputRef.current?.focus();
-  }, [threadId, navigate]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [threadId, navigate, loaded]);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [thread?.messages.length, busy]);
 
@@ -60,10 +66,17 @@ export default function Studio() {
       </div>
     );
   }
-  if (!thread) return null;
+  if (!thread) {
+    return (
+      <div className="flex items-center justify-center gap-2 py-20 text-sm text-muted-foreground">
+        <Loader2 className="h-4 w-4 animate-spin" /> Abrindo conversa...
+      </div>
+    );
+  }
   const assistant = assistants.find((a) => a.id === thread.assistantId);
 
-  const update = (t: StudioThread) => { setThread(t); saveThread(t); };
+  // Salva sempre; só troca a tela se o médico ainda estiver nessa conversa (resposta pode chegar depois).
+  const update = (t: StudioThread) => { saveThread(t); setThread((prev) => (prev?.id === t.id ? t : prev)); };
 
   /** Troca o assistente da conversa; as próximas respostas seguem as instruções dele. */
   const chooseAssistant = (a?: StudioAssistant) => {
@@ -130,6 +143,11 @@ export default function Studio() {
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <Bot className="h-4 w-4 shrink-0 text-primary" />
           <span className="truncate text-sm font-semibold">{assistant ? assistant.name : "IA livre"}</span>
+          {thread.messages.length > 0 && (
+            <span className={`shrink-0 text-2xs ${saveStatus === "error" ? "text-destructive" : "text-muted-foreground"}`} aria-live="polite">
+              {saveStatus === "saving" ? "Salvando..." : saveStatus === "error" ? "Sem conexão: salvo aqui, enviando de novo" : "Salvo"}
+            </span>
+          )}
         </div>
         <Select value={thread.model} onValueChange={(v) => update({ ...thread, model: v as StudioModelId })}>
           <SelectTrigger className="h-9 w-[200px]" aria-label="Modelo de IA"><SelectValue /></SelectTrigger>
