@@ -6,17 +6,19 @@ import laptopImg from "@/assets/medstation-robot-laptop.webp";
 import tabletImg from "@/assets/medstation-robot-tablet.webp";
 import thinkingImg from "@/assets/medstation-robot-thinking.webp";
 import walkingImg from "@/assets/medstation-robot-walking.webp";
+import walkingBImg from "@/assets/medstation-robot-walking-b.webp";
 
 /** Scene order; the first one is the animated waving robot. */
 const SCENES = ["idle", "laptop", "tablet", "thinking", "walking"] as const;
 type Scene = (typeof SCENES)[number];
 const SCENE_MS = 6500;
 
-const POSES: Record<Exclude<Scene, "idle">, { src: string; label: string; motion: string; inner?: string }> = {
+const POSES: Record<Exclude<Scene, "idle">, { src: string; label: string; motion: string; step?: string }> = {
   laptop: { src: laptopImg, label: "digitando no notebook", motion: "animate-robot-type" },
   tablet: { src: tabletImg, label: "mexendo no tablet", motion: "animate-robot-float" },
   thinking: { src: thinkingImg, label: "pensativo", motion: "origin-bottom animate-robot-ponder" },
-  walking: { src: walkingImg, label: "caminhando", motion: "animate-robot-walk", inner: "animate-robot-step" },
+  // Caminha no lugar: alterna os dois passos (perna esquerda/direita) com um leve sobe-e-desce.
+  walking: { src: walkingImg, step: walkingBImg, label: "caminhando", motion: "animate-robot-step" },
 };
 
 function usePrefersReducedMotion() {
@@ -93,7 +95,6 @@ export function StudioRobot({ className = "" }: { className?: string }) {
           const active = scene === key;
           return (
             <div key={key} className={`${fade} ${active ? "opacity-100" : "opacity-0"}`} aria-hidden="true">
-              {/* Motion classes only while active, so walking starts from the left each time. */}
               <div className={`absolute inset-0 ${active ? pose.motion : ""}`}>
                 <img
                   src={pose.src}
@@ -101,10 +102,20 @@ export function StudioRobot({ className = "" }: { className?: string }) {
                   width={600}
                   height={600}
                   draggable={false}
-                  loading="lazy"
                   decoding="async"
-                  className={`${layer} ${active && pose.inner ? pose.inner : ""}`}
+                  className={`${layer} ${active && pose.step ? "animate-robot-frame-a" : ""}`}
                 />
+                {pose.step && (
+                  <img
+                    src={pose.step}
+                    alt=""
+                    width={600}
+                    height={600}
+                    draggable={false}
+                    decoding="async"
+                    className={`${layer} opacity-0 ${active ? "animate-robot-frame-b" : ""}`}
+                  />
+                )}
               </div>
             </div>
           );
