@@ -68,9 +68,9 @@ export function StudioRobot({ className = "" }: { className?: string }) {
           <img src={bodyImg} alt="" width={400} height={400} draggable={false} className={layer} />
           {/* MedStation peaks on the chest badge (same 400×400 canvas; colors match the illustration, not the theme). */}
           <svg viewBox="0 0 400 400" aria-hidden="true" className={layer}>
-            <g transform="translate(182.6 232.4)" strokeLinejoin="round" opacity="0.92">
-              <path d="M14 22 L20 11 L26 22 Z" fill="#ffffff" fillOpacity="0.35" stroke="#1f6a50" strokeWidth="1.3" />
-              <path d="M6 22 L13 8 L20 22 Z" fill="#f4faf7" stroke="#1f6a50" strokeWidth="1.6" />
+            <g transform="translate(182.6 232.4)" strokeLinejoin="round" fill="none" stroke="#ffffff">
+              <path d="M14 22 L20 11 L26 22 Z" strokeWidth="1.6" />
+              <path d="M6 22 L13 8 L20 22 Z" strokeWidth="1.8" />
             </g>
           </svg>
           <div className="absolute inset-0 origin-[50%_52%] motion-safe:animate-robot-head">
