@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Copy, Loader2, SendHorizonal, Bot, Paperclip, X, FileText } from "lucide-react";
+import { Copy, Loader2, SendHorizonal, Bot, Paperclip, X, FileText, Check, ChevronDown, Plus, Sparkles } from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { NEW_STUDIO_ASSISTANT, StudioAssistantDialog } from "@/components/studio/StudioAssistantDialog";
 import { AgentVoiceInput, type VoiceDeliveryOptions } from "@/components/AgentVoiceInput";
 import { applySpoken } from "@/lib/voiceAccess";
 import { STUDIO_FILE_ACCEPT, composeStudioMessage, readStudioFile } from "@/lib/studioFiles";
@@ -11,14 +15,15 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  STUDIO_MODELS, MAX_STUDIO_CHARS, createThread, getAssistant, getThread, saveThread, useStudioStore,
-  type StudioModelId, type StudioThread,
+  STUDIO_MODELS, MAX_STUDIO_CHARS, createThread, getThread, saveThread, useStudioStore,
+  type StudioAssistant, type StudioModelId, type StudioThread,
 } from "@/lib/studio";
 
 export default function Studio() {
   const { threadId } = useParams();
   const navigate = useNavigate();
-  const { enabled } = useStudioStore();
+  const { enabled, assistants } = useStudioStore();
+  const [editingAssistant, setEditingAssistant] = useState<Partial<StudioAssistant> | null>(null);
   const [thread, setThread] = useState<StudioThread | undefined>(() => (threadId ? getThread(threadId) : undefined));
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -53,9 +58,23 @@ export default function Studio() {
     );
   }
   if (!thread) return null;
-  const assistant = getAssistant(thread.assistantId);
+  const assistant = assistants.find((a) => a.id === thread.assistantId);
 
   const update = (t: StudioThread) => { setThread(t); saveThread(t); };
+
+  /** Troca o assistente da conversa; as próximas respostas seguem as instruções dele. */
+  const chooseAssistant = (a?: StudioAssistant) => {
+    const fresh = thread.messages.length === 0;
+    update({
+      ...thread,
+      assistantId: a?.id,
+      model: a?.model ?? thread.model,
+      title: fresh ? (a ? a.name : "Nova conversa") : thread.title,
+      updatedAt: Date.now(),
+    });
+    if (!fresh) toast.success(a ? `As próximas respostas seguem ${a.name}.` : "As próximas respostas são da IA livre.");
+    inputRef.current?.focus();
+  };
 
   const addFiles = async (files: File[]) => {
     for (const f of files) {
@@ -179,6 +198,36 @@ export default function Studio() {
             onClick={() => fileRef.current?.click()} aria-label="Anexar foto ou arquivo" title="Anexar foto ou arquivo">
             <Paperclip className="h-4 w-4" />
           </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button type="button" variant="ghost" disabled={busy} aria-label="Escolher assistente" title="Escolher assistente"
+                className={`h-10 shrink-0 gap-1 rounded-full px-2.5 ${assistant ? "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary" : ""}`}>
+                <Bot className="h-4 w-4 shrink-0" />
+                <span className={`max-w-[120px] truncate text-xs ${assistant ? "" : "hidden sm:inline"}`}>{assistant ? assistant.name : "Assistente"}</span>
+                <ChevronDown className="h-3 w-3 shrink-0 opacity-60" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" side="top" className="w-64">
+              <DropdownMenuLabel className="text-2xs font-normal text-muted-foreground">Responder como</DropdownMenuLabel>
+              <DropdownMenuItem onSelect={() => chooseAssistant(undefined)} className="gap-2">
+                <Sparkles className="h-4 w-4 text-muted-foreground" />
+                <span className="flex-1">IA livre (sem assistente)</span>
+                {!assistant && <Check className="h-4 w-4 text-primary" />}
+              </DropdownMenuItem>
+              {assistants.length > 0 && <DropdownMenuSeparator />}
+              {assistants.map((a) => (
+                <DropdownMenuItem key={a.id} onSelect={() => chooseAssistant(a)} className="gap-2">
+                  <Bot className="h-4 w-4 text-primary" />
+                  <span className="flex-1 truncate">{a.name}</span>
+                  {assistant?.id === a.id && <Check className="h-4 w-4 text-primary" />}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={() => setEditingAssistant({ ...NEW_STUDIO_ASSISTANT })} className="gap-2">
+                <Plus className="h-4 w-4" /> Criar assistente
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Textarea ref={inputRef} autoFocus value={input} maxLength={MAX_STUDIO_CHARS} rows={2}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
@@ -195,6 +244,7 @@ export default function Studio() {
           </Button>
         </div>
       </div>
+      <StudioAssistantDialog value={editingAssistant} onClose={() => setEditingAssistant(null)} onSaved={(a) => chooseAssistant(a)} />
     </div>
   );
 }
