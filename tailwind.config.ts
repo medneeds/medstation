@@ -136,6 +136,23 @@ export default {
           "80%": { transform: "rotate(5deg)" },
           "90%": { transform: "rotate(5deg)" },
         },
+        "robot-type": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-1.5px)" },
+        },
+        "robot-ponder": {
+          "0%, 100%": { transform: "rotate(0deg)" },
+          "30%, 45%": { transform: "rotate(-2.5deg)" },
+          "70%, 85%": { transform: "rotate(1.5deg)" },
+        },
+        "robot-walk": {
+          "0%": { transform: "translateX(-14px)" },
+          "100%": { transform: "translateX(14px)" },
+        },
+        "robot-step": {
+          "0%, 100%": { transform: "translateY(0) rotate(-1deg)" },
+          "50%": { transform: "translateY(-4px) rotate(1deg)" },
+        },
         "robot-blink": {
           "0%, 40%, 47%, 86%, 89.5%, 93%, 100%": { transform: "scaleY(1)" },
           "43.5%, 87.5%, 91.5%": { transform: "scaleY(0.08)" },
@@ -254,6 +271,10 @@ export default {
         "robot-float": "robot-float 3.6s ease-in-out infinite",
         "robot-head": "robot-head 7s cubic-bezier(0.45, 0, 0.55, 1) infinite",
         "robot-blink": "robot-blink 5s ease-in-out infinite",
+        "robot-type": "robot-type 0.45s ease-in-out infinite",
+        "robot-ponder": "robot-ponder 4s ease-in-out infinite",
+        "robot-walk": "robot-walk 6.5s ease-in-out both",
+        "robot-step": "robot-step 0.55s ease-in-out infinite",
         marquee: "scroll 32s linear infinite",
 
 
