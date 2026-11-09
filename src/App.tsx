@@ -43,6 +43,7 @@ const ConsultorioHistorico = lazy(() => import("./pages/ConsultorioHistorico"));
 const Rotina = lazy(() => import("./pages/Rotina"));
 const RotinaArquivo = lazy(() => import("./pages/RotinaArquivo"));
 const Operador = lazy(() => import("./pages/Operador"));
+const Studio = lazy(() => import("./pages/Studio"));
 
 const Examinus = lazy(() => import("./pages/Examinus"));
 const Scorius = lazy(() => import("./pages/Scorius"));
@@ -187,6 +188,19 @@ const App = () => (
                   <ProtectedRoute>
                     <DashboardLayout>
                       <Operador />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+            ))}
+            {["/studio", "/studio/:threadId"].map((path) => (
+              <Route
+                key={path}
+                path={path}
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <Studio />
                     </DashboardLayout>
                   </ProtectedRoute>
                 }

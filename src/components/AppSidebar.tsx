@@ -56,6 +56,9 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
+import { StudioSidebarSection } from "@/components/studio/StudioSidebarSection";
+import { setStudioEnabled, useStudioStore } from "@/lib/studio";
 
 const homeModule = { title: "Início", url: "/dashboard", icon: Home, code: "00" };
 
@@ -138,6 +141,7 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const studio = useStudioStore();
   const [closedModules, setClosedModules] = useState<Record<string, boolean>>(() => {
     try { return JSON.parse(localStorage.getItem(MODULES_KEY) || "{}"); } catch { return {}; }
   });
@@ -172,6 +176,21 @@ export function AppSidebar() {
           )}
         </div>
 
+        {!collapsed && (
+          <div className="flex items-center justify-between gap-2 hairline-b px-4 py-2.5">
+            <label htmlFor="studio-toggle" className="flex items-center gap-2 text-sm font-medium text-foreground cursor-pointer">
+              MedStation Studio
+              <span className="rounded-full border border-primary/40 bg-primary/10 px-1.5 py-px text-[9px] font-semibold tracking-wider text-primary">BETA</span>
+            </label>
+            <Switch
+              id="studio-toggle"
+              checked={studio.enabled}
+              onCheckedChange={(on) => { setStudioEnabled(on); navigate(on ? "/studio" : "/dashboard"); }}
+            />
+          </div>
+        )}
+
+        {studio.enabled && !collapsed ? <StudioSidebarSection /> : <>
         {/* Início */}
         <SidebarGroup className="py-3 group-data-[collapsible=icon]:px-1">
           <SidebarGroupContent>
@@ -413,6 +432,7 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        </>}
 
         {/* Settings + actions */}
         <SidebarGroup className="mt-auto py-3 group-data-[collapsible=icon]:px-1 hairline-t">
