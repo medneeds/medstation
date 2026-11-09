@@ -5,6 +5,7 @@ import { AgentVoiceInput, type VoiceDeliveryOptions } from "@/components/AgentVo
 import { applySpoken } from "@/lib/voiceAccess";
 import { STUDIO_FILE_ACCEPT, composeStudioMessage, readStudioFile } from "@/lib/studioFiles";
 import { toast } from "sonner";
+import robotImg from "@/assets/medstation-robot.png";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -119,9 +120,16 @@ export default function Studio() {
       <div className="flex-1 overflow-y-auto py-6">
         <div className="mx-auto max-w-3xl space-y-6 px-1">
           {thread.messages.length === 0 && (
-            <p className="pt-16 text-center text-sm text-muted-foreground">
-              {assistant ? `Converse com ${assistant.name}.` : "Escolha a IA no topo e escreva o que precisar."}
-            </p>
+            <div className="flex flex-col items-center pt-8 text-center sm:pt-14">
+              <img src={robotImg} alt="Robozinho da MedStation" width={400} height={400}
+                className="h-36 w-36 animate-fade-in drop-shadow-[0_12px_24px_hsl(var(--primary)/0.25)] sm:h-44 sm:w-44" />
+              <h2 className="mt-4 text-lg font-semibold text-foreground">
+                {assistant ? assistant.name : "Como posso ajudar hoje?"}
+              </h2>
+              <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+                {assistant ? `Converse com ${assistant.name}.` : "Escolha a IA no topo e escreva, fale ou anexe uma foto ou arquivo."}
+              </p>
+            </div>
           )}
           {thread.messages.map((m, i) => m.role === "user" ? (
             <div key={i} className="ml-auto max-w-[85%] whitespace-pre-wrap rounded-2xl bg-primary px-4 py-2.5 text-sm text-primary-foreground">{m.content}</div>
