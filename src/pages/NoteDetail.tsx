@@ -106,6 +106,20 @@ function readLimit(): number | null {
   }
 }
 
+/** True when the window is at least `px` wide (used to merge the tools into the header on large screens). */
+function useMinWidth(px: number) {
+  const query = `(min-width: ${px}px)`;
+  const [match, setMatch] = useState(() => typeof window !== "undefined" && window.matchMedia(query).matches);
+  useEffect(() => {
+    const mql = window.matchMedia(query);
+    const onChange = () => setMatch(mql.matches);
+    onChange();
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, [query]);
+  return match;
+}
+
 /** Character counter with the doctor's chosen limit; `compact` is the phone bottom-bar version. */
 function CharCounter({ length, words, limit, compact }: { length: number; words: number; limit: number | null; compact?: boolean }) {
   const status = limitStatus(length, limit);
@@ -136,6 +150,7 @@ export default function NoteDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const wide = useMinWidth(1280);
   const [searchParams] = useSearchParams();
   // Only same-app paths are accepted as the return target.
   const rawBack = searchParams.get("voltar");
@@ -418,15 +433,112 @@ export default function NoteDetail() {
 
   const toolBtn = "h-9 shrink-0 gap-1.5 px-2.5 text-xs md:h-8";
 
+  const saveStatus = (
+    <button
+      type="button"
+      onClick={() => (saveState === "error" || saveState === "dirty") && void saveNote()}
+      className={cn(
+        "flex items-center gap-1 px-1 text-2xs",
+        saveState === "error" ? "text-destructive" : "text-muted-foreground",
+        (saveState === "error" || saveState === "dirty") && "hover:text-foreground",
+      )}
+      title={saveState === "error" ? "Tentar salvar de novo" : saveState === "dirty" ? "Salvar agora (Ctrl+S)" : undefined}
+    >
+      {saveState === "saving" ? <Loader2 className="h-3 w-3 animate-spin" /> :
+        saveState === "error" ? <CloudOff className="h-3 w-3" /> :
+        saveState === "dirty" ? <span className="h-1.5 w-1.5 rounded-full bg-warning" /> :
+        <Check className="h-3 w-3 text-primary" />}
+      <span>{saveLabel}{saveState === "error" ? " · tentar de novo" : ""}</span>
+    </button>
+  );
+
+  const tools = (
+    <>
+      <Button variant="ghost" size="sm" className={toolBtn} onClick={() => runTool("MAIÚSCULAS", toUpperPtBr, true)} title="Deixar o trecho selecionado em MAIÚSCULAS">
+        <CaseUpper className="h-4 w-4" /> MAIÚSCULAS
+      </Button>
+      <Button variant="ghost" size="sm" className={toolBtn} onClick={() => runTool("Remover símbolos", removeSpecialChars)} title="Remove asteriscos, #, emojis e símbolos decorativos">
+        <Eraser className="h-4 w-4" /> Remover símbolos
+      </Button>
+      <Button variant="ghost" size="sm" className={toolBtn} onClick={() => runTool("Limpar linhas", collapseBlankLines)} title="Deixa no máximo uma linha em branco entre blocos">
+        <Rows3 className="h-4 w-4" /> Limpar linhas
+      </Button>
+      <Button variant="ghost" size="sm" className={toolBtn} onClick={correctSpelling} disabled={spelling} title="Corrige ortografia e acentos sem mudar números, doses ou siglas">
+        {spelling ? <Loader2 className="h-4 w-4 animate-spin" /> : <SpellCheck className="h-4 w-4" />}
+        {spelling ? "Corrigindo..." : "Corrigir ortografia"}
+      </Button>
+      {undo && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className={cn(toolBtn, "text-primary")}
+          onClick={() => {
+            changeContent(undo.content);
+            setUndo(null);
+          }}
+          title={`Desfazer: ${undo.label}`}
+        >
+          <Undo2 className="h-4 w-4" /> Desfazer
+        </Button>
+      )}
+
+      <div className="ml-auto pl-2">
+        <Popover open={limitOpen} onOpenChange={setLimitOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn(toolBtn, "bg-background")}>
+              <Gauge className="h-4 w-4" />
+              {limit ? `Limite ${fmt(limit)}` : "Definir limite"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-64 space-y-3">
+            <div>
+              <p className="text-sm font-medium">Limite de caracteres</p>
+              <p className="text-xs text-muted-foreground">Ex.: o limite do campo do prontuário. Fica salvo neste aparelho.</p>
+            </div>
+            <div className="grid grid-cols-3 gap-1.5">
+              {LIMIT_PRESETS.map((p) => (
+                <Button key={p} variant={limit === p ? "default" : "outline"} size="sm" className="h-8 text-xs" onClick={() => chooseLimit(p)}>
+                  {fmt(p)}
+                </Button>
+              ))}
+              <Button variant={limit ? "ghost" : "secondary"} size="sm" className="h-8 text-xs" onClick={() => chooseLimit(null)}>
+                Sem limite
+              </Button>
+            </div>
+            <form
+              className="flex gap-1.5"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const v = parseCharLimit(customLimit);
+                if (v) chooseLimit(v);
+              }}
+            >
+              <Input
+                inputMode="numeric"
+                value={customLimit}
+                onChange={(e) => setCustomLimit(e.target.value.replace(/\D/g, ""))}
+                placeholder="Outro valor"
+                className="h-8 text-sm"
+              />
+              <Button type="submit" size="sm" className="h-8" disabled={!parseCharLimit(customLimit)}>
+                OK
+              </Button>
+            </form>
+          </PopoverContent>
+        </Popover>
+      </div>
+    </>
+  );
+
   return (
     <div
       ref={shellRef}
       style={shellHeight ? { height: shellHeight } : undefined}
-      className="mx-auto flex h-[calc(100dvh-5.5rem)] min-h-[440px] w-full max-w-6xl flex-col md:h-[calc(100dvh-6.5rem)] lg:h-[calc(100dvh-7.5rem)]"
+      className="mx-auto flex h-[calc(100dvh-5.5rem)] min-h-[440px] w-full flex-col md:h-[calc(100dvh-6.5rem)] lg:h-[calc(100dvh-7.5rem)]"
     >
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-        {/* Top bar */}
-        <div className="flex items-center gap-2 border-b border-border px-2 py-2 md:gap-4 md:px-4 md:py-3">
+        {/* Top bar (on large screens the quick tools sit right under the title, in the same bar) */}
+        <div className="flex items-center gap-2 border-b border-border px-2 py-2 md:gap-4 md:px-4 md:py-3 xl:gap-5 xl:px-5 xl:py-2.5">
           <Button variant="ghost" size="sm" onClick={goBack} className="h-10 shrink-0 gap-1.5 px-2 md:h-9" title={backLabel}>
             <ArrowLeft className="h-4 w-4" />
             <span className="hidden sm:inline">{backLabel}</span>
@@ -439,24 +551,17 @@ export default function NoteDetail() {
               placeholder="Título da nota"
               maxLength={200}
               aria-label="Título da nota"
-              className="h-8 border-none bg-transparent px-1 text-sm font-semibold shadow-none focus-visible:ring-1 md:text-base"
+              className="h-8 border-none bg-transparent px-1 text-sm font-semibold shadow-none focus-visible:ring-1 md:text-base xl:text-lg"
             />
-            <button
-              type="button"
-              onClick={() => (saveState === "error" || saveState === "dirty") && void saveNote()}
-              className={cn(
-                "flex items-center gap-1 px-1 text-2xs",
-                saveState === "error" ? "text-destructive" : "text-muted-foreground",
-                (saveState === "error" || saveState === "dirty") && "hover:text-foreground",
-              )}
-              title={saveState === "error" ? "Tentar salvar de novo" : saveState === "dirty" ? "Salvar agora (Ctrl+S)" : undefined}
-            >
-              {saveState === "saving" ? <Loader2 className="h-3 w-3 animate-spin" /> :
-                saveState === "error" ? <CloudOff className="h-3 w-3" /> :
-                saveState === "dirty" ? <span className="h-1.5 w-1.5 rounded-full bg-warning" /> :
-                <Check className="h-3 w-3 text-primary" />}
-              <span>{saveLabel}{saveState === "error" ? " · tentar de novo" : ""}</span>
-            </button>
+            {wide ? (
+              <div className="mt-0.5 flex items-center gap-1">
+                <div className="shrink-0">{saveStatus}</div>
+                <span className="mx-2 h-4 w-px shrink-0 bg-border" aria-hidden />
+                <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto [scrollbar-width:none]">{tools}</div>
+              </div>
+            ) : (
+              saveStatus
+            )}
           </div>
 
           <div className="hidden md:block">
@@ -485,82 +590,12 @@ export default function NoteDetail() {
           </DropdownMenu>
         </div>
 
-        {/* Quick tools */}
-        <div className="flex items-center gap-1 overflow-x-auto border-b border-border bg-muted/40 px-2 py-1.5 md:px-4 [scrollbar-width:none]">
-          <Button variant="ghost" size="sm" className={toolBtn} onClick={() => runTool("MAIÚSCULAS", toUpperPtBr, true)} title="Deixar o trecho selecionado em MAIÚSCULAS">
-            <CaseUpper className="h-4 w-4" /> MAIÚSCULAS
-          </Button>
-          <Button variant="ghost" size="sm" className={toolBtn} onClick={() => runTool("Remover símbolos", removeSpecialChars)} title="Remove asteriscos, #, emojis e símbolos decorativos">
-            <Eraser className="h-4 w-4" /> Remover símbolos
-          </Button>
-          <Button variant="ghost" size="sm" className={toolBtn} onClick={() => runTool("Limpar linhas", collapseBlankLines)} title="Deixa no máximo uma linha em branco entre blocos">
-            <Rows3 className="h-4 w-4" /> Limpar linhas
-          </Button>
-          <Button variant="ghost" size="sm" className={toolBtn} onClick={correctSpelling} disabled={spelling} title="Corrige ortografia e acentos sem mudar números, doses ou siglas">
-            {spelling ? <Loader2 className="h-4 w-4 animate-spin" /> : <SpellCheck className="h-4 w-4" />}
-            {spelling ? "Corrigindo..." : "Corrigir ortografia"}
-          </Button>
-          {undo && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(toolBtn, "text-primary")}
-              onClick={() => {
-                changeContent(undo.content);
-                setUndo(null);
-              }}
-              title={`Desfazer: ${undo.label}`}
-            >
-              <Undo2 className="h-4 w-4" /> Desfazer
-            </Button>
-          )}
-
-          <div className="ml-auto pl-2">
-            <Popover open={limitOpen} onOpenChange={setLimitOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className={cn(toolBtn, "bg-background")}>
-                  <Gauge className="h-4 w-4" />
-                  {limit ? `Limite ${fmt(limit)}` : "Definir limite"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align="end" className="w-64 space-y-3">
-                <div>
-                  <p className="text-sm font-medium">Limite de caracteres</p>
-                  <p className="text-xs text-muted-foreground">Ex.: o limite do campo do prontuário. Fica salvo neste aparelho.</p>
-                </div>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {LIMIT_PRESETS.map((p) => (
-                    <Button key={p} variant={limit === p ? "default" : "outline"} size="sm" className="h-8 text-xs" onClick={() => chooseLimit(p)}>
-                      {fmt(p)}
-                    </Button>
-                  ))}
-                  <Button variant={limit ? "ghost" : "secondary"} size="sm" className="h-8 text-xs" onClick={() => chooseLimit(null)}>
-                    Sem limite
-                  </Button>
-                </div>
-                <form
-                  className="flex gap-1.5"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    const v = parseCharLimit(customLimit);
-                    if (v) chooseLimit(v);
-                  }}
-                >
-                  <Input
-                    inputMode="numeric"
-                    value={customLimit}
-                    onChange={(e) => setCustomLimit(e.target.value.replace(/\D/g, ""))}
-                    placeholder="Outro valor"
-                    className="h-8 text-sm"
-                  />
-                  <Button type="submit" size="sm" className="h-8" disabled={!parseCharLimit(customLimit)}>
-                    OK
-                  </Button>
-                </form>
-              </PopoverContent>
-            </Popover>
+        {/* Quick tools (own row below large screens) */}
+        {!wide && (
+          <div className="flex items-center gap-1 overflow-x-auto border-b border-border bg-muted/40 px-2 py-1.5 md:px-4 [scrollbar-width:none]">
+            {tools}
           </div>
-        </div>
+        )}
 
         {/* Paper */}
         <div className="min-h-0 flex-1 overflow-hidden bg-background/60">
@@ -573,7 +608,7 @@ export default function NoteDetail() {
             spellCheck
             lang="pt-BR"
             aria-label="Texto da nota"
-            className="mx-auto block h-full w-full max-w-4xl resize-none bg-transparent px-4 py-4 text-[15px] leading-7 text-foreground outline-none placeholder:text-muted-foreground md:px-10 md:py-8"
+            className="mx-auto block h-full w-full max-w-4xl resize-none bg-transparent px-4 py-4 text-[15px] leading-7 text-foreground outline-none placeholder:text-muted-foreground md:max-w-6xl md:px-10 md:py-7 md:text-base md:leading-7 xl:px-14"
           />
         </div>
 
