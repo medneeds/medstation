@@ -5,7 +5,7 @@ import { AgentVoiceInput, type VoiceDeliveryOptions } from "@/components/AgentVo
 import { applySpoken } from "@/lib/voiceAccess";
 import { STUDIO_FILE_ACCEPT, composeStudioMessage, readStudioFile } from "@/lib/studioFiles";
 import { toast } from "sonner";
-import robotImg from "@/assets/medstation-robot.png";
+import { StudioRobot } from "@/components/studio/StudioRobot";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -121,8 +121,7 @@ export default function Studio() {
         <div className="mx-auto max-w-3xl space-y-6 px-1">
           {thread.messages.length === 0 && (
             <div className="flex flex-col items-center pt-8 text-center sm:pt-14">
-              <img src={robotImg} alt="Robozinho da MedStation" width={400} height={400}
-                className="h-36 w-36 animate-fade-in drop-shadow-[0_12px_24px_hsl(var(--primary)/0.25)] sm:h-44 sm:w-44" />
+              <StudioRobot className="h-36 w-36 sm:h-44 sm:w-44" />
               <h2 className="mt-4 text-lg font-semibold text-foreground">
                 {assistant ? assistant.name : "Como posso ajudar hoje?"}
               </h2>

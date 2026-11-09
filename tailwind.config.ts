@@ -122,6 +122,24 @@ export default {
         sm: "calc(var(--radius) - 2px)",
       },
       keyframes: {
+        "robot-float": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-5px)" },
+        },
+        "robot-head": {
+          "0%, 100%": { transform: "rotate(0deg)" },
+          "18%": { transform: "rotate(-6deg) translateY(-1px)" },
+          "34%": { transform: "rotate(-6deg) translateY(-1px)" },
+          "50%": { transform: "rotate(0deg)" },
+          "60%": { transform: "translateY(2px)" },
+          "66%": { transform: "translateY(0)" },
+          "80%": { transform: "rotate(5deg)" },
+          "90%": { transform: "rotate(5deg)" },
+        },
+        "robot-blink": {
+          "0%, 40%, 47%, 86%, 89.5%, 93%, 100%": { transform: "scaleY(1)" },
+          "43.5%, 87.5%, 91.5%": { transform: "scaleY(0.08)" },
+        },
         "brand-sweep": {
           "0%": { transform: "translateX(-120%) skewX(-14deg)", opacity: "0" },
           "12%": { opacity: "1" },
@@ -233,6 +251,9 @@ export default {
         "glyph-sheen": "glyph-sheen 6s cubic-bezier(0.32, 0.72, 0, 1) infinite",
         "brand-sweep": "brand-sweep 7s cubic-bezier(0.32, 0.72, 0, 1) infinite",
         "cta-pulse": "cta-pulse 2.2s ease-out infinite",
+        "robot-float": "robot-float 3.6s ease-in-out infinite",
+        "robot-head": "robot-head 7s cubic-bezier(0.45, 0, 0.55, 1) infinite",
+        "robot-blink": "robot-blink 5s ease-in-out infinite",
         marquee: "scroll 32s linear infinite",
 
 
