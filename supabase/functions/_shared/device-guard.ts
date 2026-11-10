@@ -26,7 +26,7 @@ export function isValidDeviceId(v: unknown): v is string {
 
 export async function authenticate(
   req: Request,
-): Promise<{ user: User; admin: SupabaseClient } | Response> {
+): Promise<{ user: User; admin: SupabaseClient; token: string } | Response> {
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
   const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
@@ -36,7 +36,7 @@ export async function authenticate(
   const authed = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } })
   const { data, error } = await authed.auth.getUser()
   if (error || !data?.user) return json({ error: 'Unauthorized' }, 401)
-  return { user: data.user, admin: createClient(supabaseUrl, serviceKey) }
+  return { user: data.user, admin: createClient(supabaseUrl, serviceKey), token: authHeader.slice(7) }
 }
 
 export async function markActive(admin: SupabaseClient, userId: string, deviceHash: string) {

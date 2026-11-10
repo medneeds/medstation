@@ -1,9 +1,11 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
 import { sendTemplateEmailWithLog } from '../_shared/transactional-email-templates/send-and-log.ts'
 import {
+  amrMethodsFromJwt,
   authenticate,
   cleanLabel,
   CODE_TTL_MS,
+  isGoogleLogin,
   isValidDeviceId,
   json,
   markActive,
@@ -20,6 +22,7 @@ function maskEmail(email: string) {
 
 // Decide se este aparelho pode entrar direto ou precisa de código por e-mail.
 // O código só volta depois de 24 h (pessoal) ou 6 h (compartilhado) sem uso neste aparelho.
+// Login com a conta Google nunca pede o código.
 // Body: { device_id, label?, fresh?: boolean, shared?: boolean, resend?: boolean, touch?: boolean }
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
@@ -27,7 +30,7 @@ Deno.serve(async (req) => {
 
   const auth = await authenticate(req)
   if (auth instanceof Response) return auth
-  const { user, admin } = auth
+  const { user, admin, token } = auth
 
   let body: Record<string, unknown>
   try {
@@ -71,6 +74,16 @@ Deno.serve(async (req) => {
     // Já é o acesso ativo (ex.: recarregou a página) e não é um login novo.
     if (!resend && !fresh && active?.device_hash === deviceHash) {
       return json({ status: 'ok' })
+    }
+
+    // Entrou com a conta Google: dispensa o código e vira o único acesso ativo.
+    if (!resend && isGoogleLogin(amrMethodsFromJwt(token), user.app_metadata?.providers)) {
+      await admin.from('trusted_devices').upsert(
+        { user_id: user.id, device_hash: deviceHash, label, last_used_at: nowIso, expires_at: trustExpiresIso(shared) },
+        { onConflict: 'user_id,device_hash' },
+      )
+      await markActive(admin, user.id, deviceHash)
+      return json({ status: 'ok', revoke_others: true, google: true })
     }
 
     // Aparelho reconhecido: entra direto e vira o único acesso ativo.

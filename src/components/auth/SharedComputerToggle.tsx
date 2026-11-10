@@ -74,8 +74,8 @@ export function SharedComputerToggle({ checked, onCheckedChange }: SharedCompute
       </ul>
       <p className="mt-2 text-[0.7rem] text-muted-foreground/80 leading-snug">
         {checked
-          ? "Desligue só se este aparelho for seu. Em qualquer opção, saímos após 30 min sem uso."
-          : "Em qualquer opção, saímos após 30 min sem uso."}
+          ? "Desligue só se este aparelho for seu. Entrando com Google, não pedimos código. Em qualquer opção, saímos após 30 min sem uso."
+          : "Entrando com Google, não pedimos código. Em qualquer opção, saímos após 30 min sem uso."}
       </p>
     </div>
   );

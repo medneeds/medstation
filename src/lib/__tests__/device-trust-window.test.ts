@@ -26,3 +26,29 @@ describe("confirmação por e-mail após tempo sem uso", () => {
     expect(isTrustStillValid(null, false, now)).toBe(false);
   });
 });
+
+import { amrMethodsFromJwt, isGoogleLogin } from "../../../supabase/functions/_shared/device-trust";
+
+const jwtWith = (payload: Record<string, unknown>) =>
+  `x.${Buffer.from(JSON.stringify(payload)).toString("base64url")}.y`;
+
+describe("login com a conta Google não pede código", () => {
+  it("sessão aberta pelo Google entra sem código", () => {
+    const amr = amrMethodsFromJwt(jwtWith({ amr: [{ method: "oauth", timestamp: 1 }] }));
+    expect(isGoogleLogin(amr, ["google"])).toBe(true);
+  });
+
+  it("login com senha pede o código, mesmo em conta que também tem Google", () => {
+    const amr = amrMethodsFromJwt(jwtWith({ amr: [{ method: "password", timestamp: 1 }] }));
+    expect(isGoogleLogin(amr, ["email", "google"])).toBe(false);
+  });
+
+  it("conta sem vínculo Google pede o código", () => {
+    const amr = amrMethodsFromJwt(jwtWith({ amr: [{ method: "oauth", timestamp: 1 }] }));
+    expect(isGoogleLogin(amr, ["email"])).toBe(false);
+  });
+
+  it("token ilegível pede o código", () => {
+    expect(isGoogleLogin(amrMethodsFromJwt("lixo"), ["google"])).toBe(false);
+  });
+});

@@ -29,3 +29,32 @@ export function isTrustStillValid(lastUsedAt: string | null | undefined, shared:
   if (!Number.isFinite(last)) return false
   return now - last < trustWindowMs(shared)
 }
+
+/**
+ * Métodos de entrada gravados no token da sessão (claim "amr").
+ * Lê só o conteúdo de um token que o servidor já validou.
+ */
+export function amrMethodsFromJwt(token: string | null | undefined): string[] {
+  try {
+    const payload = String(token ?? '').split('.')[1]
+    if (!payload) return []
+    const b64 = payload.replace(/-/g, '+').replace(/_/g, '/')
+    const data = JSON.parse(atob(b64 + '='.repeat((4 - (b64.length % 4)) % 4)))
+    if (!Array.isArray(data?.amr)) return []
+    return data.amr
+      .map((a: unknown) => (typeof a === 'string' ? a : (a as { method?: unknown })?.method))
+      .filter((m: unknown): m is string => typeof m === 'string')
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Entrou com a conta Google? Então não pede o código por e-mail:
+ * o próprio Google já confirmou que é o médico.
+ * Exige as duas coisas: sessão aberta por OAuth e conta com vínculo Google.
+ */
+export function isGoogleLogin(amrMethods: string[], providers: unknown): boolean {
+  const list = Array.isArray(providers) ? providers : []
+  return amrMethods.includes('oauth') && list.includes('google')
+}
