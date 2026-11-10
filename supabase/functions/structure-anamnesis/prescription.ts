@@ -23,6 +23,11 @@ export function prescriptionPromptFor(context: string): string {
 
 ${hint}
 
+QUEM FALOU O QUÊ
+- Linhas "Médico:" definem diagnóstico, hipóteses e o que será prescrito. Linhas "Paciente:" e "Acompanhante:" informam queixas, alergias e medicações já em uso, nunca a decisão de prescrever.
+- Medicamento citado pelo paciente ("eu tomo losartana") é medicação em uso: só entra na receita se o médico disser que mantém, ajusta ou renova.
+- Se a transcrição vier sem rótulos, reconheça o falante pelo conteúdo (quem pergunta, examina e orienta é o médico).
+
 COMO DECIDIR
 - Primeiro identifique, só pela transcrição: queixas, hipóteses ou diagnósticos ditos pelo médico, alergias, medicações em uso, gestação/lactação, função renal/hepática, idade e peso se ditos.
 - Se o médico disse na consulta o que vai prescrever, a receita reproduz exatamente isso (fármaco, dose, intervalo, duração ditos). Complete apenas a forma de escrever (genérico DCB, quantidade por extenso).

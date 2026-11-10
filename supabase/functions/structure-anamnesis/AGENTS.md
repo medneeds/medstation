@@ -1,2 +1,3 @@
 - Modo Escuta generates the Prescriptus prescription proposal in parallel with the Clínicus document via mode 'prescription', with per-context rules in prescription.ts (import-free, tested); this reuses the transcript and keeps prescribing rules testable.
 - The AI/CFM notice for prescription suggestions lives in _shared/ai-prescription-notice.ts: appended in code to Modo Escuta prescriptions and required by prompt in the Prescriptus chat; one text keeps both entry points identical.
+- Final review text gets speaker labels via mode 'speakers' (speakers.ts guard rejects any word or number change, falling back to unlabeled text); during recording the prescription refreshes at most every 60 s alongside live structuring.

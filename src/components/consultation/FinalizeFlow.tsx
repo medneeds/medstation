@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CheckCircle2, Copy, FileText, Loader2, Save, AlertTriangle, Circle, FolderPlus, Folder, Check, X, Eye } from "lucide-react";
+import { CheckCircle2, Copy, FileText, Loader2, Save, AlertTriangle, Circle, FolderPlus, Folder, Check, X, Eye, Pill } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import type { CaseFolder } from "@/hooks/useCaseFolders";
@@ -36,6 +36,10 @@ interface FinalizeFlowProps {
   anamnesisText: string;
   /** Transcrição completa da consulta, no mesmo formato da cópia. */
   transcriptText: string;
+  /** Receita sugerida pelo Prescriptus, gerada junto com a anamnese. */
+  prescriptionText?: string;
+  isPrescribing?: boolean;
+  onCopyPrescription?: () => void;
   onCopyAnamnesis: () => void;
   onCopyTranscript: () => void;
   onRetry: () => void;
@@ -46,7 +50,7 @@ interface FinalizeFlowProps {
 
 const STEPS: { key: FinalizePhase; label: string; hint: string; target: number }[] = [
   { key: "review", label: "Revisando o áudio", hint: "Transcrição de alta precisão em português", target: 55 },
-  { key: "structuring", label: "Estruturando a anamnese", hint: "Organizando queixa, história, exame e conduta", target: 95 },
+  { key: "structuring", label: "Estruturando a anamnese e a receita", hint: "Clínicus organiza a consulta e o Prescriptus sugere a prescrição", target: 95 },
   { key: "done", label: "Pronto para salvar", hint: "Confira, copie ou guarde no seu histórico", target: 100 },
 ];
 
@@ -73,6 +77,9 @@ export function FinalizeFlow({
   onSaveCase,
   anamnesisText,
   transcriptText,
+  prescriptionText = "",
+  isPrescribing = false,
+  onCopyPrescription,
   onCopyAnamnesis,
   onCopyTranscript,
   onRetry,
@@ -83,7 +90,7 @@ export function FinalizeFlow({
   const progressRef = useRef(4);
   const [isNewFolder, setIsNewFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
-  const [viewing, setViewing] = useState<"anamnesis" | "transcript" | null>(null);
+  const [viewing, setViewing] = useState<"anamnesis" | "transcript" | "prescription" | null>(null);
 
   const handleCreateFolder = async () => {
     const created = await onCreateFolder(newFolderName);
@@ -224,6 +231,33 @@ export function FinalizeFlow({
 
         {/* Ações */}
         {phase === "done" && (
+          <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+            <div className="flex items-center gap-2">
+              <Pill className="h-4 w-4 text-primary shrink-0" />
+              <p className="text-sm font-medium">Receita sugerida pelo Prescriptus</p>
+              {isPrescribing && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {prescriptionText.trim()
+                ? "Pronta para conferir. É uma sugestão por IA: a revisão médica é insubstituível."
+                : isPrescribing
+                ? "O Prescriptus está terminando a receita..."
+                : "Não foi possível sugerir a receita agora. Você pode gerar de novo na aba Prescrição."}
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <Button size="sm" className="gap-2 min-h-11 md:min-h-0" onClick={() => setViewing("prescription")} disabled={!prescriptionText.trim()}>
+                <Eye className="h-4 w-4" />
+                <span className="text-xs md:text-sm">Ver receita</span>
+              </Button>
+              <Button variant="outline" size="sm" className="gap-2 min-h-11 md:min-h-0" onClick={onCopyPrescription} disabled={!prescriptionText.trim()}>
+                <Copy className="h-4 w-4" />
+                <span className="text-xs md:text-sm">Copiar receita</span>
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {phase === "done" && (
           <div className="grid grid-cols-2 gap-2 pt-1">
             {/* Anamnese: ver e copiar lado a lado */}
             <Button
@@ -261,19 +295,21 @@ export function FinalizeFlow({
         <Dialog open={viewing !== null} onOpenChange={(open) => !open && setViewing(null)}>
           <DialogContent className="z-[70] flex max-h-[85vh] w-[calc(100vw-1.5rem)] max-w-2xl flex-col gap-3 p-4 md:p-6">
             <DialogHeader>
-              <DialogTitle>{viewing === "transcript" ? "Transcrição da consulta" : "Anamnese"}</DialogTitle>
+              <DialogTitle>{viewing === "transcript" ? "Transcrição da consulta" : viewing === "prescription" ? "Receita sugerida · Prescriptus" : "Anamnese"}</DialogTitle>
               <DialogDescription>
                 {viewing === "transcript"
                   ? "Tudo o que foi captado na consulta, como foi falado."
+                  : viewing === "prescription"
+                  ? "Sugestão por IA para sua revisão. A decisão e a assinatura são suas."
                   : "Confira antes de copiar para o prontuário ou salvar o caso."}
               </DialogDescription>
             </DialogHeader>
             <div
               className="min-h-0 flex-1 overflow-y-auto rounded-md border bg-muted/30 p-3 text-sm leading-relaxed whitespace-pre-wrap break-words"
               tabIndex={0}
-              aria-label={viewing === "transcript" ? "Texto da transcrição" : "Texto da anamnese"}
+              aria-label={viewing === "transcript" ? "Texto da transcrição" : viewing === "prescription" ? "Texto da receita" : "Texto da anamnese"}
             >
-              {viewing === "transcript" ? transcriptText : anamnesisText}
+              {viewing === "transcript" ? transcriptText : viewing === "prescription" ? prescriptionText : anamnesisText}
             </div>
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button variant="ghost" size="sm" className="min-h-11 md:min-h-0" onClick={() => setViewing(null)}>
@@ -282,10 +318,10 @@ export function FinalizeFlow({
               <Button
                 size="sm"
                 className="gap-2 min-h-11 md:min-h-0"
-                onClick={viewing === "transcript" ? onCopyTranscript : onCopyAnamnesis}
+                onClick={viewing === "transcript" ? onCopyTranscript : viewing === "prescription" ? onCopyPrescription : onCopyAnamnesis}
               >
                 <Copy className="h-4 w-4" />
-                {viewing === "transcript" ? "Copiar transcrição" : "Copiar anamnese"}
+                {viewing === "transcript" ? "Copiar transcrição" : viewing === "prescription" ? "Copiar receita" : "Copiar anamnese"}
               </Button>
             </div>
           </DialogContent>

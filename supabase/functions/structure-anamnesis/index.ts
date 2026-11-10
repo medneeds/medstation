@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { logAIUsage } from "../_shared/ai-logger.ts";
 import { accessDeniedResponse, requirePlatformAccess } from "../_shared/access-control.ts";
 import { cleanPrescription, prescriptionPromptFor } from "./prescription.ts";
+import { acceptLabeledTranscript, SPEAKERS_PROMPT } from "./speakers.ts";
 import { cleanDocument, documentPromptFor, liveContextHint, parseClinicalContext, readResponsesText } from "./clinical-context.ts";
 
 const DOCUMENT_MODEL = "openai/gpt-6-astra";
@@ -18,7 +19,7 @@ serve(async (req) => {
 
   try {
     const { user } = await requirePlatformAccess(req);
-    const { transcription, mode, specialty, context } = await req.json();
+    const { transcription, mode, specialty, context, liveHint } = await req.json();
     const clinicalContext = parseClinicalContext(context);
 
     const specialtyRaw = typeof specialty === 'string' ? specialty.slice(0, 60).trim() : '';
@@ -76,6 +77,40 @@ serve(async (req) => {
       });
       const document = cleanDocument(readResponsesText(ddata));
       return new Response(JSON.stringify({ document, context: clinicalContext }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    if (mode === 'speakers') {
+      const original = String(transcription);
+      // consultas muito longas: mantém o texto sem rótulos (a resposta não caberia inteira)
+      if (original.length > 40_000) {
+        return new Response(JSON.stringify({ labeled: null }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+      const hint = typeof liveHint === 'string' && liveHint.trim() ? liveHint.slice(0, 40_000) : '';
+      const started = Date.now();
+      const lres = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'google/gemini-3-flash-preview',
+          messages: [
+            { role: 'system', content: SPEAKERS_PROMPT },
+            { role: 'user', content: (hint ? `REFERÊNCIA AO VIVO (rótulos podem ter erros, texto menos preciso):\n${hint}\n\n` : '') + `TRANSCRIÇÃO REVISADA PARA ROTULAR:\n${original}` },
+          ],
+        }),
+      });
+      if (!lres.ok) {
+        console.error('Speakers error:', lres.status, await lres.text());
+        void logAIUsage({ userId: user.id, assistant: 'consultorio', functionName: 'structure-anamnesis:speakers', model: 'google/gemini-3-flash-preview', latencyMs: Date.now() - started, status: 'error' });
+        return new Response(JSON.stringify({ labeled: null }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+      const ldata = await lres.json();
+      void logAIUsage({
+        userId: user.id, assistant: 'consultorio', functionName: 'structure-anamnesis:speakers', model: 'google/gemini-3-flash-preview',
+        inputTokens: ldata.usage?.prompt_tokens, outputTokens: ldata.usage?.completion_tokens, totalTokens: ldata.usage?.total_tokens,
+        latencyMs: Date.now() - started, status: 'ok',
+      });
+      const labeled = acceptLabeledTranscript(original, ldata.choices?.[0]?.message?.content || '');
+      return new Response(JSON.stringify({ labeled }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     if (mode === 'prescription') {

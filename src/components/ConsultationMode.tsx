@@ -855,7 +855,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                       </TabsTrigger>
                       <TabsTrigger value="prescricao" className="h-9 gap-1.5 rounded-none text-xs data-[state=active]:bg-muted data-[state=active]:text-primary">
                         <Pill className="h-3.5 w-3.5" /> Prescrição · Prescriptus
-                        {isPrescribing && <Loader2 className="h-3 w-3 animate-spin" />}
+                        {isPrescribing ? <Loader2 className="h-3 w-3 animate-spin" /> : prescription.trim() ? <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-label="Receita pronta" /> : null}
                       </TabsTrigger>
                     </TabsList>
                     <TabsContent value="anamnese" className="flex-1 m-0 overflow-hidden">
@@ -1076,6 +1076,13 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
           onSaveCase={handleSaveCase}
           anamnesisText={showFinishDialog ? buildStructuredText() : ""}
           transcriptText={transcriptText}
+          prescriptionText={prescription}
+          isPrescribing={isPrescribing}
+          onCopyPrescription={async () => {
+            const ok = await copyText(prescription.trim());
+            if (ok) toast.success('Receita copiada 👏');
+            else toast.error('Não foi possível copiar. Selecione o texto e use Ctrl+C.');
+          }}
           onCopyAnamnesis={handleCopyToClipboard}
           onCopyTranscript={handleCopyTranscript}
           onRetry={() => void runFinalizeFlow({ alreadyStopped: true })}

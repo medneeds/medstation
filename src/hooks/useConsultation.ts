@@ -572,6 +572,8 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
   }, [reviewedTranscript]);
   const stopPromiseRef = useRef<Promise<void> | null>(null);
 
+  const liveSegmentsRef = useRef<{ speaker: SpeakerType; text: string }[]>([]);
+  liveSegmentsRef.current = segments;
   const runFinalReview = useCallback(async (blocks: Blob[]) => {
     const usable = blocks.filter((b) => b.size > 2000);
     if (usable.length === 0) return;
@@ -607,11 +609,29 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
 
     if (parts.length > 0) {
       reviewedRef.current = parts.join('\n\n');
+      // Reconhecimento automático de falantes: a IA só rotula; se mudar qualquer palavra, fica o texto original
+      let labeledOk = false;
+      try {
+        const live = liveSegmentsRef.current;
+        const distinct = new Set(live.map((s) => s.speaker)).size;
+        const liveHint = distinct > 1
+          ? live.map((s) => `${s.speaker === 'doctor' ? 'Médico' : s.speaker === 'patient' ? 'Paciente' : 'Acompanhante'}: ${s.text}`).join('\n')
+          : live.map((s) => s.text).join('\n');
+        const { data } = await supabase.functions.invoke('structure-anamnesis', {
+          body: { transcription: reviewedRef.current, mode: 'speakers', liveHint },
+        });
+        if (typeof data?.labeled === 'string' && data.labeled.trim()) {
+          reviewedRef.current = data.labeled;
+          labeledOk = true;
+        }
+      } catch (err) {
+        console.warn('[useConsultation] speaker labeling failed', err);
+      }
       setReviewedTranscript(reviewedRef.current);
       if (failures > 0) {
         toast.warning('Parte do áudio não pôde ser revisada — usando a transcrição ao vivo nesse trecho.');
       } else {
-        toast.success('Revisão final concluída — falantes preservados');
+        toast.success(labeledOk ? 'Revisão final concluída — falas de médico, paciente e acompanhante reconhecidas' : 'Revisão final concluída');
       }
     } else {
       toast.warning('Revisão final indisponível — usando transcrição ao vivo');
@@ -774,9 +794,11 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
   }, [buildTranscriptForAI]);
 
   // Prescriptus: proposta de receituário gerada junto com o documento final
+  const prescribingRef = useRef(false);
   const generatePrescription = useCallback(async (opts?: { silent?: boolean }) => {
     const transcriptionText = buildTranscriptForAI({ preferReviewed: true });
     if (!transcriptionText.trim()) return;
+    prescribingRef.current = true;
     setIsPrescribing(true);
     try {
       const { data, error: fnError } = await supabase.functions.invoke('structure-anamnesis', {
@@ -790,6 +812,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
       console.error('Error generating prescription:', err);
       if (!opts?.silent) toast.error('Não foi possível sugerir a prescrição agora. Tente de novo na aba Prescrição.');
     } finally {
+      prescribingRef.current = false;
       setIsPrescribing(false);
     }
   }, [buildTranscriptForAI]);
@@ -808,6 +831,9 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
   const runStructuringRef = useRef(runStructuring);
   runStructuringRef.current = runStructuring;
   const liveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastLivePrescriptionRef = useRef(0);
+  const generatePrescriptionRef = useRef(generatePrescription);
+  generatePrescriptionRef.current = generatePrescription;
   const liveActive = liveStructuring && isRecording && !isPaused;
   useEffect(() => {
     if (liveActive) return;
@@ -832,6 +858,11 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
       liveTimerRef.current = null;
       lastLiveCountRef.current = segCountRef.current;
       void runStructuringRef.current({ silent: true });
+      // Prescriptus ao vivo: atualiza a receita sugerida no máximo a cada 60 s
+      if (segCountRef.current >= 6 && Date.now() - lastLivePrescriptionRef.current > 60_000 && !prescribingRef.current) {
+        lastLivePrescriptionRef.current = Date.now();
+        void generatePrescriptionRef.current({ silent: true });
+      }
     }, delay);
   }, [segments.length, liveActive]);
 
@@ -959,6 +990,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     setReviewedTranscript('');
     setLastStructuredAt(null);
     lastLiveCountRef.current = 0;
+    lastLivePrescriptionRef.current = 0;
     setStartTime(null);
     setElapsedTime(0);
     setLimitReached(false);
