@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { Filter, GraduationCap, Flame } from "lucide-react";
+import { Filter, GraduationCap, Flame, MessageCircle } from "lucide-react";
 import { AdminNotificationBell } from "@/components/admin/AdminNotificationBell";
 
 const NAV = [
@@ -20,6 +20,7 @@ const NAV = [
   { to: "/admin/usuarios", label: "Usuários", icon: Users },
   { to: "/admin/faturamento", label: "Faturamento", icon: CreditCard, adminOnly: true },
   { to: "/admin/black", label: "Black", icon: Flame, adminOnly: true },
+  { to: "/admin/recuperacao-whatsapp", label: "Recuperação WhatsApp", icon: MessageCircle, adminOnly: true },
   { to: "/admin/internos", label: "Internos", icon: GraduationCap, adminOnly: true },
   { to: "/admin/indicacoes", label: "Indicações", icon: Gift, adminOnly: true },
   { to: "/admin/suporte", label: "Suporte", icon: MessageSquare },
