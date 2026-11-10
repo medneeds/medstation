@@ -85,6 +85,7 @@ const AdminFunnel = lazy(() => import("./pages/admin/AdminFunnel"));
 const AdminAudience = lazy(() => import("./pages/admin/AdminAudience"));
 const AdminEmails = lazy(() => import("./pages/admin/AdminEmails"));
 const AdminInternos = lazy(() => import("./pages/admin/AdminInternos"));
+const AdminWhatsappRecovery = lazy(() => import("./pages/admin/AdminWhatsappRecovery"));
 const Internos = lazy(() => import("./pages/Internos"));
 const Black = lazy(() => import("./pages/Black"));
 const Indicar = lazy(() => import("./pages/Indicar"));
@@ -430,6 +431,7 @@ const App = () => (
               <Route path="usuarios" element={<AdminUsers />} />
               <Route path="faturamento" element={<AdminRoute requireAdmin><AdminBilling /></AdminRoute>} />
               <Route path="black" element={<AdminRoute requireAdmin><AdminBlack /></AdminRoute>} />
+              <Route path="recuperacao-whatsapp" element={<AdminRoute requireAdmin><AdminWhatsappRecovery /></AdminRoute>} />
               <Route path="internos" element={<AdminRoute requireAdmin><AdminInternos /></AdminRoute>} />
               <Route path="indicacoes" element={<AdminRoute requireAdmin><AdminReferrals /></AdminRoute>} />
               <Route path="suporte" element={<AdminSupport />} />

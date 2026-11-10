@@ -115,3 +115,12 @@ verify_jwt = false
 
 [functions.admin-resend-arsenal-bonus]
 verify_jwt = false
+
+[functions.whatsapp-recovery-run]
+verify_jwt = false
+
+[functions.bird-whatsapp-webhook]
+verify_jwt = false
+
+[functions.admin-whatsapp-recovery]
+verify_jwt = false
