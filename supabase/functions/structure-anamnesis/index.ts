@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { logAIUsage } from "../_shared/ai-logger.ts";
 import { accessDeniedResponse, requirePlatformAccess } from "../_shared/access-control.ts";
+import { cleanPrescription, prescriptionPromptFor } from "./prescription.ts";
 import { cleanDocument, documentPromptFor, liveContextHint, parseClinicalContext, readResponsesText } from "./clinical-context.ts";
 
 const DOCUMENT_MODEL = "openai/gpt-6-astra";
@@ -75,6 +76,41 @@ serve(async (req) => {
       });
       const document = cleanDocument(readResponsesText(ddata));
       return new Response(JSON.stringify({ document, context: clinicalContext }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    if (mode === 'prescription') {
+      const today = new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+      const system = prescriptionPromptFor(clinicalContext) + `\n\nDATA DE HOJE (Brasília): ${today}.`
+        + (isAutoSpecialty ? '' : `\n\nESPECIALIDADE DO ATENDIMENTO: ${specialtyRaw}.`);
+      const started = Date.now();
+      const pres = await fetch('https://ai.gateway.lovable.dev/v1/responses', {
+        method: 'POST',
+        headers: { 'Lovable-API-Key': LOVABLE_API_KEY, 'X-Lovable-AIG-SDK': 'fetch', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: DOCUMENT_MODEL,
+          input: [
+            { role: 'system', content: system },
+            { role: 'user', content: `Transcrição da consulta (Médico / Paciente / Acompanhante):\n\n${transcription}` },
+          ],
+          reasoning: { effort: 'low' },
+          store: false,
+        }),
+      });
+      if (!pres.ok) {
+        console.error('Prescription error:', pres.status, await pres.text());
+        void logAIUsage({ userId: user.id, assistant: 'prescriptus', functionName: 'structure-anamnesis:prescription', model: DOCUMENT_MODEL, latencyMs: Date.now() - started, status: 'error' });
+        const status = pres.status === 429 || pres.status === 402 ? pres.status : 500;
+        const msg = status === 429 ? 'Limite de requisições excedido. Tente novamente em alguns segundos.' : status === 402 ? 'Créditos de IA esgotados.' : 'Não foi possível sugerir a prescrição agora.';
+        return new Response(JSON.stringify({ error: msg }), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+      const pdata = await pres.json();
+      void logAIUsage({
+        userId: user.id, assistant: 'prescriptus', functionName: 'structure-anamnesis:prescription', model: DOCUMENT_MODEL,
+        inputTokens: pdata.usage?.input_tokens, outputTokens: pdata.usage?.output_tokens, totalTokens: pdata.usage?.total_tokens,
+        latencyMs: Date.now() - started, status: 'ok',
+      });
+      const prescription = cleanPrescription(readResponsesText(pdata));
+      return new Response(JSON.stringify({ prescription, context: clinicalContext }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     if (mode === 'summary') {

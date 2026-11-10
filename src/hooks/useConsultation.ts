@@ -75,6 +75,7 @@ interface ConsultationDraft {
   reviewedTranscript: string;
   smartSummary: string;
   clinicalDocument?: string;
+  prescription?: string;
 }
 
 function readDraft(): ConsultationDraft | null {
@@ -134,6 +135,8 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
   }, []);
   const [clinicalDocument, setClinicalDocument] = useState('');
   const [isDocumenting, setIsDocumenting] = useState(false);
+  const [prescription, setPrescription] = useState('');
+  const [isPrescribing, setIsPrescribing] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [reviewedTranscript, setReviewedTranscript] = useState('');
   const [isRecording, setIsRecording] = useState(false);
@@ -770,9 +773,30 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     }
   }, [buildTranscriptForAI]);
 
+  // Prescriptus: proposta de receituário gerada junto com o documento final
+  const generatePrescription = useCallback(async (opts?: { silent?: boolean }) => {
+    const transcriptionText = buildTranscriptForAI({ preferReviewed: true });
+    if (!transcriptionText.trim()) return;
+    setIsPrescribing(true);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('structure-anamnesis', {
+        body: { transcription: transcriptionText, mode: 'prescription', specialty: specialtyRef.current, context: clinicalContextRef.current },
+      });
+      if (fnError) throw fnError;
+      const text = (data?.prescription || '').trim();
+      if (!text) throw new Error('Prescrição vazia');
+      setPrescription(text);
+    } catch (err) {
+      console.error('Error generating prescription:', err);
+      if (!opts?.silent) toast.error('Não foi possível sugerir a prescrição agora. Tente de novo na aba Prescrição.');
+    } finally {
+      setIsPrescribing(false);
+    }
+  }, [buildTranscriptForAI]);
+
   const updateStructure = useCallback(
-    () => Promise.all([runStructuring({ preferReviewed: true }), generateDocument()]).then(() => undefined),
-    [runStructuring, generateDocument]
+    () => Promise.all([runStructuring({ preferReviewed: true }), generateDocument(), generatePrescription()]).then(() => undefined),
+    [runStructuring, generateDocument, generatePrescription]
   );
 
   // ---- Estruturação ao vivo, com ritmo adaptativo --------------------------
@@ -830,13 +854,14 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
       reviewedTranscript,
       smartSummary,
       clinicalDocument,
+      prescription,
     };
     try {
       localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
     } catch (e) {
       console.warn('[useConsultation] draft save failed', e);
     }
-  }, [segments, structure, reviewedTranscript, smartSummary, clinicalDocument]);
+  }, [segments, structure, reviewedTranscript, smartSummary, clinicalDocument, prescription]);
 
   useEffect(() => {
     const t = setTimeout(persistDraft, 800);
@@ -868,6 +893,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     setReviewedTranscript(draft.reviewedTranscript || '');
     setSmartSummary(draft.smartSummary || '');
     setClinicalDocument(draft.clinicalDocument || '');
+    setPrescription(draft.prescription || '');
     accumulatedRef.current = draft.elapsedSeconds || 0;
     runningSinceRef.current = null;
     setElapsedTime(Math.floor(draft.elapsedSeconds || 0));
@@ -929,6 +955,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     setChangedFields(new Set());
     setSmartSummary('');
     setClinicalDocument('');
+    setPrescription('');
     setReviewedTranscript('');
     setLastStructuredAt(null);
     lastLiveCountRef.current = 0;
@@ -1033,6 +1060,10 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     setClinicalDocument,
     isDocumenting,
     generateDocument,
+    prescription,
+    setPrescription,
+    isPrescribing,
+    generatePrescription,
     buildTranscriptForAI,
     changeSpeaker,
     editSegmentText,

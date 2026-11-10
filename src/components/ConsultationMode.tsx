@@ -46,6 +46,8 @@ import { StructuredPane } from "@/components/consultation/StructuredPane";
 import { ClinicalContextSelector, CLINICAL_CONTEXT_TITLES } from "@/components/consultation/ClinicalContextSelector";
 import { FinalizeFlow, type FinalizePhase } from "@/components/consultation/FinalizeFlow";
 import { useCaseFolders } from "@/hooks/useCaseFolders";
+import { PrescriptionPane } from "@/components/consultation/PrescriptionPane";
+import { Pill } from "lucide-react";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -150,6 +152,10 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     clinicalDocument,
     setClinicalDocument,
     isDocumenting,
+    prescription,
+    setPrescription,
+    isPrescribing,
+    generatePrescription,
     startRecording,
     stopRecording,
     waitForStop,
@@ -764,7 +770,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
       {/* Main Content */}
       {isMobile ? (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-          <TabsList className="grid w-full grid-cols-2 mx-0 h-11 p-0 rounded-none border-b bg-card/60">
+          <TabsList className="grid w-full grid-cols-3 mx-0 h-11 p-0 rounded-none border-b bg-card/60">
             <TabsTrigger value="transcription" className="h-11 gap-2 rounded-none text-[13px] data-[state=active]:bg-muted data-[state=active]:text-primary">
               <MessageSquare className="h-4 w-4" />
               Transcrição
@@ -776,6 +782,10 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               <FileText className="h-4 w-4" />
               Anamnese
               <span className="ml-0.5 text-[10px] font-mono text-muted-foreground">{countFilledSections(structure)}/11</span>
+            </TabsTrigger>
+            <TabsTrigger value="prescription" className="h-11 gap-2 rounded-none text-[13px] data-[state=active]:bg-muted data-[state=active]:text-primary">
+              <Pill className="h-4 w-4" />
+              Receita
             </TabsTrigger>
           </TabsList>
 
@@ -806,6 +816,15 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               documentTitle={CLINICAL_CONTEXT_TITLES[clinicalContext]}
             />
           </TabsContent>
+          <TabsContent value="prescription" className="flex-1 m-0 overflow-hidden">
+            <PrescriptionPane
+              prescription={prescription}
+              onChange={setPrescription}
+              isPrescribing={isPrescribing}
+              onGenerate={() => generatePrescription()}
+              canGenerate={segments.length > 0}
+            />
+          </TabsContent>
         </Tabs>
       ) : (
         <div className="flex-1 flex flex-col overflow-hidden">
@@ -829,6 +848,17 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
             {focusPane !== 'transcription' && (
               <ResizablePanel defaultSize={focusPane === 'structure' ? 100 : 55} minSize={25}>
                 <Card className="rounded-none border-0 h-full overflow-hidden">
+                  <Tabs defaultValue="anamnese" className="h-full flex flex-col">
+                    <TabsList className="grid grid-cols-2 h-9 p-0 rounded-none border-b bg-card/60 shrink-0">
+                      <TabsTrigger value="anamnese" className="h-9 gap-1.5 rounded-none text-xs data-[state=active]:bg-muted data-[state=active]:text-primary">
+                        <FileText className="h-3.5 w-3.5" /> Anamnese · Clínicus
+                      </TabsTrigger>
+                      <TabsTrigger value="prescricao" className="h-9 gap-1.5 rounded-none text-xs data-[state=active]:bg-muted data-[state=active]:text-primary">
+                        <Pill className="h-3.5 w-3.5" /> Prescrição · Prescriptus
+                        {isPrescribing && <Loader2 className="h-3 w-3 animate-spin" />}
+                      </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="anamnese" className="flex-1 m-0 overflow-hidden">
                   <StructuredPane
                     structure={structure}
                     isStructuring={isStructuring}
@@ -844,6 +874,17 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                     isDocumenting={isDocumenting}
                     documentTitle={CLINICAL_CONTEXT_TITLES[clinicalContext]}
                   />
+                    </TabsContent>
+                    <TabsContent value="prescricao" className="flex-1 m-0 overflow-hidden">
+                      <PrescriptionPane
+              prescription={prescription}
+              onChange={setPrescription}
+              isPrescribing={isPrescribing}
+              onGenerate={() => generatePrescription()}
+              canGenerate={segments.length > 0}
+            />
+                    </TabsContent>
+                  </Tabs>
                 </Card>
               </ResizablePanel>
             )}
