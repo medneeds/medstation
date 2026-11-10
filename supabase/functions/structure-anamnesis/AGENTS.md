@@ -1,0 +1,1 @@
+- Modo Escuta generates the Prescriptus prescription proposal in parallel with the Clínicus document via mode 'prescription', with per-context rules in prescription.ts (import-free, tested); this reuses the transcript and keeps prescribing rules testable.
