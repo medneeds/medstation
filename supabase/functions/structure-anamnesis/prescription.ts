@@ -1,5 +1,6 @@
 // Prescriptus no Modo Escuta: sugestão de receituário a partir da transcrição e do contexto.
-// Import-free para ser testável no vitest.
+// Import-free para ser testável no vitest (o aviso CFM vem de _shared, também import-free).
+import { withPrescriptionNotice } from "../_shared/ai-prescription-notice.ts";
 
 export const NO_PRESCRIPTION = "Nenhuma prescrição indicada no atendimento.";
 
@@ -50,9 +51,16 @@ ORIENTAÇÕES AO PACIENTE
 ALERTAS DE SEGURANÇA
 - [alergias, interações, ajustes, controle especial da Portaria 344/98 com o tipo de receita; ou "Nenhum alerta identificado na consulta."]
 
-Esta é uma proposta para revisão. A decisão e a assinatura são do médico. Retorne apenas o texto acima.`;
+EVIDÊNCIAS CIENTÍFICAS
+- [para cada item da receita: fármaco — por que é escolha adequada para este caso, com selo de força da evidência [ALTA], [MODERADA], [BAIXA] ou [CONTROVERSA] e, quando ALTA ou MODERADA, a fonte e o ano entre parênteses (ex.: SBC 2024, IDSA 2023, Ministério da Saúde 2022)]
+- Nunca invente fonte, ano ou grau. Na dúvida, use [BAIXA] e diga que a evidência é limitada.
+- Item que só reproduz o que o médico decidiu na consulta também recebe sua evidência.
+
+Retorne apenas o texto acima. Não escreva aviso final: o aviso de uso de IA é acrescentado automaticamente.`;
 }
 
 export function cleanPrescription(text: string): string {
-  return text.replace(/\*\*/g, "").replace(/^#{1,6}\s*/gm, "").replace(/^\s*```.*$/gm, "").trim();
+  const cleaned = text.replace(/\*\*/g, "").replace(/^#{1,6}\s*/gm, "").replace(/^\s*```.*$/gm, "").trim();
+  if (!cleaned || cleaned === NO_PRESCRIPTION) return cleaned;
+  return withPrescriptionNotice(cleaned);
 }

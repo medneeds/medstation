@@ -5,6 +5,7 @@ import { buildProfessorPrompt, isProfessorStyle, validateProfessorRequest } from
 import { MEDISCUSS_FIDELITY_RULES } from "./mediscuss.ts";
 import { UTI_CONDUTAS_BLOCK, UTI_PARAMETROS_BLOCK, isUtiEvolucaoTemplate, utiAntibioticBlock, utiEvolucaoFidelityRules, utiReferenceDate } from "./uti-evolucao.ts";
 import { isReceitaRequest, RECEITA_FINAL_RULES } from "./receita.ts";
+import { AI_PRESCRIPTION_NOTICE } from "../_shared/ai-prescription-notice.ts";
 import { selectAgentModel } from "./model-routing.ts";
 import { buildOperadorPrompt, isOperadorAction, validateOperadorRequest } from "./operador.ts";
 import { buildAfastamentoPrompt, validateCodexusRequest } from "./codexus-afastamento.ts";
@@ -3063,6 +3064,11 @@ Regras:
 
 
     if (receitaActive) systemPrompt += RECEITA_FINAL_RULES;
+    if (agentType === "prescriptus") {
+      systemPrompt += receitaActive
+        ? `\n\nAVISO OBRIGATÓRIO: termine a receita, depois de "Assinatura e CRM", com esta linha exatamente como está:\n${AI_PRESCRIPTION_NOTICE}`
+        : `\n\nSUGESTÕES DE PRESCRIÇÃO (OBRIGATÓRIO): sempre que a resposta sugerir medicamento, dose ou esquema terapêutico, inclua a seção EVIDÊNCIAS CIENTÍFICAS (em CAIXA ALTA, sem markdown) com, para cada item sugerido, o fundamento, o selo de força da evidência e a fonte com ano quando ALTA ou MODERADA, sem nunca inventar fonte. Termine a resposta com esta linha exatamente como está:\n${AI_PRESCRIPTION_NOTICE}`;
+    }
 
     // Educational mode replaces document instructions while retaining the same model and history.
     if (agentType === "clinicus" && professorMode === true) {
