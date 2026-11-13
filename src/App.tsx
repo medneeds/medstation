@@ -86,6 +86,7 @@ const AdminAudience = lazy(() => import("./pages/admin/AdminAudience"));
 const AdminEmails = lazy(() => import("./pages/admin/AdminEmails"));
 const AdminInternos = lazy(() => import("./pages/admin/AdminInternos"));
 const AdminWhatsappRecovery = lazy(() => import("./pages/admin/AdminWhatsappRecovery"));
+const AdminUsageMap = lazy(() => import("./pages/admin/AdminUsageMap"));
 const Internos = lazy(() => import("./pages/Internos"));
 const Black = lazy(() => import("./pages/Black"));
 const Indicar = lazy(() => import("./pages/Indicar"));
@@ -437,6 +438,7 @@ const App = () => (
               <Route path="suporte" element={<AdminSupport />} />
               <Route path="analytics" element={<AdminAnalytics />} />
               <Route path="funil" element={<AdminFunnel />} />
+              <Route path="mapa" element={<AdminUsageMap />} />
               <Route path="audiencia" element={<AdminRoute requireAdmin><AdminAudience /></AdminRoute>} />
               <Route path="emails" element={<AdminRoute requireAdmin><AdminEmails /></AdminRoute>} />
 
