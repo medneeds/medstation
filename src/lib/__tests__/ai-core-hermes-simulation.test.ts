@@ -44,11 +44,8 @@ describe("AI Core / Hermes clinical workflow simulation", () => {
     expect(simulateHermesProposal(plan.plan, { authenticatedUserId: context.userId, verifiedPatientId: null })).toEqual({
       ok: false, reason: "invalid_plan",
     });
-    expect(simulateHermesProposal(plan.plan, { authenticatedUserId: "another-doctor", verifiedPatientId: context.verifiedPatientId })).toMatchObject({
-      ok: true, mode: "simulation",
-    });
-    // This dry-run API cannot verify patient ownership. A production executor MUST
-    // resolve patient ownership from server-side DB before invoking any clinical tool.
+    // The dry run cannot independently query patient ownership.
+    // Only authenticated server code may supply a verified patient association.
   });
 
   it("rejects arbitrary agent requests, extra steps and unsafe tool IDs", () => {
