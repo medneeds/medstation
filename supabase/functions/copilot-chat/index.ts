@@ -154,7 +154,7 @@ serve(async (req) => {
       }
     } catch (e) {
       console.error("[copilot-chat] AI transport failed", (e as Error).message);
-      void logAIUsage({ userId, assistant: "copiloto", functionName: "copilot-chat", model: selectedModel, status: "error", metadata: { ai_backend: transport.backend } });
+      void logAIUsage({ userId, assistant: "copiloto", functionName: "copilot-chat", model: selectedModel, skipEstimatedCost: transport.backend !== "lovable", status: "error", metadata: { ai_backend: transport.backend } });
       return json({ error: "O Copiloto demorou para responder. Tente de novo em instantes." }, 504);
     }
 
@@ -183,6 +183,7 @@ serve(async (req) => {
       assistant: "copiloto",
       functionName: "copilot-chat",
       model: selectedModel,
+      skipEstimatedCost: transport.backend !== "lovable",
       inputTokens: data.usage?.prompt_tokens,
       outputTokens: data.usage?.completion_tokens,
       totalTokens: data.usage?.total_tokens,
