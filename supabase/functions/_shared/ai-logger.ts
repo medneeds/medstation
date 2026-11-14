@@ -2,8 +2,8 @@
 // Não deve lançar erros que quebrem a resposta ao usuário.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
-  estimateCostUSD,
-  estimateSTTCostUSD,
+  estimateKnownCostUSD,
+  estimateKnownSTTCostUSD,
   providerFromModel,
   type Provider,
 } from "./model-pricing.ts";
@@ -45,18 +45,25 @@ export async function logAIUsage(p: LogUsageParams): Promise<void> {
     const provider = p.provider ?? providerFromModel(p.model);
     const audioSeconds = p.audioSeconds ?? null;
 
-    let cost: number;
+    let cost: number | null;
+    let costSource: "provider" | "estimated" | "unknown";
     if (p.costUsdOverride != null) {
       cost = p.costUsdOverride;
+      costSource = "provider";
     } else if (audioSeconds != null && audioSeconds > 0) {
-      cost = estimateSTTCostUSD(p.model, audioSeconds);
+      cost = estimateKnownSTTCostUSD(p.model, audioSeconds);
+      costSource = cost === null ? "unknown" : "estimated";
     } else {
-      cost = estimateCostUSD(p.model, input, output);
+      cost = estimateKnownCostUSD(p.model, input, output);
+      costSource = cost === null ? "unknown" : "estimated";
     }
 
     const metadata: Record<string, unknown> = {
       ...(p.metadata ?? {}),
       provider,
+      ai_core_version: "v1",
+      cost_source: costSource,
+      cost_estimate_missing: cost === null,
       ...(audioSeconds != null ? { audio_seconds: audioSeconds } : {}),
     };
 
