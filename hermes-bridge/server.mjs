@@ -33,7 +33,7 @@ function validRequest(args) {
  */
 function safeStagingUrl(value, stagingRef, productionRef) {
   if (!value || !/^[a-z0-9]{20}$/.test(stagingRef ?? "") ||
-      (productionRef && stagingRef === productionRef)) return null;
+      !/^[a-z0-9]{20}$/.test(productionRef ?? "") || stagingRef === productionRef) return null;
   try {
     const url = new URL(value);
     if (url.protocol !== "https:" || url.hostname !== `${stagingRef}.supabase.co` ||
