@@ -36,7 +36,7 @@ export function authorizeClinicalTool(
     return { accepted: false, reason: "missing_context", needsApproval: false };
   }
   const req = input as Partial<ClinicalToolRequest>;
-  if (typeof req.tool !== "string" || !(req.tool in CLINICAL_TOOLS)) {
+  if (typeof req.tool !== "string" || !Object.prototype.hasOwnProperty.call(CLINICAL_TOOLS, req.tool)) {
     return { accepted: false, reason: "unknown_tool", needsApproval: false };
   }
   const tool = CLINICAL_TOOLS[req.tool as ClinicalToolId];
