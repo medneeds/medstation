@@ -65,6 +65,30 @@ function sanitizeSimulation(data, requestId) {
   };
 }
 
+/** Enforce a small upstream response limit before parsing any JSON. */
+async function readBoundedJson(response, maxBytes = 8192) {
+  if (!response.body) throw new Error("empty response");
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder("utf-8", { fatal: true });
+  let bytes = 0;
+  let text = "";
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      bytes += value.byteLength;
+      if (bytes > maxBytes) {
+        await reader.cancel();
+        throw new Error("oversized response");
+      }
+      text += decoder.decode(value, { stream: true });
+    }
+    return JSON.parse(text + decoder.decode());
+  } finally {
+    reader.releaseLock();
+  }
+}
+
 const error = (id, code, message) => ({ jsonrpc: "2.0", id, error: { code, message } });
 const result = (id, payload) => ({ jsonrpc: "2.0", id, result: payload });
 const toolText = (payload, isError = false) => ({
@@ -108,9 +132,10 @@ export function createBridge({ env = process.env, fetcher = fetch } = {}) {
             headers: { Authorization: `Bearer ${token}`, apikey: anon, "Content-Type": "application/json" },
             body: JSON.stringify({ workflow: "admission-review", requestId: args.requestId }),
             signal: AbortSignal.timeout(5000),
+            redirect: "error",
           });
           if (!response.ok) return result(id, toolText({ error: "sandbox_unavailable", httpStatus: response.status }, true));
-          const data = await response.json();
+          const data = await readBoundedJson(response);
           const safe = sanitizeSimulation(data, args.requestId);
           if (!safe) return result(id, toolText({ error: "unexpected_sandbox_response" }, true));
           return result(id, toolText(safe));
