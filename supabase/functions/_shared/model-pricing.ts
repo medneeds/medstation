@@ -35,6 +35,30 @@ export const MODEL_PRICING: Record<string, ModelPrice> = {
   "unknown":                         { input: 0, output: 0, provider: "unknown" },
 };
 
+/**
+ * Returns null when the tariff is unknown. Zero is a genuine price only when
+ * explicitly configured; missing tariffs must never masquerade as free usage.
+ * Values are ESTIMATES, not provider invoices.
+ */
+export function estimateKnownCostUSD(
+  model: string | null | undefined,
+  input: number,
+  output: number,
+): number | null {
+  const p = model ? MODEL_PRICING[model] : undefined;
+  if (!p || p.perMinute != null) return null;
+  return ((input || 0) * p.input + (output || 0) * p.output) / 1_000_000;
+}
+
+export function estimateKnownSTTCostUSD(
+  model: string | null | undefined,
+  seconds: number,
+): number | null {
+  const p = model ? MODEL_PRICING[model] : undefined;
+  if (!p || p.perMinute == null) return null;
+  return (Math.max(0, seconds) / 60) * p.perMinute;
+}
+
 /** Custo de chamada de texto (tokens). */
 export function estimateCostUSD(
   model: string | null | undefined,
