@@ -5,6 +5,7 @@
  */
 import readline from "node:readline";
 import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 
 const TOOL = "medstation_simulate_admission";
 const TOOL_INFO = {
@@ -107,6 +108,6 @@ async function main() {
     if (reply) process.stdout.write(JSON.stringify(reply) + "\n");
   }
 }
-if (process.argv[1] && fileURLToPath(import.meta.url) === fileURLToPath(new URL(`file://${process.argv[1]}`))) {
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
   main().catch(() => { process.exitCode = 1; });
 }
