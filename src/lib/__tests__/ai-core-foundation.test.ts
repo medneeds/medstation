@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { AI_MODELS, modelProviderFromId, selectCoreModel } from "../../../supabase/functions/_shared/ai-core/model-registry";
 import { authorizeClinicalTool, CLINICAL_TOOLS } from "../../../supabase/functions/_shared/ai-core/clinical-tool-contract";
 import { estimateKnownCostUSD, estimateKnownSTTCostUSD } from "../../../supabase/functions/_shared/model-pricing";
+import { resolveModelTransport } from "../../../supabase/functions/_shared/ai-core/provider-transport";
 import { selectAgentModel } from "../../../supabase/functions/agent-chat/model-routing";
 
 describe("MedStation AI Core foundation", () => {
@@ -24,6 +25,11 @@ describe("MedStation AI Core foundation", () => {
     expect(authorizeClinicalTool({ ...good, userId: "user-b" }, ctx).reason).toBe("user_mismatch");
     expect(authorizeClinicalTool({ ...good, patientId: "patient-b" }, ctx).reason).toBe("patient_unverified");
     expect(authorizeClinicalTool({ ...good, tool: "terminal.execute" }, ctx).reason).toBe("unknown_tool");
+  });
+  it("requires explicit HTTPS endpoints and aliases when leaving Lovable", () => {
+    expect(() => resolveModelTransport({ model: "openai/gpt-6-astra", currentGateway: "direct", directProvider: "openai", endpoints: { openai: "https://api.openai.com/v1/responses" } })).toThrow("identifier required");
+    expect(resolveModelTransport({ model: "google/gemini-3-flash-preview", currentGateway: "lovable", endpoints: { lovable: "https://ai.gateway.lovable.dev/v1/chat/completions" } }).backend).toBe("lovable");
+    expect(resolveModelTransport({ model: "openai/gpt-6-astra", currentGateway: "direct", directProvider: "openai", directModelId: "approved-real-model-id", endpoints: { openai: "https://example.com/v1/responses" } }).model).toBe("approved-real-model-id");
   });
   it("requires human approval for prescription drafting workflow", () => {
     expect(CLINICAL_TOOLS["clinical.prescription"].requiresHumanApproval).toBe(true);
