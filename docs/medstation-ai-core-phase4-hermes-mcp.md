@@ -1,7 +1,7 @@
 # MedStation × Hermes — Fase 4 (MCP de homologação sintética)
 
 ## Estado real
-Este PR implementa um **servidor MCP stdio funcional** para Hermes e uma Edge Function Supabase destinada a um ambiente de **homologação isolado**. Os testes de transporte MCP usam um servidor simulado; não há Hermes instalado, hospedagem provisionada, credenciais configuradas, endpoint publicado ou ferramenta clínica real executada.
+> Atualização: ver **docs/medstation-ai-core-phase5-preflight.md** para as exigências de pinning do projeto, prevenção de redirecionamentos e preflight. As instruções da Fase 5 substituem a configuração de credenciais abaixo quando houver divergência.\n\nEste PR implementa um **servidor MCP stdio funcional** para Hermes e uma Edge Function Supabase destinada a um ambiente de **homologação isolado**. Os testes de transporte MCP usam um servidor simulado; não há Hermes instalado, hospedagem provisionada, credenciais configuradas, endpoint publicado ou ferramenta clínica real executada.
 
 ## Arquitetura
 ```
@@ -29,7 +29,7 @@ Requisitos: Node 22+, Hermes instalado em host/container isolado e um projeto Su
    - `AI_CORE_HERMES_SANDBOX_ENABLED=true`
 4. No **processo MCP de homologação** (não no navegador, não no GitHub e não no chat), definir:
    - `MEDSTATION_MCP_STAGING_ENABLED=true`
-   - `MEDSTATION_STAGING_URL=https://<projeto-staging>.supabase.co/functions/v1/ai-core-hermes-sandbox`
+   - `MEDSTATION_STAGING_PROJECT_REF=<ref-staging>`\n   - `MEDSTATION_PRODUCTION_PROJECT_REF=<ref-producao>`\n   - `MEDSTATION_STAGING_URL=https://<projeto-staging>.supabase.co/functions/v1/ai-core-hermes-sandbox`
    - `MEDSTATION_STAGING_JWT=<JWT de sessão de admin do staging, prazo curto>`
    - `MEDSTATION_SUPABASE_ANON_KEY=<chave pública específica do projeto staging>`
 5. Adicionar um servidor MCP local em `~/.hermes/config.yaml`:
@@ -53,7 +53,7 @@ mcp_servers:
 ## Proteções
 - A função retorna 404 quando a variável de staging está ausente ou quando o ambiente é de produção.
 - Permissão adicional exigida: JWT de usuário admin válido no projeto de testes.
-- O MCP aceita exclusivamente domínio `*.supabase.co` e o caminho específico da sandbox; endpoints arbitrários são recusados.
+- O MCP aceita exclusivamente o domínio exato `<MEDSTATION_STAGING_PROJECT_REF>.supabase.co` e o caminho específico da sandbox, e rejeita qualquer URL que corresponda ao ref de produção, além de redirecionamentos; endpoints arbitrários são recusados.
 - Recusa funções MCP não reconhecidas; sem ferramentas de escrita ou acesso a banco.
 - Nenhum dado clínico passa pelo processo MCP ou retorna para Hermes.
 - Erros upstream são normalizados; não incluem resposta bruta do servidor.
