@@ -25,6 +25,8 @@ export interface LogUsageParams {
   audioSeconds?: number | null;
   /** Custo já calculado externamente — sobrepõe os estimadores. */
   costUsdOverride?: number | null;
+  /** Skip legacy gateway tariffs for providers with unverified direct pricing. */
+  skipEstimatedCost?: boolean;
 }
 
 function client() {
@@ -50,6 +52,9 @@ export async function logAIUsage(p: LogUsageParams): Promise<void> {
     if (p.costUsdOverride != null) {
       cost = p.costUsdOverride;
       costSource = "provider";
+    } else if (p.skipEstimatedCost) {
+      cost = null;
+      costSource = "unknown";
     } else if (audioSeconds != null && audioSeconds > 0) {
       cost = estimateKnownSTTCostUSD(p.model, audioSeconds);
       costSource = cost === null ? "unknown" : "estimated";
