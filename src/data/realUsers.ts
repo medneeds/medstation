@@ -10,6 +10,7 @@ import leandroAlbuquerque from "@/assets/real-users/dr-leandro-albuquerque.jpeg.
 import rodrigoMartins from "@/assets/real-users/dr-rodrigo-martins.jpeg.asset.json";
 import diogoNeto from "@/assets/real-users/dr-diogo-neto.jpeg.asset.json";
 import alvaroFialho from "@/assets/real-users/dr-alvaro-fialho.jpg.asset.json";
+import mariaEduarda from "@/assets/real-users/dra-maria-eduarda.jpeg.asset.json";
 
 /** Médicos reais que usam a MedStation (uso de foto e nome autorizado pelo dono). */
 export type RealUser = {
@@ -111,5 +112,13 @@ export const REAL_USERS: RealUser[] = [
     practice: "Médico Residente em Terapia Intensiva",
     quote:
       "A MedStation é uma ferramenta que tem me ajudado a recuperar um tempo precioso para assistir melhor o paciente. A rotina burocrática é essencial e importante, mas consome uma parte considerável do plantão. Com a medstation otimizo isso e ganho espaço para ouvir o paciente, examiná-lo com atenção e conversar com a família.",
+  },
+  {
+    name: "Dra. Maria Eduarda Araújo",
+    photo: mariaEduarda.url,
+    location: "São Luís, MA",
+    practice: "Medicina de Emergência",
+    quote:
+      "Trabalho na porta de urgência e emergência, em um ambiente de alto volume de atendimentos, pressão e necessidade constante de agilidade, sem perder de vista o acolhimento e a qualidade da assistência. Acredito muito no potencial da MedStation e espero que cada vez mais médicos possam experimentar os benefícios de ter a tecnologia como aliada na prática clínica.",
   },
 ];
