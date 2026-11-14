@@ -54,6 +54,7 @@ test("strict endpoint prevents SSRF or accidental production URL", async () => {
 test("requires explicit project pinning and rejects production project", async () => {
   for (const env of [
     { ...validEnv, MEDSTATION_STAGING_PROJECT_REF: undefined },
+    { ...validEnv, MEDSTATION_PRODUCTION_PROJECT_REF: undefined },
     { ...validEnv, MEDSTATION_PRODUCTION_PROJECT_REF: validEnv.MEDSTATION_STAGING_PROJECT_REF },
     { ...validEnv, MEDSTATION_STAGING_PROJECT_REF: "wrongprojectref00000" },
   ]) {
