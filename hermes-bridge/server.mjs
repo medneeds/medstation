@@ -27,15 +27,42 @@ function validRequest(args) {
     /^[A-Za-z0-9_-]{8,100}$/.test(args.requestId);
 }
 
-function safeStagingUrl(value) {
-  if (!value) return null;
+/**
+ * Explicit project pinning prevents accidentally calling a production instance.
+ * Merely matching *.supabase.co is not sufficient.
+ */
+function safeStagingUrl(value, stagingRef, productionRef) {
+  if (!value || !/^[a-z0-9]{20}$/.test(stagingRef ?? "") ||
+      (productionRef && stagingRef === productionRef)) return null;
   try {
     const url = new URL(value);
-    if (url.protocol !== "https:" || !/^[a-z0-9-]+\.supabase\.co$/i.test(url.hostname) ||
+    if (url.protocol !== "https:" || url.hostname !== `${stagingRef}.supabase.co` ||
       url.pathname !== "/functions/v1/ai-core-hermes-sandbox" ||
       url.search || url.hash || url.username || url.password || url.port) return null;
     return url.href;
   } catch { return null; }
+}
+
+/** Never relay arbitrary upstream fields (including accidental patient data). */
+function sanitizeSimulation(data, requestId) {
+  if (data?.environment !== "synthetic-staging" || data?.simulation?.ok !== true ||
+      data?.simulation?.mode !== "simulation" || data?.simulation?.workflow !== "admission-review" ||
+      data?.simulation?.requestId !== requestId || data?.simulation?.requiresMedicalReview !== true) return null;
+  const steps = data.simulation.steps;
+  if (!Array.isArray(steps) || steps.length !== 2) return null;
+  const expected = [
+    { tool: "clinical.document", target: "clinicus", status: "simulated" },
+    { tool: "clinical.labs", target: "examinus", status: "simulated" },
+  ];
+  if (!steps.every((step, i) => step?.tool === expected[i].tool &&
+      step?.target === expected[i].target && step?.status === expected[i].status)) return null;
+  return {
+    environment: "synthetic-staging",
+    simulation: {
+      ok: true, mode: "simulation", workflow: "admission-review", requestId,
+      requiresMedicalReview: true, steps: expected,
+    },
+  };
 }
 
 const error = (id, code, message) => ({ jsonrpc: "2.0", id, error: { code, message } });
@@ -67,7 +94,9 @@ export function createBridge({ env = process.env, fetcher = fetch } = {}) {
         if (message.params?.name !== TOOL) return error(id, -32602, "Unknown tool");
         const args = message.params?.arguments;
         if (!validRequest(args)) return result(id, toolText({ error: "invalid_synthetic_request" }, true));
-        const url = safeStagingUrl(env.MEDSTATION_STAGING_URL);
+        const url = safeStagingUrl(
+          env.MEDSTATION_STAGING_URL, env.MEDSTATION_STAGING_PROJECT_REF, env.MEDSTATION_PRODUCTION_PROJECT_REF,
+        );
         const token = env.MEDSTATION_STAGING_JWT;
         const anon = env.MEDSTATION_SUPABASE_ANON_KEY;
         if (!url || !token || !anon || env.MEDSTATION_MCP_STAGING_ENABLED !== "true") {
@@ -82,11 +111,9 @@ export function createBridge({ env = process.env, fetcher = fetch } = {}) {
           });
           if (!response.ok) return result(id, toolText({ error: "sandbox_unavailable", httpStatus: response.status }, true));
           const data = await response.json();
-          if (data?.environment !== "synthetic-staging" || data?.simulation?.mode !== "simulation" ||
-            data?.simulation?.requestId !== args.requestId || data?.simulation?.ok !== true) {
-            return result(id, toolText({ error: "unexpected_sandbox_response" }, true));
-          }
-          return result(id, toolText(data));
+          const safe = sanitizeSimulation(data, args.requestId);
+          if (!safe) return result(id, toolText({ error: "unexpected_sandbox_response" }, true));
+          return result(id, toolText(safe));
         } catch {
           return result(id, toolText({ error: "sandbox_unavailable" }, true));
         }
