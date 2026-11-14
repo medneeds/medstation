@@ -6,8 +6,10 @@ import { createBridge } from "./server.mjs";
 const rpc = (id, method, params = {}) => ({ jsonrpc: "2.0", id, method, params });
 const validEnv = {
   MEDSTATION_MCP_STAGING_ENABLED: "true",
-  MEDSTATION_STAGING_URL: "https://synthetic-project.supabase.co/functions/v1/ai-core-hermes-sandbox",
+  MEDSTATION_STAGING_URL: "https://stagingprojectref001.supabase.co/functions/v1/ai-core-hermes-sandbox",
   MEDSTATION_STAGING_JWT: "short-lived-admin-jwt",
+  MEDSTATION_STAGING_PROJECT_REF: "stagingprojectref001",
+  MEDSTATION_PRODUCTION_PROJECT_REF: "productionproject001",
   MEDSTATION_SUPABASE_ANON_KEY: "publishable-test-key",
 };
 
@@ -40,10 +42,24 @@ test("strict endpoint prevents SSRF or accidental production URL", async () => {
     "https://api.evil.com/functions/v1/ai-core-hermes-sandbox",
     "https://project.supabase.co.evil.com/functions/v1/ai-core-hermes-sandbox",
     "https://project.supabase.co/rest/v1/patients",
+    "https://productionproject001.supabase.co/functions/v1/ai-core-hermes-sandbox",
+    "https://anotherprojectref001.supabase.co/functions/v1/ai-core-hermes-sandbox",
   ]) {
     const handle = createBridge({ env: { ...validEnv, MEDSTATION_STAGING_URL: url } });
     const response = await handle(rpc(10, "tools/call", { name: "medstation_simulate_admission", arguments: { requestId: "synthetic_001" } }));
     assert.equal(JSON.parse(response.result.content[0].text).error, "sandbox_not_configured");
+  }
+});
+
+test("requires explicit project pinning and rejects production project", async () => {
+  for (const env of [
+    { ...validEnv, MEDSTATION_STAGING_PROJECT_REF: undefined },
+    { ...validEnv, MEDSTATION_PRODUCTION_PROJECT_REF: validEnv.MEDSTATION_STAGING_PROJECT_REF },
+    { ...validEnv, MEDSTATION_STAGING_PROJECT_REF: "wrongprojectref00000" },
+  ]) {
+    const handle = createBridge({ env });
+    const reply = await handle(rpc(12, "tools/call", { name: "medstation_simulate_admission", arguments: { requestId: "synthetic_001" } }));
+    assert.equal(JSON.parse(reply.result.content[0].text).error, "sandbox_not_configured");
   }
 });
 
@@ -59,13 +75,23 @@ test("simulated staging API request sends only fixed synthetic shape", async () 
       assert.deepEqual(JSON.parse(opts.body), { workflow: "admission-review", requestId: "synthetic_001" });
       return new Response(JSON.stringify({
         environment: "synthetic-staging",
-        simulation: { ok: true, mode: "simulation", requestId: "synthetic_001", steps: [] },
+        simulation: {
+          ok: true, mode: "simulation", workflow: "admission-review", requestId: "synthetic_001",
+          requiresMedicalReview: true,
+          steps: [
+            { tool: "clinical.document", target: "clinicus", status: "simulated" },
+            { tool: "clinical.labs", target: "examinus", status: "simulated" },
+          ],
+        },
+        patient_name: "INJECTED_PATIENT_DATA_MUST_NOT_LEAK",
       }), { status: 200 });
     },
   });
   const response = await handle(rpc(11, "tools/call", { name: "medstation_simulate_admission", arguments: { requestId: "synthetic_001" } }));
   assert.equal(called, 1);
   assert.equal(response.result.isError, false);
+  assert.equal(response.result.content[0].text.includes("INJECTED_PATIENT_DATA_MUST_NOT_LEAK"), false);
+  assert.equal(JSON.parse(response.result.content[0].text).simulation.steps.length, 2);
 });
 
 test("unexpected or forbidden upstream responses never leak payloads", async () => {
