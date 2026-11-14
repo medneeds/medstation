@@ -11,7 +11,7 @@ export type CopilotTransportConfig =
   | { backend: "lovable"; apiKey: string }
   | { backend: "google"; apiKey: string; directModelId: string };
 
-export type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
+export type ChatMessage = { role: string; content: string };
 export const COPILOT_ENDPOINTS = Object.freeze({
   lovable: "https://ai.gateway.lovable.dev/v1/chat/completions",
   google: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
