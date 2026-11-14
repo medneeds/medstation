@@ -73,6 +73,7 @@ test("simulated staging API request sends only fixed synthetic shape", async () 
       assert.equal(url, validEnv.MEDSTATION_STAGING_URL);
       assert.equal(opts.headers.Authorization, "Bearer short-lived-admin-jwt");
       assert.equal(opts.headers.apikey, "publishable-test-key");
+      assert.equal(opts.redirect, "error");
       assert.deepEqual(JSON.parse(opts.body), { workflow: "admission-review", requestId: "synthetic_001" });
       return new Response(JSON.stringify({
         environment: "synthetic-staging",
@@ -103,6 +104,22 @@ test("unexpected or forbidden upstream responses never leak payloads", async () 
   const wrong = createBridge({ env: validEnv, fetcher: async () => new Response(JSON.stringify({ simulation: { ok: true, mode: "simulation", requestId: "synthetic_001" }, environment: "production" }), { status: 200 }) });
   const r2 = await wrong(rpc(2, "tools/call", { name: "medstation_simulate_admission", arguments: { requestId: "synthetic_001" } }));
   assert.equal(JSON.parse(r2.result.content[0].text).error, "unexpected_sandbox_response");
+});
+
+test("oversized upstream payloads are rejected and not echoed to Hermes", async () => {
+  const handle = createBridge({
+    env: validEnv,
+    fetcher: async () => new Response(JSON.stringify({
+      environment: "synthetic-staging",
+      secret: "DO_NOT_LEAK_" + "X".repeat(9000),
+    }), { status: 200 }),
+  });
+  const res = await handle(rpc(14, "tools/call", {
+    name: "medstation_simulate_admission",
+    arguments: { requestId: "synthetic_001" },
+  }));
+  assert.equal(res.result.isError, true);
+  assert.equal(res.result.content[0].text.includes("DO_NOT_LEAK"), false);
 });
 
 test("actual stdio subprocess answers initialize and tools/list with JSON-RPC only", async () => {
