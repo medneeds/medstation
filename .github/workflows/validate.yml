@@ -29,5 +29,8 @@ jobs:
       - name: Verify Hermes MCP stdio bridge (offline)
         run: node --test hermes-bridge/server.test.mjs
 
+      - name: Offline Hermes integration preflight
+        run: node hermes-bridge/preflight.mjs
+
       - name: Build
         run: bun run build
