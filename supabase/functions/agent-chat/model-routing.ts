@@ -3,9 +3,10 @@
 import { OPERADOR_FAST_ACTIONS, isOperadorAction } from "./operador.ts";
 import { isUtiEvolucaoTemplate } from "./uti-evolucao.ts";
 import { isPrimaryCareTemplate } from "../_shared/primary-care-notes.ts";
+import { AI_MODELS } from "../_shared/ai-core/model-registry.ts";
 
-export const FAST_AGENT_MODEL = "google/gemini-3-flash-preview";
-export const STRONG_AGENT_MODEL = "openai/gpt-6-astra";
+export const FAST_AGENT_MODEL = AI_MODELS.agentFast.id;
+export const STRONG_AGENT_MODEL = AI_MODELS.agentStrong.id;
 
 export interface AgentModelRequest {
   agentType: string;
