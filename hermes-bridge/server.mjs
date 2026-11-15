@@ -14,7 +14,7 @@ const TOOL_INFO = {
   description: "Simulates a fixed Clínicus + Examinus workflow. Synthetic IDs only. No patient data, model inference, clinical notes or external actions.",
   inputSchema: {
     type: "object",
-    properties: { requestId: { type: "string", pattern: "^[A-Za-z0-9_-]{8,100}$", maxLength: 100 } },
+    properties: { requestId: { type: "string", pattern: "^synthetic_[A-Za-z0-9_-]{1,90}$", maxLength: 100 } },
     required: ["requestId"],
     additionalProperties: false,
   },
@@ -24,7 +24,7 @@ const TOOL_INFO = {
 function validRequest(args) {
   return args && typeof args === "object" && !Array.isArray(args) &&
     Object.keys(args).length === 1 && typeof args.requestId === "string" &&
-    /^[A-Za-z0-9_-]{8,100}$/.test(args.requestId);
+    /^synthetic_[A-Za-z0-9_-]{1,90}$/.test(args.requestId);
 }
 
 /**
