@@ -3,6 +3,7 @@
 // usuário, provider e assistente. Somente admin/support podem consultar.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { isUnpricedAICall } from "../_shared/ai-core/cost-completeness.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -80,6 +81,8 @@ serve(async (req) => {
 
     // KPIs
     let totalCost = 0, totalTokens = 0, errors = 0, latencySum = 0, latencyCount = 0;
+    let unpricedCalls = 0;
+    const unpricedModels = new Set<string>();
     const byProvider: Record<string, { cost: number; tokens: number; calls: number }> = {};
     const byAssistant: Record<string, { cost: number; tokens: number; calls: number }> = {};
     const byModel: Record<string, { cost: number; tokens: number; calls: number }> = {};
@@ -87,6 +90,11 @@ serve(async (req) => {
     const series: Record<string, { cost: number; tokens: number; calls: number }> = {};
 
     for (const r of filtered) {
+      if (isUnpricedAICall(r)) {
+        unpricedCalls++;
+        unpricedModels.add(r.model ?? "unknown");
+      }
+      // Sum of estimated known costs only. Unknowns must be disclosed alongside the total.
       const cost = Number(r.cost_usd ?? 0);
       const tokens = Number(r.total_tokens ?? 0);
       totalCost += cost;
@@ -137,6 +145,9 @@ serve(async (req) => {
       window: { days, from },
       kpis: {
         total_cost_usd: totalCost,
+        unpriced_calls: unpricedCalls,
+        known_cost_is_partial: unpricedCalls > 0,
+        unpriced_models: [...unpricedModels].sort(),
         total_tokens: totalTokens,
         total_calls: filtered.length,
         error_rate: filtered.length ? errors / filtered.length : 0,
