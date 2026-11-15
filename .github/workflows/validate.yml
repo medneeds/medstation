@@ -27,7 +27,7 @@ jobs:
         run: bunx vitest run
 
       - name: Verify Hermes MCP stdio bridge (offline)
-        run: node --test hermes-bridge/server.test.mjs hermes-bridge/full-integration.test.mjs
+        run: node --test hermes-bridge/server.test.mjs hermes-bridge/full-integration.test.mjs hermes-bridge/verify-hermes.test.mjs
 
       - name: Offline Hermes integration preflight
         run: node hermes-bridge/preflight.mjs
