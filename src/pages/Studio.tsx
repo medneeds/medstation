@@ -4,7 +4,6 @@ import { Copy, Loader2, SendHorizonal, Bot, Paperclip, X, FileText, Check, Chevr
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { NEW_STUDIO_ASSISTANT, StudioAssistantDialog } from "@/components/studio/StudioAssistantDialog";
 import { STUDIO_PREFILL_KEY } from "@/lib/prompteca";
 import { AgentVoiceInput, type VoiceDeliveryOptions } from "@/components/AgentVoiceInput";
 import { applySpoken } from "@/lib/voiceAccess";
@@ -24,7 +23,6 @@ export default function Studio() {
   const { threadId } = useParams();
   const navigate = useNavigate();
   const { enabled, assistants, loaded, saveStatus } = useStudioStore();
-  const [editingAssistant, setEditingAssistant] = useState<Partial<StudioAssistant> | null>(null);
   const [thread, setThread] = useState<StudioThread | undefined>(() => (threadId ? getThread(threadId) : undefined));
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -244,7 +242,7 @@ export default function Studio() {
                 </DropdownMenuItem>
               ))}
               <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={() => setEditingAssistant({ ...NEW_STUDIO_ASSISTANT })} className="gap-2">
+              <DropdownMenuItem onSelect={() => navigate("/studio/assistente/novo")} className="gap-2">
                 <Plus className="h-4 w-4" /> Criar assistente
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => navigate("/prompteca")} className="gap-2">
@@ -268,7 +266,6 @@ export default function Studio() {
           </Button>
         </div>
       </div>
-      <StudioAssistantDialog value={editingAssistant} onClose={() => setEditingAssistant(null)} onSaved={(a) => chooseAssistant(a)} />
     </div>
   );
 }

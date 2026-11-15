@@ -11,6 +11,12 @@ describe("Criador de assistentes do Studio", () => {
     expect(d.instructions).toBe("Você é um assistente...\n\nNUNCA\n- inventar");
   });
 
+  it("lê a lista de mudanças sem misturar com as instruções", () => {
+    const d = parseAssistantDraft("NOME: Alta\nMUDANÇAS:\n- Seção de pendências\n- Texto mais curto\nINSTRUÇÕES:\nVocê escreve a alta.");
+    expect(d.changes).toEqual(["Seção de pendências", "Texto mais curto"]);
+    expect(d.instructions).toBe("Você escreve a alta.");
+  });
+
   it("tira negrito e # que a IA colocar", () => {
     const d = parseAssistantDraft("**NOME:** Alta\n## INSTRUÇÕES:\n**Você** responde");
     expect(d.name).toBe("Alta");
@@ -18,7 +24,7 @@ describe("Criador de assistentes do Studio", () => {
   });
 
   it("sem marcadores, o texto inteiro vira instruções", () => {
-    expect(parseAssistantDraft("Você é um assistente de alta.")).toEqual({ name: "", instructions: "Você é um assistente de alta." });
+    expect(parseAssistantDraft("Você é um assistente de alta.")).toEqual({ name: "", instructions: "Você é um assistente de alta.", changes: [] });
   });
 
   it("limita o nome a 60 caracteres", () => {

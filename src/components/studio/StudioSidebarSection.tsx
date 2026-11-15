@@ -1,19 +1,16 @@
-import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Bot, Library, MessageSquare, Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { createThread, deleteThread, timelineGroup, useStudioStore, type StudioAssistant } from "@/lib/studio";
-import { NEW_STUDIO_ASSISTANT, StudioAssistantDialog } from "@/components/studio/StudioAssistantDialog";
 
 const row = "group flex items-center gap-2 rounded-md px-3 h-9 text-sm text-sidebar-foreground/80 hover:bg-primary/10 hover:text-foreground";
 
 export function StudioSidebarSection() {
   const { threads, assistants } = useStudioStore();
   const navigate = useNavigate();
-  const [editing, setEditing] = useState<Partial<StudioAssistant> | null>(null);
-  const startEditing = setEditing;
+  const startEditing = (a?: StudioAssistant) => navigate(a ? `/studio/assistente/${a.id}` : "/studio/assistente/novo");
 
   const groups = ["Hoje", "Ontem", "Últimos 7 dias", "Anteriores"]
     .map((g) => ({ g, items: threads.filter((t) => timelineGroup(t.updatedAt) === g) }))
@@ -32,11 +29,11 @@ export function StudioSidebarSection() {
         <div className="label-mono mb-1 flex items-center justify-between px-2">
           <span>Meus assistentes</span>
           <button type="button" aria-label="Criar assistente" className="text-muted-foreground hover:text-foreground"
-            onClick={() => startEditing({ ...NEW_STUDIO_ASSISTANT })}><Plus className="h-3.5 w-3.5" /></button>
+            onClick={() => startEditing()}><Plus className="h-3.5 w-3.5" /></button>
         </div>
         {assistants.length === 0 && (
           <button type="button" className={cn(row, "w-full text-muted-foreground")}
-            onClick={() => startEditing({ ...NEW_STUDIO_ASSISTANT })}>
+            onClick={() => startEditing()}>
             <Plus className="h-4 w-4" /> Criar assistente
           </button>
         )}
@@ -72,7 +69,6 @@ export function StudioSidebarSection() {
         ))}
       </div>
 
-      <StudioAssistantDialog value={editing} onClose={() => setEditing(null)} />
     </div>
   );
 }

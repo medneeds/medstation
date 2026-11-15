@@ -44,6 +44,7 @@ const Rotina = lazy(() => import("./pages/Rotina"));
 const RotinaArquivo = lazy(() => import("./pages/RotinaArquivo"));
 const Operador = lazy(() => import("./pages/Operador"));
 const Studio = lazy(() => import("./pages/Studio"));
+const StudioAssistantEditor = lazy(() => import("./pages/StudioAssistantEditor"));
 const Prompteca = lazy(() => import("./pages/Prompteca"));
 
 const Examinus = lazy(() => import("./pages/Examinus"));
@@ -190,6 +191,19 @@ const App = () => (
                   <ProtectedRoute>
                     <DashboardLayout>
                       <Operador />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+            ))}
+            {["/studio/assistente/novo", "/studio/assistente/:assistantId"].map((path) => (
+              <Route
+                key={path}
+                path={path}
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <StudioAssistantEditor />
                     </DashboardLayout>
                   </ProtectedRoute>
                 }

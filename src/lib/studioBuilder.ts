@@ -32,6 +32,8 @@ Elas podem ser longas e podem ter vindo de outra IA (por exemplo, do ChatGPT). M
 
 RESPONDA EXATAMENTE NESTE FORMATO, SEM NADA ANTES OU DEPOIS
 NOME: nome curto do assistente, até 40 caracteres
+MUDANÇAS:
+- ao ajustar, até 5 linhas curtas com o que mudou; ao criar do zero, uma linha dizendo o que o assistente faz
 INSTRUÇÕES:
 texto completo das instruções`;
 
@@ -53,11 +55,16 @@ const cleanMarks = (s: string) =>
   s.replace(/\*\*|__/g, "").replace(/^\s{0,3}#{1,6}\s+/gm, "").replace(/^```[a-z]*\s*$/gim, "").trim();
 
 /** Lê a resposta do criador. Sem os marcadores, o texto inteiro vira instruções. */
-export function parseAssistantDraft(text: string): { name: string; instructions: string } {
+export function parseAssistantDraft(text: string): { name: string; instructions: string; changes: string[] } {
   const clean = cleanMarks(text);
   const name = clean.match(/^\s*NOME\s*:\s*(.+)$/im)?.[1]?.trim() ?? "";
   const idx = clean.search(/^\s*INSTRU[ÇC](?:Õ|O)ES\s*:/im);
+  const changesAt = clean.search(/^\s*MUDAN[ÇC]AS\s*:/im);
+  const changes = changesAt >= 0 && (idx < 0 || changesAt < idx)
+    ? clean.slice(changesAt, idx >= 0 ? idx : undefined).split("\n").slice(1)
+      .map((l) => l.replace(/^\s*(?:[-•*]|\d+[.)])\s*/, "").trim()).filter(Boolean).slice(0, 6).map((l) => l.slice(0, 200))
+    : [];
   let instructions = idx >= 0 ? clean.slice(idx).replace(/^\s*INSTRU[ÇC](?:Õ|O)ES\s*:[ \t]*\n?/i, "") : clean.replace(/^\s*NOME\s*:.*$/im, "");
   instructions = instructions.trim().slice(0, MAX_ASSISTANT_INSTRUCTIONS);
-  return { name: name.replace(/^["'“]|["'”]$/g, "").slice(0, MAX_ASSISTANT_NAME).trim(), instructions };
+  return { name: name.replace(/^["'“]|["'”]$/g, "").slice(0, MAX_ASSISTANT_NAME).trim(), instructions, changes };
 }
