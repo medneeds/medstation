@@ -124,3 +124,7 @@ verify_jwt = false
 
 [functions.admin-whatsapp-recovery]
 verify_jwt = false
+
+# Synthetic staging-only API; also verifies admin authorization in the handler.
+[functions.ai-core-hermes-sandbox]
+verify_jwt = true
