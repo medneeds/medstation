@@ -8,7 +8,7 @@ import {
   RateLimitError,
 } from "npm:@lovable.dev/ai-gateway@0.1.11";
 import { accessDeniedResponse, requirePlatformAccess } from "../_shared/access-control.ts";
-import { isStudioModel, MAX_STUDIO_CHARS, MAX_STUDIO_INSTRUCTIONS, MAX_STUDIO_MESSAGES, STUDIO_MODELS } from "./models.ts";
+import { isStudioModel, MAX_STUDIO_CHARS, MAX_STUDIO_MESSAGES, MAX_STUDIO_SYSTEM_CHARS, STUDIO_MODELS } from "./models.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -44,7 +44,7 @@ serve(async (req) => {
       .map((m: any) => ({ role: m.role, content: String(m.content).slice(0, MAX_STUDIO_CHARS * 2) }));
     if (!messages.length || messages[messages.length - 1].role !== "user") return json({ error: "Mensagem vazia" }, 400);
     if (messages[messages.length - 1].content.length > MAX_STUDIO_CHARS) return json({ error: "Mensagem muito longa" }, 400);
-    const custom = typeof body?.instructions === "string" ? body.instructions.slice(0, MAX_STUDIO_INSTRUCTIONS).trim() : "";
+    const custom = typeof body?.instructions === "string" ? body.instructions.slice(0, MAX_STUDIO_SYSTEM_CHARS).trim() : "";
     const system = custom ? `${BASE}\n\nINSTRUÇÕES DO ASSISTENTE PERSONALIZADO DO MÉDICO:\n${custom}` : BASE;
 
     const surface = STUDIO_MODELS.find((m) => m.id === model)!.surface;
@@ -57,7 +57,7 @@ serve(async (req) => {
       });
       text = responsesText(resp);
     } else if (model === "anthropic/claude-sonnet-5") {
-      const resp = await generateMessage({ model, system, max_tokens: 8000, messages });
+      const resp = await generateMessage({ model, system, max_tokens: 16000, messages });
       text = ((resp as any).content ?? []).filter((c: any) => c.type === "text").map((c: any) => c.text).join("");
     } else {
       const resp = await generateChatCompletion({ model, messages: [{ role: "system", content: system }, ...messages] });

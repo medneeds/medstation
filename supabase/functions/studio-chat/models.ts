@@ -11,7 +11,10 @@ export type StudioModelId = (typeof STUDIO_MODELS)[number]["id"];
 export const DEFAULT_STUDIO_MODEL: StudioModelId = "openai/gpt-6-astra";
 export const MAX_STUDIO_MESSAGES = 40;
 export const MAX_STUDIO_CHARS = 10000;
-export const MAX_STUDIO_INSTRUCTIONS = 8000;
+/** Instruções de um assistente próprio (cabe um prompt longo trazido do ChatGPT). */
+export const MAX_STUDIO_INSTRUCTIONS = 40000;
+/** Campo "instructions" aceito pelo servidor: as instruções + o roteiro do criador de assistentes. */
+export const MAX_STUDIO_SYSTEM_CHARS = MAX_STUDIO_INSTRUCTIONS + 6000;
 
 export function isStudioModel(id: unknown): id is StudioModelId {
   return typeof id === "string" && STUDIO_MODELS.some((m) => m.id === id);

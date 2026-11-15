@@ -259,6 +259,24 @@ export type Database = {
         }
         Relationships: []
       }
+      bird_webhook_events: {
+        Row: {
+          id: string
+          received_at: string
+          type: string
+        }
+        Insert: {
+          id: string
+          received_at?: string
+          type: string
+        }
+        Update: {
+          id?: string
+          received_at?: string
+          type?: string
+        }
+        Relationships: []
+      }
       black_recovery_emails: {
         Row: {
           email: string
@@ -2824,6 +2842,131 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      whatsapp_opt_outs: {
+        Row: {
+          created_at: string
+          phone_e164: string
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          phone_e164: string
+          source?: string
+        }
+        Update: {
+          created_at?: string
+          phone_e164?: string
+          source?: string
+        }
+        Relationships: []
+      }
+      whatsapp_recovery_contacts: {
+        Row: {
+          closed_at: string | null
+          converted_at: string | null
+          entered_at: string
+          id: string
+          last_inbound_at: string | null
+          last_inbound_text: string | null
+          last_sent_at: string | null
+          last_step: number
+          note: string | null
+          phone_e164: string
+          segment: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          closed_at?: string | null
+          converted_at?: string | null
+          entered_at?: string
+          id?: string
+          last_inbound_at?: string | null
+          last_inbound_text?: string | null
+          last_sent_at?: string | null
+          last_step?: number
+          note?: string | null
+          phone_e164: string
+          segment: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          closed_at?: string | null
+          converted_at?: string | null
+          entered_at?: string
+          id?: string
+          last_inbound_at?: string | null
+          last_inbound_text?: string | null
+          last_sent_at?: string | null
+          last_step?: number
+          note?: string | null
+          phone_e164?: string
+          segment?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      whatsapp_recovery_messages: {
+        Row: {
+          bird_message_id: string | null
+          contact_id: string
+          created_at: string
+          delivered_at: string | null
+          error_code: string | null
+          error_message: string | null
+          id: string
+          read_at: string | null
+          sent_at: string | null
+          status: string
+          step: number
+          template_slug: string
+          triggered_by: string
+        }
+        Insert: {
+          bird_message_id?: string | null
+          contact_id: string
+          created_at?: string
+          delivered_at?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          read_at?: string | null
+          sent_at?: string | null
+          status?: string
+          step: number
+          template_slug: string
+          triggered_by?: string
+        }
+        Update: {
+          bird_message_id?: string | null
+          contact_id?: string
+          created_at?: string
+          delivered_at?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          read_at?: string | null
+          sent_at?: string | null
+          status?: string
+          step?: number
+          template_slug?: string
+          triggered_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_recovery_messages_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "whatsapp_recovery_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

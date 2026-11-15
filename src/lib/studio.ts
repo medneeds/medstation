@@ -3,9 +3,9 @@
 // Modelos espelham supabase/functions/studio-chat/models.ts.
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-export { STUDIO_MODELS, DEFAULT_STUDIO_MODEL, isStudioModel, MAX_STUDIO_CHARS } from "../../supabase/functions/studio-chat/models";
+export { STUDIO_MODELS, DEFAULT_STUDIO_MODEL, isStudioModel, MAX_STUDIO_CHARS, MAX_STUDIO_INSTRUCTIONS } from "../../supabase/functions/studio-chat/models";
 export type { StudioModelId } from "../../supabase/functions/studio-chat/models";
-import { DEFAULT_STUDIO_MODEL, isStudioModel, type StudioModelId } from "../../supabase/functions/studio-chat/models";
+import { DEFAULT_STUDIO_MODEL, MAX_STUDIO_INSTRUCTIONS, isStudioModel, type StudioModelId } from "../../supabase/functions/studio-chat/models";
 
 export const STUDIO_ENABLED_KEY = "ms_studio_enabled";
 /** Chaves antigas (conversas só no navegador); importadas para a conta uma vez e apagadas. */
@@ -97,7 +97,7 @@ const fromAssistantRow = (r: AssistantRow): StudioAssistant => ({
   createdAt: new Date(r.created_at).getTime(),
 });
 const toAssistantRow = (a: StudioAssistant, userId: string) => ({
-  id: a.id, user_id: userId, name: a.name.slice(0, 120), instructions: a.instructions.slice(0, 10000),
+  id: a.id, user_id: userId, name: a.name.slice(0, 120), instructions: a.instructions.slice(0, MAX_STUDIO_INSTRUCTIONS),
   model: a.model, created_at: new Date(a.createdAt).toISOString(), updated_at: new Date().toISOString(),
 });
 

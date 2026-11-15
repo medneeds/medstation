@@ -206,7 +206,7 @@ export function PublishDialog({
               <Textarea rows={10} maxLength={PROMPTECA_LIMITS.content} value={draft.content}
                 placeholder={draft.kind === "assistant" ? "Instruções do assistente: papel, formato da resposta, regras e o que nunca fazer..." : "O prompt, do jeito que deve ser colado. Use [DADOS DO PACIENTE] onde o médico vai completar."}
                 onChange={(e) => set({ content: e.target.value })} />
-              <div className="mt-1 text-right text-2xs text-muted-foreground">{draft.content.length.toLocaleString("pt-BR")} / 8.000</div>
+              <div className="mt-1 text-right text-2xs text-muted-foreground">{draft.content.length.toLocaleString("pt-BR")} / {PROMPTECA_LIMITS.content.toLocaleString("pt-BR")}</div>
             </div>
 
             <label className="flex items-start gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">

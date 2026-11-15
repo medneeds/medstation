@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ClipboardEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Library, Loader2, Sparkles, Undo2 } from "lucide-react";
 import { toast } from "sonner";
@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   DEFAULT_STUDIO_MODEL, STUDIO_MODELS, deleteAssistant, saveAssistant, type StudioAssistant, type StudioModelId,
 } from "@/lib/studio";
-import { ASSISTANT_BUILDER_PROMPT, MAX_BUILDER_REQUEST, buildAssistantRequest, parseAssistantDraft } from "@/lib/studioBuilder";
+import { MAX_ASSISTANT_INSTRUCTIONS, MAX_BUILDER_REQUEST, buildAssistantRequest, buildAssistantSystem, parseAssistantDraft } from "@/lib/studioBuilder";
 
 export const NEW_STUDIO_ASSISTANT: Partial<StudioAssistant> = { name: "", instructions: "", model: DEFAULT_STUDIO_MODEL };
 
@@ -36,6 +36,18 @@ export function StudioAssistantDialog({
   }, [value]);
 
   const hasInstructions = !!editing?.instructions?.trim();
+  const instructionsLength = editing?.instructions?.length ?? 0;
+  const fmt = (n: number) => n.toLocaleString("pt-BR");
+
+  // Prompt colado maior que o limite: avisa em vez de cortar em silêncio.
+  const onPasteInstructions = (e: ClipboardEvent<HTMLTextAreaElement>) => {
+    const pasted = e.clipboardData.getData("text");
+    const el = e.currentTarget;
+    const next = instructionsLength - (el.selectionEnd - el.selectionStart) + pasted.length;
+    if (next > MAX_ASSISTANT_INSTRUCTIONS) {
+      toast.warning(`O texto colado passou de ${fmt(MAX_ASSISTANT_INSTRUCTIONS)} caracteres. Só entrou até esse limite; confira o final.`);
+    }
+  };
 
   const draftWithAi = async () => {
     if (!editing || drafting) return;
@@ -45,7 +57,7 @@ export function StudioAssistantDialog({
       const { data, error } = await supabase.functions.invoke("studio-chat", {
         body: {
           model: editing.model ?? DEFAULT_STUDIO_MODEL,
-          instructions: ASSISTANT_BUILDER_PROMPT,
+          instructions: buildAssistantSystem(editing),
           messages: [{ role: "user", content: buildAssistantRequest(request, editing) }],
         },
       });
@@ -95,8 +107,14 @@ export function StudioAssistantDialog({
             </div>
             <Input placeholder="Nome (ex.: Parecer de risco cirúrgico)" value={editing.name ?? ""} maxLength={60}
               onChange={(e) => setEditing({ ...editing, name: e.target.value })} />
-            <Textarea placeholder="Como ele deve responder: formato, seções, tom, o que nunca fazer..." rows={8} maxLength={8000} disabled={drafting}
-              value={editing.instructions ?? ""} onChange={(e) => setEditing({ ...editing, instructions: e.target.value })} />
+            <div>
+              <Textarea placeholder="Como ele deve responder: formato, seções, tom, o que nunca fazer... Pode colar aqui um prompt pronto, inclusive um criado no ChatGPT."
+                rows={8} maxLength={MAX_ASSISTANT_INSTRUCTIONS} disabled={drafting} onPaste={onPasteInstructions}
+                value={editing.instructions ?? ""} onChange={(e) => setEditing({ ...editing, instructions: e.target.value })} />
+              <div className={`mt-1 text-right text-2xs ${instructionsLength >= MAX_ASSISTANT_INSTRUCTIONS ? "text-destructive" : "text-muted-foreground"}`}>
+                {fmt(instructionsLength)} / {fmt(MAX_ASSISTANT_INSTRUCTIONS)} caracteres
+              </div>
+            </div>
             <Select value={editing.model ?? DEFAULT_STUDIO_MODEL} onValueChange={(v) => setEditing({ ...editing, model: v as StudioModelId })}>
               <SelectTrigger aria-label="IA preferida"><SelectValue /></SelectTrigger>
               <SelectContent>{STUDIO_MODELS.map((m) => <SelectItem key={m.id} value={m.id}>{m.label}</SelectItem>)}</SelectContent>

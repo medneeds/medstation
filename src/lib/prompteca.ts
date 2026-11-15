@@ -17,7 +17,7 @@ export type PromptecaCategory = (typeof PROMPTECA_CATEGORIES)[number]["id"];
 
 export const categoryLabel = (id: string) => PROMPTECA_CATEGORIES.find((c) => c.id === id)?.label ?? "Outros";
 
-export const PROMPTECA_LIMITS = { titleMin: 3, title: 80, description: 300, contentMin: 20, content: 8000 } as const;
+export const PROMPTECA_LIMITS = { titleMin: 3, title: 80, description: 300, contentMin: 20, content: 40000 } as const;
 
 /** Chave para abrir uma conversa do Studio já com um prompt no campo de texto. */
 export const STUDIO_PREFILL_KEY = "ms_studio_prefill";
@@ -51,7 +51,7 @@ export function validatePromptecaDraft(d: PromptecaDraft): string[] {
   if (title.length > PROMPTECA_LIMITS.title) errors.push("O título pode ter até 80 caracteres.");
   if (d.description.length > PROMPTECA_LIMITS.description) errors.push("A descrição pode ter até 300 caracteres.");
   if (content.length < PROMPTECA_LIMITS.contentMin) errors.push("Escreva o prompt com pelo menos 20 caracteres.");
-  if (content.length > PROMPTECA_LIMITS.content) errors.push("O prompt pode ter até 8.000 caracteres.");
+  if (content.length > PROMPTECA_LIMITS.content) errors.push(`O prompt pode ter até ${PROMPTECA_LIMITS.content.toLocaleString("pt-BR")} caracteres.`);
   if (!PROMPTECA_CATEGORIES.some((c) => c.id === d.category)) errors.push("Escolha uma categoria.");
   const found = findPersonalData(`${d.title}\n${d.description}\n${d.content}`);
   if (found.length) errors.push(`Tire os dados pessoais antes de publicar (${found.join(", ")}).`);
