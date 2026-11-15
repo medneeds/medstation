@@ -6,11 +6,20 @@ import { createClinicalWorkflowPlan } from "../../../supabase/functions/_shared/
 import { simulateHermesProposal } from "../../../supabase/functions/_shared/ai-core/hermes-simulation";
 
 describe("Hermes sandbox policy (no PHI, deny-by-default)", () => {
-  it("requires both staging and an explicit feature gate", () => {
-    expect(isSandboxEnabled({ AI_CORE_ENVIRONMENT: "staging", AI_CORE_HERMES_SANDBOX_ENABLED: "true" })).toBe(true);
-    expect(isSandboxEnabled({ AI_CORE_ENVIRONMENT: "production", AI_CORE_HERMES_SANDBOX_ENABLED: "true" })).toBe(false);
-    expect(isSandboxEnabled({ AI_CORE_ENVIRONMENT: "staging" })).toBe(false);
-    expect(isSandboxEnabled({ AI_CORE_ENVIRONMENT: "staging", AI_CORE_HERMES_SANDBOX_ENABLED: "false" })).toBe(false);
+  it("requires staging flag AND project-level isolation from production", () => {
+    const valid = {
+      AI_CORE_ENVIRONMENT: "staging",
+      AI_CORE_HERMES_SANDBOX_ENABLED: "true",
+      AI_CORE_STAGING_PROJECT_REF: "stagingprojectref001",
+      AI_CORE_PRODUCTION_PROJECT_REF: "productionproject001",
+      SUPABASE_URL: "https://stagingprojectref001.supabase.co",
+    };
+    expect(isSandboxEnabled(valid)).toBe(true);
+    expect(isSandboxEnabled({ ...valid, AI_CORE_ENVIRONMENT: "production" })).toBe(false);
+    expect(isSandboxEnabled({ ...valid, AI_CORE_HERMES_SANDBOX_ENABLED: "false" })).toBe(false);
+    expect(isSandboxEnabled({ ...valid, SUPABASE_URL: "https://productionproject001.supabase.co" })).toBe(false);
+    expect(isSandboxEnabled({ ...valid, AI_CORE_PRODUCTION_PROJECT_REF: "stagingprojectref001" })).toBe(false);
+    expect(isSandboxEnabled({ ...valid, AI_CORE_STAGING_PROJECT_REF: undefined })).toBe(false);
   });
   it("only accepts exact two-field synthetic requests", () => {
     const request = { workflow: "admission-review", requestId: "sandbox_12345" };
@@ -22,6 +31,7 @@ describe("Hermes sandbox policy (no PHI, deny-by-default)", () => {
       { ...request, steps: [] },
       { workflow: "clinical.prescription", requestId: "sandbox_12345" },
       { workflow: "admission-review", requestId: "invalid id" },
+      { workflow: "admission-review", requestId: "patient-123456" },
       null, [],
     ]) expect(parseSandboxRequest(input)).toBeNull();
   });
