@@ -22,21 +22,21 @@ describe("Hermes sandbox policy (no PHI, deny-by-default)", () => {
     expect(isSandboxEnabled({ ...valid, AI_CORE_STAGING_PROJECT_REF: undefined })).toBe(false);
   });
   it("only accepts exact two-field synthetic requests", () => {
-    const request = { workflow: "admission-review", requestId: "sandbox_12345" };
+    const request = { workflow: "admission-review", requestId: "synthetic_12345" };
     expect(parseSandboxRequest(request)).toEqual(request);
     for (const input of [
       { ...request, patientId: "real-patient" },
       { ...request, notes: "clinical history" },
       { ...request, userId: "someone" },
       { ...request, steps: [] },
-      { workflow: "clinical.prescription", requestId: "sandbox_12345" },
+      { workflow: "clinical.prescription", requestId: "synthetic_12345" },
       { workflow: "admission-review", requestId: "invalid id" },
       { workflow: "admission-review", requestId: "patient-123456" },
       null, [],
     ]) expect(parseSandboxRequest(input)).toBeNull();
   });
   it("builds the fixed synthetic-only plan, never inferring identity from user input", () => {
-    const req = parseSandboxRequest({ workflow: "admission-review", requestId: "sandbox_12345" });
+    const req = parseSandboxRequest({ workflow: "admission-review", requestId: "synthetic_12345" });
     expect(req).not.toBeNull();
     const plan = createClinicalWorkflowPlan(req, { userId: SANDBOX_ACTOR_ID, verifiedPatientId: SANDBOX_PATIENT_ID });
     expect(plan.ok).toBe(true);
