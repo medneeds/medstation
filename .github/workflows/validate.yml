@@ -62,7 +62,7 @@ jobs:
       - name: Install Hermes in disposable Python 3.14 environment
         working-directory: /tmp/hermes-agent
         shell: bash
-        run: uv sync --frozen --python 3.14
+        run: uv sync --frozen --python 3.14 --extra mcp
 
       - name: Register MedStation's only synthetic MCP tool
         shell: bash
