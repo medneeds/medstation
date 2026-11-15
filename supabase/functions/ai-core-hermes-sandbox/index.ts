@@ -48,6 +48,9 @@ serve(async (req) => {
   if (!isSandboxEnabled({
     AI_CORE_ENVIRONMENT: Deno.env.get("AI_CORE_ENVIRONMENT"),
     AI_CORE_HERMES_SANDBOX_ENABLED: Deno.env.get("AI_CORE_HERMES_SANDBOX_ENABLED"),
+    AI_CORE_STAGING_PROJECT_REF: Deno.env.get("AI_CORE_STAGING_PROJECT_REF"),
+    AI_CORE_PRODUCTION_PROJECT_REF: Deno.env.get("AI_CORE_PRODUCTION_PROJECT_REF"),
+    SUPABASE_URL: Deno.env.get("SUPABASE_URL"),
   })) return reply(404, { error: "not_found" });
 
   if (req.method !== "POST") return reply(405, { error: "method_not_allowed" });
