@@ -40,3 +40,7 @@ O comando `hermes` não estava instalado no ambiente de execução disponível. 
 
 - https://github.com/NousResearch/hermes-agent/blob/main/website/docs/reference/cli-commands.md
 - https://github.com/NousResearch/hermes-agent/blob/main/website/docs/reference/mcp-config-reference.md
+
+## Atualização de homologação (Fase 8)
+
+O GitHub Actions agora instala uma versão oficial estável do Hermes em runner descartável, com o SDK MCP, e executa `hermes mcp test medstation_sandbox` com o bridge local. O teste confirmou conexão e descoberta da única ferramenta sintética. Ver `docs/medstation-ai-core-phase8-real-hermes.md`. Isso **não** representa uma instalação persistente ou acesso clínico.
