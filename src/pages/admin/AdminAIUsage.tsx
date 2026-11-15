@@ -19,6 +19,9 @@ interface UsageResponse {
   window: { days: number; from: string };
   kpis: {
     total_cost_usd: number;
+    unpriced_calls?: number;
+    known_cost_is_partial?: boolean;
+    unpriced_models?: string[];
     total_tokens: number;
     total_calls: number;
     error_rate: number;
@@ -98,7 +101,7 @@ export default function AdminAIUsage() {
         r.model ?? "",
         (r.metadata as { provider?: string } | null)?.provider ?? "",
         String(r.total_tokens ?? 0),
-        String(r.cost_usd ?? 0),
+        r.cost_usd == null ? "" : String(r.cost_usd),
         String(r.latency_ms ?? ""),
         r.status ?? "",
       ]),
@@ -162,8 +165,9 @@ export default function AdminAIUsage() {
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <Card className="p-4">
-          <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Custo</div>
+          <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Custo conhecido (estimado)</div>
           <div className="text-2xl font-display font-semibold mt-1">{data ? fmtUSD(data.kpis.total_cost_usd) : "—"}</div>
+          {data?.kpis.known_cost_is_partial && <div className="mt-1 text-xs text-amber-600 dark:text-amber-400">Parcial · {fmtInt(data.kpis.unpriced_calls ?? 0)} chamadas sem tarifa</div>}
         </Card>
         <Card className="p-4">
           <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Chamadas</div>
@@ -184,6 +188,12 @@ export default function AdminAIUsage() {
           </div>
         </Card>
       </div>
+
+      {data?.kpis.known_cost_is_partial && (
+        <Card className="border-amber-500/30 bg-amber-500/5 p-4 text-sm" role="status">
+          Os custos de IA são parciais. {fmtInt(data.kpis.unpriced_calls ?? 0)} chamadas possuem preço desconhecido, incluindo registros históricos de modelos sem tabela de tarifas. O custo real deve ser conciliado com faturas dos provedores.
+        </Card>
+      )}
 
       {loading && !data ? (
         <div className="text-center py-16 text-muted-foreground">
