@@ -75,6 +75,7 @@ const AdminBilling = lazy(() => import("./pages/admin/AdminBilling"));
 const AdminBlack = lazy(() => import("./pages/admin/AdminBlack"));
 const AdminSupport = lazy(() => import("./pages/admin/AdminSupport"));
 const AdminAIUsage = lazy(() => import("./pages/admin/AdminAIUsage"));
+const AdminAICore = lazy(() => import("./pages/admin/AdminAICore"));
 const AdminFeedback = lazy(() => import("./pages/admin/AdminFeedback"));
 const AdminAudit = lazy(() => import("./pages/admin/AdminAudit"));
 const AdminFlags = lazy(() => import("./pages/admin/AdminFlags"));
@@ -455,6 +456,7 @@ const App = () => (
               <Route path="emails" element={<AdminRoute requireAdmin><AdminEmails /></AdminRoute>} />
 
               <Route path="uso-ia" element={<AdminAIUsage />} />
+              <Route path="ai-core" element={<AdminRoute requireAdmin><AdminAICore /></AdminRoute>} />
               <Route path="feedback" element={<AdminFeedback />} />
               <Route path="auditoria" element={<AdminAudit />} />
               <Route path="flags" element={<AdminRoute requireAdmin><AdminFlags /></AdminRoute>} />
