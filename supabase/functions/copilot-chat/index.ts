@@ -165,7 +165,7 @@ serve(async (req) => {
     }
     if (!response.ok) {
       console.error("[copilot-chat] AI error", response.status, await response.text());
-      void logAIUsage({ userId, assistant: "copiloto", functionName: "copilot-chat", model: selectedModel, status: "error" });
+      void logAIUsage({ userId, assistant: "copiloto", functionName: "copilot-chat", model: selectedModel, skipEstimatedCost: transport.backend !== "lovable", status: "error", metadata: { ai_backend: transport.backend } });
       return json({ error: "Não consegui responder agora. Tente de novo em instantes." }, 502);
     }
 
