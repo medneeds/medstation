@@ -5,6 +5,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { logAIUsage } from "../_shared/ai-logger.ts";
+import { callCopilotChat, copilotTransportModel, selectCopilotTransport } from "../_shared/ai-core/chat-completions.ts";
 import { getUserIdFromAuth } from "../_shared/auth-helpers.ts";
 import { findExtractionMatch, logSecurityEvent } from "../_shared/prompt-shield.ts";
 import { BLACK_OFFER, FULL_PRICE_STARTS_AT, PRICE_TABLE, isBlackActive } from "../_shared/pricing-schedule.ts";
@@ -24,8 +25,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const MODEL = "google/gemini-2.5-flash";
 const AI_TIMEOUT_MS = 25_000;
 /** Perguntas por usuário por hora — segura o custo de IA sem atrapalhar o uso normal. */
 const RATE_LIMIT = 30;
@@ -40,19 +39,6 @@ function json(body: unknown, status = 200) {
   });
 }
 
-async function callGateway(apiKey: string, messages: unknown[], jsonMode: boolean): Promise<Response> {
-  return await fetch(GATEWAY_URL, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    signal: AbortSignal.timeout(AI_TIMEOUT_MS),
-    body: JSON.stringify({
-      model: MODEL,
-      // Pede JSON válido (quebras de linha escapadas), para os botões sempre funcionarem.
-      ...(jsonMode ? { response_format: { type: "json_object" } } : {}),
-      messages,
-    }),
-  });
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -142,24 +128,33 @@ serve(async (req) => {
       { role: "user", content: redactCopilotText(message) },
     ];
 
-    const apiKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!apiKey) {
-      console.error("[copilot-chat] LOVABLE_API_KEY não configurada");
+    // Opt-in route: defaults to Lovable, regardless of whether a Gemini key exists.
+    // Only platform operators can change the environment variables.
+    let transport: ReturnType<typeof selectCopilotTransport>;
+    try {
+      transport = selectCopilotTransport({
+        AI_CORE_COPILOT_PROVIDER: Deno.env.get("AI_CORE_COPILOT_PROVIDER"),
+        AI_CORE_COPILOT_DIRECT_MODEL: Deno.env.get("AI_CORE_COPILOT_DIRECT_MODEL"),
+        LOVABLE_API_KEY: Deno.env.get("LOVABLE_API_KEY"),
+        GEMINI_API_KEY: Deno.env.get("GEMINI_API_KEY"),
+      });
+    } catch (e) {
+      console.error("[copilot-chat] transport configuration", (e as Error).message);
       return json({ error: UNAVAILABLE }, 503);
     }
-
+    const selectedModel = copilotTransportModel(transport);
     const started = Date.now();
     let response: Response;
     try {
-      response = await callGateway(apiKey, messages, true);
-      // Se o modelo/gateway recusar o modo JSON, tenta de novo sem ele: o parser aceita texto.
+      response = await callCopilotChat(transport, messages, true, AI_TIMEOUT_MS);
+      // Preserve existing JSON-mode fallback for HTTP 400. No cross-provider retry.
       if (response.status === 400) {
-        console.error("[copilot-chat] gateway 400 com json_object", await response.text());
-        response = await callGateway(apiKey, messages, false);
+        console.error("[copilot-chat] JSON mode rejected by", transport.backend);
+        response = await callCopilotChat(transport, messages, false, AI_TIMEOUT_MS);
       }
     } catch (e) {
-      console.error("[copilot-chat] gateway fetch", e);
-      void logAIUsage({ userId, assistant: "copiloto", functionName: "copilot-chat", model: MODEL, status: "error" });
+      console.error("[copilot-chat] AI transport failed", (e as Error).message);
+      void logAIUsage({ userId, assistant: "copiloto", functionName: "copilot-chat", model: selectedModel, skipEstimatedCost: transport.backend !== "lovable", status: "error", metadata: { ai_backend: transport.backend } });
       return json({ error: "O Copiloto demorou para responder. Tente de novo em instantes." }, 504);
     }
 
@@ -170,7 +165,7 @@ serve(async (req) => {
     }
     if (!response.ok) {
       console.error("[copilot-chat] AI error", response.status, await response.text());
-      void logAIUsage({ userId, assistant: "copiloto", functionName: "copilot-chat", model: MODEL, status: "error" });
+      void logAIUsage({ userId, assistant: "copiloto", functionName: "copilot-chat", model: selectedModel, skipEstimatedCost: transport.backend !== "lovable", status: "error", metadata: { ai_backend: transport.backend } });
       return json({ error: "Não consegui responder agora. Tente de novo em instantes." }, 502);
     }
 
@@ -187,13 +182,14 @@ serve(async (req) => {
       userId,
       assistant: "copiloto",
       functionName: "copilot-chat",
-      model: MODEL,
+      model: selectedModel,
+      skipEstimatedCost: transport.backend !== "lovable",
       inputTokens: data.usage?.prompt_tokens,
       outputTokens: data.usage?.completion_tokens,
       totalTokens: data.usage?.total_tokens,
       latencyMs: Date.now() - started,
       status: "ok",
-      metadata: { actions: parsed.actions, page: page?.id ?? null },
+      metadata: { actions: parsed.actions, page: page?.id ?? null, ai_backend: transport.backend },
     });
 
     return json(parsed);
