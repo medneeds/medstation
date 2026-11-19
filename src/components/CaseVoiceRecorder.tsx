@@ -140,9 +140,11 @@ export default function CaseVoiceRecorder({ onTranscriptionComplete }: CaseVoice
 
   const handleClick = () => {
     if (isRecording) {
-      mode === "batch" ? stopBatch() : stopRealtime();
+      if (mode === "batch") stopBatch();
+      else stopRealtime();
     } else {
-      mode === "batch" ? startBatch() : startRealtime();
+      if (mode === "batch") startBatch();
+      else startRealtime();
     }
   };
 

@@ -1030,7 +1030,6 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
       if (audioContextRef.current) audioContextRef.current.close().catch(() => { /* ignore */ });
       if (levelRafRef.current) cancelAnimationFrame(levelRafRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {
