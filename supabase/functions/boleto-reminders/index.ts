@@ -2,6 +2,7 @@
 // boleto que aquela pessoa gerou: um no dia seguinte e outro no último dia.
 // Idempotente por compra + etapa; nunca concede acesso (isso é do webhook).
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { rejectUnlessCron } from "../_shared/cron-auth.ts";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { sendTemplateEmailWithLog } from "../_shared/transactional-email-templates/send-and-log.ts";
 import { boletoReminderStage } from "../_shared/boleto-reminder.ts";
@@ -23,6 +24,8 @@ function dueDateLabel(iso: string): string {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const denied = rejectUnlessCron(req, Deno.env.get("CRON_SECRET"), "boleto-reminders");
+  if (denied) return denied;
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",

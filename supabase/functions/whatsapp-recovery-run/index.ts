@@ -3,6 +3,7 @@
 // regra pura em _shared/whatsapp-recovery.ts; envio e reservas em _shared/whatsapp-recovery-engine.ts.
 // Chamar de novo não duplica nada: cada etapa é única por contato e cada pessoa entra uma vez.
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { rejectUnlessCron } from "../_shared/cron-auth.ts";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { loadState, runRecovery } from "../_shared/whatsapp-recovery-engine.ts";
 
@@ -11,6 +12,8 @@ const json = (body: unknown, status = 200) =>
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const denied = rejectUnlessCron(req, Deno.env.get("CRON_SECRET"), "whatsapp-recovery-run");
+  if (denied) return denied;
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
