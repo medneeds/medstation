@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SpeakerIndicator } from "./SpeakerIndicator";
-import { Loader2, Trash2, Sparkles, Mic, Copy, Check } from "lucide-react";
+import { Loader2, Trash2, Sparkles, Mic, Copy, Check, FileAudio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -17,6 +17,8 @@ interface TranscriptionPaneProps {
   onChangeSpeaker: (segmentId: string, newSpeaker: SpeakerType) => void;
   onDeleteSegment: (segmentId: string) => void;
   unifiedMode?: boolean;
+  /** Abre a escolha de um áudio já gravado (só quando não está gravando). */
+  onImportAudio?: () => void;
 }
 
 // Typing animation component for new text
@@ -65,6 +67,7 @@ export function TranscriptionPane({
   onChangeSpeaker,
   onDeleteSegment,
   unifiedMode = false,
+  onImportAudio,
 }: TranscriptionPaneProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
@@ -201,6 +204,22 @@ export function TranscriptionPane({
               <p className="text-[10px] md:text-xs mt-1">
                 {isRecording ? "Fale próximo ao microfone" : "Inicie a gravação para começar"}
               </p>
+              {!isRecording && onImportAudio && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onImportAudio}
+                  className="mt-4 h-9 gap-2 rounded-xl text-xs"
+                >
+                  <FileAudio className="h-4 w-4" />
+                  Enviar áudio gravado
+                </Button>
+              )}
+              {!isRecording && onImportAudio && (
+                <p className="text-[10px] md:text-[11px] mt-2 text-muted-foreground/80 text-center max-w-[260px]">
+                  MP3, M4A, OGG, WAV ou áudio do WhatsApp, até 60 minutos
+                </p>
+              )}
             </motion.div>
           ) : (
             <div className="space-y-2 md:space-y-3">

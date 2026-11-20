@@ -3,6 +3,19 @@ import { useScribe, CommitStrategy } from '@elevenlabs/react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { isLiveVoicePaused, isPermanentLiveError, markLiveVoiceUnavailable } from '@/lib/liveVoiceStatus';
+import {
+  DIRECT_SEND_MAX_BYTES,
+  IMPORT_PART_SECONDS,
+  IMPORT_SAMPLE_RATE,
+  MAX_IMPORT_SECONDS,
+  batchParts,
+  directSendMime,
+  encodeWavPcm16,
+  findSplitPoints,
+  formatMinutes,
+  transcriptToSegments,
+  validateImportFile,
+} from '@/lib/audioImport';
 
 export type SpeakerType = 'doctor' | 'patient' | 'companion';
 /** backup = sem texto ao vivo; a consulta segue gravada e o texto vem ao encerrar. */
@@ -119,6 +132,76 @@ function isHallucination(text: string): boolean {
   return HALLUCINATION_PATTERNS.some((p) => p.test(t));
 }
 
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve((reader.result as string).split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+/** Transcreve um pedaço de áudio em alta precisão; '' quando não há fala. */
+async function transcribePiece(blob: Blob): Promise<string> {
+  const base64 = await blobToBase64(blob);
+  const { data, error } = await supabase.functions.invoke('consultation-transcribe', {
+    body: { audio: base64, mimeType: blob.type },
+  });
+  if (error) throw error;
+  const text = (data?.text || '').trim();
+  return text && !isHallucination(text) ? text : '';
+}
+
+/**
+ * Reconhece médico, paciente e acompanhante. Consultas longas vão em lotes
+ * (a organização das falas aceita ~40 mil caracteres por vez); um lote que
+ * falha fica com o texto original, sem rótulos.
+ */
+async function labelSpeakers(parts: string[], liveHint: string): Promise<{ text: string; labeledAll: boolean; labeledAny: boolean }> {
+  const batches = batchParts(parts);
+  const out: string[] = [];
+  let labeledAll = true;
+  let labeledAny = false;
+  for (const batch of batches) {
+    try {
+      const { data } = await supabase.functions.invoke('structure-anamnesis', {
+        body: { transcription: batch, mode: 'speakers', liveHint: batches.length === 1 ? liveHint : '' },
+      });
+      if (typeof data?.labeled === 'string' && data.labeled.trim()) {
+        out.push(data.labeled.trim());
+        labeledAny = true;
+        continue;
+      }
+    } catch (err) {
+      console.warn('[useConsultation] speaker labeling failed', err);
+    }
+    out.push(batch);
+    labeledAll = false;
+  }
+  return { text: out.join('\n'), labeledAll, labeledAny };
+}
+
+/** Duração pelo cabeçalho do arquivo (rápido, sem abrir o áudio inteiro). */
+function probeDuration(file: File): Promise<number | null> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const el = document.createElement('audio');
+    let settled = false;
+    const finish = (v: number | null) => {
+      if (settled) return;
+      settled = true;
+      URL.revokeObjectURL(url);
+      el.removeAttribute('src');
+      resolve(v);
+    };
+    el.preload = 'metadata';
+    el.onloadedmetadata = () => finish(Number.isFinite(el.duration) && el.duration > 0 ? el.duration : null);
+    el.onerror = () => finish(null);
+    setTimeout(() => finish(null), 5000);
+    el.src = url;
+  });
+}
+
 export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}) {
   const [segments, setSegments] = useState<TranscriptionSegment[]>([]);
   const [partialTranscription, setPartialTranscription] = useState('');
@@ -144,6 +227,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
   const [isConnecting, setIsConnecting] = useState(false);
   const [isStructuring, setIsStructuring] = useState(false);
   const [isFinalizing, setIsFinalizing] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const [reviewProgress, setReviewProgress] = useState<{ done: number; total: number }>({ done: 0, total: 0 });
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -586,19 +670,8 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     for (let i = 0; i < usable.length; i++) {
       const blob = usable[i];
       try {
-        const reader = new FileReader();
-        const base64: string = await new Promise((resolve, reject) => {
-          reader.onload = () => resolve((reader.result as string).split(',')[1]);
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-
-        const { data, error: fnError } = await supabase.functions.invoke('consultation-transcribe', {
-          body: { audio: base64, mimeType: blob.type },
-        });
-        if (fnError) throw fnError;
-        const text = (data?.text || '').trim();
-        if (text && !isHallucination(text)) parts.push(text);
+        const text = await transcribePiece(blob);
+        if (text) parts.push(text);
       } catch (err) {
         failures += 1;
         console.error(`[useConsultation] final review block ${i + 1} failed:`, err);
@@ -610,23 +683,14 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     if (parts.length > 0) {
       reviewedRef.current = parts.join('\n\n');
       // Reconhecimento automático de falantes: a IA só rotula; se mudar qualquer palavra, fica o texto original
-      let labeledOk = false;
-      try {
-        const live = liveSegmentsRef.current;
-        const distinct = new Set(live.map((s) => s.speaker)).size;
-        const liveHint = distinct > 1
-          ? live.map((s) => `${s.speaker === 'doctor' ? 'Médico' : s.speaker === 'patient' ? 'Paciente' : 'Acompanhante'}: ${s.text}`).join('\n')
-          : live.map((s) => s.text).join('\n');
-        const { data } = await supabase.functions.invoke('structure-anamnesis', {
-          body: { transcription: reviewedRef.current, mode: 'speakers', liveHint },
-        });
-        if (typeof data?.labeled === 'string' && data.labeled.trim()) {
-          reviewedRef.current = data.labeled;
-          labeledOk = true;
-        }
-      } catch (err) {
-        console.warn('[useConsultation] speaker labeling failed', err);
-      }
+      const live = liveSegmentsRef.current;
+      const distinct = new Set(live.map((s) => s.speaker)).size;
+      const liveHint = distinct > 1
+        ? live.map((s) => `${s.speaker === 'doctor' ? 'Médico' : s.speaker === 'patient' ? 'Paciente' : 'Acompanhante'}: ${s.text}`).join('\n')
+        : live.map((s) => s.text).join('\n');
+      const labeled = await labelSpeakers(parts, liveHint);
+      if (labeled.labeledAny) reviewedRef.current = labeled.text;
+      const labeledOk = labeled.labeledAll;
       setReviewedTranscript(reviewedRef.current);
       if (failures > 0) {
         toast.warning('Parte do áudio não pôde ser revisada — usando a transcrição ao vivo nesse trecho.');
@@ -637,6 +701,131 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
       toast.warning('Revisão final indisponível — usando transcrição ao vivo');
     }
     setIsFinalizing(false);
+  }, []);
+
+  // ---- Áudio gravado (arquivo enviado pelo médico) ------------------------
+  // Abre o arquivo no aparelho, converte para fala mono 16 kHz, corta em partes
+  // de ~3 min nos silêncios e transcreve cada uma. Nada fica guardado no servidor.
+  const importAudioFile = useCallback(async (file: File): Promise<{ ok: boolean; labeled: boolean }> => {
+    const fail = { ok: false, labeled: false };
+    if (isRecordingRef.current) {
+      toast.error('Finalize a gravação atual antes de enviar um áudio.');
+      return fail;
+    }
+    const invalid = validateImportFile(file.name, file.type, file.size);
+    if (invalid) {
+      toast.error(invalid);
+      return fail;
+    }
+    const tooLong = (sec: number) => {
+      toast.error(`O áudio tem ${formatMinutes(sec)}. O limite é de 60 minutos por consulta.`);
+      return fail;
+    };
+
+    setIsImporting(true);
+    setIsFinalizing(true);
+    setReviewProgress({ done: 0, total: 0 });
+    setError(null);
+    try {
+      const probed = await probeDuration(file);
+      if (probed && probed > MAX_IMPORT_SECONDS + 30) return tooLong(probed);
+
+      let makers: (() => Blob)[] = [];
+      let duration = probed || 0;
+      try {
+        const Ctx = window.OfflineAudioContext || (window as unknown as { webkitOfflineAudioContext: typeof OfflineAudioContext }).webkitOfflineAudioContext;
+        const ctx = new Ctx(1, IMPORT_SAMPLE_RATE, IMPORT_SAMPLE_RATE);
+        const buffer = await ctx.decodeAudioData(await file.arrayBuffer());
+        duration = buffer.duration;
+        if (duration > MAX_IMPORT_SECONDS + 30) return tooLong(duration);
+        const rate = buffer.sampleRate;
+        const channels = Array.from({ length: buffer.numberOfChannels }, (_, c) => buffer.getChannelData(c));
+        // partes do mesmo tamanho em bytes mesmo se o aparelho não converter para 16 kHz
+        const partSeconds = Math.min(IMPORT_PART_SECONDS, (IMPORT_PART_SECONDS * IMPORT_SAMPLE_RATE) / rate);
+        const bounds = [0, ...findSplitPoints(channels[0], rate, partSeconds), channels[0].length];
+        makers = bounds.slice(0, -1).map((start, i) => () => {
+          const end = bounds[i + 1];
+          const mono = new Float32Array(end - start);
+          for (const ch of channels) {
+            const part = ch.subarray(start, end);
+            for (let k = 0; k < mono.length; k++) mono[k] += part[k] / channels.length;
+          }
+          return new Blob([encodeWavPcm16(mono, rate)], { type: 'audio/wav' });
+        });
+      } catch (err) {
+        console.warn('[useConsultation] audio decode failed, trying direct send', err);
+        const mime = directSendMime(file.name, file.type);
+        if (!mime || file.size > DIRECT_SEND_MAX_BYTES) {
+          toast.error('Não foi possível abrir esse áudio neste aparelho. Tente enviar em MP3 ou M4A.');
+          return fail;
+        }
+        makers = [() => new Blob([file], { type: mime })];
+      }
+
+      const total = makers.length;
+      const results: string[] = new Array(total).fill('');
+      let next = 0;
+      let done = 0;
+      let failures = 0;
+      setReviewProgress({ done: 0, total });
+      const worker = async () => {
+        while (next < total) {
+          const i = next++;
+          let text: string | null = null;
+          for (let attempt = 0; attempt < 2 && text === null; attempt++) {
+            try {
+              text = await transcribePiece(makers[i]());
+            } catch (err) {
+              console.error(`[useConsultation] imported part ${i + 1} failed:`, err);
+              if (attempt === 0) await new Promise((r) => setTimeout(r, 1500));
+            }
+          }
+          if (text === null) failures += 1;
+          results[i] = text ?? '';
+          done += 1;
+          setReviewProgress({ done, total });
+        }
+      };
+      await Promise.all(Array.from({ length: Math.min(2, total) }, () => worker()));
+
+      const parts = results.filter(Boolean);
+      if (parts.length === 0) {
+        toast.error(failures > 0
+          ? 'Não foi possível transcrever o áudio agora. Tente de novo em instantes.'
+          : 'Não encontramos fala nesse áudio.');
+        return fail;
+      }
+
+      const labeled = await labelSpeakers(parts, '');
+      const transcript = labeled.labeledAny ? labeled.text : parts.join('\n\n');
+      const now = new Date();
+      reviewedRef.current = transcript;
+      setReviewedTranscript(transcript);
+      setSegments(transcriptToSegments(transcript).map((s) => ({
+        id: crypto.randomUUID(),
+        speaker: s.speaker,
+        text: s.text,
+        timestamp: now,
+        confidence: s.labeled ? 0.9 : 0.6,
+        isEdited: false,
+      })));
+      setPartialTranscription('');
+      accumulatedRef.current = Math.round(duration);
+      runningSinceRef.current = null;
+      setElapsedTime(Math.round(duration));
+      setStartTime(now);
+
+      if (failures > 0) toast.warning('Parte do áudio não pôde ser transcrita. Confira a transcrição antes de salvar.');
+      if (!labeled.labeledAll) toast.info('Não deu para separar quem falou em todo o áudio. A transcrição aparece em texto contínuo.');
+      return { ok: true, labeled: labeled.labeledAll };
+    } catch (err) {
+      console.error('[useConsultation] import error:', err);
+      toast.error('Não foi possível processar esse áudio. Tente novamente.');
+      return fail;
+    } finally {
+      setIsImporting(false);
+      setIsFinalizing(false);
+    }
   }, []);
 
   const stopRecordingInner = useCallback(async () => {
@@ -1056,6 +1245,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     isTranscribing: scribe.isConnected && !!partialTranscription,
     isStructuring,
     isFinalizing,
+    isImporting,
     reviewProgress,
     startTime,
     elapsedTime,
@@ -1082,6 +1272,7 @@ export function useConsultation({ caseId: _caseId }: UseConsultationOptions = {}
     startRecording,
     stopRecording,
     waitForStop,
+    importAudioFile,
     pauseRecording,
     resumeRecording,
     updateStructure,

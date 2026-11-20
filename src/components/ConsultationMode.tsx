@@ -38,6 +38,7 @@ import {
   Maximize2,
   AlertTriangle,
   RotateCcw,
+  FileAudio,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useConsultation } from "@/hooks/useConsultation";
@@ -58,6 +59,7 @@ import { copyText } from "@/lib/clipboard";
 import { buildAnamnesisText, countFilledSections } from "@/lib/anamnesis";
 import { buildTranscriptText } from "@/lib/consultationTranscript";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { AUDIO_ACCEPT } from "@/lib/audioImport";
 
 interface ConsultationModeProps {
   caseId?: string;
@@ -159,6 +161,8 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
     startRecording,
     stopRecording,
     waitForStop,
+    importAudioFile,
+    isImporting,
     pauseRecording,
     resumeRecording,
     updateStructure,
@@ -238,6 +242,32 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
   }, [stopRecording, waitForStop, updateStructure]);
 
   const handleFinish = useCallback(() => { void runFinalizeFlow(); }, [runFinalizeFlow]);
+
+  // Áudio gravado: o arquivo é transcrito e segue o mesmo fluxo da gravação ao vivo
+  const audioInputRef = useRef<HTMLInputElement>(null);
+  const openAudioPicker = useCallback(() => {
+    if (isRecording || isImporting) return;
+    if (segments.length > 0 && !window.confirm('Enviar um áudio gravado substitui a consulta atual. Continuar?')) return;
+    audioInputRef.current?.click();
+  }, [isRecording, isImporting, segments.length]);
+  const handleAudioFile = useCallback(async (file: File | undefined) => {
+    if (!file) return;
+    if (segments.length > 0) {
+      reset();
+      setSavedCaseId(null);
+    }
+    setFinalizeError(null);
+    setFinalizePhase('review');
+    setShowFinishDialog(true);
+    const result = await importAudioFile(file);
+    if (!result.ok) {
+      setShowFinishDialog(false);
+      return;
+    }
+    if (!result.labeled) setUnifiedMode(true);
+    setActiveTab('transcription');
+    await runFinalizeFlow({ alreadyStopped: true });
+  }, [segments.length, reset, importAudioFile, runFinalizeFlow]);
 
   // Limite de 60 minutos: encerra e conclui sem perder nada
   const autoFinalizedRef = useRef(false);
@@ -553,6 +583,19 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
 
 
             {!isRecording ? (
+              <>
+              <Button
+                onClick={openAudioPicker}
+                disabled={isConnecting || isImporting || isFinalizing}
+                variant="outline"
+                size="sm"
+                aria-label="Enviar áudio gravado"
+                title="Enviar um áudio já gravado da consulta"
+                className="h-10 w-10 md:h-9 md:w-auto p-0 md:px-3.5 gap-1.5 rounded-xl bg-background/60"
+              >
+                {isImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileAudio className="h-4 w-4" />}
+                <span className="text-xs hidden md:inline">Enviar áudio</span>
+              </Button>
               <div className="relative group">
                 <span
                   className="absolute -inset-1 rounded-xl opacity-50 blur-md group-hover:opacity-80 transition-opacity pointer-events-none"
@@ -563,7 +606,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                 />
                 <Button
                   onClick={startRecording}
-                  disabled={isConnecting}
+                  disabled={isConnecting || isImporting}
                   size="sm"
                   className="relative h-10 md:h-9 gap-2 px-3.5 md:px-5 rounded-xl font-medium shadow-[0_6px_20px_-8px_hsl(var(--primary)/0.6)] bg-gradient-to-b from-primary to-primary/90 active:scale-[0.98]"
                 >
@@ -573,6 +616,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                   </span>
                 </Button>
               </div>
+              </>
             ) : (
               <>
                 <Button
@@ -797,6 +841,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               onChangeSpeaker={changeSpeaker}
               onDeleteSegment={deleteSegment}
               unifiedMode={unifiedMode}
+              onImportAudio={!isRecording && !isImporting ? openAudioPicker : undefined}
             />
           </TabsContent>
           <TabsContent value="structure" className="flex-1 m-0 overflow-hidden">
@@ -840,6 +885,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
                     onChangeSpeaker={changeSpeaker}
                     onDeleteSegment={deleteSegment}
                     unifiedMode={unifiedMode}
+                    onImportAudio={!isRecording && !isImporting ? openAudioPicker : undefined}
                   />
                 </Card>
               </ResizablePanel>
@@ -948,7 +994,7 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
               </span>
             ) : segments.length === 0 ? (
               <span className="text-[11px] text-muted-foreground">
-                Inicie a gravação para começar a transcrição.
+                Inicie a gravação ou envie um áudio já gravado da consulta.
               </span>
             ) : isMobile ? (
               <div className="w-full flex items-center gap-1.5">
@@ -1050,6 +1096,18 @@ export function ConsultationMode({ caseId, onExit }: ConsultationModeProps) {
 
       </footer>
 
+
+      <input
+        ref={audioInputRef}
+        type="file"
+        accept={AUDIO_ACCEPT}
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = '';
+          void handleAudioFile(file);
+        }}
+      />
 
       {/* Fluxo de finalização guiado */}
       {showFinishDialog && (
