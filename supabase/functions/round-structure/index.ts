@@ -70,7 +70,7 @@ serve(async (req) => {
 
     // Pacientes ativos da unidade, na ordem do mapa de leitos (só do próprio médico).
     const roundDate: string = session.round_date;
-    let patients: RoundPatientRef[] = [];
+    const patients: RoundPatientRef[] = [];
     if (session.unit_id) {
       const [{ data: beds }, { data: adms }] = await Promise.all([
         admin.from("ward_beds").select("id,label,sort_order").eq("user_id", user.id).eq("unit_id", session.unit_id).order("sort_order"),

@@ -201,7 +201,6 @@ export function SupportChat() {
       cancelled = true;
       supabase.removeChannel(channel);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTicketId]);
 
   const markSeen = (ticketId: string) => {

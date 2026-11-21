@@ -131,7 +131,7 @@ export default function AdminReferrals() {
         .sort((a, b) => b[1].qualified - a[1].qualified || b[1].total - a[1].total)
         .slice(0, 10);
       const ids = top.map(([id]) => id);
-      let emailMap = new Map<string, string>();
+      const emailMap = new Map<string, string>();
       if (ids.length) {
         const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", ids);
         (profs || []).forEach((p: any) => emailMap.set(p.id, p.full_name || p.id.slice(0, 8)));

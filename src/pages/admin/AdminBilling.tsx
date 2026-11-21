@@ -100,7 +100,7 @@ export default function AdminBilling() {
     finally { setLoading(false); setRefreshing(false); }
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [status, preset, customFrom, customTo]);
+  useEffect(() => { load(); }, [status, preset, customFrom, customTo]);
 
   const exportCSV = () => {
     const csv = [

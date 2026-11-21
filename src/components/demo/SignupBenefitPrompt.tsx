@@ -71,7 +71,6 @@ export function SignupBenefitPrompt() {
       clearTimeout(t);
       document.removeEventListener("mouseleave", onLeave);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

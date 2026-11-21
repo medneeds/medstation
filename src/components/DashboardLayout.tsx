@@ -90,14 +90,6 @@ function DashboardLayoutInner({ children }: DashboardLayoutProps) {
     typeof window !== "undefined" &&
     new URLSearchParams(search || window.location.search).get("embed") === "1";
 
-  if (isEmbed) {
-    return (
-      <main className="min-h-screen w-full bg-background overflow-x-hidden p-3 md:p-4">
-        <AccessContentGate><Suspense fallback={<PageFallback />}>{children}</Suspense></AccessContentGate>
-      </main>
-    );
-  }
-
   // Pré-carrega os chunks dos assistentes no tempo ocioso, para que a troca
   // entre eles seja instantânea (sem espera de download).
   useEffect(() => {
@@ -133,6 +125,14 @@ function DashboardLayoutInner({ children }: DashboardLayoutProps) {
       window.removeEventListener(OPEN_CONCIERGE_EVENT, onConcierge);
     };
   }, []);
+
+  if (isEmbed) {
+    return (
+      <main className="min-h-screen w-full bg-background overflow-x-hidden p-3 md:p-4">
+        <AccessContentGate><Suspense fallback={<PageFallback />}>{children}</Suspense></AccessContentGate>
+      </main>
+    );
+  }
 
   return (
     <AssistantHeaderSlotProvider target={assistantHeaderTarget}>

@@ -111,7 +111,7 @@ const recoverFingerprint = (): string => {
   const storageKey = 'ms_fp';
   
   // Tenta localStorage primeiro
-  let stored = localStorage.getItem(storageKey);
+  const stored = localStorage.getItem(storageKey);
   if (stored) return stored;
   
   // Tenta cookie

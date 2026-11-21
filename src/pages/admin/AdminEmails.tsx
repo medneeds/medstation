@@ -78,7 +78,7 @@ export default function AdminEmails() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [since]);
+  useEffect(() => { load(); }, [since]);
   useEffect(() => { setPage(0); }, [template, status, query, range]);
 
   // Dedup: keep only the latest row per message_id (rows already sorted desc)
