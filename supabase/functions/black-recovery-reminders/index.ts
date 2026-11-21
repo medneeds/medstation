@@ -4,6 +4,7 @@
 // reserva o envio em black_recovery_emails (único por e-mail + etapa) e envia.
 // Nunca concede acesso nem altera compras.
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { rejectUnlessCron } from "../_shared/cron-auth.ts";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { sendTemplateEmailWithLog } from "../_shared/transactional-email-templates/send-and-log.ts";
 import { BLACK_OFFER, isBlackActive } from "../_shared/pricing-schedule.ts";
@@ -37,6 +38,8 @@ function randomToken(): string {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const denied = rejectUnlessCron(req, Deno.env.get("CRON_SECRET"), "black-recovery-reminders");
+  if (denied) return denied;
   if (!isBlackActive()) return json({ skipped: "offer_closed" });
 
   const supabase = createClient(
