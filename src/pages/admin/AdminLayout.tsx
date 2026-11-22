@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { Filter, GraduationCap, Flame, MessageCircle } from "lucide-react";
+import { Filter, GraduationCap, Flame, MapPin, MessageCircle } from "lucide-react";
 import { AdminNotificationBell } from "@/components/admin/AdminNotificationBell";
 
 const NAV = [
@@ -26,6 +26,7 @@ const NAV = [
   { to: "/admin/suporte", label: "Suporte", icon: MessageSquare },
   { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/admin/funil", label: "Funil", icon: Filter },
+  { to: "/admin/mapa", label: "Mapa de uso", icon: MapPin },
   { to: "/admin/audiencia", label: "Audiência", icon: Users2, adminOnly: true },
   { to: "/admin/emails", label: "E-mails", icon: Mail, adminOnly: true },
   { to: "/admin/uso-ia", label: "Uso de IA", icon: Activity },
