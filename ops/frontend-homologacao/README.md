@@ -52,6 +52,9 @@ Destino efetivo de cada chamada depois do login:
 Único destino fora da lista permitida: `fonts.googleapis.com` (folha de
 estilo das fontes), bloqueado pela trava do teste.
 
+Depois da fase 1 de privilégios (rodada 3), o mesmo teste mostra
+`GET /rest/v1/profiles` → 200; as demais linhas da tabela não mudaram.
+
 ## Diagnóstico, separado
 
 - **Autenticação básica: funciona.** E-mail e senha, contra a homologação.

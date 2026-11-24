@@ -2,8 +2,9 @@
 
 > Escrito pelo Claude. Só dados fictícios. Nenhum e-mail ou WhatsApp real,
 > nenhuma cobrança, nenhuma chamada à produção, à Lovable ou ao Stripe.
-> Este arquivo junta a primeira rodada (instalação e inspeção) e a segunda
-> (diagnóstico, planos e testes locais).
+> Este arquivo junta a primeira rodada (instalação e inspeção), a segunda
+> (diagnóstico, planos e testes locais) e a terceira (fase 1 de privilégios
+> aplicada, com autorização do Artur).
 
 ## Identificação
 
@@ -20,9 +21,9 @@
 | Fluxo | Resultado | Em uma linha |
 |---|---|---|
 | Login — autenticação | **passou** | e-mail e senha funcionam, pela API e pela tela do app rodando localmente |
-| Login — ler o próprio perfil | **falhou** | `profiles` responde 42501; a correção (1 `GRANT`) está escrita e testada localmente, não aplicada |
+| Login — ler o próprio perfil | **passou** (rodada 3) | fase 1 aplicada na homologação; a conta lê só a própria linha e anônimo não lê nenhuma |
 | Hermes — API e descoberta da ferramenta | **passou** | autenticação, loopback e 1 ferramenta descoberta |
-| Hermes — ponte → função da homologação | **bloqueado** | a função está publicada, mas a trava de ambiente responde 404 |
+| Hermes — ponte → função da homologação | **bloqueado** | a função está publicada, mas a trava de ambiente responde 404; repetido na rodada 3, igual |
 | Hermes — ponta a ponta com inferência | **não executado** | sem credencial de modelo; depende do item anterior |
 | Frontend local apontando para a homologação | **passou** | carrega, autentica e não toca a produção |
 | Stripe Sandbox — checkout | **bloqueado** | sem credencial de teste, sem funções publicadas e com IDs do modo real fixos no código |
@@ -55,6 +56,43 @@ A, B e C não se substituem: só C é ponta a ponta. Pré-requisitos de C em
 | Causa | privilégio | ACL de `profiles`: `authenticated=Dxtm` (sem leitura); a política por usuário existe |
 | Menor correção | escrita, não aplicada | `plano/001_grant_select_profiles.sql`: `grant select on public.profiles to authenticated;` |
 | Teste da correção em banco local descartável | passou, 21 de 21 | própria linha sim; linha de outro não; anônimo não; reversão devolve a ACL exata |
+
+### Rodada 3: fase 1 aplicada
+
+Antes de aplicar, conferido na própria conexão:
+
+| Condição | Resultado |
+|---|---|
+| A conexão SQL é a da homologação | sim — uma sessão criada pelo endereço `qcvvwbbeuvawgccstyro.supabase.co` apareceu nessa conexão; só existem as 2 contas fictícias e os 7 lotes |
+| RLS ativa em `public.profiles` | sim |
+| Políticas que valem para leitura | 1: "Users can view own profile", só `authenticated`, `auth.uid() = id`; nenhuma política `ALL` |
+| `authenticated` ainda sem `SELECT` | sim — nem na tabela, nem em coluna |
+| `authenticated`/`anon` com BYPASSRLS ou papel herdado | não |
+
+Aplicado: só `grant select on public.profiles to authenticated;`
+(`plano/001_grant_select_profiles.sql`), por execução direta, sem registro em
+`schema_migrations`.
+
+| Verificação | Resultado | Evidência |
+|---|---|---|
+| ACL de `profiles` | como previsto | `authenticated=rDxtm`; `anon` e `service_role` seguem `Dxtm` |
+| Escrita em `profiles` para `authenticated` | continua negada | incluir, alterar e excluir: sem privilégio |
+| Outras 17 tabelas antigas | inalteradas | as 17 com a ACL de antes |
+| Conta fictícia lê a própria linha | passou | HTTP 200, 1 linha, o próprio id |
+| Conta fictícia não lê a de outra conta | passou | HTTP 200, 0 linhas; sem filtro, só a própria |
+| Anônimo não lê nenhuma | passou | HTTP 401, 42501 |
+| Login pela tela local | passou | `GET /rest/v1/profiles` → 200 (3 vezes); 0 requisições à produção |
+
+Nada foi revertido: a checagem de isolamento passou.
+
+Erros que continuam na tela depois do login:
+
+| Chamada | Status | Motivo |
+|---|---|---|
+| `GET /rest/v1/notifications` | 403 | privilégio — fase 2, não autorizada |
+| `POST /functions/v1/check-subscription` | 404 | função não publicada |
+| `POST /functions/v1/device-check` | 404 | função não publicada; o app libera o acesso mesmo assim |
+| `POST /functions/v1/send-first-welcome` | 404 | função não publicada; nenhum e-mail sai |
 
 ## 3. Frontend local
 
@@ -118,14 +156,16 @@ O CI do PR #20 não é afetado.
 | Quando | O quê |
 |---|---|
 | Rodada 1 | 2 contas fictícias em `auth.users`/`auth.identities`; 1 papel `admin` em `user_roles`; pelos gatilhos, 2 linhas em `profiles`, `user_onboarding`, `user_access` e 2 notificações internas em `admin_notifications` |
-| Rodadas 1 e 2 | sessões de login das contas fictícias (8 no total em `auth.sessions`) |
+| Rodadas 1 a 3 | sessões de login das contas fictícias em `auth.sessions` |
+| Rodada 3 | `grant select on public.profiles to authenticated;` — ACL de `profiles` passou de `authenticated=Dxtm` para `authenticated=rDxtm` |
 
 ## O que não mudou na homologação
 
-- Migrações: continuam 7, a última `20261124031240`. Nenhum SQL de alteração
-  foi executado nesta rodada.
+- Migrações: continuam 7, a última `20261124031240`. O único SQL de alteração
+  executado foi o `GRANT` da fase 1.
 - Esquema: 69 tabelas e 145 políticas em `public`, como antes.
-- Privilégios: a ACL de `profiles` é a mesma (`authenticated=Dxtm`).
+- Privilégios: fora o `SELECT` da fase 1 em `profiles`, nada mudou; as outras
+  17 tabelas antigas seguem sem privilégio de dados. A fase 2 não foi executada.
 - Edge Functions: só `ai-core-hermes-sandbox` v1; nenhuma publicação.
 - Secrets: nenhum criado ou alterado.
 - Configuração de autenticação: intocada.
@@ -143,7 +183,7 @@ JWT nem chave de provedor de modelo.
 
 | O quê | Como | Estado |
 |---|---|---|
-| Fase 1 dos privilégios | `plano/001_grant_select_profiles.rollback.sql` — retira exatamente o que a fase 1 concede | testada no banco local |
+| Fase 1 dos privilégios (**aplicada**) | `plano/001_grant_select_profiles.rollback.sql` — `revoke select on public.profiles from authenticated;` | testada no banco local; não foi preciso usar |
 | Fase 2 dos privilégios | `plano/002_…rollback.sql` — mesmas listas da concessão, por papel e tabela; não mexe no que é da fase 1 | testada no banco local |
 | Variáveis `AI_CORE_*` | apagar as quatro no painel | não se aplica ainda |
 | Contas fictícias | `delete from auth.users where email in (…)` | não executada |
@@ -180,11 +220,10 @@ produção para provar, do lado de lá, que nada chegou.
 
 Duas ações independentes, cada uma destrava um fluxo:
 
-1. **Autorizar a fase 1** — uma linha de SQL na homologação
-   (`grant select on public.profiles to authenticated;`), com reversão de uma
-   linha. Destrava "ler o próprio perfil".
+1. ~~Autorizar a fase 1~~ — feita na rodada 3.
 2. **Gravar as quatro `AI_CORE_*`** no painel da homologação. Destrava o
-   nível B do Hermes.
+   nível B do Hermes. Não tenho acesso de leitura nem de escrita a esses
+   secrets; é o próximo bloqueio.
 
 O que vem depois, em ordem de custo: consulta de privilégios na produção
 (para a fase 2); credencial de modelo com limite (nível C); sandbox do Stripe

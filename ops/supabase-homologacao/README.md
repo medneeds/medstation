@@ -96,7 +96,8 @@ Efeito medido: o médico fictício entra, mas `GET /rest/v1/profiles` responde
 `conversations` e `cases`. Tabelas mais novas, que têm `GRANT` explícito nas
 migrações (`user_access`, `user_onboarding`), respondem normalmente.
 
-Estado medido das 18 tabelas, idêntico em todas:
+Estado medido das 18 tabelas antes da fase 1, idêntico em todas (hoje
+`profiles` tem também leitura para `authenticated`; as outras 17 seguem assim):
 
 ```
 {postgres=arwdDxtm/postgres, anon=Dxtm/postgres, authenticated=Dxtm/postgres, service_role=Dxtm/postgres}
@@ -166,6 +167,12 @@ homologação.
 
 ### Fase 1 — a menor alteração: ler o próprio perfil
 
+**Aplicada em 24/11/2026, com autorização do Artur.** As pré-condições (RLS
+ativa, única política de leitura `auth.uid() = id`, `authenticated` sem
+`SELECT`) foram conferidas na mesma conexão antes do `GRANT`. Depois dele, os
+quatro itens de `verificar-perfil-homologacao.sh` passaram. Detalhes em
+`../RESULTADOS-2026-11-24.md`.
+
 | | |
 |---|---|
 | Arquivo | [`plano/001_grant_select_profiles.sql`](plano/001_grant_select_profiles.sql) |
@@ -180,7 +187,7 @@ Das tabelas que esse caminho lê, só duas respondem 42501:
 
 | Tabela | Quem lê | Privilégio hoje | Entra na fase 1? |
 |---|---|---|---|
-| `profiles` | `ProfileContext` (9 colunas, `id = usuário`) | nenhum | **sim** — é o pedido: ler o próprio perfil |
+| `profiles` | `ProfileContext` (9 colunas, `id = usuário`) | nenhum antes; leitura depois da fase 1 | **sim** — é o pedido: ler o próprio perfil |
 | `notifications` | sino do cabeçalho | nenhum | não — o app segue sem ela; fica na fase 2 |
 | `user_onboarding` | `OnboardingContext` | ler, incluir, alterar | já funciona |
 | `active_sessions` | `DeviceGuard` | ler | já funciona |
@@ -260,14 +267,14 @@ Limites: o motor local é Postgres 19 (a homologação é 17.12); os triggers de
 ops/supabase-homologacao/verificacao/verificar-perfil-homologacao.sh
 ```
 
-Estado de hoje, antes da fase 1 (executado em 24/11/2026):
+Executado duas vezes em 24/11/2026:
 
-| Verificação | Hoje | Esperado depois da fase 1 |
+| Verificação | Antes da fase 1 | Depois da fase 1 |
 |---|---|---|
-| 1. conta fictícia lê a própria linha | falhou — HTTP 403, 42501 | HTTP 200, 1 linha, o próprio id |
-| 2. conta fictícia não lê a linha de outro usuário | HTTP 403, 42501 (negado pelo privilégio, não pela política) | HTTP 200, 0 linhas |
-| 2b. sem filtro, só a própria linha | HTTP 403, 42501 | HTTP 200, 1 linha |
-| 3. anônimo não lê nenhuma linha | passou — HTTP 401, 42501 | igual |
+| 1. conta fictícia lê a própria linha | falhou — HTTP 403, 42501 | passou — HTTP 200, 1 linha, o próprio id |
+| 2. conta fictícia não lê a linha de outro usuário | HTTP 403, 42501 (negado pelo privilégio, não pela política) | passou — HTTP 200, 0 linhas |
+| 2b. sem filtro, só a própria linha | HTTP 403, 42501 | passou — HTTP 200, 1 linha |
+| 3. anônimo não lê nenhuma linha | passou — HTTP 401, 42501 | passou — HTTP 401, 42501 |
 
 ## Função `ai-core-hermes-sandbox`
 
@@ -286,6 +293,9 @@ diferentes e foram medidas lado a lado:
 A primeira coisa que a função faz é `isSandboxEnabled(...)`; se falhar,
 devolve exatamente `404 {"error":"not_found"}`.
 
+Repetido na rodada 3 (depois da fase 1): mesmo 404 da trava; o teste
+`validar-ponte-homologacao.sh` continua em "bloqueado".
+
 **Presença das quatro variáveis: não consegui ler.** O conector que uso não
 lista os secrets das Edge Functions, e a CLI do Supabase no Mac não está
 logada (além de estar com a assinatura do binário inválida). O que a trava
@@ -303,8 +313,11 @@ Para configurar — painel do Supabase, **projeto `qcvvwbbeuvawgccstyro`
 | `AI_CORE_STAGING_PROJECT_REF` | `qcvvwbbeuvawgccstyro` |
 | `AI_CORE_PRODUCTION_PROJECT_REF` | `rwiovxyftfbkvzbepfqi` |
 
-Nenhum dos quatro é sigiloso. Conferir no topo da página que o projeto é o de
-homologação antes de salvar. Não é preciso publicar a função de novo. Para
+Nenhum dos quatro é sigiloso. O que conferir no painel: que o projeto no topo
+da página é o de homologação; que os quatro nomes existem exatamente como
+acima (maiúsculas, sem espaço); e que os valores não têm espaço nem quebra de
+linha no fim. Não alterei nada aqui: sem conseguir ler o estado anterior, não
+havia como registrá-lo nem garantir a reversão. Não é preciso publicar a função de novo. Para
 desfazer, apagar os quatro; a função volta a responder 404.
 
 ## Contas fictícias criadas
