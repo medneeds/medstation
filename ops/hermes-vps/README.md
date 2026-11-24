@@ -132,6 +132,10 @@ hermes mcp test medstation_sandbox   # conecta e descobre 1 ferramenta
 
 Só C é "ponta a ponta". A e B, sozinhos ou juntos, não são.
 
+O roteiro completo do nível C, com o cenário, a forma de comprovar, a
+credencial mínima, a remoção e as verificações locais, está em
+[`inferencia/README.md`](inferencia/README.md).
+
 ### Pré-requisitos do nível C (nada disto foi feito)
 
 1. **Nível B passando** (as quatro variáveis `AI_CORE_*` na homologação).
