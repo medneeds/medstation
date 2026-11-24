@@ -2,6 +2,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
 import { sendTemplateEmailWithLog } from '../_shared/transactional-email-templates/send-and-log.ts'
 import { notifyArsenalBonus, purchaseEligibility, subscriptionEligibility } from '../_shared/arsenal-bonus.ts'
+import { resolveArsenalBonusTarget } from '../_shared/deploy-environment.ts'
 
 // Admin only. Re-sends the Arsenal Med annual bonus for every current annual
 // subscriber: pushes each payment reference to the Arsenal Med site again and
@@ -31,6 +32,11 @@ Deno.serve(async (req) => {
   if (authErr || !authData.user) return json({ error: 'Sessão inválida' }, 401)
   const { data: isAdmin } = await admin.rpc('has_role', { _user_id: authData.user.id, _role: 'admin' })
   if (!isAdmin) return json({ error: 'Apenas administradores' }, 403)
+
+  // Fora de produção o bônus fica desligado: nada é reenviado ao site real nem por e-mail.
+  if (!resolveArsenalBonusTarget((key) => Deno.env.get(key)).enabled) {
+    return json({ error: 'Bônus Arsenal Med desligado neste ambiente', code: 'BONUS_DISABLED_OUTSIDE_PRODUCTION' }, 409)
+  }
 
   let sendEmail = true
   let notify = true

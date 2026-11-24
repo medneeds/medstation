@@ -103,13 +103,37 @@ que o `SubscriptionContext` usa para liberar ou bloquear as telas.
    - **Meta (API de Conversões):** só com `META_CAPI_ACCESS_TOKEN` e
      consentimento; ausente, não envia.
 
+## Comportamento por ambiente (PR separado, só código e testes)
+
+`supabase/functions/_shared/deploy-environment.ts` decide tudo por uma regra:
+é produção se `SUPABASE_URL` for exatamente o do projeto `rwiovxyftfbkvzbepfqi`.
+
+| | Produção | Fora de produção (homologação, local, desconhecido) |
+|---|---|---|
+| Preços e cupom | os de sempre, fixos; variáveis são ignoradas | `STRIPE_PRICE_MONTHLY` obrigatório e diferente dos IDs do modo real; `STRIPE_PRICE_YEARLY` e `STRIPE_REFERRAL_COUPON` opcionais; sem isso, `503 ENVIRONMENT_NOT_CONFIGURED` antes de chamar o Stripe |
+| Chave do Stripe | a que estiver configurada | só `sk_test_…`/`rk_test_…`; outra é recusada |
+| Retorno do checkout e do portal | cabeçalho `Origin` ou o site | `Origin` se não for o site de produção; senão `APP_BASE_URL`; senão recusa |
+| Links do webhook | site de produção | `APP_BASE_URL`; sem ela, o webhook responde 500 |
+| Bônus Arsenal Med | avisa o site real | desligado: sem requisição, sem alerta, sem e-mail. Só liga com `ARSENAL_BONUS_ENABLED=true` e um `ARSENAL_BONUS_ENDPOINT` https que não seja o site real |
+
+Não foi alterado: os dois IDs de produto (`prod_…`), que podem ser criados no
+sandbox com o mesmo ID; `check-subscription` e `_shared/access-control.ts`;
+`_shared/meta-capi.ts` (já não envia nada sem o token).
+
+Ponto de revisão antes de qualquer merge: a regra supõe que, em produção, a
+variável `SUPABASE_URL` da função é `https://rwiovxyftfbkvzbepfqi.supabase.co`,
+que é o padrão da plataforma. Não consultei a produção para confirmar. Se lá
+for diferente, o checkout de produção responderia 503.
+
+Testes: `src/lib/__tests__/deploy-environment.test.ts`.
+
 ## Mínimo para um checkout de teste, em ordem
 
 1. Artur cria ou indica um **Sandbox** do Stripe e fornece `sk_test_…`.
 2. No sandbox: produtos com os dois IDs acima; endpoint de webhook de teste
    apontando para a função da homologação; anotar o `whsec_…`.
-3. Decisão de código (PR separado): como desligar o bônus Arsenal Med fora da
-   produção e como tratar os dois preços fixos.
+3. Revisar o PR separado de código (seção "Comportamento por ambiente") e
+   gravar na homologação `STRIPE_PRICE_MONTHLY` e `APP_BASE_URL`.
 4. Fase 2 do plano de `GRANT` aplicada.
 5. Publicar na homologação `guest-checkout` ou `create-checkout`,
    `complete-checkout`, `stripe-webhook` e `check-subscription`, com

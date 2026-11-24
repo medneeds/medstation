@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { findUserByEmail, maskEmail } from "../_shared/admin-users.ts";
+import { resolveReturnOrigin, stripeKeyAllowed } from "../_shared/deploy-environment.ts";
 import {
   checkoutAccountDecision,
   checkoutAccountFields,
@@ -65,6 +66,10 @@ serve(async (req) => {
     const sessionId = typeof body.sessionId === "string" ? body.sessionId.trim() : "";
     if (!sessionId) throw new Error("Session ID é obrigatório");
 
+    // Fora de produção: só chave de teste. Em produção isto nunca recusa.
+    if (!stripeKeyAllowed(Deno.env.get("STRIPE_SECRET_KEY"), (key) => Deno.env.get(key))) {
+      throw new Error("Checkout indisponível neste ambiente");
+    }
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
@@ -149,7 +154,8 @@ serve(async (req) => {
     // magic/recovery action link to the browser. Initial access is delivered to
     // the mailbox owner through a Supabase invitation. Access itself is granted
     // only by stripe-webhook.
-    const origin = req.headers.get("origin") || "https://medstation-ai.com.br";
+    const origin = resolveReturnOrigin(req.headers.get("origin"), (key) => Deno.env.get(key));
+    if (!origin) throw new Error("Request origin is required");
     const { data: invited, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
       redirectTo: `${origin}/onboarding`,
       data: {

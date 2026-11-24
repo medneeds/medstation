@@ -53,12 +53,22 @@ describe("bônus Arsenal Med", () => {
     expect(isBonusReference("cs_live_' or 1=1")).toBe(false);
   });
 
+  // O aviso só sai no projeto de produção (ver deploy-environment.test.ts).
+  const production = (key: string) =>
+    key === "SUPABASE_URL" ? "https://rwiovxyftfbkvzbepfqi.supabase.co" : undefined;
+
   it("avisa o Arsenal Med e nunca lança erro quando ele está fora do ar", async () => {
     const ok = vi.fn().mockResolvedValue(new Response("{}", { status: 200 }));
-    expect(await notifyArsenalBonus("cs_live_a1MmqcIy2HhgHCxq2NI70PNq", ok)).toBe(true);
+    expect(await notifyArsenalBonus("cs_live_a1MmqcIy2HhgHCxq2NI70PNq", ok, production)).toBe(true);
     expect(ok).toHaveBeenCalledWith(ARSENAL_BONUS_ENDPOINT, expect.objectContaining({ method: "POST" }));
 
     const down = vi.fn().mockRejectedValue(new Error("offline"));
-    expect(await notifyArsenalBonus("cs_live_a1MmqcIy2HhgHCxq2NI70PNq", down)).toBe(false);
+    expect(await notifyArsenalBonus("cs_live_a1MmqcIy2HhgHCxq2NI70PNq", down, production)).toBe(false);
+  });
+
+  it("fora do projeto de produção não faz requisição", async () => {
+    const never = vi.fn();
+    expect(await notifyArsenalBonus("cs_live_a1MmqcIy2HhgHCxq2NI70PNq", never)).toBe(false);
+    expect(never).not.toHaveBeenCalled();
   });
 });

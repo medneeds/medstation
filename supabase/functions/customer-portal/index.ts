@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { resolveReturnOrigin, stripeKeyAllowed } from "../_shared/deploy-environment.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -37,6 +38,8 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { authenticated: true });
 
+    // Fora de produção: só chave de teste. Em produção isto nunca recusa.
+    if (!stripeKeyAllowed(stripeKey, (key) => Deno.env.get(key))) throw new Error("Portal indisponível neste ambiente");
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     let customerId: string | null = null;
 
@@ -78,7 +81,8 @@ serve(async (req) => {
 
     if (!customerId) throw new Error("No Stripe customer found for this user");
 
-    const origin = req.headers.get("origin") || "https://medstation-ai.com.br";
+    const origin = resolveReturnOrigin(req.headers.get("origin"), (key) => Deno.env.get(key));
+    if (!origin) throw new Error("Request origin is required");
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customerId,
       return_url: `${origin}/settings`,

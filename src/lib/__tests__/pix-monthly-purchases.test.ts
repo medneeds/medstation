@@ -19,7 +19,12 @@ describe("catálogo de compras avulsas", () => {
   it("mensal cartão NÃO é compra avulsa: continua subscription", () => {
     expect(oneTime).not.toContain('"pro_completo":');
     expect(createCheckout).toContain('mode: "subscription"');
-    expect(createCheckout).toContain("pro_completo: \"price_1U4Zo7ACiwQRloW4cJIn0jYn\"");
+    // O Price mensal de produção saiu do arquivo da função e vive no catálogo por
+    // ambiente; a função continua ligando o plano mensal a esse Price.
+    expect(createCheckout).toContain("pro_completo: catalog.monthlyPriceId");
+    expect(read("supabase/functions/_shared/deploy-environment.ts")).toContain(
+      "monthlyPriceId: \"price_1U4Zo7ACiwQRloW4cJIn0jYn\"",
+    );
   });
 
   it("Pix mensal é one-time de 5990 BRL, 30 dias, categorizado", () => {
