@@ -10,8 +10,15 @@
  */
 
 import { planExcludesArsenalBonus } from "./one-time-purchase.ts";
+import {
+  ARSENAL_BONUS_LIVE_ENDPOINT,
+  type EnvGetter,
+  resolveArsenalBonusTarget,
+  runtimeEnv,
+} from "./deploy-environment.ts";
 
-export const ARSENAL_BONUS_ENDPOINT = "https://arsenalmed.com.br/api/public/medstation-bonus";
+/** Endereço real do Arsenal Med; só é chamado no projeto de produção. */
+export const ARSENAL_BONUS_ENDPOINT = ARSENAL_BONUS_LIVE_ENDPOINT;
 
 /**
  * Endereço que o site do Arsenal Med chama para confirmar a referência.
@@ -80,25 +87,47 @@ export function subscriptionEligibility(
   return email && until ? { eligible: true, email, access_until: until } : NOT_ELIGIBLE;
 }
 
+export type ArsenalBonusOutcome = "registered" | "not_registered" | "blocked_outside_production";
+
 /**
- * Avisa o Arsenal Med. Nunca lança erro: devolve false quando o aviso não foi
- * aceito, para quem chamou registrar a pendência sem derrubar o pagamento.
+ * Avisa o Arsenal Med e diz o que aconteceu. Nunca lança erro.
+ * Fora do projeto de produção devolve "blocked_outside_production" SEM fazer
+ * requisição nenhuma (ver deploy-environment.ts): um pagamento de teste não
+ * pode registrar bônus no site real.
  */
-export async function notifyArsenalBonus(reference: string, fetchImpl: typeof fetch = fetch): Promise<boolean> {
-  if (!isBonusReference(reference)) return false;
+export async function notifyArsenalBonusOutcome(
+  reference: string,
+  fetchImpl: typeof fetch = fetch,
+  getEnv: EnvGetter = runtimeEnv,
+): Promise<ArsenalBonusOutcome> {
+  const target = resolveArsenalBonusTarget(getEnv);
+  if (!target.enabled) return "blocked_outside_production";
+  if (!isBonusReference(reference)) return "not_registered";
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 10_000);
   try {
-    const res = await fetchImpl(ARSENAL_BONUS_ENDPOINT, {
+    const res = await fetchImpl(target.endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ reference }),
       signal: controller.signal,
     });
-    return res.ok;
+    return res.ok ? "registered" : "not_registered";
   } catch {
-    return false;
+    return "not_registered";
   } finally {
     clearTimeout(timer);
   }
+}
+
+/**
+ * Avisa o Arsenal Med. Nunca lança erro: devolve false quando o aviso não foi
+ * aceito, para quem chamou registrar a pendência sem derrubar o pagamento.
+ */
+export async function notifyArsenalBonus(
+  reference: string,
+  fetchImpl: typeof fetch = fetch,
+  getEnv: EnvGetter = runtimeEnv,
+): Promise<boolean> {
+  return (await notifyArsenalBonusOutcome(reference, fetchImpl, getEnv)) === "registered";
 }

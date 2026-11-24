@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { resolveReturnOrigin, resolveStripeEnvironment, type StripeCatalog } from "../_shared/deploy-environment.ts";
 import {
   checkoutSubmitMessage,
   buildOneTimeLineItem,
@@ -30,12 +31,16 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
-const CURRENT_PRICES: Record<string, string> = {
-  pro_completo: "price_1U4Zo7ACiwQRloW4cJIn0jYn",
-  pro_completo_yearly: "price_1U4ZoTACiwQRloW4f30FmEPb",
-  [MONTHLY_PIX_PLAN_SLUG]: "one_time",
-  [BLACK_ANNUAL_PLAN_SLUG]: "one_time",
-};
+// Os IDs de preço vêm do ambiente (deploy-environment.ts): em produção são os
+// de sempre; fora dela, os do Stripe de teste configurados por variável.
+function currentPrices(catalog: StripeCatalog): Record<string, string> {
+  return {
+    pro_completo: catalog.monthlyPriceId,
+    pro_completo_yearly: catalog.yearlyPriceId,
+    [MONTHLY_PIX_PLAN_SLUG]: "one_time",
+    [BLACK_ANNUAL_PLAN_SLUG]: "one_time",
+  };
+}
 
 
 
@@ -49,6 +54,19 @@ serve(async (req) => {
 
   try {
     logStep("Function started");
+
+    // Antes de qualquer chamada ao Stripe: fora de produção só com chave de
+    // teste e catálogo de teste configurados. Em produção isto nunca recusa.
+    const stripeEnv = resolveStripeEnvironment((key) => Deno.env.get(key));
+    if (!stripeEnv.ok) {
+      console.error("[CREATE-CHECKOUT] stripe environment not configured", { reason: stripeEnv.reason, missing: stripeEnv.missing });
+      return new Response(
+        JSON.stringify({ error: "Checkout indisponível neste ambiente.", code: "ENVIRONMENT_NOT_CONFIGURED" }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    const CURRENT_PRICES = currentPrices(stripeEnv.catalog);
+
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("User not authenticated");
@@ -70,7 +88,7 @@ serve(async (req) => {
           .eq("id", 1)
           .maybeSingle();
         const programActive = settings?.active !== false;
-        const referralCoupon = settings?.referred_stripe_coupon || "XzP9db0s";
+        const referralCoupon = settings?.referred_stripe_coupon || stripeEnv.catalog.referralCoupon;
 
         if (programActive) {
           const { data: pendingRef } = await supabaseClient
@@ -79,7 +97,7 @@ serve(async (req) => {
             .eq("referred_user_id", user.id)
             .eq("status", "pending")
             .maybeSingle();
-          if (pendingRef) {
+          if (pendingRef && referralCoupon) {
             couponCode = referralCoupon;
             logStep("Referral discount selected", { referral: true });
           }
@@ -164,7 +182,8 @@ serve(async (req) => {
       }
     }
 
-    const origin = req.headers.get("origin");
+    // Produção: exige o cabeçalho Origin, como sempre. Fora dela: nunca o site de produção.
+    const origin = resolveReturnOrigin(req.headers.get("origin"), (key) => Deno.env.get(key), { fallbackToSite: false });
     if (!origin) throw new Error("Request origin is required");
     // Compra iniciada na página da Black (planos alternativos): volta para lá se desistir.
     const fromBlackPage = body.entry === "black_page";

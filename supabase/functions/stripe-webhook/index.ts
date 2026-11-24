@@ -4,7 +4,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { findUserByEmail } from "../_shared/admin-users.ts";
 import { resolveSubscriptionEnd, type MinimalSubscription } from "../_shared/stripe-access.ts";
 import { sendTemplateEmailWithLog } from "../_shared/transactional-email-templates/send-and-log.ts";
-import { notifyArsenalBonus } from "../_shared/arsenal-bonus.ts";
+import { notifyArsenalBonusOutcome } from "../_shared/arsenal-bonus.ts";
+import { siteUrl, stripeKeyAllowed } from "../_shared/deploy-environment.ts";
 import { laterDate, planMonthlyHandoff, type MonthlySubLite } from "../_shared/annual-switch.ts";
 import {
   computeAccessWindow,
@@ -18,7 +19,8 @@ import {
 } from "../_shared/one-time-purchase.ts";
 import { sendPurchaseToMeta } from "../_shared/meta-capi.ts";
 
-const SITE_URL = "https://medstation-ai.com.br";
+// Produção: o site de sempre. Fora dela: APP_BASE_URL, nunca o site de produção.
+const SITE_URL = siteUrl((key) => Deno.env.get(key)) ?? "";
 const BILLING_RECOVERY_URL = `${SITE_URL}/settings`;
 const STALE_PROCESSING_MS = 5 * 60 * 1000;
 
@@ -102,7 +104,13 @@ async function deliverAnnualBonus(
 ) {
   if (!email) return;
   try {
-    const registered = await notifyArsenalBonus(reference);
+    const outcome = await notifyArsenalBonusOutcome(reference);
+    if (outcome === "blocked_outside_production") {
+      // Fora de produção: sem aviso ao site real, sem alerta e sem e-mail do bônus.
+      console.log("[stripe-webhook] bônus Arsenal Med desligado fora de produção");
+      return;
+    }
+    const registered = outcome === "registered";
     if (!registered) {
       await supabase.rpc("create_admin_notification", {
         p_type: "sale",
@@ -712,6 +720,11 @@ serve(async (req) => {
   const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
   if (!webhookSecret || !stripeKey) {
     console.error("[stripe-webhook] Required Stripe secrets are not configured");
+    return new Response("Webhook not configured", { status: 500 });
+  }
+  // Fora de produção: só chave de teste e só com o endereço do app deste ambiente.
+  if (!stripeKeyAllowed(stripeKey, (key) => Deno.env.get(key)) || !SITE_URL) {
+    console.error("[stripe-webhook] Environment not configured for Stripe (test key and APP_BASE_URL required outside production)");
     return new Response("Webhook not configured", { status: 500 });
   }
 
