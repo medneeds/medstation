@@ -23,8 +23,8 @@
 | Login — autenticação | **passou** | e-mail e senha funcionam, pela API e pela tela do app rodando localmente |
 | Login — ler o próprio perfil | **passou** (rodada 3) | fase 1 aplicada na homologação; a conta lê só a própria linha e anônimo não lê nenhuma |
 | Hermes — API e descoberta da ferramenta | **passou** | autenticação, loopback e 1 ferramenta descoberta |
-| Hermes — ponte → função da homologação | **bloqueado** | a função está publicada, mas a trava de ambiente responde 404; repetido na rodada 3, igual |
-| Hermes — ponta a ponta com inferência | **não executado** | sem credencial de modelo; depende do item anterior |
+| Hermes — ponte → função da homologação | **passou** (24/11/2026 23:06 UTC) | função responde 200 ao admin fictício; `staging_workflow_only` verdadeiro |
+| Hermes — ponta a ponta com inferência | **não executado** | sem credencial de modelo; a ponte aprovada não cobre este item |
 | Frontend local apontando para a homologação | **passou** | carrega, autentica e não toca a produção |
 | Stripe Sandbox — checkout | **bloqueado** | sem credencial de teste, sem funções publicadas e com IDs do modo real fixos no código |
 | Stripe — testes locais sem credencial | **passou** (teste local) | regras de cobrança e assinatura do webhook; não é checkout validado |
@@ -35,11 +35,33 @@
 |---|---|---|
 | Função publicada na homologação | passou | `ai-core-hermes-sandbox` v1, ativa, `verify_jwt` ligado; mesma lógica do repositório |
 | Origem do 404 | trava de ambiente | corpo `{"error":"not_found"}` + `Cache-Control: no-store` + `x-deno-execution-id`; rota ausente responde `{"code":"NOT_FOUND",…}` sem execução |
-| Presença das quatro `AI_CORE_*` | **não verificável** | não tenho acesso de leitura aos secrets das Edge Functions; a trava fechada mostra que ao menos uma condição falha |
+| Presença das quatro `AI_CORE_*` | confirmada só pelo efeito | não leio os secrets; a trava passou a abrir, o que exige as quatro condições atendidas ao mesmo tempo |
 | Nível A: API pelo túnel SSH | passou | `validar-tunel.sh`: 401 sem chave e com chave errada, 200 com a chave, 0 de 26 toolsets nativos, 8642 fechada pelo IP público |
 | Nível A: descoberta MCP | passou | `hermes mcp test medstation_sandbox`: conectado, 1 ferramenta |
-| Nível B: ponte → função | bloqueado | `validar-ponte-homologacao.sh`: `staging_workflow_only: false`, função 404 |
+| Nível B: ponte → função | passou em 24/11/2026 23:06 UTC (antes: bloqueado, função 404) | `validar-ponte-homologacao.sh`: função 200, `staging_workflow_only` verdadeiro |
 | Nível C: com inferência | não executado | nenhum provedor de modelo configurado no Hermes |
+
+### Nível B refeito depois que as variáveis foram gravadas
+
+| | |
+|---|---|
+| Commit do repositório | `30a1b7d7` (script sem alteração desde `0a20b44a`) |
+| Horário | 24/11/2026, 23:06:25 a 23:06:34 UTC |
+| Comando | `ops/hermes-vps/validar-ponte-homologacao.sh` |
+| Login do admin fictício | HTTP 200 |
+| Função `ai-core-hermes-sandbox`, chamada direta | **HTTP 200** (antes: 404 da trava) |
+| `mcp_initialize` | passou |
+| `single_synthetic_tool` | passou |
+| `staging_workflow_only` | **passou** |
+
+`staging_workflow_only` só passa se a resposta que a ponte devolve tiver
+`environment: "synthetic-staging"`, o mesmo `requestId` enviado
+(`synthetic_preflight_001`) e as duas etapas simuladas, sem erro
+(`hermes-bridge/preflight.mjs`). O script não imprime o corpo da resposta, e o
+JWT ficou só em memória.
+
+Isto é o nível B. Não houve modelo, inferência nem chamada paga: o nível C
+continua não executado.
 
 A, B e C não se substituem: só C é ponta a ponta. Pré-requisitos de C em
 `hermes-vps/README.md`. Caminho e campos das quatro variáveis em
@@ -221,9 +243,9 @@ produção para provar, do lado de lá, que nada chegou.
 Duas ações independentes, cada uma destrava um fluxo:
 
 1. ~~Autorizar a fase 1~~ — feita na rodada 3.
-2. **Gravar as quatro `AI_CORE_*`** no painel da homologação. Destrava o
-   nível B do Hermes. Não tenho acesso de leitura nem de escrita a esses
-   secrets; é o próximo bloqueio.
+2. ~~Gravar as quatro `AI_CORE_*`~~ — gravadas pelo Artur; o nível B passou.
+3. **Credencial de teste de um provedor de modelo, com limite de gasto**, para
+   o nível C. É o próximo bloqueio do Hermes.
 
 O que vem depois, em ordem de custo: consulta de privilégios na produção
 (para a fase 2); credencial de modelo com limite (nível C); sandbox do Stripe

@@ -293,8 +293,11 @@ diferentes e foram medidas lado a lado:
 A primeira coisa que a função faz é `isSandboxEnabled(...)`; se falhar,
 devolve exatamente `404 {"error":"not_found"}`.
 
-Repetido na rodada 3 (depois da fase 1): mesmo 404 da trava; o teste
-`validar-ponte-homologacao.sh` continua em "bloqueado".
+Repetido na rodada 3 (depois da fase 1): mesmo 404 da trava.
+
+**Em 24/11/2026 às 23:06 UTC a trava abriu:** a função respondeu 200 ao admin
+fictício e `validar-ponte-homologacao.sh` passou. As medições abaixo são de
+antes disso e ficam como registro de como distinguir os dois tipos de 404.
 
 **Presença das quatro variáveis: não consegui ler.** O conector que uso não
 lista os secrets das Edge Functions, e a CLI do Supabase no Mac não está
