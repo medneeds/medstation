@@ -16,13 +16,19 @@
 
 ## O que existe aqui
 
-- [`hermes-vps/`](hermes-vps/README.md) — como o Hermes foi instalado na VPS, como
-  validar pelo túnel SSH e como remover tudo.
-- [`supabase-homologacao/`](supabase-homologacao/README.md) — comparação entre as
-  sete migrações aplicadas na homologação e as migrações do repositório, as
-  divergências encontradas e o plano (não aplicado) para corrigi-las.
-- [`RESULTADOS-2026-11-24.md`](RESULTADOS-2026-11-24.md) — resultado dos testes de
-  login, Hermes e Stripe, com a evidência de cada um.
+- [`RESULTADOS-2026-11-24.md`](RESULTADOS-2026-11-24.md) — resultado de cada
+  fluxo, comandos para repetir, o que mudou e o que não mudou, reversão e a
+  menor decisão pendente. **Comece por aqui.**
+- [`hermes-vps/`](hermes-vps/README.md) — como o Hermes foi instalado na VPS, os
+  três níveis de teste, como validar pelo túnel SSH e como remover tudo.
+- [`supabase-homologacao/`](supabase-homologacao/README.md) — comparação das
+  migrações, divergências, plano de privilégios em duas fases (não aplicado) e
+  as verificações (banco local e API).
+- [`frontend-homologacao/`](frontend-homologacao/README.md) — app rodando
+  localmente contra a homologação, dependências da Lovable no login e lista
+  para um preview protegido.
+- [`stripe-sandbox/`](stripe-sandbox/README.md) — mapa de checkout, retorno,
+  webhook e direito de acesso, e o que impede um teste em sandbox.
 
 ## Regras que valem para qualquer mudança em `ops/`
 

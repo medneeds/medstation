@@ -96,9 +96,18 @@ Efeito medido: o médico fictício entra, mas `GET /rest/v1/profiles` responde
 `conversations` e `cases`. Tabelas mais novas, que têm `GRANT` explícito nas
 migrações (`user_access`, `user_onboarding`), respondem normalmente.
 
-Plano: [`plano/001_grants_tabelas_legadas.sql`](plano/001_grants_tabelas_legadas.sql),
-com reversão em
-[`plano/001_grants_tabelas_legadas.rollback.sql`](plano/001_grants_tabelas_legadas.rollback.sql).
+Estado medido das 18 tabelas, idêntico em todas:
+
+```
+{postgres=arwdDxtm/postgres, anon=Dxtm/postgres, authenticated=Dxtm/postgres, service_role=Dxtm/postgres}
+```
+
+(`a` incluir, `r` ler, `w` alterar, `d` excluir; `D` truncate, `x` references,
+`t` trigger, `m` maintain.) Os três papéis têm só `Dxtm`. Nenhuma coluna tem
+privilégio próprio.
+
+O plano está em duas fases, cada uma com reversão simétrica (ver
+[Plano](#plano-ordenado-e-reversível-nada-aplicado)).
 
 ### 2. Privilégios parciais em tabelas mais novas (a confirmar)
 
@@ -155,44 +164,148 @@ homologação.
 
 ## Plano ordenado e reversível (nada aplicado)
 
-1. **Conferir a produção, somente leitura.** O Artur roda no SQL Editor da
-   produção e compara com a lista do item 1:
+### Fase 1 — a menor alteração: ler o próprio perfil
 
-   ```sql
-   select table_name, grantee,
-          string_agg(privilege_type, ',' order by privilege_type) as privilegios
-     from information_schema.role_table_grants
-    where table_schema = 'public'
-      and grantee in ('anon', 'authenticated', 'service_role')
-      and privilege_type in ('SELECT', 'INSERT', 'UPDATE', 'DELETE')
-    group by 1, 2
-    order by 1, 2;
-   ```
+| | |
+|---|---|
+| Arquivo | [`plano/001_grant_select_profiles.sql`](plano/001_grant_select_profiles.sql) |
+| Conteúdo | `grant select on public.profiles to authenticated;` |
+| Reversão | [`plano/001_grant_select_profiles.rollback.sql`](plano/001_grant_select_profiles.rollback.sql): `revoke select on public.profiles from authenticated;` |
+| Antes | `authenticated=Dxtm` |
+| Depois | `authenticated=rDxtm` |
 
-2. **Aplicar `plano/001_grants_tabelas_legadas.sql` só na homologação.**
-   Reversão: o arquivo `.rollback.sql` ao lado.
-3. **Decidir o item 2** com o resultado do passo 1 e, se for o caso, escrever
-   um `002_*.sql` com reversão própria.
-4. **Repetir a verificação:** `inventario-esquema.py . --sql` e o teste de
-   login com leitura de `profiles` (em `../RESULTADOS-2026-11-24.md`).
-5. **Não** recriar os agendamentos (item 3) nem a fila de e-mail (item 4) sem
-   uma decisão explícita: os dois ligam envio real.
+Por que só isso: o caminho "login → primeira tela" foi mapeado no código e
+medido com o app rodando localmente (`../frontend-homologacao/README.md`).
+Das tabelas que esse caminho lê, só duas respondem 42501:
+
+| Tabela | Quem lê | Privilégio hoje | Entra na fase 1? |
+|---|---|---|---|
+| `profiles` | `ProfileContext` (9 colunas, `id = usuário`) | nenhum | **sim** — é o pedido: ler o próprio perfil |
+| `notifications` | sino do cabeçalho | nenhum | não — o app segue sem ela; fica na fase 2 |
+| `user_onboarding` | `OnboardingContext` | ler, incluir, alterar | já funciona |
+| `active_sessions` | `DeviceGuard` | ler | já funciona |
+| `user_roles`, `announcements`, `legacy_trial_invites`, `studio_*` | primeira tela | ler | já funcionam |
+| `page_views` | analytics das páginas públicas | incluir | já funciona |
+
+A fase 1 não dá escrita em `profiles`, não dá nada a `anon` nem a
+`service_role` e não toca outra tabela. O login em si não depende de tabela
+nenhuma: é o serviço de autenticação.
+
+### Fase 2 — o restante das 18 tabelas (fora desta rodada)
+
+[`plano/002_grants_demais_tabelas_legadas.sql`](plano/002_grants_demais_tabelas_legadas.sql)
+e a reversão ao lado. Revisado em relação à primeira versão:
+
+- `service_role` recebe `select, insert, update, delete` listados um a um, sem
+  `GRANT ALL`;
+- a reversão repete exatamente as mesmas listas, por papel e por tabela, e não
+  usa `REVOKE ALL`;
+- o `SELECT` de `profiles` é da fase 1 e a reversão da fase 2 não o retira.
+
+Sobre a primeira versão: ela dava `GRANT ALL` a `service_role` e revertia só
+quatro privilégios. No catálogo de hoje o resultado coincidiria com o estado
+anterior, porque os outros quatro (`Dxtm`) já existiam nas 18 tabelas. Numa
+tabela sem esse padrão, sobraria `Dxtm` que não existia antes (reproduzido no
+banco local). A versão atual não depende dessa coincidência.
+
+Antes da fase 2, comparar com a produção. O Artur roda no SQL Editor da
+**produção** (somente leitura) e compara com as listas do arquivo:
+
+```sql
+select table_name, grantee,
+       string_agg(privilege_type, ',' order by privilege_type) as privilegios
+  from information_schema.role_table_grants
+ where table_schema = 'public'
+   and grantee in ('anon', 'authenticated', 'service_role')
+   and privilege_type in ('SELECT', 'INSERT', 'UPDATE', 'DELETE')
+ group by 1, 2
+ order by 1, 2;
+```
+
+### Depois
+
+- Decidir a divergência 2 com o resultado da consulta acima.
+- **Não** recriar os agendamentos (divergência 3) nem a fila de e-mail
+  (divergência 4) sem decisão explícita: os dois ligam envio real.
+
+## Verificações
+
+### Banco local descartável (executado: passou, 21 de 21)
+
+```bash
+ops/supabase-homologacao/verificacao/rodar-teste-local.sh
+```
+
+Sobe um Postgres em memória (PGlite 0.6.0), monta `profiles` com as mesmas
+colunas, constraints e políticas lidas do catálogo da homologação, o mesmo
+privilégio padrão (`Dxtm`) e as outras 17 tabelas em forma mínima. Aplica os
+arquivos reais de `plano/` e confere:
+
+- antes da fase 1, o usuário logado recebe 42501 (reproduz a falha de hoje);
+- depois: a conta fictícia lê a própria linha; não lê a de outro usuário;
+  sem filtro só vê a própria; anônimo recebe 42501; alteração e exclusão do
+  perfil continuam negadas; nada muda para `service_role`;
+- a ACL de `profiles` muda só em `authenticated` e nenhuma outra tabela muda;
+- a reversão da fase 1 devolve a ACL exata do início;
+- fase 2: nada para `anon`, leitura e escrita para `service_role`, conjuntos
+  menores respeitados; reverter a fase 2 devolve o estado "só fase 1" e
+  reverter a fase 1 em seguida devolve o estado inicial.
+
+Limites: o motor local é Postgres 19 (a homologação é 17.12); os triggers de
+`profiles` e o restante do Supabase não são reproduzidos.
+
+### Pela API da homologação (para rodar depois de aplicar a fase 1)
+
+```bash
+ops/supabase-homologacao/verificacao/verificar-perfil-homologacao.sh
+```
+
+Estado de hoje, antes da fase 1 (executado em 24/11/2026):
+
+| Verificação | Hoje | Esperado depois da fase 1 |
+|---|---|---|
+| 1. conta fictícia lê a própria linha | falhou — HTTP 403, 42501 | HTTP 200, 1 linha, o próprio id |
+| 2. conta fictícia não lê a linha de outro usuário | HTTP 403, 42501 (negado pelo privilégio, não pela política) | HTTP 200, 0 linhas |
+| 2b. sem filtro, só a própria linha | HTTP 403, 42501 | HTTP 200, 1 linha |
+| 3. anônimo não lê nenhuma linha | passou — HTTP 401, 42501 | igual |
 
 ## Função `ai-core-hermes-sandbox`
 
-Está publicada, mas responde `404 not_found` até com o admin fictício: o
-portão da função exige quatro variáveis, e elas não estão definidas (ou não
-batem). Valores, nenhum sigiloso:
+**Está publicada** na homologação (v1, ativa, `verify_jwt` ligado). O código
+publicado tem a mesma lógica do repositório (comentários removidos).
 
-| Variável | Valor |
+**O 404 vem da trava de ambiente, não de rota ausente.** As duas respostas são
+diferentes e foram medidas lado a lado:
+
+| Chamada | Status | Corpo | `x-deno-execution-id` |
+|---|---|---|---|
+| `ai-core-hermes-sandbox` (POST e GET) | 404 | `{"error":"not_found"}`, `Cache-Control: no-store` | presente: a função executou |
+| função que não existe (ex.: `create-checkout`) | 404 | `{"code":"NOT_FOUND","message":"Requested function was not found"}` | ausente |
+| `ai-core-hermes-sandbox` sem `Authorization` | 401 | `UNAUTHORIZED_NO_AUTH_HEADER` | — |
+
+A primeira coisa que a função faz é `isSandboxEnabled(...)`; se falhar,
+devolve exatamente `404 {"error":"not_found"}`.
+
+**Presença das quatro variáveis: não consegui ler.** O conector que uso não
+lista os secrets das Edge Functions, e a CLI do Supabase no Mac não está
+logada (além de estar com a assinatura do binário inválida). O que a trava
+fechada prova é que pelo menos uma das condições abaixo não é atendida; não dá
+para saber qual.
+
+Para configurar — painel do Supabase, **projeto `qcvvwbbeuvawgccstyro`
+("MedStation Project")** → **Edge Functions** → **Secrets**
+(`https://supabase.com/dashboard/project/qcvvwbbeuvawgccstyro/functions/secrets`):
+
+| Nome | Valor |
 |---|---|
 | `AI_CORE_ENVIRONMENT` | `staging` |
 | `AI_CORE_HERMES_SANDBOX_ENABLED` | `true` |
 | `AI_CORE_STAGING_PROJECT_REF` | `qcvvwbbeuvawgccstyro` |
 | `AI_CORE_PRODUCTION_PROJECT_REF` | `rwiovxyftfbkvzbepfqi` |
 
-Onde: painel do Supabase → projeto de homologação → Edge Functions → Secrets.
-Para desfazer, apagar as quatro; a função volta a responder 404.
+Nenhum dos quatro é sigiloso. Conferir no topo da página que o projeto é o de
+homologação antes de salvar. Não é preciso publicar a função de novo. Para
+desfazer, apagar os quatro; a função volta a responder 404.
 
 ## Contas fictícias criadas
 
@@ -203,6 +316,8 @@ Para desfazer, apagar as quatro; a função volta a responder 404.
 
 Foram inseridas direto em `auth.users`/`auth.identities` com hash bcrypt, sem
 passar pelo fluxo de cadastro, para que nenhum e-mail de confirmação saísse.
-As senhas são aleatórias e ficam só no Mac, em `~/.medstation-homolog/` (modo
+Os gatilhos de cadastro criaram, para cada conta, uma linha em `profiles`,
+`user_onboarding` e `user_access`, e uma notificação interna em
+`admin_notifications` ("Novo usuário cadastrado"). As senhas são aleatórias e ficam só no Mac, em `~/.medstation-homolog/` (modo
 700), fora do Git. Para apagar as contas, ver o fim de
 [`../hermes-vps/README.md`](../hermes-vps/README.md).
