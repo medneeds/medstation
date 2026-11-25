@@ -1,24 +1,24 @@
 # Teste de inferência do Hermes (nível C): roteiro
 
-> Escrito pelo Claude em 24/11/2026. **Nada aqui foi executado contra o Hermes
-> real.** Nenhum provedor foi configurado, nenhuma chamada paga foi feita e a
-> VPS não foi tocada. Só rodaram as verificações locais do fim deste arquivo.
+> Escrito pelo Claude em 24/11/2026. **O teste de verdade não foi executado:**
+> nenhum provedor configurado, nenhuma chamada paga, VPS intocada. O que rodou
+> foi um ensaio só no Mac, com o Hermes real e todo o resto simulado. A seção
+> "Executado e hipótese" separa uma coisa da outra.
 
-A ponte → função (nível B) passou em 24/11/2026 23:06 UTC e está registrada em
-`../../RESULTADOS-2026-11-24.md`. Este roteiro é só o passo seguinte: um modelo,
+A ponte → função (nível B) passou em 24/11/2026 23:06 UTC
+(`../../RESULTADOS-2026-11-24.md`). Este roteiro é o passo seguinte: um modelo,
 dentro do Hermes, decidir chamar a ferramenta.
 
 ## O cenário, um só
 
-Uma única requisição `POST /v1/responses` ao Hermes, pelo túnel SSH, com este
-pedido (o identificador é sorteado na hora):
+Uma única requisição `POST /v1/responses` ao Hermes, pelo túnel SSH (o
+identificador é sorteado na hora):
 
 > Rode a simulação sintética de admissão da MedStation para o identificador
 > `synthetic_e2e_<12 hex>`. Use a ferramenta disponível uma única vez e
 > responda em uma frase com o ambiente e as etapas que ela devolveu.
 
-Sem paciente, sem texto clínico. O único dado que viaja é o identificador
-sintético. Para ver a requisição exata sem enviar nada:
+Sem paciente, sem texto clínico. Para ver a requisição sem enviar nada:
 
 ```bash
 node ops/hermes-vps/inferencia/executar-teste-inferencia.mjs
@@ -26,158 +26,195 @@ node ops/hermes-vps/inferencia/executar-teste-inferencia.mjs
 
 ## Como comprovar, no mesmo registro
 
-O registro é a resposta JSON dessa única requisição. No Hermes v0.23.1 ela
-traz em `output`, na ordem, os três fatos:
+O registro é a resposta JSON dessa única requisição. Formato confirmado com o
+Hermes real no ensaio local:
 
 | Fato | Onde aparece | O que o verificador exige |
 |---|---|---|
-| Decisão do modelo | item `function_call` | exatamente uma chamada; `name` = `mcp__medstation_sandbox__medstation_simulate_admission`; `arguments` = só `{"requestId": "<o identificador sorteado>"}` |
-| Chamada da ferramenta | item `function_call_output` | mesmo `call_id` da chamada, depois dela, `status: completed`; o Hermes executa a ferramenta, o modelo não escreve este item |
-| Resposta da função | texto dentro de `function_call_output` | `environment` = `synthetic-staging`; `simulation.requestId` = o identificador sorteado; `mode: simulation`, `workflow: admission-review`, `requiresMedicalReview: true`; as duas etapas (`clinicus`, `examinus`) |
-| Fecho | item `message` | resposta final do modelo depois do resultado |
+| Decisão do modelo | item `function_call` | exatamente uma chamada; `name` = `mcp__medstation_sandbox__medstation_simulate_admission`; `arguments` = só `{"requestId": "<identificador sorteado>"}` |
+| Chamada da ferramenta | item `function_call_output` | mesmo `call_id`, depois da chamada, `status: completed`; quem escreve este item é o Hermes |
+| Resposta da função | dentro de `function_call_output` | envelope `<untrusted_tool_result source="…">` com a origem igual à ferramenta; `environment` = `synthetic-staging`; `simulation.requestId` = o identificador sorteado; as duas etapas (`clinicus`, `examinus`) |
+| Fecho | item `message` | resposta final depois do resultado; `status: completed` |
 
-O identificador sorteado é o que amarra tudo: ele sai no pedido, volta nos
-argumentos escolhidos pelo modelo e volta de novo na resposta. A ponte só
-devolve `synthetic-staging` com esse identificador se a função da homologação
-tiver respondido assim (`hermes-bridge/server.mjs`, `sanitizeSimulation`).
+O identificador amarra tudo: sai no pedido, volta nos argumentos e volta na
+resposta. Um modelo que só *diga* que deu certo não passa.
 
-Um modelo que só *diga* que deu certo, sem os itens de ferramenta, não passa.
+**Fica gravado** (arquivo local, modo 600): identificador, horários, status
+HTTP, os itens acima, tokens e o resultado de cada verificação. **Nunca fica:**
+cabeçalhos, chaves, JWT. O verificador recusa o registro se achar formato de
+token, segredo, CPF ou e-mail.
 
-**O que fica gravado** (arquivo local, modo 600): identificador, horários,
-status HTTP, modelo pedido, os itens acima, a contagem de tokens e o resultado
-de cada verificação. **O que nunca fica:** cabeçalhos, a chave da API do
-Hermes, a chave do provedor, o JWT. O verificador ainda recusa o registro se
-encontrar formato de token, segredo, CPF ou e-mail.
+**Conferência independente:** nos logs da função `ai-core-hermes-sandbox` na
+homologação, uma única invocação com 200 no intervalo. É por horário e
+contagem; a função não registra o identificador.
 
-**Conferência independente** (fora do registro, somente leitura): nos logs da
-função `ai-core-hermes-sandbox` na homologação, exatamente uma invocação `POST`
-com 200 entre o início e o fim gravados. A função não registra o
-identificador, então essa conferência é por horário e contagem.
+## Instância temporária
 
-## Credencial: o menor escopo
+O serviço existente (`hermes-gateway`, `127.0.0.1:8642`) não é reiniciado nem
+reconfigurado. O teste roda numa segunda instância, que nasce e morre na mesma
+sessão:
 
-| Item | Recomendação |
+```
+túnel SSH ──> Hermes temporário (127.0.0.1:8643, HERMES_HOME em /run/user/999)
+                ├─ modelo:     limitador-modelo.mjs (loopback) ──> provedor
+                └─ ferramenta: ponte MCP ──> função da homologação
+```
+
+| Item | Proposta |
 |---|---|
-| Chave | criada só para este teste; não reutilizar nenhuma chave da produção nem da Lovable |
-| Limite | teto rígido no próprio provedor, por chave ou por saldo pré-pago sem recarga automática: **US$ 1** (ou o mínimo que o provedor aceitar) |
-| Modelo | o menor que tenha chamada de ferramentas e janela de pelo menos 64 mil tokens (exigência do Hermes); se o provedor permitir, restringir a chave a esse modelo |
-| Validade | revogar logo depois do teste, passe ou falhe |
-| Onde vive | só em `/home/hermes/.hermes/.env` na VPS (modo 600), enviada por entrada padrão; nunca em chat, Git ou log |
+| Dados | `HERMES_HOME` e `XDG_STATE_HOME` numa pasta nova em `/run/user/999` (memória, modo 700) |
+| Configuração | cópia do `config.yaml` permanente (não tem segredos), ajustada só na cópia |
+| Ajustes na cópia | modelo apontando para o limitador (`provider: custom`, `base_url` em loopback, `key_env`); `agent.max_turns: 2`; `agent.api_max_retries: 1`; `auxiliary.title_generation.enabled: false`; **`tools.tool_search.enabled: off`** |
+| Porta | `127.0.0.1:8643`, com chave de API sorteada na hora |
+| Chave do provedor | só no ambiente do processo do **limitador**; o Hermes recebe uma chave local sem valor fora dali |
+| JWT do admin fictício | só no ambiente do processo do Hermes temporário (a ponte o recebe por `${VAR}`) |
+| Entrada dos segredos | pela entrada padrão do SSH, com `read` e `export`; nunca em argumento de comando, arquivo ou histórico |
+| Trava contra instalação | `HERMES_DISABLE_LAZY_INSTALLS=1`: se faltar algo, a instância falha em vez de instalar |
+| Fim | matar os dois processos; apagar a pasta e a `/tmp/hermes-gw-*` que a instância criou |
 
-Um provedor que atende a isso com uma única variável no Hermes é o OpenRouter
-(`OPENROUTER_API_KEY`, com limite de crédito por chave). Conferir no painel do
-provedor escolhido que o limite é rígido e não só um alerta.
+Se a instância temporária não subir assim na VPS, o teste para. Não existe
+plano B que cumpra as duas condições: o caminho antigo gravava no `.env`
+permanente e reiniciava o serviço.
 
-Consumo esperado: 2 chamadas ao modelo (uma decide a ferramenta, outra
-responde). A documentação do Hermes fala em 4 a 8 mil tokens só de instruções
-e ferramentas por chamada, então a ordem de grandeza é de até 20 mil tokens de
-entrada e poucas centenas de saída. O número real sai no registro (`usage`).
-O Hermes não tem teto de custo próprio: o teto de verdade é o do provedor.
+### Limitador de chamadas
 
-## O que muda na VPS, temporariamente
+`limitador-modelo.mjs` fica entre o Hermes e o provedor, só em loopback:
 
-Tudo com cópia de segurança antes e restauração depois:
+- deixa passar **no máximo 2** tentativas de chamada ao modelo; a terceira
+  recebe 402 ali mesmo e não sai do processo;
+- conta toda tentativa, inclusive a que o provedor recusa;
+- é o único processo que conhece a chave do provedor;
+- registra uma linha por tentativa, sem corpo, cabeçalho ou chave.
 
-| Arquivo | Mudança |
-|---|---|
-| `~/.hermes/.env` | a chave do provedor; `MEDSTATION_STAGING_JWT` (JWT do admin fictício, vale 1 hora) |
-| `~/.hermes/config.yaml` | `model.provider` e `model.default` com o modelo escolhido; `agent.max_turns: 3`; `auxiliary.title_generation.enabled: false` |
-| serviço | `hermes gateway restart`, para a ponte receber o JWT |
+Sem ele não há máximo: o ensaio mostrou o Hermes tentando uma terceira chamada
+por conta própria em dois casos (ver abaixo).
 
-`max_turns: 3` impede a conversa de se alongar. Desligar o título automático
-evita uma chamada paga a mais depois da resposta. O serviço continua em
-`127.0.0.1:8642`; nenhuma porta, firewall ou SSH muda.
+### Verificar que nada ficou
+
+Antes e depois, na VPS:
+
+- SHA-256 do `config.yaml` e do `.env` permanentes;
+- PID, horário de início e reinícios do serviço existente;
+- arquivos de `/home/hermes` modificados depois de um marcador;
+- busca em disco pela chave do provedor e pelo JWT, com o padrão lido da
+  entrada padrão: esperado zero;
+- porta 8643 fechada, nenhuma `/tmp/hermes-gw-*` nova, `validar-tunel.sh` passando.
+
+## Provedor, modelo e teto
+
+| Item | Proposta | Estado |
+|---|---|---|
+| Provedor | OpenRouter, atrás do limitador | proposta |
+| Modelo | `google/gemini-3-flash-preview` | chamada de ferramenta **confirmada na listagem oficial** (API pública de modelos, 24/11/2026: `tools` e `tool_choice` no modelo e nos 6 endpoints; janela de 1.048.576 tokens) |
+| Preço listado | US$ 0,50 por milhão de tokens de entrada, US$ 3 de saída (varia por endpoint) | lido na mesma listagem |
+| Chave | dedicada, limite de US$ 1 na própria chave, revogada ao fim | a criar pelo Artur |
+| Limite bloqueia? | a documentação diz que, gasto o limite da chave, "the request is rejected with a `403` before it reaches a provider" | **documentado**, não testado |
+| Limite nunca é ultrapassado? | a documentação não diz quando o limite é conferido; para o saldo da conta, diz que a cobrança é no fim da requisição | **pendente** |
+| Conferência antes | `GET https://openrouter.ai/api/v1/key` devolve `limit`, `limit_remaining`, `usage`; recusar o teste se `limit` não for 1 | a fazer na execução |
+| Máximo de chamadas ao modelo | 2, imposto pelo limitador | **comprovado no ensaio local**; pendente contra o provedor real |
 
 ## Passo a passo (para quando houver aprovação)
 
-**A. Preparar** — na VPS, como `hermes`:
+1. **Mac:** login do admin fictício (JWT em memória); sortear a chave de API da
+   instância temporária.
+2. **VPS, uma sessão SSH, como `hermes`:** anotar o estado de antes; criar a
+   pasta em `/run/user/999`; copiar e ajustar o `config.yaml`; gravar o
+   `limitador-modelo.mjs` nessa pasta; subir o limitador e depois
+   `hermes gateway run`, cada um com o seu ambiente.
+3. **Mac:** conferir `limit` da chave; abrir o túnel para 8643; rodar uma vez:
+
+   ```bash
+   HERMES_INFERENCIA_APROVADA=sim HERMES_API_URL=http://127.0.0.1:18643 HERMES_API_KEY="$KEY" \
+     OUT_DIR=~/.medstation-homolog/inferencia \
+     node ops/hermes-vps/inferencia/executar-teste-inferencia.mjs --executar
+   ```
+
+   Uma tentativa só. Se falhar, ler o registro antes de qualquer outra coisa.
+4. **VPS:** encerrar os dois processos; rodar as verificações de "nada ficou";
+   apagar a pasta temporária.
+5. **Provedor:** revogar a chave. Anotar `usage` final e o número de
+   requisições no painel.
+
+## Executado e hipótese
+
+### Ensaio local (executado no Mac, 25/11/2026 00:08 UTC)
 
 ```bash
-grep -c -E '^(MEDSTATION_STAGING_JWT|[A-Z_]*API_KEY)=.+' ~/.hermes/.env   # anotar o número (medido em 24/11: 0 JWT, 0 chave de provedor)
-cp -p ~/.hermes/config.yaml ~/.hermes/config.yaml.pre-inferencia
-cp -p ~/.hermes/.env        ~/.hermes/.env.pre-inferencia
-hermes config set model.provider <provedor>
-hermes config set model.default  <modelo>
-hermes config set agent.max_turns 3
-hermes config set auxiliary.title_generation.enabled false
-# chave do provedor e JWT entram por entrada padrão, anexados ao .env (modo 600)
-hermes gateway restart
-hermes mcp test medstation_sandbox     # ainda 1 ferramenta
+HERMES_BIN=<hermes v0.23.1 local> node ops/hermes-vps/inferencia/ensaio/rodar-ensaio-local.mjs
 ```
 
-**B. Executar** — no Mac, com o túnel aberto como em `validar-tunel.sh` e a
-chave da API do Hermes lida da VPS para uma variável:
+Real: **Hermes v0.23.1, commit `3b4215785882`**, a ponte MCP da MedStation, o
+limitador, o executor e o verificador. Simulado: o provedor de modelo
+(`ensaio/provedor-simulado.mjs`) e a função da homologação
+(`ensaio/funcao-simulada.mjs`). Tudo em loopback, com chaves sorteadas na hora
+e pastas descartáveis. Resultado: 55 verificações, todas passaram.
+
+| Cenário | O que o provedor simulado faz | O que o Hermes real fez |
+|---|---|---|
+| `normal` | 1ª chamada pede a ferramenta; 2ª responde | ofereceu ao modelo só a ferramenta sintética; executou-a uma vez; a 2ª chamada já levava `synthetic-staging`; o verificador reconheceu a resposta pelo mesmo identificador; 2 tentativas, nenhuma a mais |
+| `repete` | pede a ferramenta em toda chamada | executou a ferramenta 2 vezes e, ao esgotar `max_turns`, **tentou uma 3ª chamada** (pedido de resumo); o limitador recusou com 402 e o provedor viu só 2; o Hermes não repetiu; registro `incomplete`, verificador recusa |
+| `erro` | 1ª chamada devolve 500 | **repetiu a chamada sem fluxo**, apesar de `api_max_retries: 1`; executou a ferramenta uma vez; a chamada seguinte foi recusada pelo limitador; provedor viu só 2; registro `failed` |
+| `coexistencia` | — | um segundo `gateway run`, com outro `HERMES_HOME`, subiu ao lado do primeiro, com e sem `XDG_STATE_HOME` isolado; o primeiro manteve o mesmo processo; isolado, o segundo não tocou a trava em `~/.local/state` |
+
+Também observado no ensaio:
+
+- **Segredos:** nenhuma das chaves do ensaio apareceu em disco (pasta
+  temporária, instalação, pasta de estado, soquetes). A busca achou um segredo
+  plantado de propósito, então ela funciona. Nenhum `.env` nem `auth.json` foi
+  criado na pasta temporária.
+- **Fora da pasta temporária:** o gateway cria `/tmp/hermes-gw-<id>/` (soquete
+  de controle) e não apaga ao sair; grava a trava do host em
+  `~/.local/state/hermes/gateway-locks/`, a menos que `XDG_STATE_HOME` aponte
+  para outro lugar; e o Python grava cache de bytecode na pasta da instalação.
+- **Dentro da pasta temporária:** cerca de 4 MB (configuração, logs, bancos da
+  sessão com o pedido e a resposta sintéticos).
+
+O que o ensaio corrigiu no plano:
+
+1. **Tool Search.** Por padrão (`tools.tool_search.enabled: auto`) o Hermes
+   esconde ferramentas MCP atrás de `tool_search`, `tool_describe` e
+   `tool_call`. O modelo não recebe a ferramenta da MedStation diretamente e
+   gasta uma ou duas chamadas a mais. Com `off`, recebe só ela.
+2. **Formato do resultado.** Vem dentro de `<untrusted_tool_result>`; o
+   verificador foi ajustado.
+3. **`max_turns` não limita chamadas.** Só o limitador limita.
+4. **Dependências.** A API precisa do conjunto `all` (o instalador oficial já
+   usa; a VPS tem).
+
+Como o Hermes foi posto no Mac: pelo método do CI do repositório
+(`uv sync --frozen --python 3.14 --extra all` no commit fixado), numa pasta
+descartável. O instalador oficial **não terminou** nesta rede: a CDN de
+arquivos do GitHub não responde daqui e o registro do npm passa por um
+firewall que troca o certificado, que o Hermes recusou. Não contornei.
+
+### Verificações sem Hermes (executadas)
 
 ```bash
-HERMES_INFERENCIA_APROVADA=sim HERMES_API_KEY="$KEY" OUT_DIR=~/.medstation-homolog/inferencia \
-  node ops/hermes-vps/inferencia/executar-teste-inferencia.mjs --executar
+node --test ops/hermes-vps/inferencia/teste-local.mjs   # 20 de 20
 ```
 
-Uma tentativa só. Se falhar, não repetir antes de ler o registro: repetir é
-outra chamada paga.
+Verificador (registro bom e nove tipos de registro ruim), executor (travas,
+loopback, uma tentativa) e limitador (máximo, troca de chave, contagem de
+falhas, destino só https ou loopback).
 
-**C. Remover** — sempre, passe ou falhe:
+### Ainda é hipótese
 
-```bash
-# na VPS, como hermes
-cp -p ~/.hermes/config.yaml.pre-inferencia ~/.hermes/config.yaml
-cp -p ~/.hermes/.env.pre-inferencia        ~/.hermes/.env
-rm -f ~/.hermes/config.yaml.pre-inferencia ~/.hermes/.env.pre-inferencia
-hermes gateway restart
-grep -c -E '^(MEDSTATION_STAGING_JWT|[A-Z_]*API_KEY)=.+' ~/.hermes/.env   # o mesmo número anotado no passo A
-```
-
-Depois: apagar a resposta guardada pelo Hermes
-(`DELETE /v1/responses/<id do registro>`, pelo túnel), **revogar a chave no
-painel do provedor**, e rodar `ops/hermes-vps/validar-tunel.sh` para confirmar
-que o serviço voltou ao estado de antes (0 de 26 toolsets nativos, loopback).
-
-## O que o teste prova e o que não prova
-
-Prova: que um modelo, dentro do Hermes da homologação, escolheu a ferramenta
-da MedStation com o argumento certo e que a resposta da função chegou a ele.
-
-Não prova: qualidade clínica, comportamento com dados reais, execução de
-agentes de verdade (a função só simula), estabilidade, nem custo em uso real.
-
-Incertezas que só a execução resolve:
-
-- Nunca vi o Hermes oferecer a ferramenta a um modelo. A configuração diz que
-  a API só enxerga `medstation_sandbox`, e a descoberta funciona, mas a lista
-  que o modelo recebe não foi observada.
-- O formato da resposta vem da leitura do código do Hermes no commit fixado,
-  não de uma resposta real.
-- Se o provedor fizer chamadas além das duas previstas, o teto da chave é o
-  que segura.
-
-## Verificações locais, sem credencial (executadas)
-
-```bash
-node --test ops/hermes-vps/inferencia/teste-local.mjs      # 15 de 15
-node ops/hermes-vps/inferencia/executar-teste-inferencia.mjs   # ensaio: mostra a requisição, não envia
-```
-
-O que é real nesses testes: a ponte da MedStation, o verificador e o executor.
-O que é simulado: o Hermes, o modelo e a função da homologação.
-
-| Verificação | Resultado |
+| Hipótese | Por que não está comprovada |
 |---|---|
-| Registro bom, com o texto que a ponte real devolve, passa em tudo | passou |
-| Modelo que responde sem chamar a ferramenta | recusado |
-| Modelo que só afirma o resultado, sem item de ferramenta | recusado |
-| Ferramenta errada, argumento errado ou argumento a mais | recusado |
-| Resposta com identificador de outra chamada | recusado |
-| Erros da ponte (função desligada, sem JWT, resposta inesperada) | recusado |
-| Duas chamadas, resposta incompleta, identificador fora do padrão | recusado |
-| Registro com formato de token, segredo, CPF ou e-mail | recusado |
-| Executor sem as duas travas, sem chave ou fora do loopback | recusa sem enviar |
-| Executor com as travas contra o Hermes simulado | 1 requisição, registro gravado sem a chave |
-| Falha (modelo não chama, chave errada) | termina em falha, sem repetir |
+| Um modelo real escolhe a ferramenta com o argumento certo | o provedor do ensaio é um roteiro fixo, não um modelo |
+| O limitador funciona contra o OpenRouter real (https, fluxo) | só foi exercitado contra o provedor simulado em http |
+| A instância temporária sobe na VPS usando a instalação existente | o ensaio foi no macOS, com o Hermes montado pelo método do CI; na VPS a instalação é a do instalador oficial, em Linux, com o serviço sob systemd |
+| A segunda instância não perturba o serviço sob systemd | observado só entre dois processos avulsos |
+| Nada é escrito na VPS fora do que o ensaio mostrou | idem |
+| A pasta cabe em `/run/user/999` | no ensaio ocupou 4 MB; não medido na VPS |
+| O limite de US$ 1 nunca é ultrapassado | a documentação não diz; ver tabela acima |
+| A ponte alcança a função real a partir da instância temporária | no ensaio a função era simulada; o nível B real usou o processo avulso da ponte |
 
 ## O que depende da aprovação do Artur
 
-1. **Provedor e modelo**, e criar a chave dedicada com teto rígido de US$ 1.
-2. **Como a chave chega à VPS:** ele mesmo grava, ou autoriza ler de um
-   arquivo local (modo 600) e enviar por entrada padrão.
-3. **A chamada paga:** uma requisição, uma tentativa.
-4. **A mudança temporária na VPS** descrita acima, com restauração ao fim.
+1. **Criar a chave dedicada** no OpenRouter, com limite de US$ 1, e dizer como
+   ela chega à VPS sem passar pelo chat.
+2. **Aceitar o pendente do teto:** a requisição em andamento pode ultrapassar
+   US$ 1; o limitador segura a quantidade (2), não o valor.
+3. **Autorizar a instância temporária e o limitador na VPS** e a única
+   requisição paga.

@@ -136,26 +136,16 @@ O roteiro completo do nível C, com o cenário, a forma de comprovar, a
 credencial mínima, a remoção e as verificações locais, está em
 [`inferencia/README.md`](inferencia/README.md).
 
-### Pré-requisitos do nível C (nada disto foi feito)
+### Nível C em resumo (não executado)
 
-1. **Nível B passando** (as quatro variáveis `AI_CORE_*` na homologação).
-2. **Credencial de teste de um provedor de modelo, autorizada pelo Artur e com
-   limite de gasto definido no próprio provedor.** Ela vai só para
-   `/home/hermes/.hermes/.env` (modo 600), por entrada padrão, sem passar por
-   chat, Git ou log. O Hermes hoje não tem provedor nenhum configurado.
-3. **Modelo e teto de passos:** `hermes config set model.default <modelo>` e
-   um `agent.max_turns` baixo (ex.: 4), para a conversa de teste não se alongar.
-4. **JWT do admin fictício disponível para o serviço.** Hoje ele só é entregue
-   em memória ao teste do nível B; o processo da ponte que o serviço mantém
-   não o recebe. Para o nível C é preciso gravar `MEDSTATION_STAGING_JWT` no
-   `.env` (vale 1 hora), reiniciar o serviço e apagar a linha ao fim.
-5. **A chamada:** `POST /v1/chat/completions` pelo túnel SSH, pedindo a
-   simulação com `requestId` `synthetic_e2e_001`.
-6. **Critério para dizer "passou":** a resposta traz o resultado da ferramenta
-   com `environment: "synthetic-staging"` e as duas etapas simuladas
-   (`clinicus`, `examinus`); o log da função na homologação mostra a invocação
-   com 200 no mesmo instante; e um pedido com `requestId` fora do padrão
-   `synthetic_*` é recusado.
+- Roda numa **instância temporária** do Hermes, em `127.0.0.1:8643`, com dados
+  em `/run/user/999`; o serviço existente não é reiniciado nem reconfigurado.
+- A chave do provedor fica só no processo de um limitador local, que deixa
+  passar no máximo 2 chamadas ao modelo.
+- Um ensaio no Mac, com o Hermes real e o provedor simulado, passou em
+  25/11/2026 00:08 UTC. Ele mostrou que é preciso `tools.tool_search.enabled: off`
+  e que `agent.max_turns` sozinho não limita as chamadas.
+- Falta: chave dedicada com limite de US$ 1 e autorização para rodar na VPS.
 
 ## Limites desta instalação
 

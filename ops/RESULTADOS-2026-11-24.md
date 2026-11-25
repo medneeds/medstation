@@ -24,7 +24,8 @@
 | Login — ler o próprio perfil | **passou** (rodada 3) | fase 1 aplicada na homologação; a conta lê só a própria linha e anônimo não lê nenhuma |
 | Hermes — API e descoberta da ferramenta | **passou** | autenticação, loopback e 1 ferramenta descoberta |
 | Hermes — ponte → função da homologação | **passou** (24/11/2026 23:06 UTC) | função responde 200 ao admin fictício; `staging_workflow_only` verdadeiro |
-| Hermes — ponta a ponta com inferência | **não executado** | sem credencial de modelo; a ponte aprovada não cobre este item. Roteiro e verificações locais (15 de 15) em `hermes-vps/inferencia/` |
+| Hermes — ponta a ponta com inferência | **não executado** | sem credencial de modelo; a ponte aprovada não cobre este item |
+| Hermes — ensaio local da inferência (Hermes real, provedor simulado) | **passou** como ensaio | 55 verificações no Mac; não substitui o teste com modelo real |
 | Frontend local apontando para a homologação | **passou** | carrega, autentica e não toca a produção |
 | Stripe Sandbox — checkout | **bloqueado** | sem credencial de teste, sem funções publicadas e com IDs do modo real fixos no código |
 | Stripe — testes locais sem credencial | **passou** (teste local) | regras de cobrança e assinatura do webhook; não é checkout validado |
@@ -39,7 +40,8 @@
 | Nível A: API pelo túnel SSH | passou | `validar-tunel.sh`: 401 sem chave e com chave errada, 200 com a chave, 0 de 26 toolsets nativos, 8642 fechada pelo IP público |
 | Nível A: descoberta MCP | passou | `hermes mcp test medstation_sandbox`: conectado, 1 ferramenta |
 | Nível B: ponte → função | passou em 24/11/2026 23:06 UTC (antes: bloqueado, função 404) | `validar-ponte-homologacao.sh`: função 200, `staging_workflow_only` verdadeiro |
-| Nível C: com inferência | não executado | nenhum provedor de modelo configurado no Hermes; roteiro pronto em `hermes-vps/inferencia/README.md`, aguardando aprovação |
+| Nível C: com inferência | não executado | nenhum provedor de modelo configurado no Hermes; roteiro em `hermes-vps/inferencia/README.md`, aguardando aprovação |
+| Nível C: ensaio local | passou (25/11/2026 00:08 UTC) | Hermes real v0.23.1 no Mac, provedor e função simulados: ferramenta sintética executada uma vez, resposta reconhecida pelo mesmo identificador, 3ª chamada barrada no limitador |
 
 ### Nível B refeito depois que as variáveis foram gravadas
 
@@ -62,6 +64,27 @@ JWT ficou só em memória.
 
 Isto é o nível B. Não houve modelo, inferência nem chamada paga: o nível C
 continua não executado.
+
+### Ensaio local do nível C (só no Mac, sem VPS e sem credencial real)
+
+| | |
+|---|---|
+| Quando | 25/11/2026, 00:08 UTC |
+| Hermes | real, v0.23.1, commit `3b4215785882`, montado pelo método do CI do repositório numa pasta descartável |
+| Simulado | provedor de modelo e função da homologação, em loopback |
+| Resultado | 55 verificações, todas passaram; 4 cenários |
+
+| Cenário | Chamadas que chegaram ao provedor | Tentativas barradas no limitador | Ferramenta executada | Registro |
+|---|---|---|---|---|
+| normal | 2 | 0 | 1 vez | `completed`; verificador passou |
+| modelo repete a ferramenta | 2 | 1 (pedido de resumo do Hermes) | 2 vezes | `incomplete`; verificador recusou |
+| provedor devolve erro 500 | 2 (a que falhou e a repetição) | 1 | 1 vez | `failed`; verificador recusou |
+| segunda instância ao lado de outra | — | — | — | as duas de pé; a primeira não mudou de processo |
+
+O instalador oficial do Hermes não terminou no Mac (a rede bloqueia a CDN de
+arquivos do GitHub e troca o certificado do registro do npm). Não foi
+contornado; o ensaio usou o método do CI. Detalhes, o que o ensaio corrigiu
+no plano e a lista do que continua hipótese: `hermes-vps/inferencia/README.md`.
 
 A, B e C não se substituem: só C é ponta a ponta. Pré-requisitos de C em
 `hermes-vps/README.md`. Caminho e campos das quatro variáveis em
@@ -150,8 +173,9 @@ produção, sem variável para desligar.
 # Hermes (pedem HERMES_VPS_HOST e HERMES_VPS_HOSTNAME)
 ops/hermes-vps/validar-tunel.sh
 ops/hermes-vps/validar-ponte-homologacao.sh
-node --test ops/hermes-vps/inferencia/teste-local.mjs          # nível C: só verificações locais
-node ops/hermes-vps/inferencia/executar-teste-inferencia.mjs   # nível C: ensaio, não envia nada
+node --test ops/hermes-vps/inferencia/teste-local.mjs          # nível C: verificações sem Hermes (20)
+node ops/hermes-vps/inferencia/executar-teste-inferencia.mjs   # nível C: mostra a requisição, não envia
+HERMES_BIN=<hermes local> node ops/hermes-vps/inferencia/ensaio/rodar-ensaio-local.mjs   # nível C: ensaio com Hermes real
 
 # Permissões
 ops/supabase-homologacao/verificacao/rodar-teste-local.sh          # banco local em memória
@@ -246,8 +270,8 @@ Duas ações independentes, cada uma destrava um fluxo:
 
 1. ~~Autorizar a fase 1~~ — feita na rodada 3.
 2. ~~Gravar as quatro `AI_CORE_*`~~ — gravadas pelo Artur; o nível B passou.
-3. **Aprovar o teste de inferência** (nível C): provedor e modelo, chave
-   dedicada com teto de US$ 1, a chamada paga e a mudança temporária na VPS.
+3. **Aprovar o teste de inferência** (nível C): chave dedicada com limite de
+   US$ 1, a instância temporária e o limitador na VPS, e a única chamada paga.
    Lista exata no fim de `hermes-vps/inferencia/README.md`.
 
 O que vem depois, em ordem de custo: consulta de privilégios na produção

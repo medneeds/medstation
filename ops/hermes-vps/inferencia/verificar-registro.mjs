@@ -49,21 +49,41 @@ function outputText(output) {
 }
 
 /**
- * O Hermes embrulha o texto de uma ferramenta MCP em {"result": "<texto>"};
- * a ponte da MedStation devolve o JSON dela como texto. Aceita os dois níveis.
+ * Formato real observado no Hermes v0.23.1 (ensaio local de 24/11/2026), para um servidor
+ * MCP com `trust: untrusted`:
+ *
+ *   <untrusted_tool_result source="mcp__servidor__ferramenta">
+ *   (aviso de que o conteúdo é dado, não instrução)
+ *
+ *   {"result": "<texto que a ferramenta devolveu>"}
+ *   </untrusted_tool_result>
+ *
+ * A ponte da MedStation devolve o JSON dela como texto, então são dois níveis de JSON
+ * dentro do envelope. Sem o envelope (servidor confiável), vale só o {"result": ...}.
  */
+const ENVELOPE_RE = /^\s*<untrusted_tool_result\s+source="([^"]*)">([\s\S]*)<\/untrusted_tool_result>\s*$/;
+
 export function unwrapToolPayload(output) {
-  const outer = parseJson(outputText(output));
-  if (!outer || typeof outer !== "object") return { payload: undefined, error: "saída não é JSON" };
-  if (typeof outer.error === "string" && !("result" in outer)) return { payload: undefined, error: outer.error };
+  let text = outputText(output);
+  let source;
+  const envelope = ENVELOPE_RE.exec(text);
+  if (envelope) {
+    source = envelope[1];
+    const start = envelope[2].indexOf("{");
+    const end = envelope[2].lastIndexOf("}");
+    text = start >= 0 && end > start ? envelope[2].slice(start, end + 1) : "";
+  }
+  const outer = parseJson(text);
+  if (!outer || typeof outer !== "object") return { payload: undefined, source, error: "saída não é JSON" };
+  if (typeof outer.error === "string" && !("result" in outer)) return { payload: undefined, source, error: outer.error };
   if (typeof outer.result === "string") {
     const inner = parseJson(outer.result);
     return inner && typeof inner === "object"
-      ? { payload: inner, error: typeof inner.error === "string" ? inner.error : undefined }
-      : { payload: undefined, error: "campo result não é JSON" };
+      ? { payload: inner, source, error: typeof inner.error === "string" ? inner.error : undefined }
+      : { payload: undefined, source, error: "campo result não é JSON" };
   }
-  if (outer.result && typeof outer.result === "object") return { payload: outer.result };
-  return { payload: outer, error: typeof outer.error === "string" ? outer.error : undefined };
+  if (outer.result && typeof outer.result === "object") return { payload: outer.result, source };
+  return { payload: outer, source, error: typeof outer.error === "string" ? outer.error : undefined };
 }
 
 function messageText(item) {
@@ -143,8 +163,11 @@ export function verifyRecord(record, { requestId }) {
   add("chamada da ferramenta: execução concluída", result?.status === "completed", String(result?.status));
 
   // 3) resposta da função da homologação
-  const { payload, error } = result ? unwrapToolPayload(result.output) : { payload: undefined, error: "sem resultado" };
+  const { payload, source, error } = result ? unwrapToolPayload(result.output) : { payload: undefined, error: "sem resultado" };
   add("resposta da função: sem erro da ponte", !error && Boolean(payload), error ? `erro=${error}` : "");
+  // Quando o Hermes marca a origem do resultado, ela tem de ser a mesma ferramenta.
+  add("resposta da função: a origem marcada pelo Hermes é a ferramenta da MedStation",
+    source === undefined || source === WIRE_TOOL_NAME, String(source));
   add("resposta da função: environment = synthetic-staging", payload?.environment === "synthetic-staging",
     String(payload?.environment));
   const sim = payload?.simulation;
