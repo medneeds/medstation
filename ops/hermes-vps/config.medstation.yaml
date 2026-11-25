@@ -1,0 +1,44 @@
+# Trecho acrescentado ao ~/.hermes/config.yaml do usuário `hermes` na VPS de
+# homologação. Escrito pelo Claude em 24/11/2026. Nenhum segredo aqui: os
+# valores vêm de ~/.hermes/.env (ver env.example).
+#
+# Referências (Hermes Agent v0.23.1):
+#   website/docs/reference/mcp-config-reference.md
+#   website/docs/user-guide/configuration.md  ("Global Toolset Disable")
+#   cli-config.yaml.example                   ("platform_toolsets")
+
+# 1) Dentro do bloco `platform_toolsets:` que já existe no arquivo:
+#    a API e a CLI enxergam apenas a ponte MCP sintética.
+platform_toolsets:
+  api_server: [medstation_sandbox]
+  cli: [medstation_sandbox]
+
+# 2) Dentro do bloco `agent:` que já existe no arquivo:
+#    nenhuma ferramenta nativa fica disponível, em nenhuma plataforma.
+agent:
+  disabled_toolsets: [terminal, file, browser, code_execution, delegation, web,
+    search, x_search, computer_use, cronjob, memory, skills, session_search,
+    connections, image_gen, video_gen, vision, video, tts, kanban, project,
+    debugging, coding, safe]
+
+# 3) Bloco novo, no fim do arquivo.
+mcp_servers:
+  medstation_sandbox:
+    # Node que o próprio Hermes instala (26.x); a VPS não tem Node de sistema.
+    command: "/home/hermes/.hermes/tools/node-26.12.1-linux-x64/bin/node"
+    args: ["/home/hermes/medstation/hermes-bridge/server.mjs"]
+    # Só estas variáveis chegam ao processo da ponte. A API_SERVER_KEY não chega.
+    env:
+      MEDSTATION_MCP_STAGING_ENABLED: "${MEDSTATION_MCP_STAGING_ENABLED}"
+      MEDSTATION_STAGING_PROJECT_REF: "${MEDSTATION_STAGING_PROJECT_REF}"
+      MEDSTATION_PRODUCTION_PROJECT_REF: "${MEDSTATION_PRODUCTION_PROJECT_REF}"
+      MEDSTATION_STAGING_URL: "${MEDSTATION_STAGING_URL}"
+      MEDSTATION_STAGING_JWT: "${MEDSTATION_STAGING_JWT}"
+      MEDSTATION_SUPABASE_ANON_KEY: "${MEDSTATION_SUPABASE_ANON_KEY}"
+    enabled: true
+    trust: untrusted
+    supports_parallel_tool_calls: false
+    tools:
+      include: ["medstation_simulate_admission"]
+      resources: false
+      prompts: false

@@ -1,0 +1,26 @@
+-- PLANO — NÃO APLICADO. Escrito pelo Claude em 24/11/2026.
+--
+-- Alvo: SOMENTE o projeto de homologação qcvvwbbeuvawgccstyro.
+-- Fica fora de supabase/migrations e de drizzle/migrations de propósito.
+--
+-- O que faz: uma única concessão, a menor que destrava "login + ler o próprio
+-- perfil". Depois do login, o app faz exatamente uma leitura em tabela sem
+-- privilégio (src/contexts/ProfileContext.tsx):
+--
+--   select full_name, gender, avatar_url, crm, crm_state, specialty,
+--          address, city, state
+--     from profiles where id = <usuário logado>
+--
+-- A política "Users can view own profile" (auth.uid() = id) já existe e
+-- continua decidindo as linhas. As demais tabelas do fluxo de login
+-- (user_onboarding, active_sessions, page_views) já têm o privilégio certo.
+--
+-- O que NÃO faz: não dá escrita em profiles, não dá nada a anon nem a
+-- service_role, não toca nenhuma outra tabela.
+--
+-- Estado medido antes (24/11/2026), que a reversão devolve:
+--   profiles: authenticated=Dxtm, anon=Dxtm, service_role=Dxtm
+--
+-- Reversão: 001_grant_select_profiles.rollback.sql
+
+grant select on public.profiles to authenticated;
